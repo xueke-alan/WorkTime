@@ -1,0 +1,4 @@
+# Publish only the standalone application and repository ignore rules.
+/*
+!/index.html
+!/.gitignore
