@@ -1,0 +1,7 @@
+# Local and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
