@@ -1,0 +1,77 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "width": 2250,
+      "planned": {
+        "width": 123.546875,
+        "height": 37.5,
+        "iconX": 9.8125,
+        "iconY": 9.921875,
+        "iconWidth": 17.640625,
+        "iconHeight": 17.640625,
+        "labelCenter": 73.3515625,
+        "textAlign": "center",
+        "overflow": false
+      },
+      "leave": {
+        "width": 123.546875,
+        "height": 37.5,
+        "iconX": 9.8125,
+        "iconY": 9.921875,
+        "iconWidth": 17.640625,
+        "iconHeight": 17.640625,
+        "labelCenter": 73.3515625,
+        "textAlign": "center",
+        "overflow": false
+      },
+      "withHours": {
+        "width": 123.546875,
+        "height": 37.5,
+        "iconX": 9.8125,
+        "iconY": 9.921875,
+        "iconWidth": 17.640625,
+        "iconHeight": 17.640625,
+        "labelCenter": 73.3515625,
+        "textAlign": "center",
+        "overflow": false
+      }
+    },
+    {
+      "width": 390,
+      "planned": {
+        "width": 112,
+        "height": 33.984375,
+        "iconX": 9,
+        "iconY": 9,
+        "iconWidth": 15.984375,
+        "iconHeight": 15.984375,
+        "labelCenter": 66.4921875,
+        "textAlign": "center",
+        "overflow": false
+      },
+      "leave": {
+        "width": 112,
+        "height": 33.984375,
+        "iconX": 9,
+        "iconY": 9,
+        "iconWidth": 15.984375,
+        "iconHeight": 15.984375,
+        "labelCenter": 66.4921875,
+        "textAlign": "center",
+        "overflow": false
+      },
+      "withHours": {
+        "width": 112,
+        "height": 33.984375,
+        "iconX": 9,
+        "iconY": 9,
+        "iconWidth": 15.984375,
+        "iconHeight": 15.984375,
+        "labelCenter": 66.4921875,
+        "textAlign": "center",
+        "overflow": false
+      }
+    }
+  ]
+}

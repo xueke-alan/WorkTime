@@ -1658,3 +1658,25 @@ body #dayPreview .preview-employment {
   padding-top: 0.857143rem;
   line-height: 1.3;
 }
+
+/* Leave and planned overtime share a fixed icon slot and centered label slot. */
+body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle) {
+  display: inline-grid;
+  grid-template-columns: 1.142857rem minmax(0, 1fr);
+  width: 8rem;
+  min-width: 8rem;
+  max-width: 8rem;
+  padding-inline: 0.571429rem;
+  column-gap: 0.357143rem;
+  align-items: center;
+}
+body .editor #dayForm :is(#dayLeaveToggle, #plannedOvertimeToggle) > .ui-icon {
+  width: 1.142857rem;
+  height: 1.142857rem;
+  justify-self: start;
+}
+body .editor #dayForm :is(#dayLeaveToggle, #plannedOvertimeToggle) > .button-label {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}

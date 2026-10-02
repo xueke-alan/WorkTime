@@ -1,0 +1,56 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "viewport": 1920,
+      "dots": [
+        {
+          "width": 10,
+          "height": 10,
+          "font": 10,
+          "alignment": "center"
+        },
+        {
+          "width": 10,
+          "height": 10,
+          "font": 10,
+          "alignment": "center"
+        }
+      ]
+    },
+    {
+      "viewport": 2250,
+      "dots": [
+        {
+          "width": 12.0625,
+          "height": 12.0625,
+          "font": 12.0625,
+          "alignment": "center"
+        },
+        {
+          "width": 12.0625,
+          "height": 12.0625,
+          "font": 12.0625,
+          "alignment": "center"
+        }
+      ]
+    },
+    {
+      "viewport": 2560,
+      "dots": [
+        {
+          "width": 14,
+          "height": 14,
+          "font": 14,
+          "alignment": "center"
+        },
+        {
+          "width": 14,
+          "height": 14,
+          "font": 14,
+          "alignment": "center"
+        }
+      ]
+    }
+  ]
+}

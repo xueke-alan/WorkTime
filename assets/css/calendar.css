@@ -1131,12 +1131,6 @@ body .month-controls .month-title {
     gap: 0.642857rem;
   }
 }
-@media (min-width: 1921px) {
-  body .calendar-footer .legend .dot {
-    width: 0.5em;
-    height: 0.5em;
-  }
-}
 body .calendar-footer {
   padding-block: 0.285714rem;
 }
