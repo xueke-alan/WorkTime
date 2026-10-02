@@ -1,0 +1,211 @@
+/* Shared control geometry. Component layouts retain their explicit exceptions. */
+/* Focus navigation stays native; controls have no additional outline ring. */
+body :focus,
+body :focus-visible {
+  outline: 0;
+  outline-offset: 0;
+}
+/* Tabs stretch to their footer row; ordinary form controls use fixed geometry. */
+body button.ui-button:where(:not(.notification-tab)),
+body
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+    [type="hidden"]
+  ),
+body select {
+  height: var(--control-height) !important;
+  min-height: var(--control-height) !important;
+  max-height: var(--control-height) !important;
+  border-radius: var(--control-radius) !important;
+  padding-block: 0 !important;
+  line-height: 1.3;
+}
+body button.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+body button.icon-only,
+body button.nextday-toggle {
+  width: var(--control-height) !important;
+  min-width: var(--control-height) !important;
+  max-width: var(--control-height) !important;
+  flex-basis: var(--control-height);
+  padding: 0 !important;
+}
+body button.ui-button > .ui-icon,
+body #importOpen .import-main > .ui-icon {
+  display: block;
+  vertical-align: initial;
+}
+/* Shared control appearance. Layout-specific dimensions stay with each component. */
+
+/* All time fields use the same text layer, typography, border and focus state. */
+body .editor #dayForm .time-fields .clock-input,
+body .editor #batchForm input.clock-input,
+body #settingsForm input.clock-input,
+body #timeTemplateForm input.clock-input,
+body #settingsForm input.number-input,
+body .editor #batchForm input.number-input,
+body .editor #dayForm input.number-input {
+  background: var(--clock-background);
+  border: 1px solid var(--clock-border);
+  color: var(--clock-ink);
+  box-shadow: var(--control-shadow);
+  font-family: var(--font-numeric);
+  font-size: var(--clock-font);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  font-stretch: normal;
+  letter-spacing: 0.2px;
+  line-height: 1.3;
+  text-align: center;
+  padding-inline: 4px;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+  height: var(--input-height) !important;
+  min-height: var(--input-height) !important;
+  max-height: var(--input-height) !important;
+}
+body .editor #dayForm .time-entry .clock-input::placeholder,
+body input.clock-input::placeholder {
+  font: inherit;
+  letter-spacing: inherit;
+  font-variant-numeric: inherit;
+  color: var(--clock-placeholder);
+  opacity: 1;
+}
+body .editor #dayForm .time-fields .clock-input:focus,
+body .editor #batchForm input.clock-input:focus,
+body #settingsForm input.clock-input:focus,
+body #timeTemplateForm input.clock-input:focus,
+body #settingsForm input.number-input:focus,
+body .editor #batchForm input.number-input:focus,
+body .editor #dayForm input.number-input:focus {
+  background: #fff;
+  border-color: var(--accent);
+}
+body .editor #dayForm .clock-input[aria-invalid="true"] {
+  border-color: #c65c4e;
+  background: #fff4f2;
+  color: #8d302d;
+}
+
+/* The template name shares the height of the template time fields. */
+body #timeTemplateName {
+  height: var(--input-height) !important;
+  min-height: var(--input-height) !important;
+  max-height: var(--input-height) !important;
+}
+
+/* Same button family across toolbars, editor actions and dialogs. */
+body button.ui-button:not(.notification-tab):not(#importOpen) {
+  font-family: inherit;
+  font-size: var(--button-font-size, var(--text-small)) !important;
+  font-weight: 500;
+  line-height: 1.3;
+  gap: 0.357143rem;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+body
+  button.ui-button:not(.notification-tab):not(#importOpen):not(
+    .template-fill
+  ):not(.template-edit):not(.primary):not([aria-pressed="true"]) {
+  border: 1px solid var(--control-border);
+  background: #fff;
+  box-shadow: var(--control-shadow);
+}
+body
+  button.ui-button:not(.notification-tab):not(#importOpen):not(
+    .template-fill
+  ):not(.template-edit):not(.primary):not([aria-pressed="true"]):hover:not(
+    :disabled
+  ) {
+  background: var(--control-hover);
+  border-color: #aecdbf;
+}
+body button.ui-button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+body button.ui-button.primary:hover:not(:disabled) {
+  background: #10634f;
+  border-color: #10634f;
+}
+body button.ui-button:focus-visible {
+  outline: 0;
+}
+body button.ui-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+/* A common line box preserves baseline alignment across different label strings. */
+/* The Windows font stack centers its line box above the visible CJK ink.
+   A shared size-based correction keeps labels on the same baseline, regardless
+   of their text. Icons and hit areas retain their original geometry. */
+body button.ui-button:not(.notification-tab) .button-label,
+body #importOpen .import-main > span {
+  display: inline-block;
+  font: inherit;
+  line-height: 1.3;
+  translate: 0 var(--button-label-offset, 0.11em);
+}
+/* Calibrate the shared 13px font profile, independently of viewport and text. */
+body button.ui-button.ui-font-13,
+body #importOpen.ui-font-13 {
+  --button-label-offset: 0.18em;
+}
+body #importOpen:not(.ui-font-13) {
+  --button-label-offset: 0.11em;
+}
+body button.ui-button.ui-font-14-plus,
+body #importOpen.ui-font-14-plus {
+  --button-label-offset: 0.07em;
+}
+body #batchAddTimeTemplate {
+  width: var(--control-height) !important;
+  min-width: var(--control-height) !important;
+  padding: 0 !important;
+}
+/* Joined backup buttons keep one outside border rather than duplicate borders. */
+body .backup-button-group button.ui-button {
+  border: 0 !important;
+  box-shadow: none;
+}
+body .backup-button-group button.ui-button + button {
+  border-left: 1px solid var(--control-border) !important;
+}
+/* Keep OA text and symbols on stable raster sizes at desktop scaling. */
+@supports (font-size: round(nearest, 1rem, 1px)) {
+  @media (min-width: 1921px) {
+    body button.ui-button:not(.notification-tab) {
+      --button-font-size: round(nearest, var(--text-small), 1px);
+    }
+  }
+  @media (min-width: 1800px) {
+    body .sidebar-actions > #importOpen {
+      font-size: round(nearest, 0.928571rem, 1px);
+      --control-height: round(nearest, 3rem, 2px);
+    }
+    body #importOpen .import-clipboard {
+      width: round(nearest, 3rem, 2px);
+    }
+    body #importOpen .ui-icon {
+      width: round(nearest, 1.285714rem, 2px);
+      height: round(nearest, 1.285714rem, 2px);
+    }
+  }
+}
+
+/* Move the input glyphs slightly down without moving the settings controls. */
+body #settingsForm input.clock-input,
+body #settingsForm input.number-input {
+  padding-top: 0.285714rem !important;
+  padding-bottom: 0 !important;
+}

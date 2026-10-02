@@ -1,0 +1,82 @@
+{
+  "checks": [
+    "manual edit persists across reload",
+    "overnight toggle clears time anomaly",
+    "OA preview import persists across reload",
+    "all five date info tabs switch without page errors",
+    "date tabs support arrow keyboard navigation",
+    "time template persists across reload",
+    "JSON file restore persists across reload",
+    "gzip text backup restore persists across reload",
+    "two-day batch edit persists across reload",
+    "corrupt persisted data is not silently overwritten",
+    "document width fits 390/768/1200/1600/1920 px viewports"
+  ],
+  "findings": [
+    {
+      "id": "R01",
+      "name": "settings reports success after persistence failure",
+      "notice": "更改未保存：audit quota；关闭页面前请备份。",
+      "feedback": "3\n计算设置已更新",
+      "dialogOpen": false,
+      "reproduced": true
+    },
+    {
+      "id": "R02",
+      "name": "second tab overwrites first tab edits",
+      "persistedDates": [
+        "2026-10-09"
+      ],
+      "reproduced": true
+    },
+    {
+      "id": "R05",
+      "name": "clipboard shortcut overwrites complete OA conflict without preview",
+      "end": "20:00",
+      "previewOpen": false,
+      "reproduced": true
+    },
+    {
+      "id": "R06",
+      "name": "today stays at startup date after midnight",
+      "before": "2026-10-02",
+      "after": "2026-10-02",
+      "now": "2026-10-03",
+      "reproduced": true
+    },
+    {
+      "id": "R07",
+      "name": "past month unmet target shown as zero remaining",
+      "difference": 2520,
+      "remainingDays": 0,
+      "shown": "0",
+      "reproduced": true
+    },
+    {
+      "id": "R08",
+      "name": "known year incorrectly labelled missing holiday data",
+      "known": true,
+      "visible": true,
+      "text": "2025年未内置节假日，按周一至周五统计。",
+      "reproduced": true
+    }
+  ],
+  "measurements": {
+    "calendarToggleSynchronousMs": [
+      17.80000000447035,
+      17.099999994039536,
+      18.5,
+      16.899999998509884,
+      14,
+      14,
+      13.199999995529652,
+      17.399999998509884,
+      13.099999994039536,
+      13.599999994039536
+    ],
+    "initialNavigation": {
+      "domContentLoadedMs": 150.39999999850988,
+      "loadMs": 150.80000000447035
+    }
+  }
+}

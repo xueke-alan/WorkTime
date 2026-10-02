@@ -1,0 +1,1244 @@
+{
+  "createdAt": "2026-10-02T11:56:38.501Z",
+  "scope": "Predeclared 20 five-year original firstScreen/save/year prefix runs; source unchanged; investigation of isolated year Script p95 breach; retain full-run outliers, do not replace full-run results",
+  "browser": "154.0.4258.48",
+  "node": "v24.16.0",
+  "machine": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "cpu": "Intel(R) Core(TM) i5-14600K",
+    "logicalCPUs": 20,
+    "memoryBytes": 34115522560
+  },
+  "repetitions": 20,
+  "pilot": false,
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "dpr": 1,
+  "motion": "no-preference",
+  "clock": "real; no fake timers",
+  "identity": {
+    ".refactor-backups/focused-year-method-stage31.cjs": "f5fd559058be40a9fccd642fcc73a5aeb4655ff6599ba8e6584065ede98bca6b",
+    "index.html": "f116b2121f17ae12cedf3ab32981f1f855692128ce609f6ce49150eeb4e064d5",
+    "package-lock.json": "c740a4a7df1cbbd0be976d002c1ea9fd0460b2d67a0fe081e500d6d2a75aa2bd",
+    "scripts/benchmark-browser.cjs": "5f2e524961aacd84eef5d18f013cdfd0ce587fad593924db75ea13e9bd93640e",
+    "scripts/performance-fixtures.cjs": "ca0883d76a30b8084e9cec717d3e1f721a71254eadd847337264555927902e26",
+    "tests/helpers/core-source.cjs": "48203bea3248dd94152fdafc8b6b7af94a17af0db3846892fdea365dc3af9cbd",
+    "assets/css/tokens.css": "dd04db1ab632a6b979ff25497d6b7e24ae4012da40130d7bed8623dc51670a25",
+    "assets/css/base.css": "5e03f41108a050daf5759fd1f9855f0cc790806936898249d219c20823c1ab5d",
+    "assets/css/layout.css": "35201ee6c65c3a0ae03759a902065fadfb3f36e6f62081a441bf25a6d690d84c",
+    "assets/css/editor.css": "a62cd6e56c5afc867bff638fb232d54466b427f62cd1ca00fb7afec90fee7ae8",
+    "assets/css/dialogs.css": "24683d86e4c10ca296f09217ed1cd3ffe08df7aace7f634301e06acacaafc55c",
+    "assets/css/date-info.css": "e6e9b748075dd8f8271055e5d071374a95f7787eac8d673b65d13e1028554739",
+    "assets/css/summary.css": "1afbefbb2fc214870c381f60a94c2c5aa1159d8017b7195d8a7836e852dc1ef1",
+    "assets/css/calendar.css": "c638c7deeff15b3905545a0ba9d2c4973c561a987d4ef34110f81df7430d00ab",
+    "assets/css/controls.css": "4fad2cb3683a383eb82eb4c2ff9a546e931c70b515ce424baab8cd94fe99fea0",
+    "assets/css/motion.css": "5414531c3bbe8ee8d40ba54a625ffb8814a2b7d2e198769d83cd2160ef495949",
+    "assets/data/calendars.js": "e5595467d6f21d7c6ff045062454bf234c6f30b926c3e5ec637312c6f679cf04",
+    "assets/js/domain/time.js": "bd76a42586974d55ee4240fcaf64ba81f60d78e257079a4fa0da5f42b98785d5",
+    "assets/js/domain/state.js": "19ea63477ab22ca29bd0c4321c9bf0e4b5314f1c9a6dd6205a3e7332c64ad549",
+    "assets/js/domain/migrations.js": "b26238da0603f40ee6347b3aacfce8117174e69439c4cede700a31de74dd278a",
+    "assets/js/domain/calendar.js": "6957d8cceb78fb7871084837935b8ccbfd6910091412a358d72c30285dda940b",
+    "assets/js/domain/records.js": "14416e917f34056f197414bd7271827801fffd16e004620020c0e15da7133083",
+    "assets/js/domain/statistics.js": "13d1ea04685a82e6a2d2426d631f3d266f9f3c614eab4aa0cd3c7fb88fe54cca",
+    "assets/js/domain/observations.js": "2eac7da13868f0e8fe6fa0d9df5d66c928072439c540c37c85edda4ca6338173",
+    "assets/js/domain/validation.js": "1844e140eae74053659724223bb094bce7f8eb9e4c1b15c64e464442d387f38d",
+    "assets/js/core.js": "2a7f73e62b6dc79f01bb5dcf5e4748a5f32a7ff99e7abc7df4c8a2aa023a95c1",
+    "assets/js/services/application.js": "f2935f4ecba0d361bcdfc6c277a207ecbd3a50cf30c9607c7a3470500159fa4a",
+    "assets/js/services/derived.js": "813b52ccba7b8c05f152f76b848c046ea4035a2daace3d7b60d0107df5349f1d",
+    "assets/js/services/import-index.js": "00a0e731d8ef01ad632cb23f75a9996066a2669138b7493dcc46a662373cabf0",
+    "assets/js/services/bootstrap.js": "b3d79830df4eb06204d88c78b93541a72680ce6567571e514a5f8ac045eee302",
+    "assets/js/services/clock.js": "7fc83bf057cd03c7e521e915e3d00a485a3499fba3ddd74b21a4c5683f6f9ade",
+    "assets/js/services/clipboard.js": "301ffdf9eb77857545b7b8ce1949a0630d28c64686de9f81abdc5183bfb52d60",
+    "assets/js/services/downloads.js": "86af7c88014bf0bc6f45f42f4f255300042db48c5f333c7f6a86bfc4268c9be0",
+    "assets/js/storage.js": "951b9df9d055707f9180f3ea632b1f5b14fdebacd2a721b059bc3c9f97873269",
+    "assets/js/imports.js": "f65e0c2b29940360b7655081c1271f60b9faa6c63b392e3446e0c1e1761cd1e5",
+    "assets/js/backup.js": "4645252b65597c731844e497aace6e9f26881744feacd466e06bb1218ce6f86a",
+    "assets/vendor/lunar.js": "9750324bfe1aa63c146f8c72b1143df924466c11c8a5277d7d9225c541a18aaa",
+    "assets/data/sources.js": "57736159d437298c877e72c733703cc435064a558b91b400174027fe84c2a7de",
+    "assets/data/festivals.js": "bb659810d3ee08563fd40f2b293e02f936d15a5d93aed3c387bca41f7dfdcb87",
+    "assets/data/international-festivals.js": "86fc4b261da5ec0a38b2552e20a61bfe9a6e75d9d586c43511452383ee7a940c",
+    "assets/data/history/01.js": "6cb811663c90a2223137ff25c0c535ace8592d85d801fa3b4b612705f92b9e0b",
+    "assets/data/history/02.js": "b95ed73c001875a2be51478616b87f59e2d2d17073d30a061af78d694c483acd",
+    "assets/data/history/03.js": "9d525ed7864b6e497dbb498f8369566627c18d93fca00efb8ba51223fc385f7e",
+    "assets/data/history/04.js": "02fb5210df84939b9599611436a4a6414c1768dcd736d73b74a81184f6dc9290",
+    "assets/data/history/05.js": "fe638ef8b181b4f707a84e86337f8270eba9b01fe196e78b2ae7a9c4f71d9e3c",
+    "assets/data/history/06.js": "49d86ff63749f343e2002c8a8b07c7421cddce9e391c4b93d7fa548bd052d66e",
+    "assets/data/history/07.js": "ea0ec9fa13dc5beeea9d4093e18e4dc896a819385b2d29b564aadaeb31c8cbaf",
+    "assets/data/history/08.js": "411e0ac7ab066e917c1ded36be1ed9a60beec3c60cca303cae032e115db5d2a4",
+    "assets/data/history/09.js": "a1dfa7c3a9d09e4b179211ae4490b6d810696bc75b5ed8db6c274020ac3bdb6a",
+    "assets/data/history/10.js": "dead6c1b156871c70ddd57648e3ab4efde22dbec22395faf8156787e935c80f6",
+    "assets/data/history/11.js": "10d733e6218e555356e8840de25d5ee07f4af5d2ad882fa71133f0e79136f165",
+    "assets/data/history/12.js": "0183c7efa23435c3e38a59321412dc39267c2db950c739547725b2b6e702f9cb",
+    "assets/js/date-info.js": "5acdb407a2197f49bcb5da6ac17e8d3daa815adab1a0ae1d7bb19da6329d44aa",
+    "assets/js/work-countdown.js": "1d998b6385faf53b8c3d7c967d4f3ba3116b0c001fc14ecfd4d3a21cfdcd94b8",
+    "assets/js/payday.js": "bbc17e7b473d59eb5063b61adc49805630d99e85ec8448e8f7420f36d6c65ddf",
+    "assets/js/motion.js": "3a2943a824c646cf6aa96c50f5cbd71843bf53b57ab68ca9ced4d0ed68562cfe",
+    "assets/js/date-info-ui.js": "45b61874fb77bf99f30549865137e04a870805f06ffe6dd4f12779eceb1f5d71",
+    "assets/js/year-view.js": "cc3d4da039feec3a7a791882fab151f2e22e58e4d918fa4f80d1398e2825c343",
+    "assets/js/summary-numbers.js": "18e89f79364ae312536da07babdeb04478717e3ba79a1bc0197e48531b6a6296",
+    "assets/js/ui/presentation.js": "9e58faa571e4470590b094c94ef86728d0140c59a556081cae43536b9d58e9d9",
+    "assets/js/ui/elements.js": "5706c3345230ef5f9ab9b9caf22c092dec099147247b9c89e501b864c48013b1",
+    "assets/js/ui/notifications.js": "cc2fbfef61d35917a232a5158653c647b9fd9e553821f9646165375ab77f4006",
+    "assets/js/ui/summary.js": "85e7495c4cd254ecd769c4184a0e2d8f747961dc8438b9aee7d7efe91be156d0",
+    "assets/js/ui/calendar.js": "251a362003e3617b8cec2b3cf96738c40d3d9f4db3e7ceef33a58c7cfe8c391a",
+    "assets/js/ui/editor.js": "b6502644a8729686c29f6e8457295ba13eff2c090e8c0d7dc3956523f7836778",
+    "assets/js/controllers/templates.js": "65b8c2448e5ed609281b0bc4f4df93f805fc1889be323c91cba5f2ef4e6530f0",
+    "assets/js/controllers/settings.js": "b5490a97a33941f51d3f71b31002d227a0149cd688cac9902bc87553b81cd0da",
+    "assets/js/controllers/backup.js": "e7f7a719dada37096fac5061aed4cfa6faa6f7ed56e996972ceb4ac0bca364ba",
+    "assets/js/controllers/imports.js": "b8966fe2a7e0ff461168e3fca973b5eddac658595324ec8bd54b044273c4446f",
+    "assets/js/controllers/day-editor.js": "85c195f6be782ee525cec88015576956325afa63e7773c3eccd9a7b69ebe0128",
+    "assets/js/controllers/navigation.js": "acf93d20c29791887811eb99903bd2713ef534190c67f699d7c62b6dbcb22844",
+    "assets/js/controllers/dialogs.js": "95326f54feecdba74898185e5619a01566dea5cb7abfa7a4e38da38d1f3b936f",
+    "assets/js/app.js": "d35d1a2c537c8986bda3c357efdd460467c91add364cfbe206ec1e506711154f",
+    "assets/js/background.js": "f90afdb888d07d6aab9f4bbdb484a519697410501493041def57b29e46e2df64",
+    "assets/js/ui-alignment.js": "b020ea8c1784efabdc3a1a6c84bcf2d8935bc33d1865dc78ccd76e97e693c7f6",
+    "assets/js/notification-motion.js": "bf10f6963bb5c68ad0d47480393a3e3aefd11e18e5edef833b4834a1ed17037f",
+    "assets/js/startup.js": "e4cbeddfce5d9c23f5fcb4d5c3536d32d12fb4a1b56a67121a5bdc297a63066f"
+  },
+  "boundary": "Navigation to ready/fonts/two frames and finite animations settled; operations include automation dispatch/async readiness waits. CDP CPU/layout counters are separate from elapsed UI time. Infinite background animations continue. No human think time; JSON restore uses in-memory File.",
+  "datasets": [
+    {
+      "years": 5,
+      "start": "2021-10-01",
+      "end": "2026-09-30",
+      "days": 1826,
+      "imports": 60,
+      "sources": 120,
+      "bytes": 664562
+    }
+  ],
+  "runs": [
+    {
+      "years": 5,
+      "repetition": 0,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 969.2000000029802,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 139,
+            "LayoutDuration": 0.089574,
+            "RecalcStyleDuration": 0.052312,
+            "ScriptDuration": 0.036467,
+            "TaskDuration": 0.294707
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 445.70000000298023,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 68,
+            "LayoutDuration": 0.016138,
+            "RecalcStyleDuration": 0.010581000000000007,
+            "ScriptDuration": 0.015017000000000003,
+            "TaskDuration": 0.06649500000000003
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 488.5,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 69,
+            "LayoutDuration": 0.010849999999999999,
+            "RecalcStyleDuration": 0.014280000000000001,
+            "ScriptDuration": 0.014213000000000003,
+            "TaskDuration": 0.10375400000000001
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 1,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 907,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 163,
+            "LayoutDuration": 0.085654,
+            "RecalcStyleDuration": 0.048494,
+            "ScriptDuration": 0.041442,
+            "TaskDuration": 0.30410099999999995
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 441.90000000596046,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 70,
+            "LayoutDuration": 0.016415,
+            "RecalcStyleDuration": 0.015342000000000001,
+            "ScriptDuration": 0.014327,
+            "TaskDuration": 0.07116499999999998
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 475,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 69,
+            "LayoutDuration": 0.01106900000000001,
+            "RecalcStyleDuration": 0.014262999999999998,
+            "ScriptDuration": 0.017157000000000006,
+            "TaskDuration": 0.10469
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 2,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 906.4000000059605,
+          "longTasks": [
+            {
+              "startTime": 88.80000001192093,
+              "duration": 63
+            }
+          ],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 156,
+            "LayoutDuration": 0.090173,
+            "RecalcStyleDuration": 0.052552,
+            "ScriptDuration": 0.038449,
+            "TaskDuration": 0.30049299999999995
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 453.3999999910593,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 64,
+            "LayoutDuration": 0.020570999999999992,
+            "RecalcStyleDuration": 0.013402999999999998,
+            "ScriptDuration": 0.014353000000000005,
+            "TaskDuration": 0.07059100000000001
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 487.6000000089407,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 74,
+            "LayoutDuration": 0.010428000000000007,
+            "RecalcStyleDuration": 0.015324000000000004,
+            "ScriptDuration": 0.015088000000000004,
+            "TaskDuration": 0.099991
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 3,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 909.0999999940395,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 158,
+            "LayoutDuration": 0.085901,
+            "RecalcStyleDuration": 0.048811,
+            "ScriptDuration": 0.035707,
+            "TaskDuration": 0.292592
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 451,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 70,
+            "LayoutDuration": 0.018170999999999993,
+            "RecalcStyleDuration": 0.014322999999999995,
+            "ScriptDuration": 0.013802999999999996,
+            "TaskDuration": 0.07240200000000002
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 489,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 60,
+            "LayoutDuration": 0.011202000000000004,
+            "RecalcStyleDuration": 0.015976000000000004,
+            "ScriptDuration": 0.015452000000000007,
+            "TaskDuration": 0.10009600000000002
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 4,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 905.5,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 160,
+            "LayoutDuration": 0.090466,
+            "RecalcStyleDuration": 0.051436,
+            "ScriptDuration": 0.037461,
+            "TaskDuration": 0.300321
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 455.80000001192093,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 68,
+            "LayoutDuration": 0.020367999999999997,
+            "RecalcStyleDuration": 0.012545999999999995,
+            "ScriptDuration": 0.014560999999999998,
+            "TaskDuration": 0.07285399999999997
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 474.29999999701977,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 68,
+            "LayoutDuration": 0.011480000000000004,
+            "RecalcStyleDuration": 0.015585000000000002,
+            "ScriptDuration": 0.020866999999999997,
+            "TaskDuration": 0.109798
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 5,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 901.5999999940395,
+          "longTasks": [
+            {
+              "startTime": 79.59999999403954,
+              "duration": 62
+            }
+          ],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 152,
+            "LayoutDuration": 0.086803,
+            "RecalcStyleDuration": 0.047883,
+            "ScriptDuration": 0.037705,
+            "TaskDuration": 0.29209999999999997
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 449.20000000298023,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 74,
+            "LayoutDuration": 0.018843,
+            "RecalcStyleDuration": 0.015795999999999998,
+            "ScriptDuration": 0.015211999999999996,
+            "TaskDuration": 0.07626300000000003
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 471.79999999701977,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 73,
+            "LayoutDuration": 0.009838,
+            "RecalcStyleDuration": 0.015531000000000003,
+            "ScriptDuration": 0.016746000000000004,
+            "TaskDuration": 0.10283999999999999
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 6,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 906.0999999940395,
+          "longTasks": [
+            {
+              "startTime": 84.70000000298023,
+              "duration": 64
+            }
+          ],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 155,
+            "LayoutDuration": 0.087584,
+            "RecalcStyleDuration": 0.047999,
+            "ScriptDuration": 0.034906,
+            "TaskDuration": 0.295106
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 453.30000001192093,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 68,
+            "LayoutDuration": 0.018041,
+            "RecalcStyleDuration": 0.015098,
+            "ScriptDuration": 0.015227999999999998,
+            "TaskDuration": 0.07347100000000001
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 478.79999999701977,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 69,
+            "LayoutDuration": 0.009819000000000008,
+            "RecalcStyleDuration": 0.016977999999999993,
+            "ScriptDuration": 0.015603000000000006,
+            "TaskDuration": 0.10039300000000001
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 7,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 909.9000000059605,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 151,
+            "LayoutDuration": 0.083573,
+            "RecalcStyleDuration": 0.048618,
+            "ScriptDuration": 0.036884,
+            "TaskDuration": 0.290364
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 447.59999999403954,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 70,
+            "LayoutDuration": 0.01734300000000001,
+            "RecalcStyleDuration": 0.015780999999999996,
+            "ScriptDuration": 0.013519999999999997,
+            "TaskDuration": 0.074295
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 474.40000000596046,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 69,
+            "LayoutDuration": 0.01049499999999999,
+            "RecalcStyleDuration": 0.016074000000000005,
+            "ScriptDuration": 0.015638000000000006,
+            "TaskDuration": 0.10120199999999996
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 8,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 909.7999999970198,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 158,
+            "LayoutDuration": 0.086631,
+            "RecalcStyleDuration": 0.050555,
+            "ScriptDuration": 0.034936,
+            "TaskDuration": 0.293343
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 451.5,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 68,
+            "LayoutDuration": 0.019341999999999998,
+            "RecalcStyleDuration": 0.014807,
+            "ScriptDuration": 0.014196,
+            "TaskDuration": 0.08581099999999997
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 473.8999999910593,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 70,
+            "LayoutDuration": 0.009311,
+            "RecalcStyleDuration": 0.014248999999999998,
+            "ScriptDuration": 0.016870000000000003,
+            "TaskDuration": 0.10327700000000001
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 9,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 908.2000000029802,
+          "longTasks": [
+            {
+              "startTime": 93.40000000596046,
+              "duration": 68
+            }
+          ],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 155,
+            "LayoutDuration": 0.085082,
+            "RecalcStyleDuration": 0.051537,
+            "ScriptDuration": 0.038243,
+            "TaskDuration": 0.30042199999999997
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 453.59999999403954,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 61,
+            "LayoutDuration": 0.016662999999999997,
+            "RecalcStyleDuration": 0.011584999999999998,
+            "ScriptDuration": 0.016299,
+            "TaskDuration": 0.07642499999999997
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 476.5,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 74,
+            "LayoutDuration": 0.010199,
+            "RecalcStyleDuration": 0.013349,
+            "ScriptDuration": 0.014542999999999993,
+            "TaskDuration": 0.09437699999999999
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 10,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 914,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 160,
+            "LayoutDuration": 0.089955,
+            "RecalcStyleDuration": 0.046376,
+            "ScriptDuration": 0.038392,
+            "TaskDuration": 0.29870199999999997
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 452.09999999403954,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 70,
+            "LayoutDuration": 0.017006000000000007,
+            "RecalcStyleDuration": 0.013114,
+            "ScriptDuration": 0.014759999999999995,
+            "TaskDuration": 0.07594100000000004
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 477.70000000298023,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 67,
+            "LayoutDuration": 0.009673000000000001,
+            "RecalcStyleDuration": 0.013397999999999993,
+            "ScriptDuration": 0.015375,
+            "TaskDuration": 0.09000199999999997
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 11,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 901.0999999940395,
+          "longTasks": [
+            {
+              "startTime": 84,
+              "duration": 65
+            }
+          ],
+          "alignmentRectReads": 306,
+          "canvasMeasureCalls": 45,
+          "cdp": {
+            "LayoutCount": 18,
+            "RecalcStyleCount": 146,
+            "LayoutDuration": 0.087379,
+            "RecalcStyleDuration": 0.051762,
+            "ScriptDuration": 0.03503,
+            "TaskDuration": 0.30306299999999997
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 449.09999999403954,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 2,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 68,
+            "LayoutDuration": 0.015846,
+            "RecalcStyleDuration": 0.011879,
+            "ScriptDuration": 0.016739999999999998,
+            "TaskDuration": 0.07019199999999998
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 475.59999999403954,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 70,
+            "LayoutDuration": 0.009857000000000005,
+            "RecalcStyleDuration": 0.017674999999999996,
+            "ScriptDuration": 0.016085000000000002,
+            "TaskDuration": 0.10350199999999998
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 12,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 911.0999999940395,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 156,
+            "LayoutDuration": 0.089563,
+            "RecalcStyleDuration": 0.045489,
+            "ScriptDuration": 0.037934,
+            "TaskDuration": 0.289548
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 443.59999999403954,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 72,
+            "LayoutDuration": 0.017903000000000002,
+            "RecalcStyleDuration": 0.015453000000000001,
+            "ScriptDuration": 0.014168999999999994,
+            "TaskDuration": 0.07351400000000002
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 477.79999999701977,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 61,
+            "LayoutDuration": 0.009658,
+            "RecalcStyleDuration": 0.01319399999999999,
+            "ScriptDuration": 0.013151999999999997,
+            "TaskDuration": 0.08935599999999999
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 13,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 899.6999999880791,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 164,
+            "LayoutDuration": 0.08472,
+            "RecalcStyleDuration": 0.052665,
+            "ScriptDuration": 0.03345,
+            "TaskDuration": 0.301875
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 453.90000000596046,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 73,
+            "LayoutDuration": 0.01637799999999999,
+            "RecalcStyleDuration": 0.013971000000000004,
+            "ScriptDuration": 0.015308999999999996,
+            "TaskDuration": 0.073158
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 472.29999999701977,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 71,
+            "LayoutDuration": 0.011466000000000004,
+            "RecalcStyleDuration": 0.014388999999999999,
+            "ScriptDuration": 0.016121999999999997,
+            "TaskDuration": 0.10269400000000001
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 14,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 894,
+          "longTasks": [],
+          "alignmentRectReads": 306,
+          "canvasMeasureCalls": 45,
+          "cdp": {
+            "LayoutCount": 18,
+            "RecalcStyleCount": 142,
+            "LayoutDuration": 0.090315,
+            "RecalcStyleDuration": 0.046044,
+            "ScriptDuration": 0.032785,
+            "TaskDuration": 0.291462
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 446.90000000596046,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 2,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 67,
+            "LayoutDuration": 0.016606999999999997,
+            "RecalcStyleDuration": 0.012823000000000001,
+            "ScriptDuration": 0.013951999999999999,
+            "TaskDuration": 0.06883699999999998
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 470.09999999403954,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 71,
+            "LayoutDuration": 0.010813000000000003,
+            "RecalcStyleDuration": 0.014543,
+            "ScriptDuration": 0.015369,
+            "TaskDuration": 0.10585500000000003
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 15,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 901.5,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 157,
+            "LayoutDuration": 0.089462,
+            "RecalcStyleDuration": 0.045011,
+            "ScriptDuration": 0.038828,
+            "TaskDuration": 0.295281
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 454,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 68,
+            "LayoutDuration": 0.017729999999999996,
+            "RecalcStyleDuration": 0.012415999999999996,
+            "ScriptDuration": 0.016288999999999998,
+            "TaskDuration": 0.069056
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 475.40000000596046,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 70,
+            "LayoutDuration": 0.009246000000000004,
+            "RecalcStyleDuration": 0.014002000000000007,
+            "ScriptDuration": 0.015125,
+            "TaskDuration": 0.09761799999999998
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 16,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 900.0999999940395,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 158,
+            "LayoutDuration": 0.086768,
+            "RecalcStyleDuration": 0.054135,
+            "ScriptDuration": 0.039177,
+            "TaskDuration": 0.301812
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 449.69999998807907,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 60,
+            "LayoutDuration": 0.016148999999999997,
+            "RecalcStyleDuration": 0.012832999999999997,
+            "ScriptDuration": 0.013847000000000005,
+            "TaskDuration": 0.06471100000000002
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 479.40000000596046,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 74,
+            "LayoutDuration": 0.011019000000000001,
+            "RecalcStyleDuration": 0.016773999999999997,
+            "ScriptDuration": 0.018642999999999993,
+            "TaskDuration": 0.11138099999999995
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 17,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 921.7000000029802,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 162,
+            "LayoutDuration": 0.089212,
+            "RecalcStyleDuration": 0.048711,
+            "ScriptDuration": 0.036304,
+            "TaskDuration": 0.29588
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 449.69999998807907,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 68,
+            "LayoutDuration": 0.019469,
+            "RecalcStyleDuration": 0.014124000000000005,
+            "ScriptDuration": 0.011595999999999995,
+            "TaskDuration": 0.06853199999999998
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 477,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 67,
+            "LayoutDuration": 0.010495000000000004,
+            "RecalcStyleDuration": 0.015833,
+            "ScriptDuration": 0.015244000000000008,
+            "TaskDuration": 0.099049
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 18,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 902.6999999880791,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 158,
+            "LayoutDuration": 0.089714,
+            "RecalcStyleDuration": 0.049337,
+            "ScriptDuration": 0.035191,
+            "TaskDuration": 0.292791
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 449.90000000596046,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 68,
+            "LayoutDuration": 0.017332,
+            "RecalcStyleDuration": 0.014623000000000004,
+            "ScriptDuration": 0.014094000000000002,
+            "TaskDuration": 0.06904099999999996
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 479.40000000596046,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 73,
+            "LayoutDuration": 0.009815999999999991,
+            "RecalcStyleDuration": 0.013905,
+            "ScriptDuration": 0.015588999999999999,
+            "TaskDuration": 0.097138
+          }
+        }
+      ]
+    },
+    {
+      "years": 5,
+      "repetition": 19,
+      "operations": [
+        {
+          "name": "firstScreen",
+          "durationMs": 905.1000000089407,
+          "longTasks": [],
+          "alignmentRectReads": 316,
+          "canvasMeasureCalls": 47,
+          "cdp": {
+            "LayoutCount": 22,
+            "RecalcStyleCount": 162,
+            "LayoutDuration": 0.086867,
+            "RecalcStyleDuration": 0.050306,
+            "ScriptDuration": 0.037604,
+            "TaskDuration": 0.29576399999999997
+          }
+        },
+        {
+          "name": "save",
+          "durationMs": 462.90000000596046,
+          "longTasks": [],
+          "alignmentRectReads": 26,
+          "canvasMeasureCalls": 1,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 66,
+            "LayoutDuration": 0.018374,
+            "RecalcStyleDuration": 0.012764000000000005,
+            "ScriptDuration": 0.011775,
+            "TaskDuration": 0.06473200000000001
+          }
+        },
+        {
+          "name": "year",
+          "durationMs": 476.09999999403954,
+          "longTasks": [],
+          "alignmentRectReads": 106,
+          "canvasMeasureCalls": 32,
+          "cdp": {
+            "LayoutCount": 5,
+            "RecalcStyleCount": 70,
+            "LayoutDuration": 0.010149999999999992,
+            "RecalcStyleDuration": 0.014561000000000004,
+            "ScriptDuration": 0.015430000000000006,
+            "TaskDuration": 0.10126600000000002
+          }
+        }
+      ]
+    }
+  ],
+  "summaries": [
+    {
+      "years": 5,
+      "name": "firstScreen",
+      "elapsedMs": {
+        "samples": 20,
+        "median": 906.25,
+        "p95": 921.7000000029802,
+        "min": 894,
+        "max": 969.2000000029802
+      },
+      "layoutMs": {
+        "samples": 20,
+        "median": 87.4815,
+        "p95": 90.31500000000001,
+        "min": 83.573,
+        "max": 90.46600000000001
+      },
+      "scriptMs": {
+        "samples": 20,
+        "median": 37.1725,
+        "p95": 39.177,
+        "min": 32.785000000000004,
+        "max": 41.442
+      },
+      "longTaskCount": 5,
+      "maxLongTaskMs": 68
+    },
+    {
+      "years": 5,
+      "name": "save",
+      "elapsedMs": {
+        "samples": 20,
+        "median": 450.45000000298023,
+        "p95": 455.80000001192093,
+        "min": 441.90000000596046,
+        "max": 462.90000000596046
+      },
+      "layoutMs": {
+        "samples": 20,
+        "median": 17.536500000000004,
+        "p95": 20.368,
+        "min": 15.845999999999998,
+        "max": 20.57099999999999
+      },
+      "scriptMs": {
+        "samples": 20,
+        "median": 14.340000000000003,
+        "p95": 16.299,
+        "min": 11.595999999999995,
+        "max": 16.74
+      },
+      "longTaskCount": 0,
+      "maxLongTaskMs": 0
+    },
+    {
+      "years": 5,
+      "name": "year",
+      "elapsedMs": {
+        "samples": 20,
+        "median": 476.29999999701977,
+        "p95": 488.5,
+        "min": 470.09999999403954,
+        "max": 489
+      },
+      "layoutMs": {
+        "samples": 20,
+        "median": 10.313500000000003,
+        "p95": 11.466000000000005,
+        "min": 9.246000000000004,
+        "max": 11.480000000000004
+      },
+      "scriptMs": {
+        "samples": 20,
+        "median": 15.520500000000002,
+        "p95": 18.642999999999994,
+        "min": 13.151999999999997,
+        "max": 20.866999999999997
+      },
+      "longTaskCount": 0,
+      "maxLongTaskMs": 0
+    }
+  ],
+  "complete": true
+}

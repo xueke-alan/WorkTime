@@ -1,0 +1,540 @@
+[
+  {
+    "file": "assets/css/base.css",
+    "browser": "154.0.4258.48",
+    "checked": 299,
+    "unsupported": [],
+    "removed": [
+      {
+        "selector": ".help",
+        "conditions": [],
+        "property": "color",
+        "value": "#65796d",
+        "important": false,
+        "line": 237
+      },
+      {
+        "selector": ".toast",
+        "conditions": [],
+        "property": "box-shadow",
+        "value": "var(--shadow)",
+        "important": false,
+        "line": 231
+      },
+      {
+        "selector": ".toast",
+        "conditions": [],
+        "property": "border-radius",
+        "value": "10px",
+        "important": false,
+        "line": 230
+      },
+      {
+        "selector": ".toast",
+        "conditions": [],
+        "property": "background",
+        "value": "var(--ink)",
+        "important": false,
+        "line": 227
+      },
+      {
+        "selector": ".warnings",
+        "conditions": [],
+        "property": "white-space",
+        "value": "pre-line",
+        "important": false,
+        "line": 213
+      },
+      {
+        "selector": "th,\ntd",
+        "conditions": [],
+        "property": "padding",
+        "value": "12px 17px",
+        "important": false,
+        "line": 201
+      },
+      {
+        "selector": "th",
+        "conditions": [],
+        "property": "color",
+        "value": "var(--muted)",
+        "important": false,
+        "line": 197
+      },
+      {
+        "selector": "th",
+        "conditions": [],
+        "property": "background",
+        "value": "#f8faf5",
+        "important": false,
+        "line": 196
+      },
+      {
+        "selector": ".hr",
+        "conditions": [],
+        "property": "background",
+        "value": "var(--line)",
+        "important": false,
+        "line": 182
+      },
+      {
+        "selector": ".two",
+        "conditions": [],
+        "property": "gap",
+        "value": "11px",
+        "important": false,
+        "line": 178
+      },
+      {
+        "selector": ".two",
+        "conditions": [],
+        "property": "grid-template-columns",
+        "value": "1fr 1fr",
+        "important": false,
+        "line": 177
+      },
+      {
+        "selector": ".field > label,\n.label",
+        "conditions": [],
+        "property": "color",
+        "value": "#60766c",
+        "important": false,
+        "line": 169
+      },
+      {
+        "selector": ".panel",
+        "conditions": [],
+        "property": "border-radius",
+        "value": "14px",
+        "important": false,
+        "line": 152
+      },
+      {
+        "selector": ".panel",
+        "conditions": [],
+        "property": "border",
+        "value": "1px solid var(--line)",
+        "important": false,
+        "line": 151
+      },
+      {
+        "selector": ".notice",
+        "conditions": [],
+        "property": "border-radius",
+        "value": "10px",
+        "important": false,
+        "line": 135
+      },
+      {
+        "selector": ".pill.red",
+        "conditions": [],
+        "property": "color",
+        "value": "var(--red)",
+        "important": false,
+        "line": 125
+      },
+      {
+        "selector": ".pill.red",
+        "conditions": [],
+        "property": "background",
+        "value": "#fbece8",
+        "important": false,
+        "line": 124
+      },
+      {
+        "selector": ".pill.blue",
+        "conditions": [],
+        "property": "color",
+        "value": "#586fbb",
+        "important": false,
+        "line": 121
+      },
+      {
+        "selector": ".pill.blue",
+        "conditions": [],
+        "property": "background",
+        "value": "#edf2ff",
+        "important": false,
+        "line": 120
+      },
+      {
+        "selector": ".pill.amber",
+        "conditions": [],
+        "property": "color",
+        "value": "var(--amber)",
+        "important": false,
+        "line": 117
+      },
+      {
+        "selector": ".pill.amber",
+        "conditions": [],
+        "property": "background",
+        "value": "#fff3dc",
+        "important": false,
+        "line": 116
+      },
+      {
+        "selector": ".pill.green",
+        "conditions": [],
+        "property": "color",
+        "value": "var(--accent)",
+        "important": false,
+        "line": 113
+      },
+      {
+        "selector": ".pill.green",
+        "conditions": [],
+        "property": "background",
+        "value": "var(--accent-light)",
+        "important": false,
+        "line": 112
+      },
+      {
+        "selector": ".pill",
+        "conditions": [],
+        "property": "background",
+        "value": "#eef1e9",
+        "important": false,
+        "line": 108
+      },
+      {
+        "selector": ".pill",
+        "conditions": [],
+        "property": "border-radius",
+        "value": "6px",
+        "important": false,
+        "line": 106
+      },
+      {
+        "selector": "input,\nselect,\ntextarea",
+        "conditions": [],
+        "property": "background",
+        "value": "white",
+        "important": false,
+        "line": 52
+      },
+      {
+        "selector": "input,\nselect,\ntextarea",
+        "conditions": [],
+        "property": "border-radius",
+        "value": "8px",
+        "important": false,
+        "line": 49
+      },
+      {
+        "selector": "button:disabled",
+        "conditions": [],
+        "property": "opacity",
+        "value": "0.45",
+        "important": false,
+        "line": 32
+      },
+      {
+        "selector": "button",
+        "conditions": [],
+        "property": "transition",
+        "value": "background 0.15s",
+        "important": false,
+        "line": 26
+      },
+      {
+        "selector": "button",
+        "conditions": [],
+        "property": "background",
+        "value": "white",
+        "important": false,
+        "line": 23
+      },
+      {
+        "selector": "body",
+        "conditions": [],
+        "property": "background",
+        "value": "var(--bg)",
+        "important": false,
+        "line": 7
+      }
+    ],
+    "cleaned": {
+      "duplicates": 0,
+      "empty": 4
+    }
+  },
+  {
+    "file": "assets/css/layout.css",
+    "browser": "154.0.4258.48",
+    "checked": 95,
+    "unsupported": [],
+    "removed": [
+      {
+        "selector": ".wrap",
+        "conditions": [
+          "media:(min-width: 1151px)"
+        ],
+        "property": "max-width",
+        "value": "1960px",
+        "important": false,
+        "line": 187
+      },
+      {
+        "selector": ".workspace",
+        "conditions": [
+          "media:(min-width: 1151px)"
+        ],
+        "property": "grid-template-columns",
+        "value": "clamp(228px, 14vw, 300px) minmax(0, 1fr) clamp(\n        288px,\n        17vw,\n        340px\n      )",
+        "important": false,
+        "line": 141
+      },
+      {
+        "selector": ".wrap",
+        "conditions": [
+          "media:(min-width: 1151px)"
+        ],
+        "property": "max-width",
+        "value": "none",
+        "important": false,
+        "line": 134
+      },
+      {
+        "selector": ".workspace",
+        "conditions": [
+          "media:(min-width: 1151px)"
+        ],
+        "property": "gap",
+        "value": "14px",
+        "important": false,
+        "line": 85
+      },
+      {
+        "selector": ".wrap",
+        "conditions": [
+          "media:(min-width: 1151px)"
+        ],
+        "property": "gap",
+        "value": "10px",
+        "important": false,
+        "line": 64
+      },
+      {
+        "selector": ".wrap",
+        "conditions": [
+          "media:(min-width: 1151px)"
+        ],
+        "property": "padding",
+        "value": "14px 24px 12px",
+        "important": false,
+        "line": 61
+      },
+      {
+        "selector": ".wrap",
+        "conditions": [
+          "media:(min-width: 1151px)"
+        ],
+        "property": "width",
+        "value": "100%",
+        "important": false,
+        "line": 60
+      },
+      {
+        "selector": ".wrap",
+        "conditions": [
+          "media:(min-width: 1151px)"
+        ],
+        "property": "height",
+        "value": "100dvh",
+        "important": false,
+        "line": 59
+      },
+      {
+        "selector": ".workspace",
+        "conditions": [
+          "media:(max-width: 1150px)"
+        ],
+        "property": "gap",
+        "value": "18px",
+        "important": false,
+        "line": 44
+      },
+      {
+        "selector": ".wrap",
+        "conditions": [
+          "media:(max-width: 540px)"
+        ],
+        "property": "padding",
+        "value": "18px 10px",
+        "important": false,
+        "line": 33
+      },
+      {
+        "selector": "footer",
+        "conditions": [],
+        "property": "color",
+        "value": "var(--muted)",
+        "important": false,
+        "line": 19
+      }
+    ],
+    "cleaned": {
+      "duplicates": 0,
+      "empty": 2
+    }
+  },
+  {
+    "file": "assets/css/editor.css",
+    "browser": "154.0.4258.48",
+    "checked": 877,
+    "unsupported": [],
+    "removed": [
+      {
+        "selector": "#editorInfo .ring-count",
+        "conditions": [],
+        "property": "font-weight",
+        "value": "700",
+        "important": false,
+        "line": 71
+      },
+      {
+        "selector": "#editorInfo .ring-count",
+        "conditions": [],
+        "property": "font-size",
+        "value": "8px",
+        "important": false,
+        "line": 70
+      },
+      {
+        "selector": "#editorInfo .feedback-list",
+        "conditions": [],
+        "property": "gap",
+        "value": "8px",
+        "important": false,
+        "line": 55
+      },
+      {
+        "selector": "#editorInfo .notification-body",
+        "conditions": [],
+        "property": "overflow-wrap",
+        "value": "anywhere",
+        "important": false,
+        "line": 52
+      },
+      {
+        "selector": "#editorInfo .notification-icon svg",
+        "conditions": [],
+        "property": "height",
+        "value": "20px",
+        "important": false,
+        "line": 47
+      },
+      {
+        "selector": "#editorInfo .notification-icon svg",
+        "conditions": [],
+        "property": "width",
+        "value": "20px",
+        "important": false,
+        "line": 46
+      },
+      {
+        "selector": "#editorInfo .notification-icon",
+        "conditions": [],
+        "property": "margin-top",
+        "value": "1px",
+        "important": false,
+        "line": 42
+      },
+      {
+        "selector": "#editorInfo .notification-icon",
+        "conditions": [],
+        "property": "height",
+        "value": "20px",
+        "important": false,
+        "line": 41
+      },
+      {
+        "selector": "#editorInfo .notification-icon",
+        "conditions": [],
+        "property": "width",
+        "value": "20px",
+        "important": false,
+        "line": 40
+      },
+      {
+        "selector": "#editorInfo .info-notification",
+        "conditions": [],
+        "property": "line-height",
+        "value": "1.65",
+        "important": false,
+        "line": 20
+      },
+      {
+        "selector": "#editorInfo .info-notification",
+        "conditions": [],
+        "property": "font-size",
+        "value": "12px",
+        "important": false,
+        "line": 19
+      },
+      {
+        "selector": "#editorInfo .info-notification",
+        "conditions": [],
+        "property": "gap",
+        "value": "10px",
+        "important": false,
+        "line": 9
+      },
+      {
+        "selector": "#editorInfo .info-notification",
+        "conditions": [],
+        "property": "align-items",
+        "value": "flex-start",
+        "important": false,
+        "line": 8
+      }
+    ],
+    "cleaned": {
+      "duplicates": 0,
+      "empty": 1
+    }
+  },
+  {
+    "file": "assets/css/dialogs.css",
+    "browser": "154.0.4258.48",
+    "checked": 405,
+    "unsupported": [],
+    "removed": [],
+    "cleaned": {
+      "duplicates": 0,
+      "empty": 0
+    }
+  },
+  {
+    "file": "assets/css/summary.css",
+    "browser": "154.0.4258.48",
+    "checked": 686,
+    "unsupported": [],
+    "removed": [
+      {
+        "selector": ".summary-sidebar .metric",
+        "conditions": [],
+        "property": "font-size",
+        "value": "20px",
+        "important": false,
+        "line": 433
+      }
+    ],
+    "cleaned": {
+      "duplicates": 0,
+      "empty": 0
+    }
+  },
+  {
+    "file": "assets/css/motion.css",
+    "browser": "154.0.4258.48",
+    "checked": 79,
+    "unsupported": [],
+    "removed": [],
+    "cleaned": {
+      "duplicates": 0,
+      "empty": 0
+    }
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "phase": "exit-before-fonts-ready",
+  "calls": {
+    "alignment": 1,
+    "motion": 1,
+    "numbers": 1
+  },
+  "unexpectedWorkAfterExit": true
+}

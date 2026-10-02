@@ -1,0 +1,6696 @@
+[
+  {
+    "kind": "page",
+    "before": "styles-stage01-contract.json.gz",
+    "after": "styles-responsive-contract.json.gz",
+    "samples": 66,
+    "changes": [
+      {
+        "width": 390,
+        "mode": "month",
+        "elements": 79,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 75,
+          "height": 27
+        },
+        "maxRectDelta": 59.57899999999995,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "mode": "six-weeks",
+        "elements": 79,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "height": 31,
+          "rect": 79,
+          "backgroundColor": 1,
+          "borderTopColor": 1
+        },
+        "maxRectDelta": 54.96799999999996,
+        "examples": [
+          {
+            "key": "BUTTON:day restday weekend selected:28",
+            "before": [
+              48.281,
+              115.906,
+              -1.281
+            ],
+            "after": [
+              48.281,
+              105,
+              -1.281
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              18.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              8.21
+            ]
+          },
+          {
+            "key": "BUTTON:day:30",
+            "before": [
+              48.281,
+              108.672,
+              117.625
+            ],
+            "after": [
+              48.281,
+              105,
+              106.719
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "mode": "batch",
+        "elements": 79,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 75,
+          "height": 27
+        },
+        "maxRectDelta": 59.57899999999995,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "mode": "settings",
+        "elements": 79,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 75,
+          "height": 27
+        },
+        "maxRectDelta": 59.57899999999995,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "mode": "template",
+        "elements": 107,
+        "fields": {
+          "rect": 107,
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "height": 27
+        },
+        "maxRectDelta": 34.000000000000114,
+        "examples": [
+          {
+            "key": "importOpen",
+            "before": [
+              344,
+              33.984,
+              -1217
+            ],
+            "after": [
+              344,
+              33.984,
+              -1183
+            ]
+          },
+          {
+            "key": "DIV:card-label ui-aligned-text:1",
+            "before": [
+              63.969,
+              22.391,
+              -1147.321
+            ],
+            "after": [
+              63.969,
+              22.391,
+              -1113.321
+            ]
+          },
+          {
+            "key": "DIV:metric:2",
+            "before": [
+              318,
+              33.797,
+              -1121.125
+            ],
+            "after": [
+              318,
+              33.797,
+              -1087.125
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "mode": "import",
+        "elements": 79,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 75,
+          "height": 27
+        },
+        "maxRectDelta": 59.57899999999995,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "mode": "history",
+        "elements": 79,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 75,
+          "height": 27
+        },
+        "maxRectDelta": 59.57899999999995,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              946.398
+            ],
+            "after": [
+              8.516,
+              20.797,
+              936.211
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "mode": "festivals",
+        "elements": 107,
+        "fields": {
+          "rect": 107,
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "height": 27
+        },
+        "maxRectDelta": 34,
+        "examples": [
+          {
+            "key": "importOpen",
+            "before": [
+              344,
+              33.984,
+              -1463
+            ],
+            "after": [
+              344,
+              33.984,
+              -1429
+            ]
+          },
+          {
+            "key": "DIV:card-label ui-aligned-text:1",
+            "before": [
+              63.969,
+              22.391,
+              -1393.321
+            ],
+            "after": [
+              63.969,
+              22.391,
+              -1359.321
+            ]
+          },
+          {
+            "key": "DIV:metric:2",
+            "before": [
+              318,
+              33.797,
+              -1367.125
+            ],
+            "after": [
+              318,
+              33.797,
+              -1333.125
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "mode": "almanac",
+        "elements": 109,
+        "fields": {
+          "rect": 109,
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "height": 27
+        },
+        "maxRectDelta": 34,
+        "examples": [
+          {
+            "key": "importOpen",
+            "before": [
+              344,
+              33.984,
+              -1463
+            ],
+            "after": [
+              344,
+              33.984,
+              -1429
+            ]
+          },
+          {
+            "key": "DIV:card-label ui-aligned-text:1",
+            "before": [
+              63.969,
+              22.391,
+              -1393.321
+            ],
+            "after": [
+              63.969,
+              22.391,
+              -1359.321
+            ]
+          },
+          {
+            "key": "DIV:metric:2",
+            "before": [
+              318,
+              33.797,
+              -1367.125
+            ],
+            "after": [
+              318,
+              33.797,
+              -1333.125
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "mode": "countdown",
+        "elements": 107,
+        "fields": {
+          "rect": 107,
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "height": 27
+        },
+        "maxRectDelta": 34,
+        "examples": [
+          {
+            "key": "importOpen",
+            "before": [
+              344,
+              33.984,
+              -1463
+            ],
+            "after": [
+              344,
+              33.984,
+              -1429
+            ]
+          },
+          {
+            "key": "DIV:card-label ui-aligned-text:1",
+            "before": [
+              63.969,
+              22.391,
+              -1393.321
+            ],
+            "after": [
+              63.969,
+              22.391,
+              -1359.321
+            ]
+          },
+          {
+            "key": "DIV:metric:2",
+            "before": [
+              318,
+              33.797,
+              -1367.125
+            ],
+            "after": [
+              318,
+              33.797,
+              -1333.125
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "mode": "month",
+        "elements": 58,
+        "fields": {
+          "height": 31,
+          "rect": 58
+        },
+        "maxRectDelta": 27.90599999999995,
+        "examples": [
+          {
+            "key": "BUTTON:day restday:28",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday selected today:30",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday weekend:32",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "mode": "settings",
+        "elements": 58,
+        "fields": {
+          "height": 31,
+          "rect": 58
+        },
+        "maxRectDelta": 27.90599999999995,
+        "examples": [
+          {
+            "key": "BUTTON:day restday:28",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday selected today:30",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday weekend:32",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "mode": "template",
+        "elements": 58,
+        "fields": {
+          "height": 31,
+          "rect": 58
+        },
+        "maxRectDelta": 27.90599999999995,
+        "examples": [
+          {
+            "key": "BUTTON:day restday:28",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday selected today:30",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday weekend:32",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "mode": "import",
+        "elements": 58,
+        "fields": {
+          "height": 31,
+          "rect": 58
+        },
+        "maxRectDelta": 27.90599999999995,
+        "examples": [
+          {
+            "key": "BUTTON:day restday:28",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday selected today:30",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday weekend:32",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "mode": "history",
+        "elements": 58,
+        "fields": {
+          "height": 31,
+          "rect": 58
+        },
+        "maxRectDelta": 27.90599999999995,
+        "examples": [
+          {
+            "key": "BUTTON:day restday:28",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday selected today:30",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday weekend:32",
+            "before": [
+              102.859,
+              116.969,
+              744.828
+            ],
+            "after": [
+              102.859,
+              110,
+              744.828
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "mode": "festivals",
+        "elements": 58,
+        "fields": {
+          "height": 31,
+          "rect": 58
+        },
+        "maxRectDelta": 27.90700000000004,
+        "examples": [
+          {
+            "key": "BUTTON:day restday:28",
+            "before": [
+              102.859,
+              116.969,
+              183.828
+            ],
+            "after": [
+              102.859,
+              110,
+              183.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday selected today:30",
+            "before": [
+              102.859,
+              116.969,
+              183.828
+            ],
+            "after": [
+              102.859,
+              110,
+              183.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday weekend:32",
+            "before": [
+              102.859,
+              116.969,
+              183.828
+            ],
+            "after": [
+              102.859,
+              110,
+              183.828
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "mode": "almanac",
+        "elements": 58,
+        "fields": {
+          "height": 31,
+          "rect": 58
+        },
+        "maxRectDelta": 27.90700000000004,
+        "examples": [
+          {
+            "key": "BUTTON:day restday:28",
+            "before": [
+              102.859,
+              116.969,
+              183.828
+            ],
+            "after": [
+              102.859,
+              110,
+              183.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday selected today:30",
+            "before": [
+              102.859,
+              116.969,
+              183.828
+            ],
+            "after": [
+              102.859,
+              110,
+              183.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday weekend:32",
+            "before": [
+              102.859,
+              116.969,
+              183.828
+            ],
+            "after": [
+              102.859,
+              110,
+              183.828
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "mode": "countdown",
+        "elements": 58,
+        "fields": {
+          "height": 31,
+          "rect": 58
+        },
+        "maxRectDelta": 27.90700000000004,
+        "examples": [
+          {
+            "key": "BUTTON:day restday:28",
+            "before": [
+              102.859,
+              116.969,
+              183.828
+            ],
+            "after": [
+              102.859,
+              110,
+              183.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday selected today:30",
+            "before": [
+              102.859,
+              116.969,
+              183.828
+            ],
+            "after": [
+              102.859,
+              110,
+              183.828
+            ]
+          },
+          {
+            "key": "BUTTON:day restday weekend:32",
+            "before": [
+              102.859,
+              116.969,
+              183.828
+            ],
+            "after": [
+              102.859,
+              110,
+              183.828
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "month",
+        "elements": 62,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 31
+        },
+        "maxRectDelta": 36.968999999999994,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "six-weeks",
+        "elements": 31,
+        "fields": {
+          "rect": 31
+        },
+        "maxRectDelta": 19.781000000000063,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              134.07
+            ],
+            "after": [
+              8.516,
+              20.797,
+              128.679
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              257.992
+            ],
+            "after": [
+              8.516,
+              20.797,
+              245.414
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              265.195
+            ],
+            "after": [
+              8.516,
+              20.797,
+              245.414
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "batch",
+        "elements": 62,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 31
+        },
+        "maxRectDelta": 36.968999999999994,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "settings",
+        "elements": 62,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 31
+        },
+        "maxRectDelta": 36.968999999999994,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "template",
+        "elements": 62,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 31
+        },
+        "maxRectDelta": 36.968999999999994,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "import",
+        "elements": 62,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 31
+        },
+        "maxRectDelta": 36.968999999999994,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "history",
+        "elements": 62,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 31
+        },
+        "maxRectDelta": 36.968999999999994,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "festivals",
+        "elements": 62,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 31
+        },
+        "maxRectDelta": 36.968999999999994,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "almanac",
+        "elements": 62,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 31
+        },
+        "maxRectDelta": 36.968999999999994,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "mode": "countdown",
+        "elements": 62,
+        "fields": {
+          "paddingLeft": 31,
+          "paddingRight": 31,
+          "rect": 31
+        },
+        "maxRectDelta": 36.968999999999994,
+        "examples": [
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:29",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:31",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          },
+          {
+            "key": "SPAN:daynum-text ui-aligned-text:33",
+            "before": [
+              8.516,
+              20.797,
+              143.835
+            ],
+            "after": [
+              8.516,
+              20.797,
+              135.648
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "kind": "calendar",
+    "before": "styles-calendar-contract.json.gz",
+    "after": "styles-calendar-responsive-contract.json.gz",
+    "samples": 154,
+    "changes": [
+      {
+        "width": 390,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 262,
+        "fields": {
+          "height": 84,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 262,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "width": 140,
+          "alignItems": 28
+        },
+        "maxRectDelta": 78.76599999999996,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              490.063,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              437,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "BUTTON:day selected:48",
+            "before": [
+              48.281,
+              127.859,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              105,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              57.375,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 262,
+        "fields": {
+          "height": 84,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 262,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "width": 140,
+          "alignItems": 28
+        },
+        "maxRectDelta": 78.76599999999996,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              490.063,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              437,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "BUTTON:day selected:48",
+            "before": [
+              48.281,
+              127.859,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              105,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              57.375,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 332,
+        "fields": {
+          "height": 120,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 332,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 181,
+          "alignItems": 35,
+          "lineHeight": 12,
+          "transform": 2
+        },
+        "maxRectDelta": 93.06200000000001,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              738.281,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              670.922,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              48.281,
+              130.469,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              111.094,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              64.969,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 332,
+        "fields": {
+          "height": 120,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 332,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 181,
+          "alignItems": 35,
+          "lineHeight": 12,
+          "transform": 2
+        },
+        "maxRectDelta": 93.06200000000001,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              738.281,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              670.922,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              48.281,
+              130.469,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              111.094,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              64.969,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 344,
+        "fields": {
+          "height": 137,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 344,
+          "paddingLeft": 42,
+          "paddingRight": 42,
+          "width": 188,
+          "alignItems": 42
+        },
+        "maxRectDelta": 57.563,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              682.266,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              653,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent restday:48",
+            "before": [
+              48.281,
+              115.906,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              105,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              51.188,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              45.781,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 344,
+        "fields": {
+          "height": 137,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 344,
+          "paddingLeft": 42,
+          "paddingRight": 42,
+          "width": 188,
+          "alignItems": 42
+        },
+        "maxRectDelta": 57.563,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              682.266,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              653,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent restday:48",
+            "before": [
+              48.281,
+              115.906,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              105,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              51.188,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              45.781,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 313,
+        "fields": {
+          "height": 114,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 313,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "width": 170,
+          "alignItems": 35,
+          "lineHeight": 1,
+          "transform": 1
+        },
+        "maxRectDelta": 61.65600000000006,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              675.5,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              639.547,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              48.281,
+              201.625,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              199.547,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              64.969,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 313,
+        "fields": {
+          "height": 114,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 313,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "width": 170,
+          "alignItems": 35,
+          "lineHeight": 1,
+          "transform": 1
+        },
+        "maxRectDelta": 61.65600000000006,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              675.5,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              639.547,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              48.281,
+              201.625,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              199.547,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              64.969,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 700,
+        "mode": "batch",
+        "elements": 332,
+        "fields": {
+          "height": 120,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 332,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 181,
+          "alignItems": 35,
+          "lineHeight": 12,
+          "transform": 2
+        },
+        "maxRectDelta": 93.06200000000001,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              738.281,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              670.922,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              48.281,
+              130.469,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              111.094,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              64.969,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 332,
+        "fields": {
+          "height": 120,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 332,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 181,
+          "alignItems": 35,
+          "lineHeight": 12,
+          "transform": 2
+        },
+        "maxRectDelta": 93.06200000000001,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              368,
+              738.281,
+              1,
+              141.156
+            ],
+            "after": [
+              368,
+              670.922,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              48.281,
+              130.469,
+              7,
+              141.156
+            ],
+            "after": [
+              48.281,
+              111.094,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              28.313,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              40.281,
+              64.969,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 43,
+          "width": 128,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 38.375,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              38.375,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              38.188,
+              11,
+              151.141
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              18,
+              18,
+              16.984,
+              161.328
+            ],
+            "after": [
+              18,
+              18,
+              11,
+              151.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              18,
+              18,
+              16.984,
+              161.328
+            ],
+            "after": [
+              18,
+              18,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 43,
+          "width": 128,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 38.375,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              38.375,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              38.188,
+              11,
+              151.141
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              18,
+              18,
+              16.984,
+              161.328
+            ],
+            "after": [
+              18,
+              18,
+              11,
+              151.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              18,
+              18,
+              16.984,
+              161.328
+            ],
+            "after": [
+              18,
+              18,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 332,
+        "fields": {
+          "height": 74,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 318,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 170,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.562,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              518,
+              586.859,
+              1,
+              141.156
+            ],
+            "after": [
+              518,
+              586.672,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              45.781,
+              11,
+              151.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              16.984,
+              163.922
+            ],
+            "after": [
+              36.359,
+              25.594,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 332,
+        "fields": {
+          "height": 74,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 318,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 170,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.562,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              518,
+              586.859,
+              1,
+              141.156
+            ],
+            "after": [
+              518,
+              586.672,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              45.781,
+              11,
+              151.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              16.984,
+              163.922
+            ],
+            "after": [
+              36.359,
+              25.594,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 344,
+        "fields": {
+          "height": 95,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 344,
+          "paddingLeft": 42,
+          "paddingRight": 42,
+          "width": 179,
+          "alignItems": 42
+        },
+        "maxRectDelta": 76.75,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              518,
+              663.906,
+              1,
+              141.156
+            ],
+            "after": [
+              518,
+              653,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent restday:48",
+            "before": [
+              69.703,
+              115.906,
+              7,
+              141.156
+            ],
+            "after": [
+              69.703,
+              105,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              51.188,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              45.781,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 344,
+        "fields": {
+          "height": 95,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 344,
+          "paddingLeft": 42,
+          "paddingRight": 42,
+          "width": 179,
+          "alignItems": 42
+        },
+        "maxRectDelta": 76.75,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              518,
+              663.906,
+              1,
+              141.156
+            ],
+            "after": [
+              518,
+              653,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent restday:48",
+            "before": [
+              69.703,
+              115.906,
+              7,
+              141.156
+            ],
+            "after": [
+              69.703,
+              105,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              51.188,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              45.781,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 313,
+        "fields": {
+          "height": 68,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 313,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "width": 155,
+          "alignItems": 35,
+          "lineHeight": 1
+        },
+        "maxRectDelta": 57.562,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              518,
+              567.672,
+              1,
+              141.156
+            ],
+            "after": [
+              518,
+              586.672,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              69.703,
+              127.672,
+              7,
+              141.156
+            ],
+            "after": [
+              69.703,
+              146.672,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              45.781,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 313,
+        "fields": {
+          "height": 68,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 313,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "width": 155,
+          "alignItems": 35,
+          "lineHeight": 1
+        },
+        "maxRectDelta": 57.562,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              518,
+              567.672,
+              1,
+              141.156
+            ],
+            "after": [
+              518,
+              586.672,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              69.703,
+              127.672,
+              7,
+              141.156
+            ],
+            "after": [
+              69.703,
+              146.672,
+              7,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              45.781,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 700,
+        "mode": "batch",
+        "elements": 332,
+        "fields": {
+          "height": 74,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 318,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 170,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.562,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              518,
+              586.859,
+              1,
+              141.156
+            ],
+            "after": [
+              518,
+              586.672,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              45.781,
+              11,
+              151.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              16.984,
+              163.922
+            ],
+            "after": [
+              36.359,
+              25.594,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 540,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 332,
+        "fields": {
+          "height": 74,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 318,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 170,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.562,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              518,
+              586.859,
+              1,
+              141.156
+            ],
+            "after": [
+              518,
+              586.672,
+              1,
+              141.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              49.734,
+              76.75,
+              16.984,
+              151.141
+            ],
+            "after": [
+              61.703,
+              45.781,
+              11,
+              151.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              16.984,
+              163.922
+            ],
+            "after": [
+              36.359,
+              25.594,
+              11,
+              151.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 45,
+          "width": 129,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 59.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              38.375,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              46.188,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              24,
+              24,
+              22.984,
+              176.328
+            ],
+            "after": [
+              24,
+              24,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              24,
+              24,
+              22.984,
+              176.328
+            ],
+            "after": [
+              24,
+              24,
+              17,
+              169.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 45,
+          "width": 129,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 59.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              38.375,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              46.188,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              24,
+              24,
+              22.984,
+              176.328
+            ],
+            "after": [
+              24,
+              24,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              24,
+              24,
+              22.984,
+              176.328
+            ],
+            "after": [
+              24,
+              24,
+              17,
+              169.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 334,
+        "fields": {
+          "height": 68,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 320,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 163,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 59.983999999999995,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              651,
+              654.859,
+              1,
+              159.156
+            ],
+            "after": [
+              651,
+              662.672,
+              1,
+              159.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              47.781,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              169.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 334,
+        "fields": {
+          "height": 68,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 320,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 163,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 59.983999999999995,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              651,
+              654.859,
+              1,
+              159.156
+            ],
+            "after": [
+              651,
+              662.672,
+              1,
+              159.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              47.781,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              169.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 338,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 42,
+          "paddingRight": 42,
+          "height": 80,
+          "width": 173,
+          "alignItems": 42,
+          "rect": 295
+        },
+        "maxRectDelta": 59.985000000000014,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              25.594,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              47.781,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              36.359,
+              25.594,
+              22.984,
+              169.141
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              15.328,
+              10,
+              44.016,
+              178.141
+            ],
+            "after": [
+              15.328,
+              10,
+              38.031,
+              178.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 338,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 42,
+          "paddingRight": 42,
+          "height": 80,
+          "width": 173,
+          "alignItems": 42,
+          "rect": 295
+        },
+        "maxRectDelta": 59.985000000000014,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              25.594,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              47.781,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              36.359,
+              25.594,
+              22.984,
+              169.141
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              15.328,
+              10,
+              44.016,
+              178.141
+            ],
+            "after": [
+              15.328,
+              10,
+              38.031,
+              178.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 315,
+        "fields": {
+          "height": 68,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 315,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "width": 154,
+          "alignItems": 35,
+          "lineHeight": 1
+        },
+        "maxRectDelta": 59.985000000000014,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              651,
+              640.484,
+              1,
+              159.156
+            ],
+            "after": [
+              651,
+              662.672,
+              1,
+              159.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              83.563,
+              138.484,
+              13,
+              159.156
+            ],
+            "after": [
+              83.563,
+              160.672,
+              13,
+              159.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              47.781,
+              17,
+              169.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 315,
+        "fields": {
+          "height": 68,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 315,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "width": 154,
+          "alignItems": 35,
+          "lineHeight": 1
+        },
+        "maxRectDelta": 59.985000000000014,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              651,
+              640.484,
+              1,
+              159.156
+            ],
+            "after": [
+              651,
+              662.672,
+              1,
+              159.156
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              83.563,
+              138.484,
+              13,
+              159.156
+            ],
+            "after": [
+              83.563,
+              160.672,
+              13,
+              159.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              47.781,
+              17,
+              169.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 700,
+        "mode": "batch",
+        "elements": 334,
+        "fields": {
+          "height": 68,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 320,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 163,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 59.983999999999995,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              651,
+              654.859,
+              1,
+              159.156
+            ],
+            "after": [
+              651,
+              662.672,
+              1,
+              159.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              47.781,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              169.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 334,
+        "fields": {
+          "height": 68,
+          "overflowX": 1,
+          "overflowY": 1,
+          "rect": 320,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "width": 163,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 59.983999999999995,
+        "examples": [
+          {
+            "key": "calendar",
+            "before": [
+              651,
+              654.859,
+              1,
+              159.156
+            ],
+            "after": [
+              651,
+              662.672,
+              1,
+              159.156
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              63.594,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              75.563,
+              47.781,
+              17,
+              169.141
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              169.141
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              169.141
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 700,
+        "mode": "year",
+        "elements": 131,
+        "fields": {
+          "rect": 131
+        },
+        "maxRectDelta": 0.0010000000000047748,
+        "examples": [
+          {
+            "key": "SPAN:ui-aligned-text:44",
+            "before": [
+              3.672,
+              14.297,
+              166.242,
+              185.96
+            ],
+            "after": [
+              3.672,
+              14.297,
+              166.242,
+              185.961
+            ]
+          },
+          {
+            "key": "SPAN:ui-aligned-text:46",
+            "before": [
+              5.688,
+              14.297,
+              207.172,
+              185.96
+            ],
+            "after": [
+              5.688,
+              14.297,
+              207.172,
+              185.961
+            ]
+          },
+          {
+            "key": "SPAN:ui-aligned-text:48",
+            "before": [
+              5.828,
+              14.297,
+              249.102,
+              185.96
+            ],
+            "after": [
+              5.828,
+              14.297,
+              249.102,
+              185.961
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 1000,
+        "mode": "year",
+        "elements": 131,
+        "fields": {
+          "rect": 131
+        },
+        "maxRectDelta": 0.0010000000000047748,
+        "examples": [
+          {
+            "key": "SPAN:ui-aligned-text:44",
+            "before": [
+              3.672,
+              14.297,
+              166.242,
+              185.96
+            ],
+            "after": [
+              3.672,
+              14.297,
+              166.242,
+              185.961
+            ]
+          },
+          {
+            "key": "SPAN:ui-aligned-text:46",
+            "before": [
+              5.688,
+              14.297,
+              207.172,
+              185.96
+            ],
+            "after": [
+              5.688,
+              14.297,
+              207.172,
+              185.961
+            ]
+          },
+          {
+            "key": "SPAN:ui-aligned-text:48",
+            "before": [
+              5.828,
+              14.297,
+              249.102,
+              185.96
+            ],
+            "after": [
+              5.828,
+              14.297,
+              249.102,
+              185.961
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 700,
+        "mode": "leap-year",
+        "elements": 148,
+        "fields": {
+          "rect": 148
+        },
+        "maxRectDelta": 0.0010000000000047748,
+        "examples": [
+          {
+            "key": "SPAN:ui-aligned-text:41",
+            "before": [
+              3.672,
+              14.297,
+              40.461,
+              185.96
+            ],
+            "after": [
+              3.672,
+              14.297,
+              40.461,
+              185.961
+            ]
+          },
+          {
+            "key": "SPAN:ui-aligned-text:43",
+            "before": [
+              5.688,
+              14.297,
+              81.375,
+              185.96
+            ],
+            "after": [
+              5.688,
+              14.297,
+              81.375,
+              185.961
+            ]
+          },
+          {
+            "key": "SPAN:ui-aligned-text:45",
+            "before": [
+              5.828,
+              14.297,
+              123.305,
+              185.96
+            ],
+            "after": [
+              5.828,
+              14.297,
+              123.305,
+              185.961
+            ]
+          }
+        ]
+      },
+      {
+        "width": 699,
+        "height": 1000,
+        "mode": "leap-year",
+        "elements": 148,
+        "fields": {
+          "rect": 148
+        },
+        "maxRectDelta": 0.0010000000000047748,
+        "examples": [
+          {
+            "key": "SPAN:ui-aligned-text:41",
+            "before": [
+              3.672,
+              14.297,
+              40.461,
+              185.96
+            ],
+            "after": [
+              3.672,
+              14.297,
+              40.461,
+              185.961
+            ]
+          },
+          {
+            "key": "SPAN:ui-aligned-text:43",
+            "before": [
+              5.688,
+              14.297,
+              81.375,
+              185.96
+            ],
+            "after": [
+              5.688,
+              14.297,
+              81.375,
+              185.961
+            ]
+          },
+          {
+            "key": "SPAN:ui-aligned-text:45",
+            "before": [
+              5.828,
+              14.297,
+              123.305,
+              185.96
+            ],
+            "after": [
+              5.828,
+              14.297,
+              123.305,
+              185.961
+            ]
+          }
+        ]
+      },
+      {
+        "width": 850,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 850,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 850,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 850,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 850,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 850,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 850,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 850,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 850,
+        "height": 700,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 850,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1150,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 207,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 28,
+          "rect": 206
+        },
+        "maxRectDelta": 151.89,
+        "examples": [
+          {
+            "key": "BUTTON:day selected:48",
+            "before": [
+              102.844,
+              147.969,
+              13,
+              114.172
+            ],
+            "after": [
+              102.844,
+              110,
+              13,
+              114.172
+            ]
+          },
+          {
+            "key": "DIV:daystatus:56",
+            "before": [
+              82.875,
+              0,
+              22.984,
+              252.156
+            ],
+            "after": [
+              82.875,
+              0,
+              22.984,
+              214.188
+            ]
+          },
+          {
+            "key": "BUTTON:day:57",
+            "before": [
+              102.859,
+              147.969,
+              122.844,
+              114.172
+            ],
+            "after": [
+              102.859,
+              110,
+              122.844,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 207,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 28,
+          "rect": 206
+        },
+        "maxRectDelta": 151.89,
+        "examples": [
+          {
+            "key": "BUTTON:day selected:48",
+            "before": [
+              102.844,
+              147.969,
+              13,
+              114.172
+            ],
+            "after": [
+              102.844,
+              110,
+              13,
+              114.172
+            ]
+          },
+          {
+            "key": "DIV:daystatus:56",
+            "before": [
+              82.875,
+              0,
+              22.984,
+              252.156
+            ],
+            "after": [
+              82.875,
+              0,
+              22.984,
+              214.188
+            ]
+          },
+          {
+            "key": "BUTTON:day:57",
+            "before": [
+              102.859,
+              147.969,
+              122.844,
+              114.172
+            ],
+            "after": [
+              102.859,
+              110,
+              122.844,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 280,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 35,
+          "rect": 279
+        },
+        "maxRectDelta": 6.405999999999949,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              102.844,
+              111.281,
+              13,
+              114.172
+            ],
+            "after": [
+              102.844,
+              110,
+              13,
+              114.172
+            ]
+          },
+          {
+            "key": "BUTTON:day:53",
+            "before": [
+              102.859,
+              111.281,
+              122.844,
+              114.172
+            ],
+            "after": [
+              102.859,
+              110,
+              122.844,
+              114.172
+            ]
+          },
+          {
+            "key": "DIV:daystatus:61",
+            "before": [
+              82.891,
+              21.797,
+              132.828,
+              193.672
+            ],
+            "after": [
+              82.891,
+              21.797,
+              132.828,
+              192.391
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 280,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 35,
+          "rect": 279
+        },
+        "maxRectDelta": 6.405999999999949,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              102.844,
+              111.281,
+              13,
+              114.172
+            ],
+            "after": [
+              102.844,
+              110,
+              13,
+              114.172
+            ]
+          },
+          {
+            "key": "BUTTON:day:53",
+            "before": [
+              102.859,
+              111.281,
+              122.844,
+              114.172
+            ],
+            "after": [
+              102.859,
+              110,
+              122.844,
+              114.172
+            ]
+          },
+          {
+            "key": "DIV:daystatus:61",
+            "before": [
+              82.891,
+              21.797,
+              132.828,
+              193.672
+            ],
+            "after": [
+              82.891,
+              21.797,
+              132.828,
+              192.391
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1150,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1150,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 266,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 35,
+          "rect": 265
+        },
+        "maxRectDelta": 6.405999999999949,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              102.844,
+              139.766,
+              13,
+              114.172
+            ],
+            "after": [
+              102.844,
+              138.484,
+              13,
+              114.172
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:53",
+            "before": [
+              102.859,
+              139.766,
+              122.844,
+              114.172
+            ],
+            "after": [
+              102.859,
+              138.484,
+              122.844,
+              114.172
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:58",
+            "before": [
+              102.859,
+              139.766,
+              232.703,
+              114.172
+            ],
+            "after": [
+              102.859,
+              138.484,
+              232.703,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 266,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 35,
+          "rect": 265
+        },
+        "maxRectDelta": 6.405999999999949,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              102.844,
+              139.766,
+              13,
+              114.172
+            ],
+            "after": [
+              102.844,
+              138.484,
+              13,
+              114.172
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:53",
+            "before": [
+              102.859,
+              139.766,
+              122.844,
+              114.172
+            ],
+            "after": [
+              102.859,
+              138.484,
+              122.844,
+              114.172
+            ]
+          },
+          {
+            "key": "DIV:day adjacent:58",
+            "before": [
+              102.859,
+              139.766,
+              232.703,
+              114.172
+            ],
+            "after": [
+              102.859,
+              138.484,
+              232.703,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1150,
+        "height": 700,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1150,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1151,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 56,
+          "width": 140,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 57.984999999999985,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              34.453,
+              76.75,
+              22.984,
+              114.172
+            ],
+            "after": [
+              46.422,
+              44.188,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              22,
+              22,
+              22.984,
+              141.547
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              22,
+              22,
+              22.984,
+              141.547
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 56,
+          "width": 140,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 57.984999999999985,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              34.453,
+              76.75,
+              22.984,
+              114.172
+            ],
+            "after": [
+              46.422,
+              44.188,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              22,
+              22,
+              22.984,
+              141.547
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              22,
+              22,
+              22.984,
+              141.547
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 117,
+          "rect": 325,
+          "width": 180,
+          "alignItems": 35,
+          "lineHeight": 12,
+          "transform": 1
+        },
+        "maxRectDelta": 98.39100000000002,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              54.422,
+              94.094,
+              13,
+              104.188
+            ],
+            "after": [
+              54.422,
+              79.578,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              34.453,
+              76.75,
+              22.984,
+              108.188
+            ],
+            "after": [
+              46.422,
+              66.969,
+              17,
+              108.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              120.969
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              108.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 117,
+          "rect": 325,
+          "width": 180,
+          "alignItems": 35,
+          "lineHeight": 12,
+          "transform": 1
+        },
+        "maxRectDelta": 78.84299999999996,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              54.422,
+              154.094,
+              13,
+              104.188
+            ],
+            "after": [
+              54.422,
+              149.344,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              34.453,
+              76.75,
+              22.984,
+              114.172
+            ],
+            "after": [
+              46.422,
+              66.969,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              126.953
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 265,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 95,
+          "alignItems": 42,
+          "rect": 264,
+          "width": 53
+        },
+        "maxRectDelta": 48,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              40.422,
+              38.375,
+              20,
+              107.188
+            ],
+            "after": [
+              40.422,
+              36.578,
+              20,
+              107.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              38.375,
+              20,
+              107.188
+            ],
+            "after": [
+              36.359,
+              19.188,
+              20,
+              107.188
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              29.188,
+              20,
+              113.188
+            ],
+            "after": [
+              15.328,
+              10,
+              41.031,
+              113.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 265,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 95,
+          "alignItems": 42,
+          "rect": 264,
+          "width": 53
+        },
+        "maxRectDelta": 48,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              40.422,
+              38.375,
+              20,
+              109.188
+            ],
+            "after": [
+              40.422,
+              36.578,
+              20,
+              109.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              38.375,
+              20,
+              109.188
+            ],
+            "after": [
+              36.359,
+              19.188,
+              20,
+              109.188
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              29.188,
+              20,
+              115.188
+            ],
+            "after": [
+              15.328,
+              10,
+              41.031,
+              115.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 307,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "height": 115,
+          "rect": 306,
+          "width": 170,
+          "alignItems": 35,
+          "lineHeight": 1,
+          "transform": 1
+        },
+        "maxRectDelta": 78.17199999999997,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              54.422,
+              94.094,
+              13,
+              104.188
+            ],
+            "after": [
+              54.422,
+              147.266,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              34.453,
+              76.75,
+              22.984,
+              108.188
+            ],
+            "after": [
+              46.422,
+              66.969,
+              17,
+              108.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              120.969
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              108.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 307,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "height": 115,
+          "rect": 306,
+          "width": 170,
+          "alignItems": 35,
+          "lineHeight": 1,
+          "transform": 1
+        },
+        "maxRectDelta": 57.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              54.422,
+              154.094,
+              13,
+              104.188
+            ],
+            "after": [
+              54.422,
+              168.188,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              34.453,
+              76.75,
+              22.984,
+              114.172
+            ],
+            "after": [
+              46.422,
+              66.969,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              126.953
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 700,
+        "mode": "batch",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 117,
+          "rect": 325,
+          "width": 180,
+          "alignItems": 35,
+          "lineHeight": 12,
+          "transform": 1
+        },
+        "maxRectDelta": 98.39100000000002,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              54.422,
+              94.094,
+              13,
+              104.188
+            ],
+            "after": [
+              54.422,
+              79.578,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              34.453,
+              76.75,
+              22.984,
+              108.188
+            ],
+            "after": [
+              46.422,
+              66.969,
+              17,
+              108.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              120.969
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              108.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 117,
+          "rect": 325,
+          "width": 180,
+          "alignItems": 35,
+          "lineHeight": 12,
+          "transform": 1
+        },
+        "maxRectDelta": 78.84299999999996,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              54.422,
+              154.094,
+              13,
+              104.188
+            ],
+            "after": [
+              54.422,
+              149.344,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              34.453,
+              76.75,
+              22.984,
+              114.172
+            ],
+            "after": [
+              46.422,
+              66.969,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              126.953
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 700,
+        "mode": "year",
+        "elements": 805,
+        "fields": {
+          "rect": 805
+        },
+        "maxRectDelta": 597,
+        "examples": [
+          {
+            "key": "SECTION:year-month:37",
+            "before": [
+              193.516,
+              208,
+              19,
+              -512
+            ],
+            "after": [
+              193.516,
+              208,
+              19,
+              85
+            ]
+          },
+          {
+            "key": "H3::38",
+            "before": [
+              185.516,
+              24,
+              23,
+              -506
+            ],
+            "after": [
+              185.516,
+              24,
+              23,
+              91
+            ]
+          },
+          {
+            "key": "DIV:year-days:39",
+            "before": [
+              185.516,
+              162,
+              23,
+              -472
+            ],
+            "after": [
+              185.516,
+              162,
+              23,
+              125
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1151,
+        "height": 1000,
+        "mode": "year",
+        "elements": 805,
+        "fields": {
+          "rect": 805
+        },
+        "maxRectDelta": 597,
+        "examples": [
+          {
+            "key": "SECTION:year-month:37",
+            "before": [
+              193.516,
+              208,
+              19,
+              -512
+            ],
+            "after": [
+              193.516,
+              208,
+              19,
+              85
+            ]
+          },
+          {
+            "key": "H3::38",
+            "before": [
+              185.516,
+              24,
+              23,
+              -506
+            ],
+            "after": [
+              185.516,
+              24,
+              23,
+              91
+            ]
+          },
+          {
+            "key": "DIV:year-days:39",
+            "before": [
+              185.516,
+              162,
+              23,
+              -472
+            ],
+            "after": [
+              185.516,
+              162,
+              23,
+              125
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 45,
+          "width": 129,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 57.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.75,
+              38.375,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.719,
+              44.188,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              22,
+              22,
+              22.984,
+              122.359
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              22,
+              22,
+              22.984,
+              122.359
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 45,
+          "width": 129,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 57.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.75,
+              38.375,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.719,
+              44.188,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              22,
+              22,
+              22.984,
+              122.359
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              22,
+              22,
+              22.984,
+              122.359
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 102,
+          "rect": 325,
+          "width": 171,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              75.719,
+              94.094,
+              13,
+              104.188
+            ],
+            "after": [
+              75.719,
+              84.375,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.75,
+              51.188,
+              22.984,
+              108.188
+            ],
+            "after": [
+              67.719,
+              47.781,
+              17,
+              108.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              108.188
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              108.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 67,
+          "width": 171,
+          "alignItems": 35,
+          "rect": 290,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.75,
+              51.188,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.719,
+              47.781,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              114.172
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              35.594,
+              22.984,
+              123.172
+            ],
+            "after": [
+              15.328,
+              10,
+              38.031,
+              123.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 234,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 82,
+          "alignItems": 42,
+          "rect": 233,
+          "width": 40
+        },
+        "maxRectDelta": 48,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              61.719,
+              38.375,
+              20,
+              107.188
+            ],
+            "after": [
+              61.719,
+              36.578,
+              20,
+              107.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              35.375,
+              38.375,
+              20,
+              107.188
+            ],
+            "after": [
+              36.359,
+              19.188,
+              20,
+              107.188
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              29.188,
+              20,
+              113.188
+            ],
+            "after": [
+              15.328,
+              10,
+              41.031,
+              113.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 234,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 82,
+          "alignItems": 42,
+          "rect": 233,
+          "width": 40
+        },
+        "maxRectDelta": 48,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              61.719,
+              38.375,
+              20,
+              109.188
+            ],
+            "after": [
+              61.719,
+              36.578,
+              20,
+              109.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              35.375,
+              38.375,
+              20,
+              109.188
+            ],
+            "after": [
+              36.359,
+              19.188,
+              20,
+              109.188
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              29.188,
+              20,
+              115.188
+            ],
+            "after": [
+              15.328,
+              10,
+              41.031,
+              115.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 307,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "height": 96,
+          "rect": 306,
+          "width": 156,
+          "alignItems": 35,
+          "lineHeight": 1
+        },
+        "maxRectDelta": 63.875,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              75.719,
+              94.094,
+              13,
+              104.188
+            ],
+            "after": [
+              75.719,
+              132.969,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.75,
+              57.563,
+              22.984,
+              108.188
+            ],
+            "after": [
+              67.719,
+              47.781,
+              17,
+              108.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              111.375
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              108.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 307,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "height": 61,
+          "width": 156,
+          "alignItems": 35,
+          "rect": 271,
+          "lineHeight": 1
+        },
+        "maxRectDelta": 57.985000000000014,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.75,
+              57.563,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.719,
+              47.781,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              117.359
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              35.594,
+              22.984,
+              126.359
+            ],
+            "after": [
+              15.328,
+              10,
+              38.031,
+              123.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 700,
+        "mode": "batch",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 102,
+          "rect": 325,
+          "width": 171,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              75.719,
+              94.094,
+              13,
+              104.188
+            ],
+            "after": [
+              75.719,
+              84.375,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.75,
+              51.188,
+              22.984,
+              108.188
+            ],
+            "after": [
+              67.719,
+              47.781,
+              17,
+              108.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              108.188
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              108.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 67,
+          "width": 171,
+          "alignItems": 35,
+          "rect": 290,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.75,
+              51.188,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.719,
+              47.781,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              114.172
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              35.594,
+              22.984,
+              123.172
+            ],
+            "after": [
+              15.328,
+              10,
+              38.031,
+              123.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 700,
+        "mode": "year",
+        "elements": 805,
+        "fields": {
+          "rect": 805
+        },
+        "maxRectDelta": 597,
+        "examples": [
+          {
+            "key": "SECTION:year-month:37",
+            "before": [
+              268.016,
+              208,
+              19,
+              -512
+            ],
+            "after": [
+              268.016,
+              208,
+              19,
+              85
+            ]
+          },
+          {
+            "key": "H3::38",
+            "before": [
+              260.016,
+              24,
+              23,
+              -506
+            ],
+            "after": [
+              260.016,
+              24,
+              23,
+              91
+            ]
+          },
+          {
+            "key": "DIV:year-days:39",
+            "before": [
+              260.016,
+              162,
+              23,
+              -472
+            ],
+            "after": [
+              260.016,
+              162,
+              23,
+              125
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1300,
+        "height": 1000,
+        "mode": "year",
+        "elements": 805,
+        "fields": {
+          "rect": 805
+        },
+        "maxRectDelta": 597,
+        "examples": [
+          {
+            "key": "SECTION:year-month:37",
+            "before": [
+              268.016,
+              208,
+              19,
+              -512
+            ],
+            "after": [
+              268.016,
+              208,
+              19,
+              85
+            ]
+          },
+          {
+            "key": "H3::38",
+            "before": [
+              260.016,
+              24,
+              23,
+              -506
+            ],
+            "after": [
+              260.016,
+              24,
+              23,
+              91
+            ]
+          },
+          {
+            "key": "DIV:year-days:39",
+            "before": [
+              260.016,
+              162,
+              23,
+              -472
+            ],
+            "after": [
+              260.016,
+              162,
+              23,
+              125
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 45,
+          "width": 129,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 57.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.891,
+              38.375,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.859,
+              44.188,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              22,
+              22,
+              22.984,
+              122.359
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              22,
+              22,
+              22.984,
+              122.359
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 256,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 28,
+          "paddingRight": 28,
+          "height": 45,
+          "width": 129,
+          "alignItems": 28,
+          "rect": 227
+        },
+        "maxRectDelta": 57.98400000000001,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.891,
+              38.375,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.859,
+              44.188,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:day-date:50",
+            "before": [
+              22,
+              22,
+              22.984,
+              122.359
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:51",
+            "before": [
+              22,
+              22,
+              22.984,
+              122.359
+            ],
+            "after": [
+              22,
+              22,
+              17,
+              114.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 102,
+          "rect": 325,
+          "width": 171,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.985,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              75.859,
+              94.094,
+              13,
+              104.188
+            ],
+            "after": [
+              75.859,
+              84.375,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.891,
+              51.188,
+              22.984,
+              108.188
+            ],
+            "after": [
+              67.859,
+              47.781,
+              17,
+              108.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              108.188
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              108.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 67,
+          "width": 171,
+          "alignItems": 35,
+          "rect": 290,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.985,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.891,
+              51.188,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.859,
+              47.781,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              114.172
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              35.594,
+              22.984,
+              123.172
+            ],
+            "after": [
+              15.328,
+              10,
+              38.031,
+              123.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 234,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 82,
+          "alignItems": 42,
+          "rect": 233,
+          "width": 40
+        },
+        "maxRectDelta": 48,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              61.859,
+              38.375,
+              20,
+              107.188
+            ],
+            "after": [
+              61.859,
+              36.578,
+              20,
+              107.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              35.453,
+              38.375,
+              20,
+              107.188
+            ],
+            "after": [
+              36.359,
+              19.188,
+              20,
+              107.188
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              29.188,
+              20,
+              113.188
+            ],
+            "after": [
+              15.328,
+              10,
+              41.031,
+              113.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 234,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "height": 82,
+          "alignItems": 42,
+          "rect": 233,
+          "width": 40
+        },
+        "maxRectDelta": 48,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              61.859,
+              38.375,
+              20,
+              109.188
+            ],
+            "after": [
+              61.859,
+              36.578,
+              20,
+              109.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              35.453,
+              38.375,
+              20,
+              109.188
+            ],
+            "after": [
+              36.359,
+              19.188,
+              20,
+              109.188
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              29.188,
+              20,
+              115.188
+            ],
+            "after": [
+              15.328,
+              10,
+              41.031,
+              115.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 307,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "height": 96,
+          "rect": 306,
+          "width": 156,
+          "alignItems": 35,
+          "lineHeight": 1
+        },
+        "maxRectDelta": 63.875,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              75.859,
+              94.094,
+              13,
+              104.188
+            ],
+            "after": [
+              75.859,
+              132.969,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.891,
+              57.563,
+              22.984,
+              108.188
+            ],
+            "after": [
+              67.859,
+              47.781,
+              17,
+              108.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              111.375
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              108.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 307,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 36,
+          "paddingRight": 36,
+          "height": 61,
+          "width": 156,
+          "alignItems": 35,
+          "rect": 271,
+          "lineHeight": 1
+        },
+        "maxRectDelta": 57.985000000000014,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.891,
+              57.563,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.859,
+              47.781,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              117.359
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              35.594,
+              22.984,
+              126.359
+            ],
+            "after": [
+              15.328,
+              10,
+              38.031,
+              123.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 700,
+        "mode": "batch",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 102,
+          "rect": 325,
+          "width": 171,
+          "alignItems": 35,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.985,
+        "examples": [
+          {
+            "key": "DIV:day adjacent:48",
+            "before": [
+              75.859,
+              94.094,
+              13,
+              104.188
+            ],
+            "after": [
+              75.859,
+              84.375,
+              13,
+              104.188
+            ]
+          },
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.891,
+              51.188,
+              22.984,
+              108.188
+            ],
+            "after": [
+              67.859,
+              47.781,
+              17,
+              108.188
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              108.188
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              108.188
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1301,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 326,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1,
+          "paddingLeft": 47,
+          "paddingRight": 47,
+          "height": 67,
+          "width": 171,
+          "alignItems": 35,
+          "rect": 290,
+          "lineHeight": 12
+        },
+        "maxRectDelta": 57.985,
+        "examples": [
+          {
+            "key": "DIV:daytop:49",
+            "before": [
+              55.891,
+              51.188,
+              22.984,
+              114.172
+            ],
+            "after": [
+              67.859,
+              47.781,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SPAN:daynum:50",
+            "before": [
+              26.359,
+              51.188,
+              22.984,
+              114.172
+            ],
+            "after": [
+              36.359,
+              25.594,
+              17,
+              114.172
+            ]
+          },
+          {
+            "key": "SMALL::51",
+            "before": [
+              26.359,
+              35.594,
+              22.984,
+              123.172
+            ],
+            "after": [
+              15.328,
+              10,
+              38.031,
+              123.172
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1600,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1600,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1600,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1600,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1600,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1600,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1600,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1600,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1600,
+        "height": 700,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1600,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 700,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1800,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 700,
+        "mode": "four-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 1000,
+        "mode": "four-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 700,
+        "mode": "five-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 1000,
+        "mode": "five-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 700,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 1000,
+        "mode": "six-week",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 700,
+        "mode": "decorated",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 1000,
+        "mode": "decorated",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 700,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      },
+      {
+        "width": 1920,
+        "height": 1000,
+        "mode": "batch",
+        "elements": 1,
+        "fields": {
+          "overflowX": 1,
+          "overflowY": 1
+        },
+        "maxRectDelta": 0,
+        "examples": []
+      }
+    ]
+  }
+]

@@ -1,0 +1,97 @@
+{
+  "complete": true,
+  "createdAt": "2026-10-02T09:14:22.273Z",
+  "browser": "154.0.4258.48",
+  "fixture": {
+    "years": 10,
+    "start": "2016-10-01",
+    "end": "2026-09-30",
+    "days": 3652,
+    "imports": 120,
+    "sources": 240,
+    "bytes": 1328401
+  },
+  "method": "Diagnostic single ten-year run; route-instrumented alignment, normal animation, real clock; tracing overhead excludes this from performance budget comparison",
+  "alignmentOriginalSHA256": "59b1f87cae9e89ebddf335725e2f280d853bcde5f4f1b1872a2ed810a8857e35",
+  "instrumentedSHA256": "6db690eb27a3b6e6c6cc8bc8da0a46fe9cf738111bc2d728d8009e44f516ec8c",
+  "rawSHA256": "e879e3ac3dab70542c6a4d4ddb1fbef622d29f93770a8d8daa4fbd193d1f137e",
+  "eventCount": 24280,
+  "operations": [
+    {
+      "name": "firstScreen",
+      "elapsedMs": 1122.7000000029802,
+      "refreshCount": 5,
+      "refreshTotalMs": 165.00000001490116,
+      "refreshMaxMs": 111.79999999701977
+    },
+    {
+      "name": "save",
+      "elapsedMs": 486.19999998807907,
+      "refreshCount": 1,
+      "refreshTotalMs": 17,
+      "refreshMaxMs": 17
+    },
+    {
+      "name": "year",
+      "elapsedMs": 494.20000000298023,
+      "refreshCount": 1,
+      "refreshTotalMs": 24.600000008940697,
+      "refreshMaxMs": 24.600000008940697
+    },
+    {
+      "name": "month",
+      "elapsedMs": 348.59999999403954,
+      "refreshCount": 1,
+      "refreshTotalMs": 16.5,
+      "refreshMaxMs": 16.5
+    },
+    {
+      "name": "import",
+      "elapsedMs": 3340.5,
+      "refreshCount": 9,
+      "refreshTotalMs": 108.09999999403954,
+      "refreshMaxMs": 34.20000000298023
+    },
+    {
+      "name": "restore",
+      "elapsedMs": 3319.2000000029802,
+      "refreshCount": 10,
+      "refreshTotalMs": 112.79999999701977,
+      "refreshMaxMs": 24.799999997019768
+    }
+  ],
+  "threadTotals": [
+    {
+      "pid": 20968,
+      "tid": 36748,
+      "name": "UpdateLayoutTree",
+      "count": 1089,
+      "totalMs": 173.64200000000022,
+      "maxMs": 6.42
+    },
+    {
+      "pid": 20968,
+      "tid": 36748,
+      "name": "EvaluateScript",
+      "count": 62,
+      "totalMs": 22.777,
+      "maxMs": 9.587
+    },
+    {
+      "pid": 20968,
+      "tid": 36748,
+      "name": "Layout",
+      "count": 140,
+      "totalMs": 477.6379999999997,
+      "maxMs": 69.463
+    },
+    {
+      "pid": 20968,
+      "tid": 36748,
+      "name": "FunctionCall",
+      "count": 1253,
+      "totalMs": 578.0350000000001,
+      "maxMs": 111.839
+    }
+  ]
+}

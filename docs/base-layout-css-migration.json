@@ -1,0 +1,2518 @@
+{
+  "migrated": [
+    {
+      "owner": "motion",
+      "keyframes": "ring-drain",
+      "line": 1080
+    },
+    {
+      "owner": "motion",
+      "keyframes": "oa-hold-fill",
+      "line": 1258
+    },
+    {
+      "owner": "motion",
+      "keyframes": "backup-hold-fill",
+      "line": 1585
+    },
+    {
+      "owner": "motion",
+      "keyframes": "backup-ripple",
+      "line": 1591
+    },
+    {
+      "owner": "base",
+      "selector": "*",
+      "file": "styles.css",
+      "line": 1,
+      "conditions": [],
+      "properties": [
+        "box-sizing"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "body",
+      "file": "styles.css",
+      "line": 4,
+      "conditions": [],
+      "properties": [
+        "margin",
+        "background",
+        "color",
+        "font"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button,\ninput,\nselect,\ntextarea",
+      "file": "styles.css",
+      "line": 13,
+      "conditions": [],
+      "properties": [
+        "font"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button",
+      "file": "styles.css",
+      "line": 19,
+      "conditions": [],
+      "properties": [
+        "cursor",
+        "border",
+        "background",
+        "color",
+        "padding",
+        "transition"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button:hover",
+      "file": "styles.css",
+      "line": 27,
+      "conditions": [],
+      "properties": [
+        "background"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button:disabled",
+      "file": "styles.css",
+      "line": 30,
+      "conditions": [],
+      "properties": [
+        "opacity",
+        "cursor"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button.primary",
+      "file": "styles.css",
+      "line": 34,
+      "conditions": [],
+      "properties": [
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button.primary:hover",
+      "file": "styles.css",
+      "line": 37,
+      "conditions": [],
+      "properties": [
+        "background"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button.subtle",
+      "file": "styles.css",
+      "line": 40,
+      "conditions": [],
+      "properties": [
+        "background"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input,\nselect,\ntextarea",
+      "file": "styles.css",
+      "line": 43,
+      "conditions": [],
+      "properties": [
+        "max-width",
+        "border",
+        "border-radius",
+        "padding",
+        "color",
+        "background"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input:focus,\nselect:focus,\ntextarea:focus,\nbutton:focus-visible",
+      "file": "styles.css",
+      "line": 53,
+      "conditions": [],
+      "properties": [
+        "outline"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "textarea",
+      "file": "styles.css",
+      "line": 59,
+      "conditions": [],
+      "properties": [
+        "width",
+        "resize"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input[type=\"checkbox\"]",
+      "file": "styles.css",
+      "line": 63,
+      "conditions": [],
+      "properties": [
+        "width",
+        "height",
+        "vertical-align"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input[type=\"file\"]",
+      "file": "styles.css",
+      "line": 68,
+      "conditions": [],
+      "properties": [
+        "display"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "h1,\nh2,\nh3,\np",
+      "file": "styles.css",
+      "line": 71,
+      "conditions": [],
+      "properties": [
+        "margin"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "h1",
+      "file": "styles.css",
+      "line": 77,
+      "conditions": [],
+      "properties": [
+        "font-size",
+        "letter-spacing"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "h2",
+      "file": "styles.css",
+      "line": 81,
+      "conditions": [],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "h3",
+      "file": "styles.css",
+      "line": 84,
+      "conditions": [],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "small,\n.muted",
+      "file": "styles.css",
+      "line": 87,
+      "conditions": [],
+      "properties": [
+        "color"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 91,
+      "conditions": [],
+      "properties": [
+        "max-width",
+        "margin",
+        "padding"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".row",
+      "file": "styles.css",
+      "line": 128,
+      "conditions": [],
+      "properties": [
+        "display",
+        "align-items",
+        "gap",
+        "flex-wrap"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".between",
+      "file": "styles.css",
+      "line": 134,
+      "conditions": [],
+      "properties": [
+        "justify-content"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".actions",
+      "file": "styles.css",
+      "line": 137,
+      "conditions": [],
+      "properties": [
+        "justify-content"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill",
+      "file": "styles.css",
+      "line": 140,
+      "conditions": [],
+      "properties": [
+        "font-size",
+        "border-radius",
+        "padding",
+        "background",
+        "white-space"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.green",
+      "file": "styles.css",
+      "line": 147,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.amber",
+      "file": "styles.css",
+      "line": 151,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.blue",
+      "file": "styles.css",
+      "line": 155,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.red",
+      "file": "styles.css",
+      "line": 159,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".status",
+      "file": "styles.css",
+      "line": 163,
+      "conditions": [],
+      "properties": [
+        "font-size",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".notice",
+      "file": "styles.css",
+      "line": 167,
+      "conditions": [],
+      "properties": [
+        "border",
+        "background",
+        "color",
+        "border-radius",
+        "padding",
+        "margin"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".notice button",
+      "file": "styles.css",
+      "line": 175,
+      "conditions": [],
+      "properties": [
+        "margin-left"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".notice.error",
+      "file": "styles.css",
+      "line": 178,
+      "conditions": [],
+      "properties": [
+        "background",
+        "border-color",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".hidden",
+      "file": "styles.css",
+      "line": 183,
+      "conditions": [],
+      "properties": [
+        "display"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace",
+      "file": "styles.css",
+      "line": 211,
+      "conditions": [],
+      "properties": [
+        "display",
+        "grid-template-columns",
+        "gap",
+        "align-items"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace > section.panel",
+      "file": "styles.css",
+      "line": 217,
+      "conditions": [],
+      "properties": [
+        "display",
+        "flex-direction"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".panel",
+      "file": "styles.css",
+      "line": 221,
+      "conditions": [],
+      "properties": [
+        "border",
+        "border-radius",
+        "background",
+        "overflow"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".iconbtn",
+      "file": "styles.css",
+      "line": 227,
+      "conditions": [],
+      "properties": [
+        "padding",
+        "font-size"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".field",
+      "file": "styles.css",
+      "line": 231,
+      "conditions": [],
+      "properties": [
+        "display",
+        "flex-direction",
+        "gap",
+        "margin-top"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".field > label,\n.label",
+      "file": "styles.css",
+      "line": 237,
+      "conditions": [],
+      "properties": [
+        "font-size",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".field input,\n.field select",
+      "file": "styles.css",
+      "line": 242,
+      "conditions": [],
+      "properties": [
+        "width"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".two",
+      "file": "styles.css",
+      "line": 246,
+      "conditions": [],
+      "properties": [
+        "display",
+        "grid-template-columns",
+        "gap"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".hr",
+      "file": "styles.css",
+      "line": 258,
+      "conditions": [],
+      "properties": [
+        "height",
+        "background",
+        "margin"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".table-wrap",
+      "file": "styles.css",
+      "line": 268,
+      "conditions": [],
+      "properties": [
+        "overflow"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "table",
+      "file": "styles.css",
+      "line": 271,
+      "conditions": [],
+      "properties": [
+        "border-collapse",
+        "width",
+        "font-size",
+        "white-space"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "th",
+      "file": "styles.css",
+      "line": 277,
+      "conditions": [],
+      "properties": [
+        "text-align",
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "th,\ntd",
+      "file": "styles.css",
+      "line": 282,
+      "conditions": [],
+      "properties": [
+        "padding",
+        "border-bottom"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "tr:last-child td",
+      "file": "styles.css",
+      "line": 287,
+      "conditions": [],
+      "properties": [
+        "border"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "footer",
+      "file": "styles.css",
+      "line": 295,
+      "conditions": [],
+      "properties": [
+        "font-size",
+        "color",
+        "margin-top",
+        "display",
+        "justify-content",
+        "gap",
+        "flex-wrap"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "a",
+      "file": "styles.css",
+      "line": 304,
+      "conditions": [],
+      "properties": [
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".warnings",
+      "file": "styles.css",
+      "line": 307,
+      "conditions": [],
+      "properties": [
+        "color",
+        "font-size",
+        "white-space",
+        "margin"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".conflict",
+      "file": "styles.css",
+      "line": 313,
+      "conditions": [],
+      "properties": [
+        "font-size",
+        "color",
+        "white-space",
+        "min-width"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".toast",
+      "file": "styles.css",
+      "line": 319,
+      "conditions": [],
+      "properties": [
+        "position",
+        "bottom",
+        "left",
+        "transform",
+        "background",
+        "color",
+        "padding",
+        "border-radius",
+        "box-shadow",
+        "z-index",
+        "max-width"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".help",
+      "file": "styles.css",
+      "line": 340,
+      "conditions": [],
+      "properties": [
+        "font-size",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".danger",
+      "file": "styles.css",
+      "line": 344,
+      "conditions": [],
+      "properties": [
+        "color"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 360,
+      "conditions": [
+        "media:(max-width: 1150px)"
+      ],
+      "properties": [
+        "padding"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".actions",
+      "file": "styles.css",
+      "line": 368,
+      "conditions": [
+        "media:(max-width: 850px)"
+      ],
+      "properties": [
+        "max-width"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 380,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "padding"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".actions",
+      "file": "styles.css",
+      "line": 386,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "margin-top",
+        "max-width",
+        "justify-content"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill",
+      "file": "styles.css",
+      "line": 395,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "padding"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "footer",
+      "file": "styles.css",
+      "line": 408,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "padding"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace",
+      "file": "styles.css",
+      "line": 415,
+      "conditions": [
+        "media:(max-width: 1150px)"
+      ],
+      "properties": [
+        "grid-template-columns",
+        "gap"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace",
+      "file": "styles.css",
+      "line": 421,
+      "conditions": [
+        "media:(max-width: 850px)"
+      ],
+      "properties": [
+        "grid-template-columns"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "body",
+      "file": "styles.css",
+      "line": 493,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "height"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 496,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "height",
+        "width",
+        "padding",
+        "display",
+        "flex-direction",
+        "gap"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap > .notice",
+      "file": "styles.css",
+      "line": 504,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "margin",
+        "padding",
+        "font-size",
+        "flex"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap > .notice button",
+      "file": "styles.css",
+      "line": 510,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "padding",
+        "font-size"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace",
+      "file": "styles.css",
+      "line": 514,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "flex",
+        "min-height",
+        "gap"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace > .panel",
+      "file": "styles.css",
+      "line": 519,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "min-height"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace > section.panel",
+      "file": "styles.css",
+      "line": 534,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "overflow"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "footer",
+      "file": "styles.css",
+      "line": 546,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "flex",
+        "margin",
+        "font-size",
+        "line-height"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "body",
+      "file": "styles.css",
+      "line": 555,
+      "conditions": [],
+      "properties": [
+        "background",
+        "font-family",
+        "-webkit-font-smoothing"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "#particleBg",
+      "file": "styles.css",
+      "line": 563,
+      "conditions": [],
+      "properties": [
+        "position",
+        "inset",
+        "width",
+        "height",
+        "pointer-events",
+        "z-index"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 571,
+      "conditions": [],
+      "properties": [
+        "position",
+        "z-index"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "h1,\nh2,\nh3",
+      "file": "styles.css",
+      "line": 575,
+      "conditions": [],
+      "properties": [
+        "font-weight"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button",
+      "file": "styles.css",
+      "line": 580,
+      "conditions": [],
+      "properties": [
+        "border-radius",
+        "font-weight",
+        "background",
+        "border-color",
+        "transition"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button:hover:not(:disabled)",
+      "file": "styles.css",
+      "line": 590,
+      "conditions": [],
+      "properties": [
+        "background",
+        "border-color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button:active:not(:disabled)",
+      "file": "styles.css",
+      "line": 594,
+      "conditions": [],
+      "properties": [
+        "background"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button.primary",
+      "file": "styles.css",
+      "line": 597,
+      "conditions": [],
+      "properties": [
+        "background",
+        "border-color",
+        "box-shadow"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button.primary:hover:not(:disabled)",
+      "file": "styles.css",
+      "line": 602,
+      "conditions": [],
+      "properties": [
+        "background",
+        "border-color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button:disabled",
+      "file": "styles.css",
+      "line": 606,
+      "conditions": [],
+      "properties": [
+        "opacity"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button.danger",
+      "file": "styles.css",
+      "line": 609,
+      "conditions": [],
+      "properties": [
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button.danger:hover:not(:disabled)",
+      "file": "styles.css",
+      "line": 612,
+      "conditions": [],
+      "properties": [
+        "background",
+        "border-color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input,\nselect,\ntextarea",
+      "file": "styles.css",
+      "line": 616,
+      "conditions": [],
+      "properties": [
+        "border-color",
+        "border-radius",
+        "background",
+        "transition",
+        "min-width"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input:hover,\nselect:hover,\ntextarea:hover",
+      "file": "styles.css",
+      "line": 627,
+      "conditions": [],
+      "properties": [
+        "border-color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input:focus,\nselect:focus,\ntextarea:focus",
+      "file": "styles.css",
+      "line": 632,
+      "conditions": [],
+      "properties": [
+        "background",
+        "border-color",
+        "box-shadow",
+        "outline"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button:focus-visible,\nsummary:focus-visible,\na:focus-visible",
+      "file": "styles.css",
+      "line": 640,
+      "conditions": [],
+      "properties": [
+        "outline"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input[type=\"checkbox\"]",
+      "file": "styles.css",
+      "line": 645,
+      "conditions": [],
+      "properties": [
+        "accent-color",
+        "border-radius"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".panel",
+      "file": "styles.css",
+      "line": 649,
+      "conditions": [],
+      "properties": [
+        "border",
+        "border-radius",
+        "box-shadow"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".icon-sprite",
+      "file": "styles.css",
+      "line": 659,
+      "conditions": [],
+      "properties": [
+        "position",
+        "width",
+        "height",
+        "overflow",
+        "pointer-events"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".ui-icon",
+      "file": "styles.css",
+      "line": 666,
+      "conditions": [],
+      "properties": [
+        "display",
+        "width",
+        "height",
+        "flex",
+        "vertical-align",
+        "fill",
+        "stroke"
+      ]
+    },
+    {
+      "owner": "summary",
+      "selector": "#rangeLabel",
+      "file": "styles.css",
+      "line": 719,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color",
+        "font-variant-numeric",
+        "padding",
+        "font-size"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".iconbtn",
+      "file": "styles.css",
+      "line": 726,
+      "conditions": [],
+      "properties": [
+        "border-radius",
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill",
+      "file": "styles.css",
+      "line": 731,
+      "conditions": [],
+      "properties": [
+        "border-radius",
+        "background",
+        "color",
+        "font-weight"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.green",
+      "file": "styles.css",
+      "line": 737,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.amber",
+      "file": "styles.css",
+      "line": 741,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.blue",
+      "file": "styles.css",
+      "line": 745,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.red",
+      "file": "styles.css",
+      "line": 749,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.gray",
+      "file": "styles.css",
+      "line": 753,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".field > label,\n.label",
+      "file": "styles.css",
+      "line": 757,
+      "conditions": [],
+      "properties": [
+        "color",
+        "font-weight"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".two",
+      "file": "styles.css",
+      "line": 762,
+      "conditions": [],
+      "properties": [
+        "gap",
+        "grid-template-columns"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".hr",
+      "file": "styles.css",
+      "line": 769,
+      "conditions": [],
+      "properties": [
+        "background"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "footer",
+      "file": "styles.css",
+      "line": 776,
+      "conditions": [],
+      "properties": [
+        "color"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "footer a",
+      "file": "styles.css",
+      "line": 779,
+      "conditions": [],
+      "properties": [
+        "color",
+        "text-decoration"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "footer a:hover",
+      "file": "styles.css",
+      "line": 783,
+      "conditions": [],
+      "properties": [
+        "text-decoration"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "footer button.subtle",
+      "file": "styles.css",
+      "line": 786,
+      "conditions": [],
+      "properties": [
+        "color",
+        "border-color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".help",
+      "file": "styles.css",
+      "line": 790,
+      "conditions": [],
+      "properties": [
+        "color",
+        "line-height"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "textarea",
+      "file": "styles.css",
+      "line": 794,
+      "conditions": [],
+      "properties": [
+        "line-height"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "th",
+      "file": "styles.css",
+      "line": 797,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color",
+        "font-weight"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "th,\ntd",
+      "file": "styles.css",
+      "line": 802,
+      "conditions": [],
+      "properties": [
+        "border-color",
+        "padding"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".table-wrap",
+      "file": "styles.css",
+      "line": 807,
+      "conditions": [],
+      "properties": [
+        "border-radius"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".notice",
+      "file": "styles.css",
+      "line": 810,
+      "conditions": [],
+      "properties": [
+        "border-radius"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".toast",
+      "file": "styles.css",
+      "line": 813,
+      "conditions": [],
+      "properties": [
+        "background",
+        "border",
+        "border-radius",
+        "box-shadow",
+        "font-size"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "*",
+      "file": "styles.css",
+      "line": 820,
+      "conditions": [],
+      "properties": [
+        "scrollbar-width",
+        "scrollbar-color"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 825,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "max-width",
+        "padding",
+        "gap"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace",
+      "file": "styles.css",
+      "line": 830,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "grid-template-columns",
+        "gap"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 848,
+      "conditions": [
+        "media:(min-width: 1151px) and (max-height: 720px)"
+      ],
+      "properties": [
+        "padding-top",
+        "padding-bottom",
+        "gap"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace",
+      "file": "styles.css",
+      "line": 855,
+      "conditions": [
+        "media:(max-width: 1150px)"
+      ],
+      "properties": [
+        "gap"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 860,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "padding"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace",
+      "file": "styles.css",
+      "line": 863,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "gap"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".panel",
+      "file": "styles.css",
+      "line": 866,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "border-radius"
+      ]
+    },
+    {
+      "owner": "summary",
+      "selector": "#rangeLabel",
+      "file": "styles.css",
+      "line": 881,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "footer",
+      "file": "styles.css",
+      "line": 884,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "font-size",
+        "line-height",
+        "margin-top"
+      ]
+    },
+    {
+      "owner": "motion",
+      "selector": "*,\n*::before,\n*::after",
+      "file": "styles.css",
+      "line": 891,
+      "conditions": [
+        "media:(prefers-reduced-motion: reduce)"
+      ],
+      "properties": [
+        "transition",
+        "scroll-behavior"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "body",
+      "file": "styles.css",
+      "line": 930,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "display",
+        "align-items",
+        "justify-content"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 935,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "max-width",
+        "height",
+        "flex",
+        "margin"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace",
+      "file": "styles.css",
+      "line": 966,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "grid-template-columns"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "#timeAnomalyNotice .notification-body > strong",
+      "file": "styles.css",
+      "line": 978,
+      "conditions": [],
+      "properties": [
+        "display",
+        "margin-bottom"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "#timeAnomalyNotice .anomaly-list",
+      "file": "styles.css",
+      "line": 982,
+      "conditions": [],
+      "properties": [
+        "display",
+        "gap",
+        "margin",
+        "padding-left"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "#timeAnomalyNotice .anomaly-list li",
+      "file": "styles.css",
+      "line": 988,
+      "conditions": [],
+      "properties": [
+        "padding-left",
+        "white-space",
+        "font-variant-numeric"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "#timeAnomalyNotice .anomaly-date",
+      "file": "styles.css",
+      "line": 993,
+      "conditions": [],
+      "properties": [
+        "font-weight"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".pill.leave",
+      "file": "styles.css",
+      "line": 998,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo",
+      "file": "styles.css",
+      "line": 1006,
+      "conditions": [],
+      "properties": [
+        "--notice-gutter",
+        "padding-inline"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .info-notification",
+      "file": "styles.css",
+      "line": 1010,
+      "conditions": [],
+      "properties": [
+        "display",
+        "align-items",
+        "gap",
+        "flex",
+        "min-width",
+        "width",
+        "margin-inline",
+        "padding",
+        "border",
+        "border-radius",
+        "box-shadow",
+        "color",
+        "font-size",
+        "line-height"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .tone-info",
+      "file": "styles.css",
+      "line": 1026,
+      "conditions": [],
+      "properties": [
+        "background"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .tone-warning",
+      "file": "styles.css",
+      "line": 1029,
+      "conditions": [],
+      "properties": [
+        "background"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .tone-error",
+      "file": "styles.css",
+      "line": 1032,
+      "conditions": [],
+      "properties": [
+        "background"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .tone-countdown",
+      "file": "styles.css",
+      "line": 1035,
+      "conditions": [],
+      "properties": [
+        "background"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .tone-countdown.tone-error",
+      "file": "styles.css",
+      "line": 1038,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .notification-icon",
+      "file": "styles.css",
+      "line": 1042,
+      "conditions": [],
+      "properties": [
+        "flex",
+        "width",
+        "height",
+        "margin-top"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .notification-icon svg",
+      "file": "styles.css",
+      "line": 1048,
+      "conditions": [],
+      "properties": [
+        "display",
+        "width",
+        "height"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .notification-body",
+      "file": "styles.css",
+      "line": 1053,
+      "conditions": [],
+      "properties": [
+        "flex",
+        "min-width",
+        "overflow-wrap"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .feedback-list",
+      "file": "styles.css",
+      "line": 1058,
+      "conditions": [],
+      "properties": [
+        "gap"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .ring-track",
+      "file": "styles.css",
+      "line": 1061,
+      "conditions": [],
+      "properties": [
+        "opacity"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .ring-progress",
+      "file": "styles.css",
+      "line": 1064,
+      "conditions": [],
+      "properties": [
+        "stroke-dasharray",
+        "stroke-dashoffset",
+        "transform",
+        "transform-origin",
+        "animation"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .ring-count",
+      "file": "styles.css",
+      "line": 1071,
+      "conditions": [],
+      "properties": [
+        "fill",
+        "stroke",
+        "font-size",
+        "font-weight",
+        "text-anchor",
+        "dominant-baseline",
+        "font-family"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo",
+      "file": "styles.css",
+      "line": 1086,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "properties": [
+        "--notice-gutter"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo",
+      "file": "styles.css",
+      "line": 1091,
+      "conditions": [
+        "media:(max-width: 1150px)"
+      ],
+      "properties": [
+        "--notice-gutter"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo",
+      "file": "styles.css",
+      "line": 1096,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "properties": [
+        "--notice-gutter"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo",
+      "file": "styles.css",
+      "line": 1100,
+      "conditions": [],
+      "properties": [
+        "gap"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .feedback-list",
+      "file": "styles.css",
+      "line": 1103,
+      "conditions": [],
+      "properties": [
+        "gap"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .feedback-list .info-notification + .info-notification,\n#editorInfo .feedback-list:not(:empty) ~ .info-notification:not(.hidden),\n#editorInfo\n  > .info-notification:not(.hidden)\n  ~ .info-notification:not(.hidden)",
+      "file": "styles.css",
+      "line": 1106,
+      "conditions": [],
+      "properties": [
+        "border-top"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .ring-count",
+      "file": "styles.css",
+      "line": 1113,
+      "conditions": [],
+      "properties": [
+        "font-size",
+        "font-weight"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .info-notification",
+      "file": "styles.css",
+      "line": 1119,
+      "conditions": [],
+      "properties": [
+        "align-items",
+        "gap",
+        "padding-block",
+        "font-size",
+        "line-height"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .notification-icon",
+      "file": "styles.css",
+      "line": 1126,
+      "conditions": [],
+      "properties": [
+        "width",
+        "height",
+        "margin-top"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .notification-icon svg",
+      "file": "styles.css",
+      "line": 1131,
+      "conditions": [],
+      "properties": [
+        "width",
+        "height"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .notification-body",
+      "file": "styles.css",
+      "line": 1135,
+      "conditions": [],
+      "properties": [
+        "white-space",
+        "overflow-wrap"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo #timeAnomalyNotice",
+      "file": "styles.css",
+      "line": 1139,
+      "conditions": [],
+      "properties": [
+        "align-items"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo #timeAnomalyNotice .notification-body",
+      "file": "styles.css",
+      "line": 1142,
+      "conditions": [],
+      "properties": [
+        "white-space"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".warnings",
+      "file": "styles.css",
+      "line": 1145,
+      "conditions": [],
+      "properties": [
+        "white-space",
+        "overflow-x",
+        "line-height"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".warnings:empty",
+      "file": "styles.css",
+      "line": 1150,
+      "conditions": [],
+      "properties": [
+        "display"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".toast",
+      "file": "styles.css",
+      "line": 1153,
+      "conditions": [],
+      "properties": [
+        "white-space"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"])",
+      "file": "styles.css",
+      "line": 1158,
+      "conditions": [],
+      "properties": [
+        "min-height",
+        "padding",
+        "border",
+        "border-radius",
+        "background",
+        "color",
+        "box-shadow",
+        "font-family",
+        "font-size",
+        "font-weight",
+        "letter-spacing",
+        "line-height",
+        "font-variant-numeric",
+        "text-align"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"]):focus",
+      "file": "styles.css",
+      "line": 1177,
+      "conditions": [],
+      "properties": [
+        "border-color",
+        "background",
+        "box-shadow",
+        "outline"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"])::selection",
+      "file": "styles.css",
+      "line": 1183,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input[type=\"time\"]::-webkit-datetime-edit-hour-field:focus,\ninput[type=\"time\"]::-webkit-datetime-edit-minute-field:focus,\ninput[type=\"time\"]::-webkit-datetime-edit-ampm-field:focus",
+      "file": "styles.css",
+      "line": 1187,
+      "conditions": [],
+      "properties": [
+        "background",
+        "color",
+        "border-radius"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"])::placeholder",
+      "file": "styles.css",
+      "line": 1194,
+      "conditions": [],
+      "properties": [
+        "color",
+        "opacity"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input[type=\"time\"]::-webkit-datetime-edit",
+      "file": "styles.css",
+      "line": 1198,
+      "conditions": [],
+      "properties": [
+        "padding"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input[type=\"time\"]::-webkit-datetime-edit-fields-wrapper",
+      "file": "styles.css",
+      "line": 1201,
+      "conditions": [],
+      "properties": [
+        "display",
+        "justify-content"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input[type=\"time\"]::-webkit-calendar-picker-indicator",
+      "file": "styles.css",
+      "line": 1205,
+      "conditions": [],
+      "properties": [
+        "width",
+        "height",
+        "min-width",
+        "margin",
+        "opacity",
+        "cursor"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input[type=\"number\"]",
+      "file": "styles.css",
+      "line": 1213,
+      "conditions": [],
+      "properties": [
+        "appearance"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input[type=\"number\"]::-webkit-inner-spin-button,\ninput[type=\"number\"]::-webkit-outer-spin-button",
+      "file": "styles.css",
+      "line": 1216,
+      "conditions": [],
+      "properties": [
+        "appearance",
+        "margin"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button.icon-only",
+      "file": "styles.css",
+      "line": 1223,
+      "conditions": [],
+      "properties": [
+        "display",
+        "align-items",
+        "justify-content",
+        "padding",
+        "line-height",
+        "flex"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "button.icon-only .ui-icon",
+      "file": "styles.css",
+      "line": 1231,
+      "conditions": [],
+      "properties": [
+        "display",
+        "width",
+        "height",
+        "vertical-align"
+      ]
+    },
+    {
+      "owner": "dialogs",
+      "selector": "#addBreak",
+      "file": "styles.css",
+      "line": 1237,
+      "conditions": [],
+      "properties": [
+        "gap"
+      ]
+    },
+    {
+      "owner": "dialogs",
+      "selector": "#addBreak .ui-icon",
+      "file": "styles.css",
+      "line": 1240,
+      "conditions": [],
+      "properties": [
+        "width",
+        "height",
+        "vertical-align"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "*",
+      "file": "styles.css",
+      "line": 1247,
+      "conditions": [],
+      "properties": [
+        "user-select",
+        "-webkit-user-select"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "input,\ntextarea,\n[contenteditable=\"true\"],\n[contenteditable=\"true\"] *",
+      "file": "styles.css",
+      "line": 1251,
+      "conditions": [],
+      "properties": [
+        "user-select",
+        "-webkit-user-select"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".field > label",
+      "file": "styles.css",
+      "line": 1267,
+      "conditions": [],
+      "properties": [
+        "padding-inline-start"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .notification-empty",
+      "file": "styles.css",
+      "line": 1273,
+      "conditions": [],
+      "properties": [
+        "flex",
+        "min-height",
+        "display",
+        "flex-direction",
+        "align-items",
+        "justify-content",
+        "gap",
+        "padding",
+        "color",
+        "text-align"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .notification-empty svg",
+      "file": "styles.css",
+      "line": 1285,
+      "conditions": [],
+      "properties": [
+        "width",
+        "height",
+        "fill",
+        "stroke",
+        "stroke-width",
+        "stroke-linecap",
+        "stroke-linejoin"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo .notification-empty span",
+      "file": "styles.css",
+      "line": 1294,
+      "conditions": [],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".workspace",
+      "file": "styles.css",
+      "line": 1300,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "--column-header-height"
+      ]
+    },
+    {
+      "owner": "dialogs",
+      "selector": "#addBreak",
+      "file": "styles.css",
+      "line": 1306,
+      "conditions": [],
+      "properties": [
+        "min-height",
+        "display",
+        "align-items",
+        "justify-content"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 1320,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "width",
+        "max-width"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "body textarea",
+      "file": "styles.css",
+      "line": 1326,
+      "conditions": [],
+      "properties": [
+        "border-radius"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "body\n  input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([type=\"file\"]):not(\n    [type=\"hidden\"]\n  ),\nbody select",
+      "file": "styles.css",
+      "line": 1330,
+      "conditions": [],
+      "properties": [
+        "height",
+        "min-height",
+        "max-height"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": ".wrap",
+      "file": "styles.css",
+      "line": 1341,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 820px) and (max-height: 1050px)"
+      ],
+      "properties": [
+        "max-width",
+        "padding",
+        "gap"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": ".anomaly-hint",
+      "file": "styles.css",
+      "line": 1350,
+      "conditions": [],
+      "properties": [
+        "margin-top"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "html",
+      "file": "styles.css",
+      "line": 1363,
+      "conditions": [],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "body",
+      "file": "styles.css",
+      "line": 1366,
+      "conditions": [],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "body .ui-icon",
+      "file": "styles.css",
+      "line": 1369,
+      "conditions": [],
+      "properties": [
+        "width",
+        "height"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "body .template-fill",
+      "file": "styles.css",
+      "line": 1373,
+      "conditions": [],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "body .notification-empty",
+      "file": "styles.css",
+      "line": 1376,
+      "conditions": [],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "body footer",
+      "file": "styles.css",
+      "line": 1379,
+      "conditions": [],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "body .wrap",
+      "file": "styles.css",
+      "line": 1383,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "width",
+        "max-width",
+        "padding",
+        "gap"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "body .workspace",
+      "file": "styles.css",
+      "line": 1389,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "properties": [
+        "grid-template-columns",
+        "gap",
+        "--column-header-height"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "#editorInfo #oaStaleNotice .notification-body",
+      "file": "styles.css",
+      "line": 1414,
+      "conditions": [],
+      "properties": [
+        "white-space",
+        "overflow-wrap"
+      ]
+    },
+    {
+      "owner": "layout",
+      "selector": "body .wrap > footer",
+      "file": "styles.css",
+      "line": 1431,
+      "conditions": [],
+      "properties": [
+        "padding-inline"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "body #editorInfo .info-notification",
+      "file": "styles.css",
+      "line": 1437,
+      "conditions": [
+        "media:(min-width: 1921px)"
+      ],
+      "properties": [
+        "font-size",
+        "line-height",
+        "align-items"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "body #editorInfo .notification-body",
+      "file": "styles.css",
+      "line": 1442,
+      "conditions": [
+        "media:(min-width: 1921px)"
+      ],
+      "properties": [
+        "white-space",
+        "overflow-wrap"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "body #editorInfo .notification-icon,\nbody #editorInfo .notification-icon svg",
+      "file": "styles.css",
+      "line": 1446,
+      "conditions": [
+        "media:(min-width: 1921px)"
+      ],
+      "properties": [
+        "width",
+        "height"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "body #editorInfo .notification-icon",
+      "file": "styles.css",
+      "line": 1451,
+      "conditions": [
+        "media:(min-width: 1921px)"
+      ],
+      "properties": [
+        "margin-top"
+      ]
+    },
+    {
+      "owner": "editor",
+      "selector": "body #editorInfo .notification-empty span",
+      "file": "styles.css",
+      "line": 1454,
+      "conditions": [
+        "media:(min-width: 1921px)"
+      ],
+      "properties": [
+        "font-size"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "code,\npre,\nkbd,\nsamp",
+      "file": "styles.css",
+      "line": 1520,
+      "conditions": [],
+      "properties": [
+        "font-family"
+      ]
+    },
+    {
+      "owner": "base",
+      "selector": "body .ui-aligned-text",
+      "file": "styles.css",
+      "line": 1537,
+      "conditions": [],
+      "properties": [
+        "display",
+        "line-height",
+        "transform",
+        "text-box-trim"
+      ]
+    }
+  ],
+  "fontChanges": [
+    {
+      "file": "controls.css",
+      "selector": "body .editor #dayForm .time-fields .clock-input,\nbody .editor #batchForm input.clock-input,\nbody #settingsForm input.clock-input,\nbody #timeTemplateForm input.clock-input,\nbody #settingsForm input.number-input,\nbody .editor #batchForm input.number-input,\nbody .editor #dayForm input.number-input",
+      "previous": "\"Bahnschrift\", \"Cascadia Mono\", \"Consolas\", \"Microsoft YaHei\", sans-serif",
+      "token": "--font-numeric"
+    },
+    {
+      "file": "date-info.css",
+      "selector": ".almanac-sheet",
+      "previous": "\"Bahnschrift\", \"Noto Serif SC\", \"Songti SC\", \"SimSun\", serif",
+      "token": "--font-almanac"
+    },
+    {
+      "file": "date-info.css",
+      "selector": "body .editor .countdown-time",
+      "previous": "\"Bahnschrift\", \"Cascadia Mono\", \"Consolas\", monospace",
+      "token": "--font-countdown"
+    },
+    {
+      "file": "date-info.css",
+      "selector": "body #dateInfoPanel .date-info-date",
+      "previous": "\"Bahnschrift\", \"Cascadia Mono\", \"Consolas\", monospace",
+      "token": "--font-countdown"
+    },
+    {
+      "file": "editor.css",
+      "selector": "#editorInfo .ring-count",
+      "previous": "\"Bahnschrift\", \"Segoe UI\", sans-serif",
+      "token": "--font-feedback"
+    },
+    {
+      "file": "editor.css",
+      "selector": "body .editor #batchForm input[type=\"time\"]",
+      "previous": "\"Bahnschrift\", \"Cascadia Mono\", \"Consolas\", \"Microsoft YaHei\", sans-serif",
+      "token": "--font-numeric"
+    },
+    {
+      "file": "base.css",
+      "selector": "body",
+      "previous": "\"Bahnschrift\", \"Segoe UI Variable\", \"Segoe UI\", \"Microsoft YaHei\",\n    sans-serif",
+      "token": "--font-ui"
+    },
+    {
+      "file": "base.css",
+      "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"])",
+      "previous": "\"Bahnschrift\", \"Cascadia Mono\", \"Consolas\", \"Microsoft YaHei\", sans-serif",
+      "token": "--font-numeric"
+    },
+    {
+      "file": "base.css",
+      "selector": "code,\npre,\nkbd,\nsamp",
+      "previous": "\"Bahnschrift\", \"Cascadia Mono\", \"Consolas\", \"Microsoft YaHei\", sans-serif",
+      "token": "--font-numeric"
+    }
+  ]
+}

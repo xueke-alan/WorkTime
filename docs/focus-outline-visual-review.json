@@ -1,0 +1,90 @@
+{
+  "states": 88,
+  "count": 88,
+  "changes": [
+    {
+      "key": "date-tab-history",
+      "fields": {
+        "outlineWidth": [
+          "3px",
+          "0px"
+        ]
+      },
+      "rectBefore": [
+        35,
+        20.563,
+        50,
+        1
+      ],
+      "rectAfter": [
+        35,
+        20.563,
+        50,
+        1
+      ]
+    },
+    {
+      "key": "date-tab-festivals",
+      "fields": {
+        "outlineWidth": [
+          "3px",
+          "0px"
+        ]
+      },
+      "rectBefore": [
+        35,
+        20.563,
+        90,
+        1
+      ],
+      "rectAfter": [
+        35,
+        20.563,
+        90,
+        1
+      ]
+    },
+    {
+      "key": "date-tab-almanac",
+      "fields": {
+        "outlineWidth": [
+          "3px",
+          "0px"
+        ]
+      },
+      "rectBefore": [
+        35,
+        20.563,
+        130,
+        1
+      ],
+      "rectAfter": [
+        35,
+        20.563,
+        130,
+        1
+      ]
+    },
+    {
+      "key": "date-tab-countdown",
+      "fields": {
+        "outlineWidth": [
+          "3px",
+          "0px"
+        ]
+      },
+      "rectBefore": [
+        35,
+        20.563,
+        170,
+        1
+      ],
+      "rectAfter": [
+        35,
+        20.563,
+        170,
+        1
+      ]
+    }
+  ]
+}

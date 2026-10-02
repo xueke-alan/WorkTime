@@ -1,0 +1,856 @@
+{
+  "rules": 140,
+  "sharedBranches": 2,
+  "cleaned": {
+    "duplicates": 0,
+    "empty": 3
+  },
+  "migrated": [
+    {
+      "selector": "#editorInfo .notification-icon .countdown-icon",
+      "conditions": [],
+      "line": 3523,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tabs",
+      "conditions": [],
+      "line": 6136,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "line": 6149,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tabs",
+      "conditions": [],
+      "line": 6208,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "line": 6213,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tab svg",
+      "conditions": [],
+      "line": 6224,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tabs",
+      "conditions": [],
+      "line": 6304,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "line": 6312,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tab::before,\nbody #editorInfo .notification-tab::after",
+      "conditions": [],
+      "line": 6326,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tab::before",
+      "conditions": [],
+      "line": 6335,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tab::after",
+      "conditions": [],
+      "line": 6339,
+      "shared": false
+    },
+    {
+      "selector": "body #editorInfo .notification-tab svg",
+      "conditions": [],
+      "line": 6343,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "line": 6367,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab",
+      "conditions": [],
+      "line": 6383,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab::before,\nbody .editor > .notification-tabs .notification-tab::after",
+      "conditions": [],
+      "line": 6400,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab::before",
+      "conditions": [],
+      "line": 6410,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab::after",
+      "conditions": [],
+      "line": 6414,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab svg",
+      "conditions": [],
+      "line": 6422,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "line": 6436,
+      "shared": true
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "line": 6440,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab",
+      "conditions": [],
+      "line": 6443,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab::before",
+      "conditions": [],
+      "line": 6449,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab::after",
+      "conditions": [],
+      "line": 6458,
+      "shared": false
+    },
+    {
+      "selector": "body .editor .date-info-area",
+      "conditions": [],
+      "line": 6463,
+      "shared": false
+    },
+    {
+      "selector": "body .editor .date-info-area > #editorInfo",
+      "conditions": [],
+      "line": 6469,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel[hidden]",
+      "conditions": [],
+      "line": 6473,
+      "shared": true
+    },
+    {
+      "selector": "body .editor #dateInfoPanel",
+      "conditions": [],
+      "line": 6477,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel h3",
+      "conditions": [],
+      "line": 6487,
+      "shared": false
+    },
+    {
+      "selector": ".date-info-date,\n.date-info-source,\n.date-info-empty",
+      "conditions": [],
+      "line": 6490,
+      "shared": false
+    },
+    {
+      "selector": ".date-info-date",
+      "conditions": [],
+      "line": 6495,
+      "shared": false
+    },
+    {
+      "selector": ".history-event",
+      "conditions": [],
+      "line": 6498,
+      "shared": false
+    },
+    {
+      "selector": ".history-event strong",
+      "conditions": [],
+      "line": 6502,
+      "shared": false
+    },
+    {
+      "selector": ".history-event p",
+      "conditions": [],
+      "line": 6505,
+      "shared": false
+    },
+    {
+      "selector": "#dateInfoPanel a",
+      "conditions": [],
+      "line": 6509,
+      "shared": false
+    },
+    {
+      "selector": "#dateInfoPanel a:hover",
+      "conditions": [],
+      "line": 6515,
+      "shared": false
+    },
+    {
+      "selector": ".date-info-rows",
+      "conditions": [],
+      "line": 6518,
+      "shared": false
+    },
+    {
+      "selector": ".date-info-rows dt",
+      "conditions": [],
+      "line": 6524,
+      "shared": false
+    },
+    {
+      "selector": ".date-info-rows dd",
+      "conditions": [],
+      "line": 6527,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "line": 6531,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs button.notification-tab",
+      "conditions": [],
+      "line": 6534,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab::before",
+      "conditions": [],
+      "line": 6538,
+      "shared": false
+    },
+    {
+      "selector": "body\n  .editor\n  > .notification-tabs\n  .notification-tab[aria-selected=\"true\"]::before",
+      "conditions": [],
+      "line": 6541,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab[aria-selected=\"false\"]",
+      "conditions": [],
+      "line": 6547,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab:hover",
+      "conditions": [],
+      "line": 6550,
+      "shared": false
+    },
+    {
+      "selector": "body .editor .date-info-area",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "line": 6555,
+      "shared": false
+    },
+    {
+      "selector": "body .editor .date-info-area",
+      "conditions": [
+        "media:(max-width: 1150px)"
+      ],
+      "line": 6561,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel",
+      "conditions": [
+        "media:(min-width: 1921px)"
+      ],
+      "line": 6567,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "line": 6571,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs::-webkit-scrollbar",
+      "conditions": [],
+      "line": 6576,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "line": 6581,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs button.notification-tab",
+      "conditions": [],
+      "line": 6586,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab svg",
+      "conditions": [],
+      "line": 6600,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab[aria-selected=\"true\"]",
+      "conditions": [],
+      "line": 6604,
+      "shared": false
+    },
+    {
+      "selector": "body\n  .editor\n  > .notification-tabs\n  .notification-tab[aria-selected=\"false\"]:hover::before",
+      "conditions": [],
+      "line": 6607,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab:focus-visible",
+      "conditions": [],
+      "line": 6613,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel",
+      "conditions": [],
+      "line": 6637,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .date-info-date",
+      "conditions": [],
+      "line": 6641,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .date-info-rows",
+      "conditions": [],
+      "line": 6649,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .history-event",
+      "conditions": [],
+      "line": 6654,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .history-event p",
+      "conditions": [],
+      "line": 6657,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .festival-section",
+      "conditions": [],
+      "line": 6662,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .festival-section:last-child",
+      "conditions": [],
+      "line": 6666,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .festival-label",
+      "conditions": [],
+      "line": 6669,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .festival-section .date-info-rows",
+      "conditions": [],
+      "line": 6674,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .festival-links a",
+      "conditions": [],
+      "line": 6677,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .history-event-link",
+      "conditions": [],
+      "line": 6682,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .history-event-link:hover",
+      "conditions": [],
+      "line": 6689,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .history-event-link:focus-visible",
+      "conditions": [],
+      "line": 6693,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "line": 6699,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs button.notification-tab",
+      "conditions": [],
+      "line": 6706,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab svg",
+      "conditions": [],
+      "line": 6715,
+      "shared": false
+    },
+    {
+      "selector": ".work-countdown",
+      "conditions": [],
+      "line": 6720,
+      "shared": false
+    },
+    {
+      "selector": ".countdown-message",
+      "conditions": [],
+      "line": 6724,
+      "shared": false
+    },
+    {
+      "selector": ".countdown-time",
+      "conditions": [],
+      "line": 6728,
+      "shared": false
+    },
+    {
+      "selector": ".countdown-end",
+      "conditions": [],
+      "line": 6737,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-badge",
+      "conditions": [],
+      "line": 6869,
+      "shared": false
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-badge[data-tone=\"error\"]",
+      "conditions": [],
+      "line": 6882,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel.countdown-panel",
+      "conditions": [],
+      "line": 6886,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel.countdown-panel .work-countdown",
+      "conditions": [],
+      "line": 6892,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .festival-links",
+      "conditions": [],
+      "line": 6899,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .festival-links a",
+      "conditions": [],
+      "line": 6906,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .festival-section",
+      "conditions": [],
+      "line": 6911,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel.almanac-panel",
+      "conditions": [],
+      "line": 6916,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .date-info-date",
+      "conditions": [],
+      "line": 6920,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-sheet",
+      "conditions": [],
+      "line": 6924,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-heading",
+      "conditions": [],
+      "line": 6928,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-month,\n.almanac-day",
+      "conditions": [],
+      "line": 6935,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-cycle",
+      "conditions": [],
+      "line": 6945,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-guidance",
+      "conditions": [],
+      "line": 6950,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-column",
+      "conditions": [],
+      "line": 6956,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-column + .almanac-column",
+      "conditions": [],
+      "line": 6963,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-seal",
+      "conditions": [],
+      "line": 6966,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-column.auspicious",
+      "conditions": [],
+      "line": 6975,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-column.avoid",
+      "conditions": [],
+      "line": 6978,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-column p",
+      "conditions": [],
+      "line": 6981,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-clash",
+      "conditions": [],
+      "line": 6987,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel > a",
+      "conditions": [],
+      "line": 6992,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-date-text",
+      "conditions": [],
+      "line": 6999,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-heading .almanac-date-text",
+      "conditions": [],
+      "line": 7003,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-seal",
+      "conditions": [],
+      "line": 7009,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel.almanac-panel",
+      "conditions": [],
+      "line": 7012,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel > .almanac-sheet",
+      "conditions": [],
+      "line": 7016,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel > a",
+      "conditions": [],
+      "line": 7019,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-details",
+      "conditions": [],
+      "line": 7025,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-clash",
+      "conditions": [],
+      "line": 7034,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column",
+      "conditions": [],
+      "line": 7038,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column p",
+      "conditions": [],
+      "line": 7042,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.festivals-panel .date-info-date",
+      "conditions": [],
+      "line": 7047,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.festivals-panel .festival-section",
+      "conditions": [],
+      "line": 7051,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.festivals-panel .festival-section:last-child",
+      "conditions": [],
+      "line": 7056,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.festivals-panel .festival-domestic",
+      "conditions": [],
+      "line": 7059,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.festivals-panel .date-info-rows",
+      "conditions": [],
+      "line": 7064,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.festivals-panel .date-info-rows dt,\nbody #dateInfoPanel.festivals-panel .date-info-rows dd",
+      "conditions": [],
+      "line": 7069,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.festivals-panel .festival-links",
+      "conditions": [],
+      "line": 7074,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.festivals-panel .festival-empty",
+      "conditions": [],
+      "line": 7078,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-sheet",
+      "conditions": [],
+      "line": 7085,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-heading",
+      "conditions": [],
+      "line": 7092,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-cycle",
+      "conditions": [],
+      "line": 7095,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column",
+      "conditions": [],
+      "line": 7098,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column p",
+      "conditions": [],
+      "line": 7102,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-details",
+      "conditions": [],
+      "line": 7105,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column",
+      "conditions": [],
+      "line": 7111,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-watermark",
+      "conditions": [],
+      "line": 7118,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column p",
+      "conditions": [],
+      "line": 7137,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-cycle,\nbody #dateInfoPanel.almanac-panel .almanac-clash",
+      "conditions": [],
+      "line": 7143,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column",
+      "conditions": [],
+      "line": 7148,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column p",
+      "conditions": [],
+      "line": 7152,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-watermark",
+      "conditions": [],
+      "line": 7156,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-details",
+      "conditions": [],
+      "line": 7159,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-details span",
+      "conditions": [],
+      "line": 7165,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column",
+      "conditions": [],
+      "line": 7170,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-activities",
+      "conditions": [],
+      "line": 7174,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-activities span",
+      "conditions": [],
+      "line": 7180,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel.countdown-panel",
+      "conditions": [],
+      "line": 7186,
+      "shared": false
+    },
+    {
+      "selector": "body .editor .countdown-time",
+      "conditions": [],
+      "line": 7189,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .date-info-source",
+      "conditions": [],
+      "line": 7199,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .date-info-source a",
+      "conditions": [],
+      "line": 7206,
+      "shared": false
+    },
+    {
+      "selector": "body #dateInfoPanel .date-info-date",
+      "conditions": [],
+      "line": 7211,
+      "shared": false
+    },
+    {
+      "selector": ".almanac-watermark-text",
+      "conditions": [],
+      "line": 7523,
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dateInfoPanel",
+      "conditions": [],
+      "line": 7674,
+      "shared": false
+    }
+  ]
+}

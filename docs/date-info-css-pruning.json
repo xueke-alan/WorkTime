@@ -1,0 +1,355 @@
+{
+  "browser": "154.0.4258.48",
+  "supportChecked": 456,
+  "unsupported": [],
+  "removed": [
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column",
+      "conditions": [],
+      "property": "min-height",
+      "value": "6rem",
+      "important": false,
+      "line": 667
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column",
+      "conditions": [],
+      "property": "justify-content",
+      "value": "center",
+      "important": false,
+      "line": 666
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column p",
+      "conditions": [],
+      "property": "line-height",
+      "value": "1.6",
+      "important": false,
+      "line": 657
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column p",
+      "conditions": [],
+      "property": "line-height",
+      "value": "1.5",
+      "important": false,
+      "line": 601
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column",
+      "conditions": [],
+      "property": "gap",
+      "value": "0.285714rem",
+      "important": false,
+      "line": 598
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel .almanac-column",
+      "conditions": [],
+      "property": "padding-block",
+      "value": "0.428571rem",
+      "important": false,
+      "line": 597
+    },
+    {
+      "selector": "body #dateInfoPanel.almanac-panel > a",
+      "conditions": [],
+      "property": "color",
+      "value": "#927960",
+      "important": false,
+      "line": 553
+    },
+    {
+      "selector": ".almanac-clash",
+      "conditions": [],
+      "property": "padding",
+      "value": "0.428571rem 0",
+      "important": false,
+      "line": 548
+    },
+    {
+      "selector": "body #dateInfoPanel .festival-section",
+      "conditions": [],
+      "property": "padding",
+      "value": "0.428571rem 0",
+      "important": false,
+      "line": 356
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab svg",
+      "conditions": [],
+      "property": "height",
+      "value": "1.214286rem",
+      "important": false,
+      "line": 316
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab svg",
+      "conditions": [],
+      "property": "width",
+      "value": "1.214286rem",
+      "important": false,
+      "line": 315
+    },
+    {
+      "selector": "body .editor > .notification-tabs button.notification-tab",
+      "conditions": [],
+      "property": "flex",
+      "value": "0 0 3.5rem",
+      "important": false,
+      "line": 305
+    },
+    {
+      "selector": "body .editor > .notification-tabs button.notification-tab",
+      "conditions": [],
+      "property": "width",
+      "value": "3.5rem",
+      "important": false,
+      "line": 304
+    },
+    {
+      "selector": "body .editor > .notification-tabs button.notification-tab",
+      "conditions": [],
+      "property": "height",
+      "value": "100%",
+      "important": true,
+      "line": 301
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "property": "gap",
+      "value": "0.571429rem",
+      "important": false,
+      "line": 297
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "property": "justify-content",
+      "value": "center",
+      "important": false,
+      "line": 296
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "property": "gap",
+      "value": "0.714286rem",
+      "important": false,
+      "line": 248
+    },
+    {
+      "selector": "body .editor #dateInfoPanel",
+      "conditions": [],
+      "property": "line-height",
+      "value": "1.6",
+      "important": false,
+      "line": 200
+    },
+    {
+      "selector": "body .editor #dateInfoPanel",
+      "conditions": [],
+      "property": "padding",
+      "value": "0.857143rem 1.428571rem",
+      "important": false,
+      "line": 197
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab svg",
+      "conditions": [],
+      "property": "height",
+      "value": "1.142857rem",
+      "important": false,
+      "line": 154
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab svg",
+      "conditions": [],
+      "property": "width",
+      "value": "1.142857rem",
+      "important": false,
+      "line": 153
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab::before",
+      "conditions": [],
+      "property": "background",
+      "value": "radial-gradient(circle at 0 100%, transparent 7px, #f6faf7 8px)",
+      "important": false,
+      "line": 139
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab",
+      "conditions": [],
+      "property": "background",
+      "value": "#f6faf7",
+      "important": false,
+      "line": 122
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab",
+      "conditions": [],
+      "property": "border-radius",
+      "value": "0 0 0.714286rem 0.714286rem",
+      "important": false,
+      "line": 121
+    },
+    {
+      "selector": "body .editor > .notification-tabs .notification-tab",
+      "conditions": [],
+      "property": "border",
+      "value": "1px solid #d7e3dc",
+      "important": false,
+      "line": 119
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "property": "background",
+      "value": "#eaf0ed",
+      "important": false,
+      "line": 108
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "property": "padding",
+      "value": "0 1.428571rem 0.285714rem",
+      "important": false,
+      "line": 105
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "property": "gap",
+      "value": "0.428571rem",
+      "important": false,
+      "line": 102
+    },
+    {
+      "selector": "body .editor > .notification-tabs",
+      "conditions": [],
+      "property": "align-items",
+      "value": "flex-start",
+      "important": false,
+      "line": 101
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "property": "box-shadow",
+      "value": "0 1px 2px #203b3605",
+      "important": false,
+      "line": 43
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "property": "background",
+      "value": "var(--accent-light)",
+      "important": false,
+      "line": 42
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "property": "border-radius",
+      "value": "0.571429rem",
+      "important": false,
+      "line": 41
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "property": "border",
+      "value": "1px solid #cce3d8",
+      "important": false,
+      "line": 40
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "property": "width",
+      "value": "2rem",
+      "important": false,
+      "line": 38
+    },
+    {
+      "selector": "body #editorInfo .notification-tabs",
+      "conditions": [],
+      "property": "padding",
+      "value": "0.285714rem var(--notice-gutter)",
+      "important": false,
+      "line": 32
+    },
+    {
+      "selector": "body #editorInfo .notification-tabs",
+      "conditions": [],
+      "property": "align-items",
+      "value": "center",
+      "important": false,
+      "line": 31
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "property": "border-bottom",
+      "value": "2px solid var(--accent)",
+      "important": false,
+      "line": 28
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "property": "line-height",
+      "value": "1.4",
+      "important": false,
+      "line": 27
+    },
+    {
+      "selector": "body #editorInfo .notification-tab",
+      "conditions": [],
+      "property": "padding",
+      "value": "0.285714rem 0.571429rem 0.571429rem",
+      "important": false,
+      "line": 24
+    },
+    {
+      "selector": "body #editorInfo .notification-tabs",
+      "conditions": [],
+      "property": "background",
+      "value": "#f6faf7",
+      "important": false,
+      "line": 20
+    },
+    {
+      "selector": "body #editorInfo .notification-tabs",
+      "conditions": [],
+      "property": "border-bottom",
+      "value": "1px solid var(--line)",
+      "important": false,
+      "line": 19
+    },
+    {
+      "selector": "body #editorInfo .notification-tabs",
+      "conditions": [],
+      "property": "padding",
+      "value": "0.571429rem var(--notice-gutter) 0",
+      "important": false,
+      "line": 18
+    },
+    {
+      "selector": "body #editorInfo .notification-tabs",
+      "conditions": [],
+      "property": "align-items",
+      "value": "end",
+      "important": false,
+      "line": 15
+    }
+  ],
+  "cleaned": {
+    "duplicates": 0,
+    "empty": 5
+  }
+}

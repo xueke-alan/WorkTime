@@ -1,0 +1,69 @@
+{
+  "reason": "Month padding days render as adjacent cards, year blanks remain; legend has ordinary/estimate dots, records use record-source-dot. Year buttons are excluded from common ui-button geometry.",
+  "removed": [
+    {
+      "selectors": [
+        ".day.blank"
+      ],
+      "line": 48
+    },
+    {
+      "selectors": [
+        ".dot.pending"
+      ],
+      "line": 264
+    },
+    {
+      "selectors": [
+        ".dot.rest"
+      ],
+      "line": 267
+    }
+  ],
+  "priorities": [
+    {
+      "selector": "body button.year-day",
+      "property": "height",
+      "value": "30px"
+    },
+    {
+      "selector": "body button.year-day",
+      "property": "min-height",
+      "value": "30px"
+    },
+    {
+      "selector": "body button.year-day",
+      "property": "max-height",
+      "value": "30px"
+    },
+    {
+      "selector": "body button.year-day",
+      "property": "border-radius",
+      "value": "4px"
+    },
+    {
+      "selector": "body button.year-day",
+      "property": "padding-block",
+      "value": "0"
+    },
+    {
+      "selector": "body button.year-day",
+      "property": "height",
+      "value": "32px"
+    },
+    {
+      "selector": "body button.year-day",
+      "property": "min-height",
+      "value": "32px"
+    },
+    {
+      "selector": "body button.year-day",
+      "property": "max-height",
+      "value": "32px"
+    }
+  ],
+  "cleaned": {
+    "duplicates": 0,
+    "empty": 0
+  }
+}

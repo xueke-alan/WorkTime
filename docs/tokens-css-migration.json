@@ -1,0 +1,465 @@
+{
+  "history": [
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 2,
+      "property": "--ink",
+      "value": "#203b36"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 3,
+      "property": "--muted",
+      "value": "#778882"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 4,
+      "property": "--accent",
+      "value": "#24775f"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 5,
+      "property": "--accent-light",
+      "value": "#e8f3ec"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 6,
+      "property": "--bg",
+      "value": "#f6f7f2"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 7,
+      "property": "--line",
+      "value": "#e3e9df"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 8,
+      "property": "--amber",
+      "value": "#ae7623"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 9,
+      "property": "--red",
+      "value": "#b34f43"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 10,
+      "property": "--shadow",
+      "value": "0 8px 30px #243b3010"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 567,
+      "property": "--ink",
+      "value": "#233c3a"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 568,
+      "property": "--muted",
+      "value": "#738681"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 569,
+      "property": "--accent",
+      "value": "#157e68"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 570,
+      "property": "--accent-light",
+      "value": "#e7f5ef"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 571,
+      "property": "--bg",
+      "value": "#eef3f1"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 572,
+      "property": "--paper",
+      "value": "#fff"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 573,
+      "property": "--line",
+      "value": "#e4ece8"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 574,
+      "property": "--amber",
+      "value": "#a86d17"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 575,
+      "property": "--red",
+      "value": "#bc554c"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 576,
+      "property": "--shadow",
+      "value": "0 4px 20px rgba(30, 68, 58, 0.035), 0 1px 3px rgba(30, 68, 58, 0.025)"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1331,
+      "property": "--form-control-height",
+      "value": "44px"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1332,
+      "property": "--action-control-height",
+      "value": "40px"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1333,
+      "property": "--toolbar-control-height",
+      "value": "38px"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1334,
+      "property": "--compact-control-height",
+      "value": "34px"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1335,
+      "property": "--editor-control-height",
+      "value": "40px"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1358,
+      "property": "--control-height",
+      "value": "34px"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1359,
+      "property": "--control-radius",
+      "value": "8px"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1360,
+      "property": "--form-control-height",
+      "value": "var(--control-height)"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1361,
+      "property": "--action-control-height",
+      "value": "var(--control-height)"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1362,
+      "property": "--toolbar-control-height",
+      "value": "var(--control-height)"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1363,
+      "property": "--compact-control-height",
+      "value": "var(--control-height)"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1364,
+      "property": "--editor-control-height",
+      "value": "var(--control-height)"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1371,
+      "property": "--input-height",
+      "value": "38px"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1407,
+      "property": "--ui-unit",
+      "value": "clamp(14px, calc(0.4375vw + 5.6px), 16.8px)"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1408,
+      "property": "--text-body",
+      "value": "1rem"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1409,
+      "property": "--text-small",
+      "value": "0.857143rem"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1410,
+      "property": "--text-title",
+      "value": "1.714286rem"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1411,
+      "property": "--text-number",
+      "value": "1.857143rem"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1412,
+      "property": "--space-unit",
+      "value": "0.571429rem"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1413,
+      "property": "--control-height",
+      "value": "2.428571rem"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1414,
+      "property": "--input-height",
+      "value": "2.714286rem"
+    },
+    {
+      "file": "assets\\css\\styles.css",
+      "line": 1415,
+      "property": "--control-radius",
+      "value": "0.571429rem"
+    },
+    {
+      "file": "assets\\css\\controls.css",
+      "line": 44,
+      "property": "--control-border",
+      "value": "#d7e3de"
+    },
+    {
+      "file": "assets\\css\\controls.css",
+      "line": 45,
+      "property": "--control-hover",
+      "value": "#eef5f1"
+    },
+    {
+      "file": "assets\\css\\controls.css",
+      "line": 46,
+      "property": "--control-shadow",
+      "value": "0 1px 2px #203b3608"
+    },
+    {
+      "file": "assets\\css\\controls.css",
+      "line": 47,
+      "property": "--clock-background",
+      "value": "#f8fcfa"
+    },
+    {
+      "file": "assets\\css\\controls.css",
+      "line": 48,
+      "property": "--clock-border",
+      "value": "#9dc4b5"
+    },
+    {
+      "file": "assets\\css\\controls.css",
+      "line": 49,
+      "property": "--clock-ink",
+      "value": "#244e40"
+    },
+    {
+      "file": "assets\\css\\controls.css",
+      "line": 50,
+      "property": "--clock-placeholder",
+      "value": "#839f93"
+    },
+    {
+      "file": "assets\\css\\controls.css",
+      "line": 51,
+      "property": "--clock-font",
+      "value": "16px"
+    },
+    {
+      "file": "assets\\css\\motion.css",
+      "line": 3,
+      "property": "--motion-fast",
+      "value": "160ms"
+    },
+    {
+      "file": "assets\\css\\motion.css",
+      "line": 4,
+      "property": "--motion-normal",
+      "value": "240ms"
+    },
+    {
+      "file": "assets\\css\\motion.css",
+      "line": 5,
+      "property": "--motion-enter",
+      "value": "360ms"
+    },
+    {
+      "file": "assets\\css\\motion.css",
+      "line": 6,
+      "property": "--motion-ease",
+      "value": "cubic-bezier(0.22, 1, 0.36, 1)"
+    }
+  ],
+  "final": [
+    {
+      "property": "--ink",
+      "value": "#233c3a"
+    },
+    {
+      "property": "--muted",
+      "value": "#738681"
+    },
+    {
+      "property": "--accent",
+      "value": "#157e68"
+    },
+    {
+      "property": "--accent-light",
+      "value": "#e7f5ef"
+    },
+    {
+      "property": "--bg",
+      "value": "#eef3f1"
+    },
+    {
+      "property": "--line",
+      "value": "#e4ece8"
+    },
+    {
+      "property": "--amber",
+      "value": "#a86d17"
+    },
+    {
+      "property": "--red",
+      "value": "#bc554c"
+    },
+    {
+      "property": "--shadow",
+      "value": "0 4px 20px rgba(30, 68, 58, 0.035), 0 1px 3px rgba(30, 68, 58, 0.025)"
+    },
+    {
+      "property": "--paper",
+      "value": "#fff"
+    },
+    {
+      "property": "--form-control-height",
+      "value": "var(--control-height)"
+    },
+    {
+      "property": "--editor-control-height",
+      "value": "var(--control-height)"
+    },
+    {
+      "property": "--control-height",
+      "value": "2.428571rem"
+    },
+    {
+      "property": "--control-radius",
+      "value": "0.571429rem"
+    },
+    {
+      "property": "--input-height",
+      "value": "2.714286rem"
+    },
+    {
+      "property": "--ui-unit",
+      "value": "clamp(14px, calc(0.4375vw + 5.6px), 16.8px)"
+    },
+    {
+      "property": "--text-body",
+      "value": "1rem"
+    },
+    {
+      "property": "--text-small",
+      "value": "0.857143rem"
+    },
+    {
+      "property": "--text-title",
+      "value": "1.714286rem"
+    },
+    {
+      "property": "--text-number",
+      "value": "1.857143rem"
+    },
+    {
+      "property": "--space-unit",
+      "value": "0.571429rem"
+    },
+    {
+      "property": "--control-border",
+      "value": "#d7e3de"
+    },
+    {
+      "property": "--control-hover",
+      "value": "#eef5f1"
+    },
+    {
+      "property": "--control-shadow",
+      "value": "0 1px 2px #203b3608"
+    },
+    {
+      "property": "--clock-background",
+      "value": "#f8fcfa"
+    },
+    {
+      "property": "--clock-border",
+      "value": "#9dc4b5"
+    },
+    {
+      "property": "--clock-ink",
+      "value": "#244e40"
+    },
+    {
+      "property": "--clock-placeholder",
+      "value": "#839f93"
+    },
+    {
+      "property": "--clock-font",
+      "value": "16px"
+    },
+    {
+      "property": "--motion-fast",
+      "value": "160ms"
+    },
+    {
+      "property": "--motion-normal",
+      "value": "240ms"
+    },
+    {
+      "property": "--motion-enter",
+      "value": "360ms"
+    },
+    {
+      "property": "--motion-ease",
+      "value": "cubic-bezier(0.22, 1, 0.36, 1)"
+    }
+  ],
+  "removedAliases": {
+    "--action-control-height": "--control-height",
+    "--toolbar-control-height": "--control-height",
+    "--compact-control-height": "--control-height"
+  },
+  "retainedScopedAliases": [
+    "--form-control-height",
+    "--editor-control-height"
+  ]
+}

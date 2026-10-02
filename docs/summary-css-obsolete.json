@@ -1,0 +1,268 @@
+{
+  "reason": "No HTML or application module generates rangebar, forecast or target-metric-row; shared selector branches retained.",
+  "removed": [
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 61
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar > .row:last-child"
+      ],
+      "line": 67
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .forecast"
+      ],
+      "line": 76
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .forecast > div"
+      ],
+      "line": 82
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .forecast > .muted"
+      ],
+      "line": 85
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 95
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar > .row:first-child"
+      ],
+      "line": 101
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar > .row:last-child"
+      ],
+      "line": 107
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .forecast"
+      ],
+      "line": 112
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .forecast > .muted"
+      ],
+      "line": 119
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 129
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 134
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar > .row:last-child"
+      ],
+      "line": 140
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .forecast"
+      ],
+      "line": 145
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .forecast > .muted"
+      ],
+      "line": 150
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 211
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar h2"
+      ],
+      "line": 322
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar > .row:first-child"
+      ],
+      "line": 327
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 372
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar > .row:first-child"
+      ],
+      "line": 411
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar h2"
+      ],
+      "line": 418
+    },
+    {
+      "selectors": [
+        ".summary-sidebar > .rangebar"
+      ],
+      "line": 806
+    },
+    {
+      "selectors": [
+        ".target-metric-row"
+      ],
+      "line": 856
+    },
+    {
+      "selectors": [
+        ".target-metric-row .target-metric"
+      ],
+      "line": 865
+    },
+    {
+      "selectors": [
+        ".target-metric-row .target-metric small"
+      ],
+      "line": 869
+    },
+    {
+      "selectors": [
+        ".target-metric-row .target-metric"
+      ],
+      "line": 895
+    },
+    {
+      "selectors": [
+        ".target-metric-row .target-metric small"
+      ],
+      "line": 902
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar > .row:first-child"
+      ],
+      "line": 906
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar h2"
+      ],
+      "line": 911
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 953
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .target-metric-row"
+      ],
+      "line": 1037
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 1074
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 1116
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .target-metric-row .target-metric"
+      ],
+      "line": 1170
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar h2"
+      ],
+      "line": 1186
+    },
+    {
+      "selectors": [
+        ".summary-sidebar .rangebar"
+      ],
+      "line": 1191
+    },
+    {
+      "selectors": [
+        "body .target-metric-row",
+        "body .summary-sidebar .rangebar p"
+      ],
+      "line": 1364
+    },
+    {
+      "selectors": [
+        "body .target-metric-row .target-metric"
+      ],
+      "line": 1373
+    },
+    {
+      "selectors": [
+        "body .target-metric-row .target-metric small"
+      ],
+      "line": 1378
+    },
+    {
+      "selectors": [
+        "body .summary-sidebar .rangebar > .row:first-child"
+      ],
+      "line": 1442
+    },
+    {
+      "selectors": [
+        "body .summary-sidebar .rangebar h2"
+      ],
+      "line": 1450
+    },
+    {
+      "selectors": [
+        "body .summary-sidebar .rangebar > .row:first-child"
+      ],
+      "line": 1470
+    },
+    {
+      "selectors": [
+        "body .summary-sidebar .target-metric-row .target-metric"
+      ],
+      "line": 1572
+    }
+  ],
+  "cleaned": {
+    "duplicates": 1,
+    "empty": 23
+  }
+}

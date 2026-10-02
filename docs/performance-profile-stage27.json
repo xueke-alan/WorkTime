@@ -1,0 +1,811 @@
+{
+  "method": "Approximate CPU sample weights from existing diagnostic trace. Inclusive stacks overlap; do not sum as CPU time. Includes tracing overhead. Profile timestamps reconstructed from startTime and timeDeltas.",
+  "operations": [
+    {
+      "name": "firstScreen",
+      "samples": 2128,
+      "elapsedMs": 1030.099,
+      "inclusiveTop": [
+        [
+          "ui-alignment.js:210 refresh",
+          68.73700000000002
+        ],
+        [
+          "ui-alignment.js:293 (anonymous)",
+          59.508
+        ],
+        [
+          "app.js:3 WorkBootstrap.run.document.document",
+          53.182999999999986
+        ],
+        [
+          "ui-alignment.js:97 alignTexts",
+          44.72899999999999
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          19.330000000000002
+        ],
+        [
+          "app.js:154 render",
+          18.490000000000002
+        ],
+        [
+          "storage.js:61 load",
+          16.710999999999995
+        ],
+        [
+          "app.js:214 syncNotificationBarHeight",
+          14.995999999999999
+        ],
+        [
+          "domain/validation.js:194 validateBackup",
+          13.445999999999998
+        ],
+        [
+          "ui/summary.js:28 renderStats",
+          10.507
+        ],
+        [
+          "startup.js:3 reveal",
+          9.485000000000001
+        ],
+        [
+          "summary-numbers.js:6 update",
+          7.499
+        ],
+        [
+          "date-info-ui.js:1 (anonymous)",
+          7.362
+        ],
+        [
+          "domain/validation.js:108 validateDay",
+          6.986
+        ],
+        [
+          "domain/time.js:18 validDate",
+          6.341999999999999
+        ],
+        [
+          "summary-numbers.js:90 (anonymous)",
+          5.995
+        ]
+      ],
+      "selfTop": [
+        [
+          "ui-alignment.js:97 alignTexts",
+          35.945999999999984
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          19.330000000000002
+        ],
+        [
+          "app.js:214 syncNotificationBarHeight",
+          14.995999999999999
+        ],
+        [
+          "date-info-ui.js:1 (anonymous)",
+          6.981
+        ],
+        [
+          "summary-numbers.js:90 (anonymous)",
+          5.995
+        ],
+        [
+          "domain/time.js:14 localDate",
+          5.5809999999999995
+        ],
+        [
+          "ui-alignment.js:48 dateInkHeight",
+          3.826
+        ],
+        [
+          "storage.js:61 load",
+          3.265
+        ],
+        [
+          "ui-alignment.js:40 cachedMetrics",
+          3.062
+        ],
+        [
+          "domain/time.js:22 timeMin",
+          2.775
+        ],
+        [
+          "ui-alignment.js:210 refresh",
+          2.016
+        ],
+        [
+          "domain/validation.js:194 validateBackup",
+          1.986
+        ],
+        [
+          "services/derived.js:46 rangeState",
+          1.5050000000000001
+        ],
+        [
+          "ui-alignment.js:2 (anonymous)",
+          1.3770000000000002
+        ],
+        [
+          "background.js:30 draw",
+          1.1360000000000001
+        ],
+        [
+          "domain/validation.js:108 validateDay",
+          1.13
+        ]
+      ]
+    },
+    {
+      "name": "save",
+      "samples": 989,
+      "elapsedMs": 464.2,
+      "inclusiveTop": [
+        [
+          "controllers/day-editor.js:6 saveDayEdit",
+          30.581999999999987
+        ],
+        [
+          "controllers/day-editor.js:148 (anonymous)",
+          30.581999999999987
+        ],
+        [
+          "ui/summary.js:28 renderStats",
+          18.419999999999998
+        ],
+        [
+          "summary-numbers.js:90 (anonymous)",
+          17.069999999999997
+        ],
+        [
+          "summary-numbers.js:6 update",
+          17.069999999999997
+        ],
+        [
+          "ui-alignment.js:210 refresh",
+          15.427
+        ],
+        [
+          "ui-alignment.js:293 (anonymous)",
+          15.427
+        ],
+        [
+          "ui-alignment.js:97 alignTexts",
+          10.998999999999997
+        ],
+        [
+          "storage.js:75 save",
+          9.395999999999999
+        ],
+        [
+          "app.js:132 save",
+          9.395999999999999
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          3.503
+        ],
+        [
+          "ui/calendar.js:146 renderCalendar",
+          2.088
+        ],
+        [
+          "background.js:30 draw",
+          1.597
+        ],
+        [
+          "services/derived.js:34 cached",
+          1.272
+        ],
+        [
+          "ui/notifications.js:79 renderTimeAnomalyNotice",
+          1.001
+        ],
+        [
+          "services/derived.js:75 (anonymous)",
+          0.927
+        ]
+      ],
+      "selfTop": [
+        [
+          "summary-numbers.js:90 (anonymous)",
+          17.069999999999997
+        ],
+        [
+          "ui-alignment.js:97 alignTexts",
+          10.998999999999997
+        ],
+        [
+          "storage.js:75 save",
+          9.395999999999999
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          3.503
+        ],
+        [
+          "ui/notifications.js:79 renderTimeAnomalyNotice",
+          1.001
+        ],
+        [
+          "background.js:30 draw",
+          0.898
+        ],
+        [
+          "domain/calendar.js:20 calendarInfo",
+          0.733
+        ],
+        [
+          "ui/calendar.js:66 (anonymous)",
+          0.585
+        ],
+        [
+          "ui/summary.js:19 updateHTML",
+          0.423
+        ],
+        [
+          "domain/time.js:14 localDate",
+          0.359
+        ],
+        [
+          "services/derived.js:46 rangeState",
+          0.337
+        ],
+        [
+          "ui-alignment.js:228 (anonymous)",
+          0.315
+        ],
+        [
+          "domain/time.js:18 validDate",
+          0.177
+        ],
+        [
+          "ui-alignment.js:210 refresh",
+          0.108
+        ]
+      ]
+    },
+    {
+      "name": "year",
+      "samples": 1018,
+      "elapsedMs": 480.599,
+      "inclusiveTop": [
+        [
+          "ui-alignment.js:210 refresh",
+          22.439999999999994
+        ],
+        [
+          "ui-alignment.js:293 (anonymous)",
+          22.439999999999994
+        ],
+        [
+          "ui-alignment.js:97 alignTexts",
+          12.998000000000001
+        ],
+        [
+          "app.js:154 render",
+          9.499999999999998
+        ],
+        [
+          "controllers/navigation.js:124 $.onclick",
+          9.499999999999998
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          9.006
+        ],
+        [
+          "ui/calendar.js:446 renderYear",
+          6.991999999999999
+        ],
+        [
+          "ui/calendar.js:146 renderCalendar",
+          6.991999999999999
+        ],
+        [
+          "year-view.js:65 months",
+          3.5260000000000007
+        ],
+        [
+          "year-view.js:66 (anonymous)",
+          2.5010000000000003
+        ],
+        [
+          "year-view.js:73 (anonymous)",
+          2.0949999999999998
+        ],
+        [
+          "domain/time.js:18 validDate",
+          2.002
+        ],
+        [
+          "domain/statistics.js:17 (anonymous)",
+          2.002
+        ],
+        [
+          "domain/statistics.js:15 oaStaleness",
+          2.002
+        ],
+        [
+          "services/derived.js:129 (anonymous)",
+          2.002
+        ],
+        [
+          "services/derived.js:34 cached",
+          2.002
+        ]
+      ],
+      "selfTop": [
+        [
+          "ui-alignment.js:97 alignTexts",
+          12.697000000000001
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          9.006
+        ],
+        [
+          "ui/calendar.js:41 updateCalendar",
+          1.495
+        ],
+        [
+          "background.js:30 draw",
+          1.125
+        ],
+        [
+          "domain/time.js:14 localDate",
+          1.009
+        ],
+        [
+          "domain/records.js:31 complete",
+          0.887
+        ],
+        [
+          "year-view.js:7 heatColor",
+          0.518
+        ],
+        [
+          "year-view.js:12 (anonymous)",
+          0.507
+        ],
+        [
+          "services/derived.js:133 attendanceHoursThrough",
+          0.506
+        ],
+        [
+          "domain/time.js:18 validDate",
+          0.505
+        ],
+        [
+          "ui/calendar.js:446 renderYear",
+          0.503
+        ],
+        [
+          "ui/calendar.js:66 (anonymous)",
+          0.5
+        ],
+        [
+          "ui/calendar.js:33 updateHTML",
+          0.496
+        ],
+        [
+          "year-view.js:73 (anonymous)",
+          0.494
+        ],
+        [
+          "ui/elements.js:5 esc",
+          0.472
+        ],
+        [
+          "domain/records.js:97 calculate",
+          0.459
+        ]
+      ]
+    },
+    {
+      "name": "month",
+      "samples": 756,
+      "elapsedMs": 345.899,
+      "inclusiveTop": [
+        [
+          "ui-alignment.js:210 refresh",
+          14.248000000000001
+        ],
+        [
+          "ui-alignment.js:293 (anonymous)",
+          14.248000000000001
+        ],
+        [
+          "ui-alignment.js:97 alignTexts",
+          8.996000000000002
+        ],
+        [
+          "controllers/navigation.js:124 $.onclick",
+          7.104000000000001
+        ],
+        [
+          "app.js:154 render",
+          6.522
+        ],
+        [
+          "ui/calendar.js:146 renderCalendar",
+          5.988
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          4.499
+        ],
+        [
+          "motion.js:15 play",
+          4.026
+        ],
+        [
+          "background.js:30 draw",
+          0.63
+        ],
+        [
+          "ui/elements.js:4 $",
+          0.539
+        ],
+        [
+          "controllers/templates.js:12 (anonymous)",
+          0.534
+        ],
+        [
+          "controllers/templates.js:9 animateNewTemplates",
+          0.534
+        ],
+        [
+          "controllers/templates.js:22 renderTimeTemplates",
+          0.534
+        ],
+        [
+          "app.js:124 renderTimeTemplates",
+          0.534
+        ],
+        [
+          "ui/editor.js:41 renderEditor",
+          0.534
+        ],
+        [
+          "ui/notifications.js:79 renderTimeAnomalyNotice",
+          0.507
+        ]
+      ],
+      "selfTop": [
+        [
+          "ui-alignment.js:97 alignTexts",
+          8.996000000000002
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          4.499
+        ],
+        [
+          "motion.js:15 play",
+          4.026
+        ],
+        [
+          "background.js:30 draw",
+          0.63
+        ],
+        [
+          "controllers/navigation.js:124 $.onclick",
+          0.582
+        ],
+        [
+          "ui/elements.js:4 $",
+          0.539
+        ],
+        [
+          "controllers/templates.js:12 (anonymous)",
+          0.534
+        ],
+        [
+          "ui/notifications.js:79 renderTimeAnomalyNotice",
+          0.507
+        ],
+        [
+          "ui/calendar.js:41 updateCalendar",
+          0.498
+        ],
+        [
+          "ui-alignment.js:210 refresh",
+          0.428
+        ],
+        [
+          "ui/calendar.js:146 renderCalendar",
+          0.418
+        ],
+        [
+          "ui-alignment.js:228 (anonymous)",
+          0.325
+        ],
+        [
+          "date-info-ui.js:73 (anonymous)",
+          0.045
+        ],
+        [
+          "ui-alignment.js:339 mutationsChanged",
+          0.021
+        ]
+      ]
+    },
+    {
+      "name": "import",
+      "samples": 7097,
+      "elapsedMs": 3324.8,
+      "inclusiveTop": [
+        [
+          "ui-alignment.js:210 refresh",
+          98.74299999999994
+        ],
+        [
+          "ui-alignment.js:293 (anonymous)",
+          98.74299999999994
+        ],
+        [
+          "ui-alignment.js:97 alignTexts",
+          73.04700000000001
+        ],
+        [
+          "controllers/imports.js:539 $.onclick",
+          28.008999999999993
+        ],
+        [
+          "controllers/imports.js:133 commitOARecords",
+          27.509999999999994
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          21.649
+        ],
+        [
+          "app.js:154 render",
+          15.901999999999996
+        ],
+        [
+          "storage.js:75 save",
+          11.608
+        ],
+        [
+          "app.js:132 save",
+          11.608
+        ],
+        [
+          "controllers/imports.js:426 $.onclick",
+          11.020000000000001
+        ],
+        [
+          "app.js:161 open",
+          10.008000000000003
+        ],
+        [
+          "background.js:30 draw",
+          8.664
+        ],
+        [
+          "ui/summary.js:28 renderStats",
+          7.499
+        ],
+        [
+          "summary-numbers.js:90 (anonymous)",
+          4.994000000000001
+        ],
+        [
+          "summary-numbers.js:6 update",
+          4.994000000000001
+        ],
+        [
+          "services/derived.js:34 cached",
+          4.888999999999999
+        ]
+      ],
+      "selfTop": [
+        [
+          "ui-alignment.js:97 alignTexts",
+          72.482
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          21.649
+        ],
+        [
+          "storage.js:75 save",
+          11.608
+        ],
+        [
+          "app.js:161 open",
+          10.008000000000003
+        ],
+        [
+          "background.js:30 draw",
+          7.165999999999998
+        ],
+        [
+          "summary-numbers.js:90 (anonymous)",
+          4.994000000000001
+        ],
+        [
+          "ui-alignment.js:210 refresh",
+          3.5360000000000005
+        ],
+        [
+          "ui/calendar.js:66 (anonymous)",
+          2.5200000000000005
+        ],
+        [
+          "domain/time.js:14 localDate",
+          2.0039999999999996
+        ],
+        [
+          "services/derived.js:46 rangeState",
+          1.499
+        ],
+        [
+          "domain/statistics.js:17 (anonymous)",
+          0.896
+        ],
+        [
+          "ui/notifications.js:79 renderTimeAnomalyNotice",
+          0.837
+        ],
+        [
+          "controllers/templates.js:22 renderTimeTemplates",
+          0.624
+        ],
+        [
+          "controllers/imports.js:426 $.onclick",
+          0.529
+        ],
+        [
+          "ui/summary.js:28 renderStats",
+          0.513
+        ],
+        [
+          "domain/observations.js:16 finish",
+          0.502
+        ]
+      ]
+    },
+    {
+      "name": "restore",
+      "samples": 6929,
+      "elapsedMs": 3226.6,
+      "inclusiveTop": [
+        [
+          "ui-alignment.js:210 refresh",
+          93.04599999999998
+        ],
+        [
+          "ui-alignment.js:293 (anonymous)",
+          93.04599999999998
+        ],
+        [
+          "ui-alignment.js:97 alignTexts",
+          78.87700000000001
+        ],
+        [
+          "controllers/backup.js:231 $.onchange",
+          29.901
+        ],
+        [
+          "controllers/backup.js:247 $.onclick",
+          28.503999999999998
+        ],
+        [
+          "backup.js:17 decode",
+          19.903
+        ],
+        [
+          "controllers/backup.js:21 readBackupText",
+          19.903
+        ],
+        [
+          "app.js:154 render",
+          14.942000000000002
+        ],
+        [
+          "domain/validation.js:194 validateBackup",
+          13.597999999999999
+        ],
+        [
+          "storage.js:75 save",
+          13.562
+        ],
+        [
+          "app.js:132 save",
+          13.562
+        ],
+        [
+          "ui/summary.js:28 renderStats",
+          10
+        ],
+        [
+          "controllers/backup.js:69 previewRestore",
+          9.998
+        ],
+        [
+          "app.js:161 open",
+          9.498999999999999
+        ],
+        [
+          "background.js:30 draw",
+          9.432000000000002
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          9.293
+        ]
+      ],
+      "selfTop": [
+        [
+          "ui-alignment.js:97 alignTexts",
+          78.331
+        ],
+        [
+          "storage.js:75 save",
+          13.562
+        ],
+        [
+          "app.js:161 open",
+          9.498999999999999
+        ],
+        [
+          "ui-alignment.js:276 (anonymous)",
+          9.293
+        ],
+        [
+          "summary-numbers.js:90 (anonymous)",
+          9.001
+        ],
+        [
+          "background.js:30 draw",
+          8.620000000000005
+        ],
+        [
+          "backup.js:17 decode",
+          6.305
+        ],
+        [
+          "domain/time.js:14 localDate",
+          4.48
+        ],
+        [
+          "domain/time.js:22 timeMin",
+          3.452
+        ],
+        [
+          "ui-alignment.js:210 refresh",
+          2.384
+        ],
+        [
+          "domain/validation.js:194 validateBackup",
+          1.964
+        ],
+        [
+          "domain/validation.js:108 validateDay",
+          1.613
+        ],
+        [
+          "domain/time.js:18 validDate",
+          1.2679999999999998
+        ],
+        [
+          "ui-alignment.js:228 (anonymous)",
+          1.006
+        ],
+        [
+          "ui/calendar.js:66 (anonymous)",
+          1.002
+        ],
+        [
+          "ui-alignment.js:122 (anonymous)",
+          0.546
+        ]
+      ]
+    }
+  ]
+}

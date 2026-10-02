@@ -1,0 +1,89 @@
+{
+  "reason": "All produced clock fields use text.clock-input; numeric fields remain type=number. HTML and renderer production paths reviewed.",
+  "changes": [
+    {
+      "file": "assets/css/base.css",
+      "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"])",
+      "after": "input:is([type=\"number\"], [inputmode=\"numeric\"])",
+      "line": 436
+    },
+    {
+      "file": "assets/css/base.css",
+      "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"]):focus",
+      "after": "input:is([type=\"number\"], [inputmode=\"numeric\"]):focus",
+      "line": 454
+    },
+    {
+      "file": "assets/css/base.css",
+      "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"])::selection",
+      "after": "input:is([type=\"number\"], [inputmode=\"numeric\"])::selection",
+      "line": 460
+    },
+    {
+      "file": "assets/css/base.css",
+      "selector": "input[type=\"time\"]::-webkit-datetime-edit-hour-field:focus,\ninput[type=\"time\"]::-webkit-datetime-edit-minute-field:focus,\ninput[type=\"time\"]::-webkit-datetime-edit-ampm-field:focus",
+      "after": null,
+      "line": 464
+    },
+    {
+      "file": "assets/css/base.css",
+      "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"])::placeholder",
+      "after": "input:is([type=\"number\"], [inputmode=\"numeric\"])::placeholder",
+      "line": 471
+    },
+    {
+      "file": "assets/css/base.css",
+      "selector": "input[type=\"time\"]::-webkit-datetime-edit",
+      "after": null,
+      "line": 475
+    },
+    {
+      "file": "assets/css/base.css",
+      "selector": "input[type=\"time\"]::-webkit-datetime-edit-fields-wrapper",
+      "after": null,
+      "line": 478
+    },
+    {
+      "file": "assets/css/base.css",
+      "selector": "input[type=\"time\"]::-webkit-calendar-picker-indicator",
+      "after": null,
+      "line": 482
+    },
+    {
+      "file": "assets/css/editor.css",
+      "selector": ".batch-calc-fields input:is([type=\"time\"], [type=\"number\"])",
+      "after": ".batch-calc-fields input[type=\"number\"]",
+      "line": 690
+    },
+    {
+      "file": "assets/css/editor.css",
+      "selector": ".batch-calc-fields input:is([type=\"time\"], [type=\"number\"]):focus",
+      "after": ".batch-calc-fields input[type=\"number\"]:focus",
+      "line": 698
+    },
+    {
+      "file": "assets/css/editor.css",
+      "selector": "body .editor #batchForm input[type=\"time\"]",
+      "after": null,
+      "line": 1301
+    },
+    {
+      "file": "assets/css/editor.css",
+      "selector": "body .editor #batchForm input[type=\"time\"]::-webkit-calendar-picker-indicator",
+      "after": null,
+      "line": 1316
+    },
+    {
+      "file": "assets/css/editor.css",
+      "selector": "body .editor #batchForm input[type=\"time\"]::-webkit-datetime-edit",
+      "after": null,
+      "line": 1319
+    },
+    {
+      "file": "assets/css/editor.css",
+      "selector": "body .editor #batchForm input[type=\"time\"]:focus",
+      "after": null,
+      "line": 1324
+    }
+  ]
+}

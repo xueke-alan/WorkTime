@@ -1,0 +1,87 @@
+[
+  {
+    "file": "assets\\css\\calendar.css",
+    "selector": "body .backup-button-group button:focus-visible",
+    "before": [
+      "outline-offset: -3px"
+    ]
+  },
+  {
+    "file": "assets\\css\\calendar.css",
+    "selector": "body .calendar .day:is([data-holiday], .weekend, .full-leave):focus-visible",
+    "before": [
+      "outline-color: var(--day-tone)"
+    ]
+  },
+  {
+    "file": "assets\\css\\calendar.css",
+    "selector": "body .month-controls .month-title:focus-visible",
+    "before": [
+      "outline: 2px solid var(--accent)",
+      "outline-offset: 3px"
+    ]
+  },
+  {
+    "file": "assets\\css\\controls.css",
+    "selector": "body button.ui-button:focus-visible",
+    "before": [
+      "outline: 2px solid #72a991",
+      "outline-offset: 2px"
+    ]
+  },
+  {
+    "file": "assets\\css\\date-info.css",
+    "selector": "body .editor > .notification-tabs .notification-tab:focus-visible",
+    "before": [
+      "outline: 2px solid #72a991",
+      "outline-offset: -3px"
+    ]
+  },
+  {
+    "file": "assets\\css\\date-info.css",
+    "selector": "body #dateInfoPanel .history-event-link:focus-visible",
+    "before": [
+      "outline: 2px solid #72a991",
+      "outline-offset: 3px"
+    ]
+  },
+  {
+    "file": "assets\\css\\styles.css",
+    "selector": "input:focus,\nselect:focus,\ntextarea:focus,\nbutton:focus-visible",
+    "before": [
+      "outline: 2px solid #72a991",
+      "outline-offset: 2px"
+    ]
+  },
+  {
+    "file": "assets\\css\\styles.css",
+    "selector": ".more-menu > summary:focus-visible",
+    "before": [
+      "outline: 2px solid #72a991",
+      "outline-offset: 2px"
+    ]
+  },
+  {
+    "file": "assets\\css\\styles.css",
+    "selector": "input:focus,\nselect:focus,\ntextarea:focus",
+    "before": [
+      "outline: 2px solid #157e6826",
+      "outline-offset: 1px"
+    ]
+  },
+  {
+    "file": "assets\\css\\styles.css",
+    "selector": "button:focus-visible,\nsummary:focus-visible,\na:focus-visible",
+    "before": [
+      "outline: 2px solid var(--accent)",
+      "outline-offset: 3px"
+    ]
+  },
+  {
+    "file": "assets\\css\\styles.css",
+    "selector": "input:is([type=\"time\"], [type=\"number\"], [inputmode=\"numeric\"]):focus",
+    "before": [
+      "outline: 0"
+    ]
+  }
+]

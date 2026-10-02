@@ -1,0 +1,166 @@
+{
+  "method": "Diagnostic route instrumentation; normal animation; one-year actual app; not a budget measurement",
+  "sourceSha256": "e01bcdcece95e37c03de8de403e68d0cc31480b69a0a6de6429aca65f2fbd75e",
+  "mutations": [
+    {
+      "type": "childList",
+      "target": "SPAN#dayLeaveLabel.button-label",
+      "attribute": null,
+      "scope": "ASIDE#.panel editor"
+    },
+    {
+      "type": "attributes",
+      "target": "DIV#dayLeavePanel.leave-popover hidden",
+      "attribute": "class",
+      "scope": "ASIDE#.panel editor"
+    },
+    {
+      "type": "childList",
+      "target": "SPAN#dayLeaveTip.nextday-tip",
+      "attribute": null,
+      "scope": "ASIDE#.panel editor"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#dayPreview.calc-preview",
+      "attribute": null,
+      "scope": "ASIDE#.panel editor"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#dayPreview.calc-preview",
+      "attribute": null,
+      "scope": "ASIDE#.panel editor"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#.metric",
+      "attribute": null,
+      "scope": "ARTICLE#.card"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#.metric",
+      "attribute": null,
+      "scope": "ARTICLE#.card"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#.card-foot",
+      "attribute": null,
+      "scope": "ARTICLE#.card"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#targetResult.target-result",
+      "attribute": null,
+      "scope": "SECTION#.target-panel"
+    },
+    {
+      "type": "childList",
+      "target": "SPAN#targetDailyLabel.",
+      "attribute": null,
+      "scope": "SECTION#.target-panel"
+    },
+    {
+      "type": "childList",
+      "target": "SPAN#targetTotalLabel.target-total-label",
+      "attribute": null,
+      "scope": "SECTION#.target-panel"
+    },
+    {
+      "type": "childList",
+      "target": "STRONG#targetMetric.target-metric",
+      "attribute": null,
+      "scope": "SECTION#.target-panel"
+    },
+    {
+      "type": "childList",
+      "target": "STRONG#targetDailyMetric.target-metric",
+      "attribute": null,
+      "scope": "SECTION#.target-panel"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#targetValue.target-value",
+      "attribute": null,
+      "scope": "SECTION#.target-panel"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#.metric",
+      "attribute": null,
+      "scope": "ARTICLE#.card"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#.metric",
+      "attribute": null,
+      "scope": "ARTICLE#.card"
+    },
+    {
+      "type": "attributes",
+      "target": "SPAN#.summary-number-visual",
+      "attribute": "style",
+      "scope": "ARTICLE#.card"
+    },
+    {
+      "type": "attributes",
+      "target": "SPAN#.summary-number-visual",
+      "attribute": "style",
+      "scope": "ARTICLE#.card"
+    },
+    {
+      "type": "childList",
+      "target": "BUTTON#.day restday selected today",
+      "attribute": null,
+      "scope": "BUTTON#.day restday selected today"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#calendarFoot.calendar-foot ui-aligned-text",
+      "attribute": null,
+      "scope": "DIV#.calendar-footer"
+    },
+    {
+      "type": "childList",
+      "target": "SPAN#dayLeaveLabel.button-label",
+      "attribute": null,
+      "scope": "ASIDE#.panel editor"
+    },
+    {
+      "type": "attributes",
+      "target": "DIV#dayLeavePanel.leave-popover hidden",
+      "attribute": "class",
+      "scope": "ASIDE#.panel editor"
+    },
+    {
+      "type": "childList",
+      "target": "SPAN#dayLeaveTip.nextday-tip",
+      "attribute": null,
+      "scope": "ASIDE#.panel editor"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#dayPreview.calc-preview",
+      "attribute": null,
+      "scope": "ASIDE#.panel editor"
+    },
+    {
+      "type": "childList",
+      "target": "DIV#dayPreview.calc-preview",
+      "attribute": null,
+      "scope": "ASIDE#.panel editor"
+    }
+  ],
+  "refreshes": [
+    [
+      "ASIDE#.panel editor",
+      "ARTICLE#.card",
+      "ARTICLE#.card",
+      "SECTION#.target-panel",
+      "BUTTON#.day restday selected today",
+      "DIV#.calendar-footer"
+    ]
+  ]
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "id": "standardStart",
+    "text": "08:00",
+    "textWidth": 39.32810974121094,
+    "availableWidth": 112,
+    "scrollLeft": 0,
+    "font": "650 16px Bahnschrift, \"Cascadia Mono\", Consolas, \"Microsoft YaHei\", sans-serif"
+  },
+  {
+    "id": "standardEnd",
+    "text": "17:30",
+    "textWidth": 35.28904724121094,
+    "availableWidth": 112,
+    "scrollLeft": 0,
+    "font": "650 16px Bahnschrift, \"Cascadia Mono\", Consolas, \"Microsoft YaHei\", sans-serif"
+  },
+  {
+    "id": "",
+    "text": "12:00",
+    "textWidth": 35.08592224121094,
+    "availableWidth": 112,
+    "scrollLeft": 0,
+    "font": "650 16px Bahnschrift, \"Cascadia Mono\", Consolas, \"Microsoft YaHei\", sans-serif"
+  },
+  {
+    "id": "",
+    "text": "13:30",
+    "textWidth": 35.69529724121094,
+    "availableWidth": 112,
+    "scrollLeft": 0,
+    "font": "650 16px Bahnschrift, \"Cascadia Mono\", Consolas, \"Microsoft YaHei\", sans-serif"
+  },
+  {
+    "id": "",
+    "text": "17:30",
+    "textWidth": 35.28904724121094,
+    "availableWidth": 112,
+    "scrollLeft": 0,
+    "font": "650 16px Bahnschrift, \"Cascadia Mono\", Consolas, \"Microsoft YaHei\", sans-serif"
+  },
+  {
+    "id": "",
+    "text": "18:00",
+    "textWidth": 35.82029724121094,
+    "availableWidth": 112,
+    "scrollLeft": 0,
+    "font": "650 16px Bahnschrift, \"Cascadia Mono\", Consolas, \"Microsoft YaHei\", sans-serif"
+  },
+  {
+    "id": "employmentDate",
+    "text": "2026-10-02",
+    "textWidth": 81.45309448242188,
+    "availableWidth": 96,
+    "scrollLeft": 0,
+    "font": "650 16px Bahnschrift, \"Cascadia Mono\", Consolas, \"Microsoft YaHei\", sans-serif"
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "name": "worktime",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline work time records; development tools do not affect file:// use.",
+  "scripts": {
+    "test": "node scripts/test.cjs",
+    "test:browser": "node tests/year-view.browser.cjs && node tests/persistence.browser.cjs && node tests/imports.browser.cjs && node tests/concurrency.browser.cjs && node tests/controls.browser.cjs && node tests/button-ink.browser.cjs && node tests/alignment-cache.browser.cjs && node tests/alignment-lifecycle.browser.cjs && node tests/alignment-local.browser.cjs && node tests/alignment-batch.browser.cjs && node tests/editor-flows.browser.cjs && node tests/controller-backup.browser.cjs && node tests/offline-entry.browser.cjs && node tests/startup-failure.browser.cjs && node tests/legacy-roundtrip.browser.cjs && node tests/date-behavior.browser.cjs && node tests/date-info-links.browser.cjs && node tests/continuous-updates.browser.cjs && node tests/day-save-idempotence.browser.cjs && node tests/preview-number-motion.browser.cjs",
+    "check": "node scripts/test.cjs --syntax",
+    "test:styles": "node tests/style-contract.browser.cjs && node tests/date-info-styles.browser.cjs && node tests/summary-styles.browser.cjs && node tests/calendar-styles.browser.cjs && node tests/forms-styles.browser.cjs",
+    "format:css": "node scripts/clean-css.cjs",
+    "lint": "eslint assets/js scripts tests eslint.config.cjs --max-warnings 0",
+    "format:source": "prettier --write \"assets/js/**/*.js\" \"scripts/**/*.cjs\" \"tests/**/*.cjs\" eslint.config.cjs",
+    "check:format": "prettier --check \"assets/js/**/*.js\" \"scripts/**/*.cjs\" \"tests/**/*.cjs\" eslint.config.cjs",
+    "benchmark": "node scripts/benchmark-browser.cjs",
+    "trace": "node scripts/trace-browser.cjs"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "devDependencies": {
+    "acorn": "8.18.0",
+    "eslint": "10.11.0",
+    "globals": "17.13.0",
+    "playwright": "1.62.1",
+    "postcss": "8.5.28",
+    "prettier": "3.9.9"
+  }
+}

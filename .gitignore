@@ -5,3 +5,7 @@ Thumbs.db
 *.swo
 .vscode/
 .idea/
+.refactor-backups/
+.refactor-data-updates/
+node_modules/
+test-results/

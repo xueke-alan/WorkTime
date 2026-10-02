@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "targetAverageMinutes": 120,
+  "settings": {"configured": true, "standardMinutes": 480, "breaks": [{"start": 720, "end": 780}]},
+  "days": {
+    "2026-09-28": {"oa": {"date": "2026-09-28", "start": "08:00", "end": "18:00", "nextDay": false, "status": "complete", "source": "旧 OA", "raw": "09/28\n08:00\n18:00", "importId": "legacy"}},
+    "2026-09-29": {"estimate": {"start": "08:00", "end": "17:30", "nextDay": false, "effectiveMinutes": null}, "leaveMinutes": 30},
+    "2026-09-30": {"draft": {"start": "08:00", "end": "", "nextDay": false}, "oa": {"date": "2026-09-30", "start": "08:00", "end": "", "nextDay": false, "status": "pending", "source": "旧 OA", "raw": "09/30\n08:00", "importId": "legacy"}}
+  },
+  "imports": [{"id": "legacy", "at": "2026-09-30T05:00:00.000Z", "year": 2026, "sources": [{"name": "旧 OA", "raw": "09/28\n08:00\n18:00\n09/30\n08:00"}], "count": 2}]
+}

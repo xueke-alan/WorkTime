@@ -1,0 +1,524 @@
+{
+  "classes": [
+    "top",
+    "brand",
+    "logo",
+    "eyebrow",
+    "subtitle",
+    "rangebar",
+    "forecast",
+    "batchbar",
+    "detailgrid",
+    "keyval",
+    "checkline",
+    "more-menu",
+    "more-menu-items",
+    "more-chevron",
+    "sidebar-logo",
+    "sidebar-status",
+    "source",
+    "empty"
+  ],
+  "removed": [
+    {
+      "file": "controls.css",
+      "line": 9,
+      "selectors": [
+        "body .more-menu > summary"
+      ]
+    },
+    {
+      "file": "editor.css",
+      "line": 47,
+      "selectors": [
+        ".editor .eyebrow"
+      ]
+    },
+    {
+      "file": "editor.css",
+      "line": 83,
+      "selectors": [
+        ".editor .source"
+      ]
+    },
+    {
+      "file": "editor.css",
+      "line": 207,
+      "selectors": [
+        ".editor .eyebrow",
+        ".batch-editor .eyebrow"
+      ]
+    },
+    {
+      "file": "editor.css",
+      "line": 216,
+      "selectors": [
+        ".editor .eyebrow::before"
+      ]
+    },
+    {
+      "file": "editor.css",
+      "line": 291,
+      "selectors": [
+        ".editor .checkline"
+      ]
+    },
+    {
+      "file": "editor.css",
+      "line": 313,
+      "selectors": [
+        ".editor .source"
+      ]
+    },
+    {
+      "file": "editor.css",
+      "line": 735,
+      "selectors": [
+        ".editor-info .source"
+      ]
+    },
+    {
+      "file": "editor.css",
+      "line": 1279,
+      "selectors": [
+        "body .editor-info .source"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 96,
+      "selectors": [
+        ".top"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 103,
+      "selectors": [
+        ".brand"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 108,
+      "selectors": [
+        ".logo"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 118,
+      "selectors": [
+        ".eyebrow"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 124,
+      "selectors": [
+        ".subtitle"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 186,
+      "selectors": [
+        ".rangebar"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 193,
+      "selectors": [
+        ".rangebar input"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 197,
+      "selectors": [
+        ".forecast"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 208,
+      "selectors": [
+        ".forecast strong"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 251,
+      "selectors": [
+        ".checkline"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 263,
+      "selectors": [
+        ".source"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 290,
+      "selectors": [
+        ".empty"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 332,
+      "selectors": [
+        ".batchbar"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 347,
+      "selectors": [
+        ".detailgrid"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 352,
+      "selectors": [
+        ".keyval"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 365,
+      "selectors": [
+        ".top"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 371,
+      "selectors": [
+        ".rangebar"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 375,
+      "selectors": [
+        ".forecast"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 383,
+      "selectors": [
+        ".top"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 391,
+      "selectors": [
+        ".top button"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 398,
+      "selectors": [
+        ".forecast"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 402,
+      "selectors": [
+        ".rangebar input"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 405,
+      "selectors": [
+        ".detailgrid"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 425,
+      "selectors": [
+        ".sidebar-logo"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 433,
+      "selectors": [
+        ".more-menu"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 437,
+      "selectors": [
+        ".more-menu > summary"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 448,
+      "selectors": [
+        ".more-menu > summary::-webkit-details-marker"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 451,
+      "selectors": [
+        ".more-menu > summary:hover",
+        ".more-menu[open] > summary"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 455,
+      "selectors": [
+        ".more-menu > summary:focus-visible"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 458,
+      "selectors": [
+        ".more-menu-items"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 473,
+      "selectors": [
+        ".more-menu-items button"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 479,
+      "selectors": [
+        ".sidebar-status"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 486,
+      "selectors": [
+        ".sidebar-status"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 522,
+      "selectors": [
+        ".sidebar-logo"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 527,
+      "selectors": [
+        ".more-menu > summary"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 531,
+      "selectors": [
+        ".sidebar-status"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 537,
+      "selectors": [
+        ".batchbar"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 542,
+      "selectors": [
+        ".batchbar button"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 654,
+      "selectors": [
+        ".sidebar-logo"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 675,
+      "selectors": [
+        ".sidebar-logo .ui-icon"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 679,
+      "selectors": [
+        ".sidebar-status"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 683,
+      "selectors": [
+        ".more-menu > summary"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 690,
+      "selectors": [
+        ".more-menu > summary:hover",
+        ".more-menu[open] > summary"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 695,
+      "selectors": [
+        ".more-menu-items"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 702,
+      "selectors": [
+        ".more-menu-items button"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 710,
+      "selectors": [
+        ".more-menu-items button .ui-icon"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 715,
+      "selectors": [
+        ".rangebar h2"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 766,
+      "selectors": [
+        ".checkline"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 772,
+      "selectors": [
+        ".source"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 838,
+      "selectors": [
+        ".sidebar-logo"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 842,
+      "selectors": [
+        ".more-menu > summary"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 869,
+      "selectors": [
+        ".sidebar-logo"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 873,
+      "selectors": [
+        ".more-menu > summary"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 877,
+      "selectors": [
+        ".sidebar-status"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 902,
+      "selectors": [
+        ".more-menu > summary"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 908,
+      "selectors": [
+        ".more-chevron"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 916,
+      "selectors": [
+        ".more-menu[open] .more-chevron"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 920,
+      "selectors": [
+        ".more-menu > summary"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 944,
+      "selectors": [
+        ".sidebar-logo"
+      ]
+    },
+    {
+      "file": "styles.css",
+      "line": 948,
+      "selectors": [
+        ".more-menu > summary"
+      ]
+    },
+    {
+      "file": "summary.css",
+      "line": 591,
+      "selectors": [
+        ".sidebar-actions .more-menu > summary"
+      ]
+    },
+    {
+      "file": "summary.css",
+      "line": 640,
+      "selectors": [
+        ".sidebar-actions .more-menu > summary"
+      ]
+    }
+  ]
+}

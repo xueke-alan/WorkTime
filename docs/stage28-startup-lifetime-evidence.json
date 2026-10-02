@@ -1,0 +1,26 @@
+{
+  "productionChanges": [
+    "assets/js/startup.js"
+  ],
+  "startupSha256": "e4cbeddfce5d9c23f5fcb4d5c3536d32d12fb4a1b56a67121a5bdc297a63066f",
+  "before": "startup-cleanup-before-stage28.json",
+  "observedBefore": {
+    "alignment": 1,
+    "motion": 1,
+    "numbers": 1
+  },
+  "validation": {
+    "command": "node tests/startup-failure.browser.cjs",
+    "exitCode": 0,
+    "phases": [
+      "fonts",
+      "initializing",
+      "first-frame",
+      "second-frame",
+      "number-timer",
+      "healthy"
+    ],
+    "targetedLintAndFormatPassed": true
+  },
+  "performanceBinding": "Stage27 report remains bound to stage27 source; no new 60-run benchmark for startup cleanup only."
+}

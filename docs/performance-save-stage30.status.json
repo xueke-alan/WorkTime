@@ -1,0 +1,10 @@
+{
+  "state": "finished",
+  "startedAt": "2026-10-02T10:59:27.476Z",
+  "finishedAt": "2026-10-02T11:00:01.728Z",
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "originalSha256": "5f2e524961aacd84eef5d18f013cdfd0ce587fad593924db75ea13e9bd93640e",
+  "scope": "20 one-year prefix samples; identical seed, firstScreen/save actions, settle/metrics and persistence assertions"
+}

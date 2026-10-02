@@ -1,0 +1,401 @@
+{
+  "browser": "154.0.4258.48",
+  "supportChecked": 841,
+  "unsupported": [],
+  "removed": [
+    {
+      "selector": "#backup.is-holding .backup-idle-icon",
+      "conditions": [],
+      "property": "visibility",
+      "value": "hidden",
+      "important": false,
+      "line": 1640
+    },
+    {
+      "selector": "#backup .backup-hold-icon",
+      "conditions": [],
+      "property": "display",
+      "value": "none",
+      "important": false,
+      "line": 1637
+    },
+    {
+      "selector": "#backup .hold-track",
+      "conditions": [],
+      "property": "stroke",
+      "value": "currentColor",
+      "important": false,
+      "line": 1610
+    },
+    {
+      "selector": "body .calendar .daystatus .pill",
+      "conditions": [],
+      "property": "display",
+      "value": "inline-block",
+      "important": false,
+      "line": 1318
+    },
+    {
+      "selector": "body .month-controls .month-title",
+      "conditions": [],
+      "property": "min-width",
+      "value": "10.571429rem",
+      "important": false,
+      "line": 1143
+    },
+    {
+      "selector": ".panel-head .calendar-toolbar-actions #batchToggle",
+      "conditions": [],
+      "property": "padding-inline",
+      "value": "12px",
+      "important": false,
+      "line": 1036
+    },
+    {
+      "selector": ".panel-head #batchToggle",
+      "conditions": [],
+      "property": "min-height",
+      "value": "35px",
+      "important": false,
+      "line": 896
+    },
+    {
+      "selector": ".panel-head #batchToggle",
+      "conditions": [],
+      "property": "height",
+      "value": "35px",
+      "important": false,
+      "line": 895
+    },
+    {
+      "selector": ".day.weekend:not([data-holiday]):not(.full-leave)::before",
+      "conditions": [],
+      "property": "opacity",
+      "value": "0.62",
+      "important": false,
+      "line": 686
+    },
+    {
+      "selector": ".day.weekend:not([data-holiday]):not(.selected):not(.batchselected):hover",
+      "conditions": [],
+      "property": "border-color",
+      "value": "#c7d3d8",
+      "important": false,
+      "line": 670
+    },
+    {
+      "selector": ".day.weekend:not([data-holiday]):not(.selected):not(.batchselected):hover",
+      "conditions": [],
+      "property": "background",
+      "value": "#e8edf0",
+      "important": false,
+      "line": 669
+    },
+    {
+      "selector": ".day.weekend:not([data-holiday]):not(.selected):not(.batchselected)",
+      "conditions": [],
+      "property": "border-color",
+      "value": "#e2e7eb",
+      "important": false,
+      "line": 666
+    },
+    {
+      "selector": ".day.weekend:not([data-holiday]):not(.selected):not(.batchselected)",
+      "conditions": [],
+      "property": "background",
+      "value": "#eff2f4",
+      "important": false,
+      "line": 665
+    },
+    {
+      "selector": ".workspace > section.panel > .panel-head",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "padding",
+      "value": "16px 16px 13px",
+      "important": false,
+      "line": 427
+    },
+    {
+      "selector": ".calendar[data-weeks=\"6\"] .day",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "padding",
+      "value": "3px 6px",
+      "important": false,
+      "line": 265
+    },
+    {
+      "selector": ".calendar-foot",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "padding",
+      "value": "7px 12px",
+      "important": false,
+      "line": 257
+    },
+    {
+      "selector": ".dayhours",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "font-size",
+      "value": "11px",
+      "important": false,
+      "line": 247
+    },
+    {
+      "selector": ".workspace .day",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "gap",
+      "value": "3px",
+      "important": false,
+      "line": 231
+    },
+    {
+      "selector": ".workspace .day",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "padding",
+      "value": "6px 7px",
+      "important": false,
+      "line": 230
+    },
+    {
+      "selector": ".workspace .calendar",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "padding",
+      "value": "0 10px 9px",
+      "important": false,
+      "line": 224
+    },
+    {
+      "selector": ".workspace .calendar",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "gap",
+      "value": "5px",
+      "important": false,
+      "line": 223
+    },
+    {
+      "selector": ".weekdays",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "padding",
+      "value": "8px 10px 5px",
+      "important": false,
+      "line": 215
+    },
+    {
+      "selector": ".legend",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "margin-top",
+      "value": "8px",
+      "important": false,
+      "line": 209
+    },
+    {
+      "selector": ".month-title",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "min-width",
+      "value": "140px",
+      "important": false,
+      "line": 204
+    },
+    {
+      "selector": ".workspace > section.panel > .panel-head",
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "property": "padding",
+      "value": "12px 14px",
+      "important": false,
+      "line": 198
+    },
+    {
+      "selector": ".legend",
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "property": "gap",
+      "value": "9px",
+      "important": false,
+      "line": 193
+    },
+    {
+      "selector": ".month-title",
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "property": "font-size",
+      "value": "18px",
+      "important": false,
+      "line": 187
+    },
+    {
+      "selector": ".panel-head",
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "property": "padding",
+      "value": "15px 12px",
+      "important": false,
+      "line": 143
+    },
+    {
+      "selector": ".calendar-foot",
+      "conditions": [],
+      "property": "color",
+      "value": "var(--muted)",
+      "important": false,
+      "line": 118
+    },
+    {
+      "selector": ".dayhours",
+      "conditions": [],
+      "property": "font-weight",
+      "value": "600",
+      "important": false,
+      "line": 108
+    },
+    {
+      "selector": ".daytime",
+      "conditions": [],
+      "property": "color",
+      "value": "#586e65",
+      "important": false,
+      "line": 102
+    },
+    {
+      "selector": ".daykind",
+      "conditions": [],
+      "property": "color",
+      "value": "var(--muted)",
+      "important": false,
+      "line": 98
+    },
+    {
+      "selector": ".daynum",
+      "conditions": [],
+      "property": "font-weight",
+      "value": "600",
+      "important": false,
+      "line": 88
+    },
+    {
+      "selector": ".day.restday",
+      "conditions": [],
+      "property": "background",
+      "value": "#f8f9f5",
+      "important": false,
+      "line": 69
+    },
+    {
+      "selector": ".day",
+      "conditions": [],
+      "property": "border-radius",
+      "value": "9px",
+      "important": false,
+      "line": 61
+    },
+    {
+      "selector": ".weekdays",
+      "conditions": [],
+      "property": "color",
+      "value": "var(--muted)",
+      "important": false,
+      "line": 46
+    },
+    {
+      "selector": ".dot.rest",
+      "conditions": [],
+      "property": "background",
+      "value": "#aab5a0",
+      "important": false,
+      "line": 38
+    },
+    {
+      "selector": ".dot.pending",
+      "conditions": [],
+      "property": "background",
+      "value": "#dbac57",
+      "important": false,
+      "line": 35
+    },
+    {
+      "selector": ".dot.estimate",
+      "conditions": [],
+      "property": "background",
+      "value": "#7790d5",
+      "important": false,
+      "line": 32
+    },
+    {
+      "selector": ".dot",
+      "conditions": [],
+      "property": "margin-right",
+      "value": "4px",
+      "important": false,
+      "line": 29
+    },
+    {
+      "selector": ".dot",
+      "conditions": [],
+      "property": "background",
+      "value": "var(--accent)",
+      "important": false,
+      "line": 27
+    },
+    {
+      "selector": ".dot",
+      "conditions": [],
+      "property": "height",
+      "value": "7px",
+      "important": false,
+      "line": 26
+    },
+    {
+      "selector": ".dot",
+      "conditions": [],
+      "property": "width",
+      "value": "7px",
+      "important": false,
+      "line": 25
+    },
+    {
+      "selector": ".legend",
+      "conditions": [],
+      "property": "color",
+      "value": "var(--muted)",
+      "important": false,
+      "line": 20
+    },
+    {
+      "selector": ".month-title",
+      "conditions": [],
+      "property": "font-weight",
+      "value": "650",
+      "important": false,
+      "line": 11
+    }
+  ],
+  "cleaned": {
+    "duplicates": 0,
+    "empty": 21
+  }
+}

@@ -1,0 +1,6 @@
+node_modules/
+.refactor-backups/
+assets/vendor/
+assets/data/
+scripts/vendor/
+tests/fixtures/

@@ -1,0 +1,282 @@
+/* Residual shared-file rules restored to their component owner. */
+@keyframes ring-drain {
+  to {
+    stroke-dashoffset: 59.69;
+  }
+}
+@keyframes oa-hold-fill {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes backup-hold-fill {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes backup-ripple {
+  from {
+    transform: scale(0.75);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+} /* Shared motion: animate surfaces, never the aligned text layers. */
+body button,
+body button.ui-button:not(.notification-tab):not(#importOpen),
+body .calendar .day:is([data-holiday], .weekend, .full-leave) {
+  transition:
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+body input,
+body select,
+body textarea {
+  transition:
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+
+body button:disabled {
+  transform: none;
+}
+.motion-enter {
+  animation: motion-rise var(--motion-enter) var(--motion-ease)
+    var(--motion-delay, 0ms) backwards;
+}
+.motion-content {
+  animation: motion-fade var(--motion-normal) var(--motion-ease);
+}
+.motion-day {
+  animation: motion-month 280ms var(--motion-ease) var(--motion-delay, 0ms)
+    backwards;
+}
+.motion-selection {
+  animation: motion-selection 240ms ease-out;
+}
+body dialog[open] {
+  animation: motion-dialog 220ms var(--motion-ease);
+}
+/* Keep settings inputs stationary throughout the opening fade. */
+body #settingsDialog[open] {
+  animation-name: motion-fade;
+}
+body dialog[open]::backdrop {
+  animation: motion-fade 220ms ease-out;
+}
+body .feedback-notice {
+  animation: motion-notice 220ms var(--motion-ease);
+}
+body .feedback-notice.motion-leaving {
+  animation: motion-notice-out 180ms ease-in forwards;
+}
+body .leave-popover:not(.hidden) {
+  animation: motion-fade 180ms var(--motion-ease);
+}
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Adjacent dates fade to their resting opacity without a jump at animation end. */
+@keyframes motion-month {
+  from {
+    opacity: 0;
+    transform: translateX(var(--motion-direction, 8px));
+  }
+  to {
+    opacity: var(--day-opacity, 1);
+    transform: translateX(0);
+  }
+}
+@keyframes motion-selection {
+  from {
+    outline: 2px solid #72a99180;
+    outline-offset: -2px;
+  }
+  to {
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+  }
+}
+@keyframes motion-dialog {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes motion-notice {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes motion-notice-out {
+  to {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body .motion-enter,
+  body .motion-content,
+  body .motion-day,
+  body .motion-selection,
+  body dialog[open],
+  body dialog[open]::backdrop,
+  body .feedback-notice,
+  body .feedback-notice.motion-leaving,
+  body .leave-popover:not(.hidden) {
+    animation: none !important;
+  }
+  body button,
+  body button.ui-button,
+  body .card,
+  body .time-template-chip,
+  body .notification-tab svg,
+  body input,
+  body select,
+  body textarea {
+    transition: none !important;
+  }
+  body .notification-tab svg {
+    transform: none !important;
+  }
+}
+
+/* Calendar mode changes reveal the new layout; year navigation follows arrow direction. */
+.motion-calendar-view {
+  animation: motion-calendar-view 300ms var(--motion-ease);
+}
+.motion-calendar-year {
+  animation: motion-calendar-year 300ms var(--motion-ease);
+}
+.motion-year-month {
+  animation: motion-year-month 280ms var(--motion-ease) var(--motion-delay, 0ms)
+    backwards;
+}
+@keyframes motion-calendar-view {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes motion-calendar-year {
+  from {
+    opacity: 0;
+    transform: translateX(var(--motion-direction, 12px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes motion-year-month {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body .motion-calendar-view,
+  body .motion-calendar-year,
+  body .motion-year-month {
+    animation: none !important;
+  }
+}
+
+/* Odometer transitions animate digit strips while the final value stays accessible. */
+.number-roll-up {
+  transform: translate3d(0, calc(-1 * var(--number-row-height, 1.3em)), 0);
+  animation: number-roll-up 400ms var(--motion-ease) var(--number-delay, 0ms)
+    both;
+}
+.number-roll-down {
+  transform: translate3d(0, 0, 0);
+  animation: number-roll-down 400ms var(--motion-ease) var(--number-delay, 0ms)
+    both;
+}
+@keyframes number-roll-up {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, calc(-1 * var(--number-row-height, 1.3em)), 0);
+  }
+}
+@keyframes number-roll-down {
+  from {
+    transform: translate3d(0, calc(-1 * var(--number-row-height, 1.3em)), 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body .number-roll-up,
+  body .number-roll-down {
+    animation: none !important;
+  }
+}
+
+/* First reveal starts only once data, fonts and alignment are ready. */
+.motion-startup {
+  animation: motion-startup 420ms var(--motion-ease) var(--motion-delay, 0ms)
+    backwards;
+}
+@keyframes motion-startup {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body .motion-startup {
+    animation: none !important;
+  }
+}

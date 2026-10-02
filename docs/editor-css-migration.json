@@ -1,0 +1,1998 @@
+{
+  "rules": 307,
+  "sharedBranches": 11,
+  "migrated": [
+    {
+      "selector": ".editor",
+      "line": 243,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-date",
+      "line": 247,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-note",
+      "line": 278,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".calc-preview",
+      "line": 283,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-actions",
+      "line": 290,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-actions .primary",
+      "line": 296,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor",
+      "line": 475,
+      "conditions": [
+        "media:(max-width: 850px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .two",
+      "line": 478,
+      "conditions": [
+        "media:(max-width: 850px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-date",
+      "line": 526,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-date",
+      "line": 538,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor",
+      "line": 674,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .eyebrow",
+      "line": 678,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-date",
+      "line": 681,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .field",
+      "line": 684,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor input,\n.editor select",
+      "line": 688,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .checkline",
+      "line": 692,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-note",
+      "line": 695,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .calc-preview",
+      "line": 699,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor #dayError:empty",
+      "line": 704,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions",
+      "line": 707,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions + .editor-actions",
+      "line": 711,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions button",
+      "line": 714,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .hr",
+      "line": 718,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .source",
+      "line": 721,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".time-entry",
+      "line": 732,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-entry input",
+      "line": 739,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-area",
+      "line": 745,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar",
+      "line": 748,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar > .label",
+      "line": 754,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar #addTimeTemplate",
+      "line": 758,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-list",
+      "line": 767,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-list .template-empty",
+      "line": 777,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip",
+      "line": 781,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip button",
+      "line": 790,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip button:hover",
+      "line": 797,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip .template-fill",
+      "line": 800,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip .template-edit",
+      "line": 806,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-editor h2",
+      "line": 812,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-editor-actions",
+      "line": 816,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-editor-actions button",
+      "line": 822,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-mode-form",
+      "line": 826,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-time-fields",
+      "line": 830,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-time-fields .nextday-toggle",
+      "line": 834,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-overtime-calculator",
+      "line": 838,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-calc-fields",
+      "line": 842,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-calc-fields button",
+      "line": 846,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-calc-result",
+      "line": 852,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-editor-actions",
+      "line": 856,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-editor-actions button",
+      "line": 860,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor",
+      "line": 1126,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .eyebrow,\n.batch-editor .eyebrow",
+      "line": 1129,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .eyebrow::before",
+      "line": 1138,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-date",
+      "line": 1145,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-entry input",
+      "line": 1158,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-note",
+      "line": 1165,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-area",
+      "line": 1168,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip",
+      "line": 1172,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip button:hover",
+      "line": 1177,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip .template-edit",
+      "line": 1180,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar #addTimeTemplate",
+      "line": 1183,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".calc-preview",
+      "line": 1188,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".calc-preview strong",
+      "line": 1194,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-editor-actions button",
+      "line": 1204,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor",
+      "line": 1388,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-date",
+      "line": 1391,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .field",
+      "line": 1395,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor input,\n.editor select",
+      "line": 1399,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .checkline",
+      "line": 1404,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .calc-preview",
+      "line": 1407,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions",
+      "line": 1412,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions button",
+      "line": 1415,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .source",
+      "line": 1418,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .hr",
+      "line": 1421,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor",
+      "line": 1431,
+      "conditions": [
+        "media:(min-width: 1151px) and (max-height: 720px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .field",
+      "line": 1434,
+      "conditions": [
+        "media:(min-width: 1151px) and (max-height: 720px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .calc-preview",
+      "line": 1437,
+      "conditions": [
+        "media:(min-width: 1151px) and (max-height: 720px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions",
+      "line": 1441,
+      "conditions": [
+        "media:(min-width: 1151px) and (max-height: 720px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .hr",
+      "line": 1444,
+      "conditions": [
+        "media:(min-width: 1151px) and (max-height: 720px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-area",
+      "line": 1447,
+      "conditions": [
+        "media:(min-width: 1151px) and (max-height: 720px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor",
+      "line": 1455,
+      "conditions": [
+        "media:(max-width: 1150px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor",
+      "line": 1484,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor",
+      "line": 1582,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-date",
+      "line": 1585,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .field",
+      "line": 1588,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor input,\n.editor select",
+      "line": 1592,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-note",
+      "line": 1596,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .calc-preview",
+      "line": 1599,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions button",
+      "line": 1603,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar",
+      "line": 1613,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar .time-template-list",
+      "line": 1620,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip",
+      "line": 1623,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip button",
+      "line": 1627,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip .template-fill",
+      "line": 1630,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip .template-edit",
+      "line": 1636,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar #addTimeTemplate",
+      "line": 1639,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm .time-fields",
+      "line": 1648,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-control",
+      "line": 1651,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-toggle",
+      "line": 1655,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-toggle .ui-icon",
+      "line": 1665,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-toggle[aria-pressed=\"true\"]",
+      "line": 1671,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-toggle[aria-pressed=\"true\"]:hover:not(:disabled),\n.nextday-toggle[aria-pressed=\"true\"]:focus-visible",
+      "line": 1677,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-toggle[aria-pressed=\"true\"]:focus-visible",
+      "line": 1683,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-toggle[aria-pressed=\"true\"]:active:not(:disabled)",
+      "line": 1688,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-tip",
+      "line": 1691,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-control:has(.nextday-toggle:hover) .nextday-tip,\n.nextday-control:has(.nextday-toggle:focus-visible) .nextday-tip",
+      "line": 1708,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#batchForm .batch-time-fields",
+      "line": 1723,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#batchForm .batch-time-fields .nextday-toggle",
+      "line": 1727,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-template-area .template-toolbar",
+      "line": 1732,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-template-area .template-fill[aria-pressed=\"true\"]",
+      "line": 1737,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar #batchAddTimeTemplate",
+      "line": 1742,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-overtime-calculator",
+      "line": 1758,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-calc-fields",
+      "line": 1763,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-calc-fields .field",
+      "line": 1770,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-calc-fields input:is([type=\"time\"], [type=\"number\"])",
+      "line": 1773,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-calc-fields input:is([type=\"time\"], [type=\"number\"]):focus",
+      "line": 1781,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-calc-fields button",
+      "line": 1786,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-calc-result",
+      "line": 1791,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-calc-fields",
+      "line": 1798,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".batch-calc-fields button",
+      "line": 1801,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm .time-fields",
+      "line": 1806,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".nextday-toggle",
+      "line": 1810,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm .time-fields",
+      "line": 1828,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-control",
+      "line": 1832,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-toggle",
+      "line": 1836,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-toggle .ui-icon",
+      "line": 1846,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-toggle[aria-pressed=\"true\"]",
+      "line": 1850,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-toggle[aria-pressed=\"true\"]:hover:not(:disabled),\n.leave-toggle[aria-pressed=\"true\"]:focus-visible",
+      "line": 1855,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-toggle[aria-expanded=\"true\"]",
+      "line": 1861,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-toggle:disabled",
+      "line": 1865,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-control:has(.leave-toggle:hover) > .nextday-tip,\n.leave-control:has(.leave-toggle:focus-visible) > .nextday-tip",
+      "line": 1873,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-popover",
+      "line": 1878,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .leave-popover .field",
+      "line": 1891,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-popover .editor-note",
+      "line": 1894,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-popover .warnings:empty",
+      "line": 1899,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-popover #dayLeaveDone",
+      "line": 1902,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm .time-fields",
+      "line": 1910,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".leave-toggle",
+      "line": 1914,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".panel.editor",
+      "line": 1921,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-content",
+      "line": 1925,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-content",
+      "line": 1931,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayEditor",
+      "line": 1935,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm",
+      "line": 1940,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm .day-action-row",
+      "line": 1945,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview",
+      "line": 1948,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview strong",
+      "line": 1960,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview .preview-day",
+      "line": 1963,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview .preview-period",
+      "line": 1969,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview .preview-totals",
+      "line": 1976,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview .preview-totals span",
+      "line": 1982,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview .preview-totals strong",
+      "line": 1987,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview .preview-totals small",
+      "line": 1993,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info",
+      "line": 2000,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info-heading",
+      "line": 2009,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info-heading .ui-icon",
+      "line": 2018,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info .notice",
+      "line": 2022,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info .notice button",
+      "line": 2029,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info .source",
+      "line": 2035,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".panel.editor",
+      "line": 2063,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-content",
+      "line": 2067,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info",
+      "line": 2072,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-content",
+      "line": 2079,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info",
+      "line": 2082,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-content",
+      "line": 2088,
+      "conditions": [
+        "media:(max-width: 1150px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info",
+      "line": 2091,
+      "conditions": [
+        "media:(max-width: 1150px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-content",
+      "line": 2097,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info",
+      "line": 2100,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".leave-popover-actions",
+      "line": 2105,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-popover .leave-popover-actions #dayLeaveDone",
+      "line": 2112,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".leave-popover #dayLeaveFull",
+      "line": 2115,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions.day-action-row",
+      "line": 2131,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions.day-action-row button",
+      "line": 2136,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions.day-action-row button",
+      "line": 2143,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info #yearNotice",
+      "line": 2147,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info #yearNotice",
+      "line": 2157,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info #yearNotice",
+      "line": 2164,
+      "conditions": [
+        "media:(max-width: 1150px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info #yearNotice",
+      "line": 2171,
+      "conditions": [
+        "media:(max-width: 540px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info .feedback-list",
+      "line": 2177,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info .feedback-list:empty",
+      "line": 2183,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info .feedback-notice",
+      "line": 2186,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm .time-fields .clock-input",
+      "line": 2412,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm .time-fields .clock-input::-webkit-calendar-picker-indicator",
+      "line": 2415,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar #addTimeTemplate.icon-only",
+      "line": 2470,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip .template-edit.icon-only",
+      "line": 2475,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip .template-edit.icon-only .ui-icon",
+      "line": 2479,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-title",
+      "line": 2527,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-calc-fields label",
+      "line": 2603,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": ".editor",
+      "line": 2640,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-mode-header",
+      "line": 2643,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-day-header .editor-date",
+      "line": 2652,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".batch-editor-header h2",
+      "line": 2655,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor",
+      "line": 2661,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 900px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm .time-fields",
+      "line": 2720,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayForm .time-fields .nextday-toggle,\n#dayForm .time-fields .leave-toggle,\n#batchForm .batch-time-fields input,\n#batchForm .batch-time-fields .nextday-toggle",
+      "line": 2726,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": "#dayForm .time-fields .clock-input",
+      "line": 2735,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-fields .nextday-toggle,\n.editor .time-fields .leave-toggle,\n.editor .batch-time-fields input,\n.editor .batch-time-fields .nextday-toggle",
+      "line": 2740,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": ".editor .time-fields .clock-input",
+      "line": 2751,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-fields .nextday-toggle,\n.editor .time-fields .leave-toggle,\n.editor .batch-time-fields .nextday-toggle",
+      "line": 2757,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": "#dayForm .time-fields .nextday-toggle,\n#dayForm .time-fields .leave-toggle,\n#batchForm .batch-time-fields .nextday-toggle",
+      "line": 2766,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": ".batch-inline-form .batch-time-fields",
+      "line": 2776,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-calc-fields button",
+      "line": 2782,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".batch-inline-form .batch-editor-actions button",
+      "line": 2786,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".template-toolbar #addTimeTemplate,\n.template-toolbar #batchAddTimeTemplate",
+      "line": 2811,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip",
+      "line": 2821,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".time-template-chip button",
+      "line": 2826,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info .notice button",
+      "line": 2832,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".panel.editor",
+      "line": 2891,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor #dayForm .time-fields",
+      "line": 2895,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions.day-action-row button,\n.editor .batch-editor-actions button,\n.editor .batch-calc-fields button",
+      "line": 2901,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-template-chip",
+      "line": 2913,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-template-chip button",
+      "line": 2917,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor #dayForm .time-fields .clock-input",
+      "line": 2922,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .nextday-toggle .ui-icon,\n.editor .leave-toggle .ui-icon",
+      "line": 2925,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .time-template-chip",
+      "line": 2950,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .time-template-chip button",
+      "line": 2956,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .time-template-chip .template-edit.icon-only",
+      "line": 2962,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor #batchForm .batch-calc-fields",
+      "line": 2968,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor #batchCalculateEnd",
+      "line": 2973,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor #batchCalculateEnd .ui-icon",
+      "line": 2979,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .batch-editor-header",
+      "line": 2983,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body button.nextday-toggle,\nbody button.leave-toggle,\nbody #batchCalculateEnd",
+      "line": 2994,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": "body button.nextday-toggle,\nbody button.leave-toggle,\nbody #batchCalculateEnd",
+      "line": 3006,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor #dayForm .time-fields",
+      "line": 3014,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor #batchForm .batch-time-fields",
+      "line": 3019,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor #batchForm .batch-calc-fields",
+      "line": 3022,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": "body #dayForm .time-fields .nextday-toggle,\nbody #dayForm .time-fields .leave-toggle,\nbody #batchForm .batch-time-fields input,\nbody #batchForm .batch-time-fields .nextday-toggle",
+      "line": 3026,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": "body #dayForm .time-fields .clock-input",
+      "line": 3036,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayForm .time-fields .nextday-toggle,\nbody #dayForm .time-fields .leave-toggle,\nbody #batchForm .batch-time-fields .nextday-toggle",
+      "line": 3041,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": ".editor-content",
+      "line": 3056,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 820px) and (max-height: 1050px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-content",
+      "line": 3059,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 820px) and (max-height: 1050px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".editor-info",
+      "line": 3062,
+      "conditions": [
+        "media:(min-width: 1800px) and (min-height: 820px) and (max-height: 1050px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #batchForm input[type=\"time\"]",
+      "line": 3067,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayForm .time-fields .clock-input",
+      "line": 3080,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #batchForm input[type=\"time\"]::-webkit-calendar-picker-indicator",
+      "line": 3083,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #batchForm input[type=\"time\"]::-webkit-datetime-edit",
+      "line": 3086,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #batchForm input[type=\"time\"]:focus",
+      "line": 3091,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-time-fields::after",
+      "line": 3127,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .field > label,\n.editor .time-template-title",
+      "line": 3138,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-template-title",
+      "line": 3146,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-template-area .template-toolbar",
+      "line": 3149,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-template-area .time-template-list",
+      "line": 3158,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-template-area .time-template-chip",
+      "line": 3161,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-template-area .template-fill",
+      "line": 3166,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .time-template-area .template-edit",
+      "line": 3172,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions.day-action-row",
+      "line": 3175,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions.day-action-row button",
+      "line": 3180,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .editor-actions.day-action-row .ui-icon",
+      "line": 3190,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .field > label,\nbody .editor .time-template-title,\nbody .time-template-chip button,\nbody .editor-actions.day-action-row button",
+      "line": 3258,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": "body .editor .editor-date",
+      "line": 3265,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor-content",
+      "line": 3270,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor-info",
+      "line": 3273,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .time-template-area .template-toolbar",
+      "line": 3276,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .field",
+      "line": 3279,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview,\nbody .editor-info .notice,\nbody .editor-info .source",
+      "line": 3282,
+      "conditions": [],
+      "shared": true
+    },
+    {
+      "selector": "body #dayPreview .preview-totals span",
+      "line": 3288,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-totals strong",
+      "line": 3291,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-totals small",
+      "line": 3296,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .field",
+      "line": 3334,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": ".planned-overtime",
+      "line": 3464,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#plannedOvertimeToggle",
+      "line": 3469,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#plannedOvertimeToggle[aria-pressed=\"true\"]",
+      "line": 3476,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .day-action-row #plannedOvertimeArea",
+      "line": 3482,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .day-action-row",
+      "line": 3487,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": ".editor .day-action-row #plannedOvertimeToggle",
+      "line": 3490,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#plannedOvertimeToggle[aria-pressed=\"true\"]",
+      "line": 3494,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#plannedOvertimeToggle[aria-pressed=\"true\"]:hover",
+      "line": 3499,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .editor-actions.day-action-row button",
+      "line": 3516,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #batchForm .batch-editor-actions",
+      "line": 3537,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #batchForm .batch-editor-actions button",
+      "line": 3542,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #batchBar",
+      "line": 3549,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #batchForm",
+      "line": 3554,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #batchForm .batch-editor-actions",
+      "line": 3559,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayForm .day-action-row",
+      "line": 3568,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayForm .day-action-row",
+      "line": 3572,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayPreview",
+      "line": 3577,
+      "conditions": [
+        "media:(min-width: 1151px)"
+      ],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayPreview",
+      "line": 3615,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-day",
+      "line": 3625,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-period",
+      "line": 3634,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-totals",
+      "line": 3639,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-totals > span",
+      "line": 3643,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-totals",
+      "line": 3663,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-totals > span",
+      "line": 3667,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-totals > span:first-child",
+      "line": 3674,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-totals > span:last-child",
+      "line": 3677,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-totals > span + span",
+      "line": 3680,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayForm .time-fields",
+      "line": 3685,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .day-action-row #dayLeaveArea",
+      "line": 3688,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayLeaveToggle",
+      "line": 3693,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayLeaveToggle .ui-icon",
+      "line": 3701,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayLeaveToggle[aria-pressed=\"true\"]",
+      "line": 3705,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayLeaveToggle[aria-expanded=\"true\"]",
+      "line": 3710,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .day-action-row .leave-popover",
+      "line": 3714,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .day-action-row .leave-popover-actions button",
+      "line": 3722,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body\n  .editor\n  .day-action-row\n  .leave-control:has(#dayLeaveToggle:hover)\n  > .nextday-tip",
+      "line": 3726,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #editorInfo[hidden]",
+      "line": 3748,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .time-template-chip",
+      "line": 3754,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .time-template-chip button",
+      "line": 3761,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .template-toolbar",
+      "line": 3767,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayForm .day-action-row",
+      "line": 3853,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor #dayForm .day-action-row #plannedOvertimeArea,\nbody .editor #dayForm .day-action-row #dayLeaveArea",
+      "line": 3856,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body\n  .editor\n  #dayForm\n  .day-action-row\n  :is(#plannedOvertimeToggle, #clearManual, #sourceOpen)",
+      "line": 3863,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body\n  .editor\n  #dayForm\n  .day-action-row\n  :is(#plannedOvertimeToggle, #clearManual, #sourceOpen)",
+      "line": 3888,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .editor-mode-header",
+      "line": 3914,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .editor-day-header .editor-date,\nbody .editor .batch-editor-header h2",
+      "line": 3919,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body .editor .editor-day-header .editor-date,\nbody .editor .batch-editor-header h2",
+      "line": 3947,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview .preview-employment",
+      "line": 3990,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "#dayPreview .preview-employment strong",
+      "line": 3997,
+      "conditions": [],
+      "shared": false
+    },
+    {
+      "selector": "body #dayPreview .preview-employment",
+      "line": 4006,
+      "conditions": [],
+      "shared": false
+    }
+  ]
+}

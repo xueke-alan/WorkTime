@@ -1,0 +1,1700 @@
+{
+  "browser": "msedge",
+  "osScale": "User reports Windows 100%; not changed by automation",
+  "motion": "normal",
+  "complete": true,
+  "rows": [
+    {
+      "windowWidth": 1600,
+      "factor": 1,
+      "mode": "month",
+      "values": {
+        "dpr": 1,
+        "width": 1576,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.48468780517578125,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-100-month.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1,
+      "mode": "year",
+      "values": {
+        "dpr": 1,
+        "width": 1576,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.48468780517578125,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-100-year.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1,
+      "mode": "settings",
+      "values": {
+        "dpr": 1,
+        "width": 1576,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "settingsDialog",
+          "width": 616
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-100-settings.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1,
+      "mode": "template",
+      "values": {
+        "dpr": 1,
+        "width": 1576,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存模板",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "timeTemplateDialog",
+          "width": 336
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-100-template.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1,
+      "mode": "import",
+      "values": {
+        "dpr": 1,
+        "width": 1576,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "导入历史",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "OA系统",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "暂无解析",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "确认导入",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importDialog",
+          "width": 600
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-100-import.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1,
+      "mode": "history",
+      "values": {
+        "dpr": 1,
+        "width": 1576,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "关闭",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importHistoryDialog",
+          "width": 780
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-100-history.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.25,
+      "mode": "month",
+      "values": {
+        "dpr": 1.25,
+        "width": 1261,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339275,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339275,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339275,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.08624916076659872,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-125-month.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.25,
+      "mode": "year",
+      "values": {
+        "dpr": 1.25,
+        "width": 1261,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339275,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339275,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339275,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.08624916076659872,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-125-year.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.25,
+      "mode": "settings",
+      "values": {
+        "dpr": 1.25,
+        "width": 1261,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "settingsDialog",
+          "width": 616
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-125-settings.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.25,
+      "mode": "template",
+      "values": {
+        "dpr": 1.25,
+        "width": 1261,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存模板",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "timeTemplateDialog",
+          "width": 336
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-125-template.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.25,
+      "mode": "import",
+      "values": {
+        "dpr": 1.25,
+        "width": 1261,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "导入历史",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "OA系统",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "暂无解析",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "确认导入",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importDialog",
+          "width": 600
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-125-import.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.25,
+      "mode": "history",
+      "values": {
+        "dpr": 1.25,
+        "width": 1261,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "关闭",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importHistoryDialog",
+          "width": 780
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-125-history.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.5,
+      "mode": "month",
+      "values": {
+        "dpr": 1.5,
+        "width": 1051,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.1435559590657931,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.47688929239905065,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.18975830078125,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14357503255212123,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-150-month.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.5,
+      "mode": "year",
+      "values": {
+        "dpr": 1.5,
+        "width": 1051,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14352544148761126,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.4768587748209825,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.189788818359375,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14354451497393939,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-150-year.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.5,
+      "mode": "settings",
+      "values": {
+        "dpr": 1.5,
+        "width": 1051,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.1435559590657931,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": -0.1435559590657931,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "settingsDialog",
+          "width": 616
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-150-settings.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.5,
+      "mode": "template",
+      "values": {
+        "dpr": 1.5,
+        "width": 1051,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存模板",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "timeTemplateDialog",
+          "width": 336
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-150-template.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.5,
+      "mode": "import",
+      "values": {
+        "dpr": 1.5,
+        "width": 1051,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "导入历史",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "OA系统",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.8102226257324219,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "暂无解析",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.4768892923991075,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "确认导入",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": -0.4768892923991075,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importDialog",
+          "width": 600
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-150-import.png"
+    },
+    {
+      "windowWidth": 1600,
+      "factor": 1.5,
+      "mode": "history",
+      "values": {
+        "dpr": 1.5,
+        "width": 1051,
+        "outerWidth": 1600,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "关闭",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importHistoryDialog",
+          "width": 780
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1600-150-history.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1,
+      "mode": "month",
+      "values": {
+        "dpr": 1,
+        "width": 1896,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.48468780517578125,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-100-month.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1,
+      "mode": "year",
+      "values": {
+        "dpr": 1,
+        "width": 1896,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.48468780517578125,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531219482421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-100-year.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1,
+      "mode": "settings",
+      "values": {
+        "dpr": 1,
+        "width": 1896,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "settingsDialog",
+          "width": 616
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-100-settings.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1,
+      "mode": "template",
+      "values": {
+        "dpr": 1,
+        "width": 1896,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存模板",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "timeTemplateDialog",
+          "width": 336
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-100-template.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1,
+      "mode": "import",
+      "values": {
+        "dpr": 1,
+        "width": 1896,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "导入历史",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "OA系统",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "暂无解析",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "确认导入",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importDialog",
+          "width": 600
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-100-import.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1,
+      "mode": "history",
+      "values": {
+        "dpr": 1,
+        "width": 1896,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "关闭",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.01531982421875,
+            "outline": "3px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importHistoryDialog",
+          "width": 780
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-100-history.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.25,
+      "mode": "month",
+      "values": {
+        "dpr": 1.25,
+        "width": 1517,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339986,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339986,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339986,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.08624916076659872,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-125-month.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.25,
+      "mode": "year",
+      "values": {
+        "dpr": 1.25,
+        "width": 1517,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339986,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339986,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.31375083923339986,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.08624916076659872,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-125-year.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.25,
+      "mode": "settings",
+      "values": {
+        "dpr": 1.25,
+        "width": 1517,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "settingsDialog",
+          "width": 616
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-125-settings.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.25,
+      "mode": "template",
+      "values": {
+        "dpr": 1.25,
+        "width": 1517,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存模板",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "timeTemplateDialog",
+          "width": 336
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-125-template.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.25,
+      "mode": "import",
+      "values": {
+        "dpr": 1.25,
+        "width": 1517,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "导入历史",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "OA系统",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "暂无解析",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "确认导入",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": 0.3137393951416243,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importDialog",
+          "width": 600
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-125-import.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.25,
+      "mode": "history",
+      "values": {
+        "dpr": 1.25,
+        "width": 1517,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "关闭",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.3137699127197493,
+            "outline": "2.4px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importHistoryDialog",
+          "width": 780
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-125-history.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.5,
+      "mode": "month",
+      "values": {
+        "dpr": 1.5,
+        "width": 1264,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.1435445149739536,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.4768778483072964,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.189788818359375,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.1435445149739536,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-150-month.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.5,
+      "mode": "year",
+      "values": {
+        "dpr": 1.5,
+        "width": 1264,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "批量填写",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.1435445149739536,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "计算设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.4768778483072964,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "迁移",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": 0.189788818359375,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "恢复",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.1435445149739536,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": null,
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-150-year.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.5,
+      "mode": "settings",
+      "values": {
+        "dpr": 1.5,
+        "width": 1264,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.1435559590657931,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存设置",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": -0.1435559590657931,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "settingsDialog",
+          "width": 616
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-150-settings.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.5,
+      "mode": "template",
+      "values": {
+        "dpr": 1.5,
+        "width": 1264,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "保存模板",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "timeTemplateDialog",
+          "width": 336
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-150-template.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.5,
+      "mode": "import",
+      "values": {
+        "dpr": 1.5,
+        "width": 1264,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "导入历史",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "OA系统",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.8102226257324219,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "暂无解析",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.4768892923991075,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "取消",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          },
+          {
+            "text": "确认导入",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "primary ui-button",
+            "error": -0.4768892923991075,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importDialog",
+          "width": 600
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-150-import.png"
+    },
+    {
+      "windowWidth": 1920,
+      "factor": 1.5,
+      "mode": "history",
+      "values": {
+        "dpr": 1.5,
+        "width": 1264,
+        "outerWidth": 1920,
+        "scale": 1,
+        "zoom": "1",
+        "overflow": 0,
+        "labels": [
+          {
+            "text": "关闭",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "classes": "ui-button",
+            "error": -0.14355595906573626,
+            "outline": "2.66667px",
+            "outlineStyle": "none"
+          }
+        ],
+        "modal": {
+          "id": "importHistoryDialog",
+          "width": 780
+        },
+        "reduced": false
+      },
+      "screenshot": "native-zoom-full-viewport-1920-150-history.png"
+    }
+  ]
+}

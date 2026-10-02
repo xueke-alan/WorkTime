@@ -1,0 +1,728 @@
+[
+  {
+    "file": "base.css",
+    "line": 122,
+    "selector": ".hidden",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "display",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "calendar.css",
+    "line": 1011,
+    "selector": "body .panel-head .backup-button-group button",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "border-radius",
+        "value": "0"
+      },
+      {
+        "property": "height",
+        "value": "100%"
+      },
+      {
+        "property": "min-height",
+        "value": "0"
+      },
+      {
+        "property": "max-height",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "controls.css",
+    "line": 9,
+    "selector": "body button.ui-button:where(:not(.notification-tab)),\nbody\n  input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([type=\"file\"]):not(\n    [type=\"hidden\"]\n  ),\nbody select",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "border-radius",
+        "value": "var(--control-radius)"
+      },
+      {
+        "property": "padding-block",
+        "value": "0"
+      }
+    ]
+  },
+  {
+    "file": "controls.css",
+    "line": 28,
+    "selector": "body button.icon-only,\nbody button.nextday-toggle",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "width",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "min-width",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "max-width",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "padding",
+        "value": "0"
+      }
+    ]
+  },
+  {
+    "file": "controls.css",
+    "line": 44,
+    "selector": "body .editor #dayForm .time-fields .clock-input,\nbody .editor #batchForm input.clock-input,\nbody #settingsForm input.clock-input,\nbody #timeTemplateForm input.clock-input,\nbody #settingsForm input.number-input,\nbody .editor #batchForm input.number-input,\nbody .editor #dayForm input.number-input",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "controls.css",
+    "line": 97,
+    "selector": "body #timeTemplateName",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "controls.css",
+    "line": 104,
+    "selector": "body button.ui-button:not(.notification-tab):not(#importOpen)",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "font-size",
+        "value": "var(--button-font-size, var(--text-small))"
+      }
+    ]
+  },
+  {
+    "file": "controls.css",
+    "line": 171,
+    "selector": "body #batchAddTimeTemplate",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "width",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "min-width",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "padding",
+        "value": "0"
+      }
+    ]
+  },
+  {
+    "file": "controls.css",
+    "line": 177,
+    "selector": "body .backup-button-group button.ui-button",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "border",
+        "value": "0"
+      }
+    ]
+  },
+  {
+    "file": "controls.css",
+    "line": 181,
+    "selector": "body .backup-button-group button.ui-button + button",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "border-left",
+        "value": "1px solid var(--control-border)"
+      }
+    ]
+  },
+  {
+    "file": "controls.css",
+    "line": 207,
+    "selector": "body #settingsForm input.clock-input,\nbody #settingsForm input.number-input",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "padding-top",
+        "value": "0.285714rem"
+      },
+      {
+        "property": "padding-bottom",
+        "value": "0"
+      }
+    ]
+  },
+  {
+    "file": "date-info.css",
+    "line": 95,
+    "selector": "body .editor #dateInfoPanel[hidden]",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "display",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "dialogs.css",
+    "line": 451,
+    "selector": "body .template-time-fields input,\nbody .template-time-fields .nextday-toggle",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "dialogs.css",
+    "line": 457,
+    "selector": "body .template-time-fields .nextday-toggle",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "width",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-width",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-width",
+        "value": "var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "dialogs.css",
+    "line": 596,
+    "selector": "#settingsForm .breakrow button",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "width",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-width",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-width",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "padding",
+        "value": "0"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 348,
+    "selector": ".batch-inline-form .batch-time-fields .nextday-toggle",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "width",
+        "value": "40px"
+      },
+      {
+        "property": "height",
+        "value": "44px"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1081,
+    "selector": ".editor .time-fields .nextday-toggle,\n.editor .batch-time-fields input,\n.editor .batch-time-fields .nextday-toggle",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--form-control-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--form-control-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--form-control-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1089,
+    "selector": ".editor .time-fields .clock-input",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--form-control-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--form-control-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--form-control-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1095,
+    "selector": ".editor .time-fields .nextday-toggle,\n.editor .batch-time-fields .nextday-toggle",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "width",
+        "value": "var(--form-control-height)"
+      },
+      {
+        "property": "min-width",
+        "value": "var(--form-control-height)"
+      },
+      {
+        "property": "max-width",
+        "value": "var(--form-control-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1107,
+    "selector": ".batch-inline-form .batch-time-fields",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "grid-template-columns",
+        "value": "minmax(0, 1fr) minmax(0, 1fr) var(\n      --form-control-height\n    )"
+      },
+      {
+        "property": "gap",
+        "value": "8px"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1195,
+    "selector": "body .time-template-chip button",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "100%"
+      },
+      {
+        "property": "min-height",
+        "value": "0"
+      },
+      {
+        "property": "max-height",
+        "value": "none"
+      },
+      {
+        "property": "border-radius",
+        "value": "0"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1201,
+    "selector": "body .time-template-chip .template-edit.icon-only",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "width",
+        "value": "30px"
+      },
+      {
+        "property": "min-width",
+        "value": "30px"
+      },
+      {
+        "property": "max-width",
+        "value": "30px"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1228,
+    "selector": "body button.nextday-toggle,\nbody #batchCalculateEnd",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1234,
+    "selector": "body button.nextday-toggle,\nbody #batchCalculateEnd",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "width",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-width",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-width",
+        "value": "var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1246,
+    "selector": ".editor #batchForm .batch-time-fields",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "grid-template-columns",
+        "value": "minmax(0, 1fr) minmax(0, 1fr) var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1252,
+    "selector": "body #dayForm .time-fields .nextday-toggle,\nbody #batchForm .batch-time-fields input,\nbody #batchForm .batch-time-fields .nextday-toggle",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1259,
+    "selector": "body #dayForm .time-fields .clock-input",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1264,
+    "selector": "body #dayForm .time-fields .nextday-toggle,\nbody #batchForm .batch-time-fields .nextday-toggle",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "width",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "min-width",
+        "value": "var(--input-height)"
+      },
+      {
+        "property": "max-width",
+        "value": "var(--input-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1430,
+    "selector": "body .editor .editor-actions.day-action-row button",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--control-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1567,
+    "selector": "body .editor .day-action-row .leave-popover-actions button",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--control-height)"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1579,
+    "selector": "body .editor #editorInfo[hidden]",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "display",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1589,
+    "selector": "body .editor .time-template-chip button",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "calc(var(--control-height) - 2px)"
+      },
+      {
+        "property": "min-height",
+        "value": "0"
+      },
+      {
+        "property": "max-height",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "editor.css",
+    "line": 1608,
+    "selector": "body\n  .editor\n  #dayForm\n  .day-action-row\n  :is(#plannedOvertimeToggle, #clearManual, #sourceOpen)",
+    "conditions": [],
+    "declarations": [
+      {
+        "property": "height",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "min-height",
+        "value": "var(--control-height)"
+      },
+      {
+        "property": "max-height",
+        "value": "var(--control-height)"
+      }
+    ]
+  },
+  {
+    "file": "motion.css",
+    "line": 28,
+    "selector": "*,\n  *::before,\n  *::after",
+    "conditions": [
+      "@media (prefers-reduced-motion: reduce)"
+    ],
+    "declarations": [
+      {
+        "property": "transition",
+        "value": "none"
+      },
+      {
+        "property": "scroll-behavior",
+        "value": "auto"
+      }
+    ]
+  },
+  {
+    "file": "motion.css",
+    "line": 150,
+    "selector": "body .motion-enter,\n  body .motion-content,\n  body .motion-day,\n  body .motion-selection,\n  body dialog[open],\n  body dialog[open]::backdrop,\n  body .feedback-notice,\n  body .feedback-notice.motion-leaving,\n  body .leave-popover:not(.hidden)",
+    "conditions": [
+      "@media (prefers-reduced-motion: reduce)"
+    ],
+    "declarations": [
+      {
+        "property": "animation",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "motion.css",
+    "line": 161,
+    "selector": "body button,\n  body button.ui-button,\n  body .card,\n  body .time-template-chip,\n  body .notification-tab svg,\n  body input,\n  body select,\n  body textarea",
+    "conditions": [
+      "@media (prefers-reduced-motion: reduce)"
+    ],
+    "declarations": [
+      {
+        "property": "transition",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "motion.css",
+    "line": 171,
+    "selector": "body .notification-tab svg",
+    "conditions": [
+      "@media (prefers-reduced-motion: reduce)"
+    ],
+    "declarations": [
+      {
+        "property": "transform",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "motion.css",
+    "line": 218,
+    "selector": "body .motion-calendar-view,\n  body .motion-calendar-year,\n  body .motion-year-month",
+    "conditions": [
+      "@media (prefers-reduced-motion: reduce)"
+    ],
+    "declarations": [
+      {
+        "property": "animation",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "motion.css",
+    "line": 253,
+    "selector": "body .number-roll-up,\n  body .number-roll-down",
+    "conditions": [
+      "@media (prefers-reduced-motion: reduce)"
+    ],
+    "declarations": [
+      {
+        "property": "animation",
+        "value": "none"
+      }
+    ]
+  },
+  {
+    "file": "motion.css",
+    "line": 275,
+    "selector": "body .motion-startup",
+    "conditions": [
+      "@media (prefers-reduced-motion: reduce)"
+    ],
+    "declarations": [
+      {
+        "property": "animation",
+        "value": "none"
+      }
+    ]
+  }
+]

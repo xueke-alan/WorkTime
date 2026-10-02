@@ -1,0 +1,1660 @@
+/* Residual shared-file rules restored to their component owner. */
+#editorInfo {
+  --notice-gutter: 18px;
+  padding-inline: var(--notice-gutter);
+}
+#editorInfo .info-notification {
+  display: flex;
+  flex: none;
+  min-width: 0;
+  width: calc(100% + 2 * var(--notice-gutter));
+  margin-inline: calc(-1 * var(--notice-gutter));
+  padding: 10px var(--notice-gutter);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: #25463f;
+}
+#editorInfo .tone-info {
+  background: #eaf4ef;
+}
+#editorInfo .tone-warning {
+  background: #fff5df;
+}
+#editorInfo .tone-error {
+  background: #fcece9;
+}
+#editorInfo .tone-countdown {
+  background: #eaf1ff;
+}
+#editorInfo .tone-countdown.tone-error {
+  background: #fcece9;
+  color: #a4423e;
+}
+#editorInfo .notification-icon {
+  flex: none;
+}
+#editorInfo .notification-icon svg {
+  display: block;
+}
+#editorInfo .notification-body {
+  flex: 1;
+  min-width: 0;
+}
+#editorInfo .ring-track {
+  opacity: 0.24;
+}
+#editorInfo .ring-progress {
+  stroke-dasharray: 59.69;
+  stroke-dashoffset: 0;
+  transform: rotate(-90deg);
+  transform-origin: 12px 12px;
+  animation: ring-drain 3s linear forwards;
+}
+#editorInfo .ring-count {
+  fill: currentColor;
+  stroke: none;
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-family: var(--font-feedback);
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  #editorInfo {
+    --notice-gutter: 22px;
+  }
+}
+@media (max-width: 1150px) {
+  #editorInfo {
+    --notice-gutter: 20px;
+  }
+}
+@media (max-width: 540px) {
+  #editorInfo {
+    --notice-gutter: 18px;
+  }
+}
+#editorInfo {
+  gap: 0;
+}
+#editorInfo .feedback-list {
+  gap: 0;
+}
+#editorInfo .feedback-list .info-notification + .info-notification,
+#editorInfo .feedback-list:not(:empty) ~ .info-notification:not(.hidden),
+#editorInfo
+  > .info-notification:not(.hidden)
+  ~ .info-notification:not(.hidden) {
+  border-top: 1px solid #d5e0da;
+}
+#editorInfo .ring-count {
+  font-size: 12px;
+  font-weight: 800;
+}
+#editorInfo .info-notification {
+  align-items: center;
+  gap: 7px;
+  padding-block: 8px;
+  font-size: 11px;
+  line-height: 1.35;
+}
+#editorInfo .notification-icon {
+  width: 17px;
+  height: 17px;
+  margin-top: 0;
+}
+#editorInfo .notification-icon svg {
+  width: 17px;
+  height: 17px;
+}
+#editorInfo .notification-body {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+#editorInfo #timeAnomalyNotice {
+  align-items: flex-start;
+}
+#editorInfo #timeAnomalyNotice .notification-body {
+  white-space: normal;
+}
+
+#editorInfo .notification-empty {
+  flex: 1;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px 18px;
+  color: #8aa098;
+  text-align: center;
+}
+#editorInfo .notification-empty svg {
+  width: 58px;
+  height: 58px;
+  fill: none;
+  stroke: #a9beb6;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#editorInfo .notification-empty span {
+  font-size: 13px;
+}
+body .template-fill {
+  font-size: var(--text-small);
+}
+body .notification-empty {
+  font-size: var(--text-small);
+}
+#editorInfo #oaStaleNotice .notification-body {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 1921px) {
+  body #editorInfo .info-notification {
+    font-size: clamp(11px, calc(0.78125vw - 4px), 16px);
+    line-height: 1.5;
+    align-items: flex-start;
+  }
+}
+@media (min-width: 1921px) {
+  body #editorInfo .notification-body {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+@media (min-width: 1921px) {
+  body #editorInfo .notification-icon,
+  body #editorInfo .notification-icon svg {
+    width: 1.25em;
+    height: 1.25em;
+  }
+}
+@media (min-width: 1921px) {
+  body #editorInfo .notification-icon {
+    margin-top: 0.125em;
+  }
+}
+@media (min-width: 1921px) {
+  body #editorInfo .notification-empty span {
+    font-size: 1rem;
+  }
+}
+.editor {
+  padding: 21px;
+  position: static;
+}
+.editor-note {
+  font-size: 11px;
+  margin-top: 8px;
+}
+.calc-preview {
+  margin-top: 17px;
+  padding: 12px;
+  font-size: 12px;
+}
+.editor-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 17px;
+  flex-wrap: wrap;
+}
+.editor-actions .primary {
+  flex: 1;
+}
+@media (max-width: 850px) {
+  .editor {
+    position: static;
+  }
+}
+@media (max-width: 850px) {
+  .editor .two {
+    max-width: 100%;
+  }
+}
+@media (max-width: 540px) {
+  .editor-date {
+    font-size: 21px;
+  }
+}
+.editor-date {
+  font-size: 21px;
+}
+@media (min-width: 1151px) {
+  .editor {
+    overflow: auto;
+  }
+}
+@media (min-width: 1151px) {
+  .editor-note {
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+}
+@media (min-width: 1151px) {
+  .editor .calc-preview {
+    line-height: 1.5;
+  }
+}
+@media (min-width: 1151px) {
+  .editor #dayError:empty {
+    display: none;
+  }
+}
+@media (min-width: 1151px) {
+  .editor .editor-actions {
+    gap: 7px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor .editor-actions + .editor-actions {
+    margin-top: 8px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor .editor-actions button {
+    font-size: 12px;
+  }
+}
+
+.time-entry {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+.time-entry input {
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
+.time-template-area {
+  margin-top: 10px;
+}
+.template-toolbar {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.template-toolbar > .label {
+  flex: none;
+  font-size: 11px;
+}
+.template-toolbar #addTimeTemplate {
+  flex: none;
+  line-height: 1;
+  padding: 0;
+  border-radius: 7px;
+  font-size: 17px;
+}
+.time-template-list {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.time-template-list .template-empty {
+  font-size: 11px;
+  color: var(--muted);
+}
+.time-template-chip {
+  display: inline-flex;
+  border: 1px solid #d4e3d1;
+  overflow: hidden;
+  flex: none;
+}
+.time-template-chip button {
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  padding: 4px 7px;
+  font-size: 11px;
+}
+.time-template-chip .template-fill {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.time-template-chip .template-edit {
+  border-left: 1px solid #d4e3d1;
+  color: var(--muted);
+}
+
+.batch-editor h2 {
+  font-size: 21px;
+  margin-top: 2px;
+}
+.batch-editor-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 18px;
+}
+.batch-editor-actions button {
+  width: 100%;
+  padding: 9px 12px;
+}
+.editor-mode-form {
+  margin: 0;
+  min-width: 0;
+}
+.batch-inline-form .batch-time-fields .nextday-toggle {
+  width: 40px !important;
+  height: 44px !important;
+}
+.batch-inline-form .batch-overtime-calculator {
+  margin-top: 12px;
+  padding-top: 10px;
+}
+.batch-inline-form .batch-calc-fields {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 7px;
+}
+.batch-inline-form .batch-calc-fields button {
+  grid-column: 1/-1;
+  width: 100%;
+}
+.batch-inline-form .batch-calc-result {
+  min-height: 17px;
+  margin-top: 4px;
+}
+.batch-inline-form .batch-editor-actions {
+  margin-top: 12px;
+  flex-direction: row;
+}
+.batch-inline-form .batch-editor-actions button {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+.editor {
+  background: linear-gradient(180deg, #fff, #fdfefd);
+}
+.editor-date {
+  font-weight: 650;
+  letter-spacing: -0.35px;
+}
+.time-entry input {
+  min-height: 34px;
+  font-variant-numeric: tabular-nums;
+}
+.editor-note {
+  color: #8b9b90;
+}
+.time-template-area {
+  padding: 9px 0;
+  border-bottom: 1px solid #eef2ee;
+}
+.time-template-chip {
+  border-color: #cee2d4;
+  background: #edf6ee;
+  border-radius: 6px;
+}
+.time-template-chip button:hover {
+  background: #dfefdf;
+}
+.time-template-chip .template-edit {
+  border-color: #cee2d4;
+}
+.template-toolbar #addTimeTemplate {
+  color: var(--accent);
+  background: #f5faf6;
+  border-color: #d8e7db;
+}
+.calc-preview {
+  background: #eef6f0;
+  border: 1px solid #e4eee5;
+  color: #4e7160;
+  border-radius: 10px;
+}
+.calc-preview strong {
+  color: #20593f;
+}
+.batch-editor-actions button {
+  border-radius: 9px;
+}
+@media (min-width: 1151px) {
+  .editor {
+    padding: 18px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor-date {
+    font-size: 19px;
+    margin-top: 4px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor .field {
+    margin-top: 13px;
+    gap: 5px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor input,
+  .editor select {
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor .calc-preview {
+    margin-top: 15px;
+    padding: 12px;
+    font-size: 12px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor .editor-actions {
+    margin-top: 13px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor .editor-actions button {
+    padding: 7px 10px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor .hr {
+    margin: 16px 0;
+  }
+}
+@media (min-width: 1151px) and (max-height: 720px) {
+  .editor {
+    padding: 14px;
+  }
+}
+@media (min-width: 1151px) and (max-height: 720px) {
+  .editor .field {
+    margin-top: 9px;
+  }
+}
+@media (min-width: 1151px) and (max-height: 720px) {
+  .editor .calc-preview {
+    margin-top: 10px;
+    padding: 9px;
+  }
+}
+@media (min-width: 1151px) and (max-height: 720px) {
+  .editor .editor-actions {
+    margin-top: 10px;
+  }
+}
+@media (min-width: 1151px) and (max-height: 720px) {
+  .editor .hr {
+    margin: 10px 0;
+  }
+}
+@media (min-width: 1151px) and (max-height: 720px) {
+  .time-template-area {
+    padding: 5px 0;
+  }
+}
+@media (max-width: 1150px) {
+  .editor {
+    padding: 20px;
+  }
+}
+@media (max-width: 540px) {
+  .editor {
+    padding: 18px;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor {
+    padding: 22px;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor-date {
+    margin-top: 6px;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor .field {
+    margin-top: 16px;
+    gap: 6px;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor input,
+  .editor select {
+    padding: 9px 11px;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor-note {
+    line-height: 1.7;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor .calc-preview {
+    padding: 14px;
+    margin-top: 18px;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor .editor-actions button {
+    padding: 9px 11px;
+  }
+}
+.template-toolbar {
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 7px;
+  padding: 2px 0;
+}
+.template-toolbar .time-template-list {
+  display: contents;
+}
+.time-template-chip {
+  max-width: none;
+}
+.time-template-chip button {
+  height: 100%;
+}
+.time-template-chip .template-fill {
+  min-width: 64px;
+  max-width: 144px;
+  padding: 6px 12px;
+  text-align: center;
+}
+.time-template-chip .template-edit {
+  padding: 6px 7px;
+}
+.template-toolbar #addTimeTemplate {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+}
+.nextday-control {
+  position: relative;
+  align-self: end;
+}
+.nextday-toggle {
+  width: 36px;
+  height: 37px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #7c9187;
+  background: #f6faf7;
+  border-color: #dce7df;
+}
+.nextday-toggle .ui-icon {
+  width: 21px;
+  height: 21px;
+  fill: currentColor;
+  stroke: none;
+}
+.nextday-toggle[aria-pressed="true"] {
+  color: #155943;
+  background: #d4eadb;
+  border-color: #3b8c68;
+  box-shadow: inset 0 0 0 1px #3b8c6838;
+}
+.nextday-toggle[aria-pressed="true"]:hover:not(:disabled),
+.nextday-toggle[aria-pressed="true"]:focus-visible {
+  color: #fff;
+  background: #155943;
+  border-color: #0e4834;
+}
+.nextday-toggle[aria-pressed="true"]:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px #ffffff30,
+    0 2px 7px #15594326;
+}
+.nextday-toggle[aria-pressed="true"]:active:not(:disabled) {
+  background: #0e4834;
+}
+.nextday-tip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: #254b3e;
+  color: white;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: 0 3px 12px #203b3620;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  z-index: 5;
+}
+.nextday-control:has(.nextday-toggle:hover) .nextday-tip,
+.nextday-control:has(.nextday-toggle:focus-visible) .nextday-tip {
+  visibility: visible;
+  opacity: 1;
+}
+#batchForm .batch-time-fields {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px;
+  gap: 8px;
+}
+#batchForm .batch-time-fields .nextday-toggle {
+  width: 44px;
+  height: 44px;
+}
+
+.batch-template-area .template-toolbar {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  padding: 2px 0;
+}
+.batch-template-area .template-fill[aria-pressed="true"] {
+  color: #155943;
+  background: #d4eadb;
+  font-weight: 600;
+}
+.template-toolbar #batchAddTimeTemplate {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  border-radius: 7px;
+  font-size: 17px;
+  color: var(--accent);
+  background: #f5faf6;
+  border-color: #d8e7db;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.batch-overtime-calculator {
+  margin-top: 14px;
+  padding: 12px 0 0;
+  border-top: 0;
+}
+.batch-calc-fields {
+  display: grid;
+  grid-template-columns: 140px 140px auto;
+  align-items: end;
+  justify-content: start;
+  gap: 8px;
+}
+.batch-calc-fields .field {
+  margin-top: 0;
+}
+.batch-calc-fields input[type="number"] {
+  border-color: #c9d0cc;
+  background: #f4f6f5;
+  color: #45534d;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 1px 2px #34433c0d;
+}
+.batch-calc-fields input[type="number"]:focus {
+  border-color: #8e9a94;
+  background: #fff;
+  box-shadow: 0 0 0 3px #66736d18;
+}
+.batch-calc-fields button {
+  height: 44px;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.batch-calc-result {
+  min-height: 20px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #4f7462;
+}
+@media (max-width: 540px) {
+  .batch-calc-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 540px) {
+  .batch-calc-fields button {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .nextday-toggle {
+    width: 40px;
+    height: 42px;
+  }
+}
+.leave-control {
+  position: relative;
+  align-self: end;
+}
+.leave-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 9px);
+  width: 260px;
+  max-width: calc(100vw - 42px);
+  padding: 16px;
+  border: 1px solid #d7e5dd;
+  border-radius: 13px;
+  background: white;
+  box-shadow: 0 10px 35px #203b3622;
+  z-index: 6;
+}
+.editor .leave-popover .field {
+  margin: 0;
+}
+.leave-popover .editor-note {
+  margin-top: 9px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.leave-popover .warnings:empty {
+  display: none;
+}
+.leave-popover #dayLeaveDone {
+  display: block;
+  margin-top: 12px;
+  margin-left: auto;
+  padding: 6px 14px;
+  font-size: 12px;
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  #dayForm .time-fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 40px 40px;
+    gap: 8px;
+  }
+}
+.panel.editor {
+  padding: 0;
+  overflow: hidden;
+}
+.editor-content {
+  --editor-gutter: 18px;
+  padding: var(--editor-gutter);
+  padding-bottom: 0;
+  min-width: 0;
+}
+.editor-content {
+  display: flex;
+  flex-direction: column;
+}
+#dayEditor {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+#dayForm {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+#dayForm .day-action-row {
+  margin-bottom: 12px;
+}
+#dayPreview {
+  margin-top: auto;
+  margin-bottom: 20px;
+  margin-inline: calc(-1 * var(--editor-gutter));
+  padding-inline: var(--editor-gutter);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  background: #edf4f8;
+  border-color: #d8e6ee;
+  color: #466472;
+}
+#dayPreview strong {
+  color: #1d5664;
+}
+#dayPreview .preview-day {
+  min-height: 48px;
+  display: block;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+#dayPreview .preview-period {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid #d4e1e8;
+  font-size: 11px;
+  color: #5b7580;
+}
+#dayPreview .preview-totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 5px;
+}
+#dayPreview .preview-totals > span {
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.35;
+}
+#dayPreview .preview-totals strong {
+  display: block;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#dayPreview .preview-totals small {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 400;
+  color: #68818b;
+}
+.editor-info {
+  padding: 0 18px 16px;
+  border-top: 1px solid #e1eae4;
+  background: #f6faf7;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.editor-info-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b8678;
+  flex: none;
+}
+.editor-info-heading .ui-icon {
+  width: 15px;
+  height: 15px;
+}
+.editor-info .notice {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  flex: none;
+}
+.editor-info .notice button {
+  font-size: 12px;
+}
+@media (min-width: 1151px) {
+  .panel.editor {
+    display: flex;
+    flex-direction: column;
+  }
+}
+@media (min-width: 1151px) {
+  .editor-content {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: auto;
+  }
+}
+@media (min-width: 1151px) {
+  .editor-info {
+    flex: 0 0 25%;
+    min-height: 0;
+    overflow: auto;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor-content {
+    --editor-gutter: 22px;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor-info {
+    padding: 0 22px 18px;
+    gap: 14px;
+  }
+}
+@media (max-width: 1150px) {
+  .editor-content {
+    --editor-gutter: 20px;
+  }
+}
+@media (max-width: 1150px) {
+  .editor-info {
+    padding: 0 20px 18px;
+    min-height: 170px;
+  }
+}
+@media (max-width: 540px) {
+  .editor-content {
+    --editor-gutter: 18px;
+  }
+}
+@media (max-width: 540px) {
+  .editor-info {
+    padding: 0 18px 16px;
+  }
+}
+
+.leave-popover-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.leave-popover .leave-popover-actions #dayLeaveDone {
+  margin: 0;
+}
+.leave-popover #dayLeaveFull {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #83669c;
+  background: #f5f0fa;
+  border-color: #e1d4ed;
+}
+
+.editor .editor-actions.day-action-row {
+  display: flex;
+}
+.editor .editor-actions.day-action-row button {
+  white-space: nowrap;
+  padding: 7px 4px;
+  font-size: 11px;
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor .editor-actions.day-action-row button {
+    padding: 9px 5px;
+  }
+}
+.editor-info #yearNotice {
+  width: calc(100% + 36px);
+  margin-inline: -18px;
+  border: 0;
+  border-radius: 0;
+  background: #fff8e7;
+  padding: 10px 18px;
+  box-shadow: none;
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor-info #yearNotice {
+    width: calc(100% + 44px);
+    margin-inline: -22px;
+    padding-inline: 22px;
+  }
+}
+@media (max-width: 1150px) {
+  .editor-info #yearNotice {
+    width: calc(100% + 40px);
+    margin-inline: -20px;
+    padding-inline: 20px;
+  }
+}
+@media (max-width: 540px) {
+  .editor-info #yearNotice {
+    width: calc(100% + 36px);
+    margin-inline: -18px;
+    padding-inline: 18px;
+  }
+}
+.editor-info .feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: none;
+}
+.editor-info .feedback-list:empty {
+  display: none;
+}
+.editor-info .feedback-notice {
+  padding: 8px 10px;
+  border-left: 3px solid var(--accent);
+  background: #eaf4ee;
+  color: #235f4e;
+  font-size: 12px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+#dayForm .time-fields .clock-input {
+  padding: 5px 3px;
+}
+#dayForm .time-fields .clock-input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+.template-toolbar #addTimeTemplate.icon-only {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.time-template-chip .template-edit.icon-only {
+  width: 30px;
+  min-width: 30px;
+}
+.time-template-chip .template-edit.icon-only .ui-icon {
+  width: 17px;
+  height: 17px;
+}
+.time-template-title {
+  margin: 0 0 5px;
+  color: #637f70;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.batch-calc-fields label {
+  padding-inline-start: 8px;
+}
+@media (min-width: 1151px) {
+  .editor {
+    --editor-column-gutter: 18px;
+  }
+}
+@media (min-width: 1151px) {
+  .editor-mode-header {
+    height: var(--column-header-height);
+    margin: calc(-1 * var(--editor-gutter)) calc(-1 * var(--editor-gutter)) 0;
+    padding: 0 var(--editor-gutter);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid var(--line);
+  }
+}
+@media (min-width: 1151px) {
+  .editor-day-header .editor-date {
+    margin-top: 2px;
+  }
+}
+@media (min-width: 1151px) {
+  .batch-editor-header h2 {
+    margin: 0;
+    font-size: 19px;
+  }
+}
+@media (min-width: 1800px) and (min-height: 900px) {
+  .editor {
+    --editor-column-gutter: 22px;
+  }
+}
+#dayForm .time-fields {
+  grid-template-columns:
+    minmax(0, 1fr) minmax(0, 1fr) var(--form-control-height)
+    var(--form-control-height);
+  gap: 8px;
+}
+.editor .time-fields .nextday-toggle,
+.editor .batch-time-fields input,
+.editor .batch-time-fields .nextday-toggle {
+  height: var(--form-control-height) !important;
+  min-height: var(--form-control-height) !important;
+  max-height: var(--form-control-height) !important;
+  padding-block: 0;
+}
+.editor .time-fields .clock-input {
+  height: var(--form-control-height) !important;
+  min-height: var(--form-control-height) !important;
+  max-height: var(--form-control-height) !important;
+  padding-block: 0;
+}
+.editor .time-fields .nextday-toggle,
+.editor .batch-time-fields .nextday-toggle {
+  width: var(--form-control-height) !important;
+  min-width: var(--form-control-height) !important;
+  max-width: var(--form-control-height) !important;
+  padding: 0;
+}
+#dayForm .time-fields .nextday-toggle,
+#batchForm .batch-time-fields .nextday-toggle {
+  padding: 0;
+  aspect-ratio: 1;
+}
+.batch-inline-form .batch-time-fields {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(
+      --form-control-height
+    ) !important;
+  gap: 8px !important;
+}
+.batch-inline-form .batch-calc-fields button {
+  height: var(--form-control-height);
+  min-height: var(--form-control-height);
+}
+.batch-inline-form .batch-editor-actions button {
+  height: var(--control-height);
+  min-height: var(--control-height);
+  padding-block: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.template-toolbar #addTimeTemplate,
+.template-toolbar #batchAddTimeTemplate {
+  height: var(--form-control-height);
+  min-height: var(--form-control-height);
+  width: var(--form-control-height);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.time-template-chip {
+  height: var(--form-control-height);
+  min-height: var(--form-control-height);
+  align-items: stretch;
+}
+.time-template-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: 0;
+}
+.editor-info .notice button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  margin: 0 0 0 8px;
+  padding: 3px 9px;
+  vertical-align: middle;
+}
+.panel.editor {
+  --form-control-height: 34px;
+}
+.editor #dayForm .time-fields {
+  gap: 8px;
+}
+.editor .editor-actions.day-action-row button,
+.editor .batch-editor-actions button,
+.editor .batch-calc-fields button {
+  height: var(--form-control-height);
+  min-height: var(--form-control-height);
+  max-height: var(--form-control-height);
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.3;
+}
+.editor .time-template-chip {
+  height: var(--form-control-height);
+  min-height: var(--form-control-height);
+}
+.editor .time-template-chip button {
+  min-height: 0;
+  height: 100%;
+  padding-block: 0;
+}
+.editor #dayForm .time-fields .clock-input {
+  padding-block: 0;
+}
+.editor .nextday-toggle .ui-icon {
+  width: 18px;
+  height: 18px;
+}
+body .time-template-chip {
+  height: var(--control-height);
+  min-height: var(--control-height);
+  border-radius: var(--control-radius);
+  overflow: hidden;
+}
+body .time-template-chip button {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+}
+body .time-template-chip .template-edit.icon-only {
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
+  flex-basis: 30px;
+}
+.editor #batchForm .batch-calc-fields {
+  gap: 8px;
+  align-items: end;
+}
+.editor #batchCalculateEnd {
+  grid-column: auto;
+  color: #7c9187;
+  background: #f6faf7;
+  border-color: #dce7df;
+}
+.editor #batchCalculateEnd .ui-icon {
+  width: 18px;
+  height: 18px;
+}
+.editor .batch-editor-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+body button.nextday-toggle,
+body #batchCalculateEnd {
+  height: var(--input-height) !important;
+  min-height: var(--input-height) !important;
+  max-height: var(--input-height) !important;
+}
+body button.nextday-toggle,
+body #batchCalculateEnd {
+  width: var(--input-height) !important;
+  min-width: var(--input-height) !important;
+  max-width: var(--input-height) !important;
+  flex-basis: var(--input-height);
+}
+.editor #dayForm .time-fields {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--input-height) var(
+      --input-height
+    );
+}
+.editor #batchForm .batch-time-fields {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--input-height) !important;
+}
+.editor #batchForm .batch-calc-fields {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--input-height);
+}
+body #dayForm .time-fields .nextday-toggle,
+body #batchForm .batch-time-fields input,
+body #batchForm .batch-time-fields .nextday-toggle {
+  height: var(--input-height) !important;
+  min-height: var(--input-height) !important;
+  max-height: var(--input-height) !important;
+}
+body #dayForm .time-fields .clock-input {
+  height: var(--input-height) !important;
+  min-height: var(--input-height) !important;
+  max-height: var(--input-height) !important;
+}
+body #dayForm .time-fields .nextday-toggle,
+body #batchForm .batch-time-fields .nextday-toggle {
+  width: var(--input-height) !important;
+  min-width: var(--input-height) !important;
+  max-width: var(--input-height) !important;
+}
+@media (min-width: 1800px) and (min-height: 820px) and (max-height: 1050px) {
+  .editor-content {
+    --editor-gutter: 20px;
+  }
+}
+@media (min-width: 1800px) and (min-height: 820px) and (max-height: 1050px) {
+  .editor-content {
+    flex: 1 1 0;
+  }
+}
+@media (min-width: 1800px) and (min-height: 820px) and (max-height: 1050px) {
+  .editor-info {
+    flex-basis: 28%;
+  }
+}
+body .editor #dayForm .time-fields .clock-input {
+  padding-inline: 4px;
+}
+.editor .editor-time-fields::after {
+  content: "";
+  grid-column: 1/-1;
+  justify-self: center;
+  width: calc(100% - 8px);
+  height: 1px;
+  margin-top: 4px;
+  background: var(--line);
+}
+.editor .field > label,
+.editor .time-template-title {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #637f70;
+  padding-inline-start: 8px;
+}
+.editor .time-template-title {
+  margin: 0 0 6px;
+}
+.editor .time-template-area .template-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  overflow: visible;
+  padding: 0;
+  min-width: 0;
+}
+.editor .time-template-area .time-template-list {
+  display: contents;
+}
+.editor .time-template-area .time-template-chip {
+  flex: 0 1 auto;
+  max-width: 100%;
+  min-width: 0;
+}
+.editor .time-template-area .template-fill {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 144px;
+  padding-inline: 12px;
+}
+.editor .time-template-area .template-edit {
+  flex-shrink: 0;
+}
+.editor .editor-actions.day-action-row {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.editor .editor-actions.day-action-row button {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  padding-inline: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.editor .editor-actions.day-action-row .ui-icon {
+  width: 16px;
+  height: 16px;
+}
+body .editor .field > label,
+body .editor .time-template-title,
+body .time-template-chip button,
+body .editor-actions.day-action-row button {
+  font-size: var(--text-small);
+}
+body .editor .editor-date {
+  font-size: 1.571429rem;
+  line-height: 1.3;
+  margin-top: 0;
+}
+body .editor-content {
+  --editor-gutter: 1.428571rem;
+}
+body .editor-info {
+  padding-inline: 1.428571rem;
+}
+body .editor .time-template-area .template-toolbar {
+  gap: var(--space-unit);
+}
+body .editor .field {
+  gap: 0.428571rem;
+}
+body #dayPreview,
+body .editor-info .notice {
+  font-size: var(--text-small);
+}
+body #dayPreview .preview-totals > span {
+  font-size: var(--text-small);
+}
+body #dayPreview .preview-totals strong {
+  font-size: 1.071429rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+body #dayPreview .preview-totals small {
+  font-size: var(--text-small);
+}
+@media (min-width: 1151px) {
+  body .editor .field {
+    margin-top: 0.928571rem;
+  }
+}
+.planned-overtime {
+  margin-top: 0.857143rem;
+  display: flex;
+  justify-content: flex-end;
+}
+#plannedOvertimeToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.357143rem;
+  font-size: var(--text-small);
+  padding: 0.428571rem 0.714286rem;
+}
+.editor .day-action-row #plannedOvertimeArea {
+  margin-top: 0;
+  margin-right: auto;
+  flex: 0 0 auto;
+}
+.editor .day-action-row {
+  align-items: center;
+}
+.editor .day-action-row #plannedOvertimeToggle {
+  padding-inline: 0.571429rem;
+}
+
+#plannedOvertimeToggle[aria-pressed="true"] {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+#plannedOvertimeToggle[aria-pressed="true"]:hover {
+  color: #fff;
+  background: #10634f;
+  border-color: #10634f;
+}
+body .editor .editor-actions.day-action-row button {
+  height: var(--control-height) !important;
+  min-height: var(--control-height) !important;
+  max-height: var(--control-height) !important;
+  padding-block: 0;
+  line-height: 1;
+  align-items: center;
+}
+body .editor #batchForm .batch-editor-actions {
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 0.571429rem;
+}
+body .editor #batchForm .batch-editor-actions button {
+  flex: 0 0 auto;
+  width: auto;
+  padding-inline: 0.857143rem;
+  white-space: nowrap;
+}
+@media (min-width: 1151px) {
+  body .editor #batchBar {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+}
+@media (min-width: 1151px) {
+  body .editor #batchForm {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+}
+@media (min-width: 1151px) {
+  body .editor #batchForm .batch-editor-actions {
+    margin-top: auto;
+    padding-top: 0.857143rem;
+    padding-bottom: var(--editor-gutter);
+    flex: none;
+  }
+}
+@media (min-width: 1151px) {
+  body .editor #dayForm .day-action-row {
+    margin-top: auto;
+    padding-top: 0.857143rem;
+    flex: none;
+  }
+}
+@media (min-width: 1151px) {
+  body .editor #dayPreview {
+    margin-top: 0;
+    flex: none;
+  }
+}
+body .editor #dayPreview {
+  margin-inline: 0;
+  margin-bottom: var(--editor-gutter);
+  padding: 0.857143rem;
+  border: 1px solid #d8e6ee;
+  border-radius: 0.857143rem;
+  background: #f2f7fa;
+  box-shadow: 0 2px 8px #203b3605;
+}
+body #dayPreview .preview-day {
+  height: 3.2em;
+  min-height: 3.2em;
+  max-height: 3.2em;
+  line-height: 1.6;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+body #dayPreview .preview-period {
+  font-size: var(--text-small);
+  margin-top: 0.714286rem;
+  padding-top: 0.571429rem;
+}
+body #dayPreview .preview-totals {
+  margin-top: 0.571429rem;
+}
+body #dayPreview .preview-totals {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+}
+body #dayPreview .preview-totals > span {
+  padding: 0.142857rem 0.571429rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body #dayPreview .preview-totals > span:first-child {
+  padding-inline-start: 0;
+}
+body #dayPreview .preview-totals > span:last-child {
+  padding-inline-end: 0;
+}
+body #dayPreview .preview-totals > span + span {
+  border-inline-start: 1px solid #dce7ed;
+}
+body .editor #dayForm .time-fields {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--input-height);
+}
+body .editor .day-action-row #dayLeaveArea {
+  margin-right: auto;
+  flex: 0 0 auto;
+  align-self: end;
+}
+body .editor #dayLeaveToggle {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  padding-inline: 0.714286rem;
+  display: inline-flex;
+  gap: 0.357143rem;
+}
+body .editor #dayLeaveToggle .ui-icon {
+  width: 1.142857rem;
+  height: 1.142857rem;
+}
+body .editor #dayLeaveToggle[aria-pressed="true"] {
+  color: var(--red);
+  background: #fbeeea;
+  border-color: #e6b8b2;
+}
+body .editor #dayLeaveToggle[aria-expanded="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px #157e6814;
+}
+body .editor .day-action-row .leave-popover {
+  top: auto;
+  bottom: calc(100% + 0.571429rem);
+  left: 0;
+  right: auto;
+  width: min(260px, calc(22rem - 2 * var(--editor-gutter)));
+  max-width: calc(100vw - 80px);
+}
+body .editor .day-action-row .leave-popover-actions button {
+  height: var(--control-height) !important;
+  min-height: var(--control-height) !important;
+}
+body
+  .editor
+  .day-action-row
+  .leave-control:has(#dayLeaveToggle:hover)
+  > .nextday-tip {
+  visibility: visible;
+  opacity: 1;
+}
+body .editor #editorInfo[hidden] {
+  display: none !important;
+}
+body .editor .time-template-chip {
+  height: var(--control-height);
+  min-height: var(--control-height);
+  max-height: var(--control-height);
+  display: inline-flex;
+  align-items: stretch;
+}
+body .editor .time-template-chip button {
+  height: calc(var(--control-height) - 2px) !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0;
+}
+body .editor .template-toolbar {
+  align-items: center;
+}
+body .editor #dayForm .day-action-row {
+  align-items: center;
+}
+body .editor #dayForm .day-action-row #plannedOvertimeArea,
+body .editor #dayForm .day-action-row #dayLeaveArea {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  line-height: 1;
+}
+body
+  .editor
+  #dayForm
+  .day-action-row
+  :is(#plannedOvertimeToggle, #clearManual, #sourceOpen) {
+  box-sizing: border-box;
+  height: var(--control-height) !important;
+  min-height: var(--control-height) !important;
+  max-height: var(--control-height) !important;
+  margin-block: 0;
+  border-width: 1px;
+  line-height: 1;
+}
+body
+  .editor
+  #dayForm
+  .day-action-row
+  :is(#plannedOvertimeToggle, #clearManual, #sourceOpen) {
+  font-size: var(--text-small);
+  gap: 0.357143rem;
+  align-items: center;
+  justify-content: center;
+}
+body .editor .editor-mode-header {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+body .editor .editor-day-header .editor-date,
+body .editor .batch-editor-header h2 {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+}
+body .editor .editor-day-header .editor-date,
+body .editor .batch-editor-header h2 {
+  transform: translateY(calc(var(--ui-ink-offset, 0px) + 0.142857rem));
+}
+#dayPreview .preview-employment {
+  margin-top: 0.714286rem;
+  padding-top: 0.571429rem;
+  border-top: 1px solid #d4e1e8;
+  font-size: var(--text-small);
+  color: #5b7580;
+}
+#dayPreview .preview-employment strong {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+body #dayPreview .preview-employment {
+  padding-top: 0.857143rem;
+  line-height: 1.3;
+}

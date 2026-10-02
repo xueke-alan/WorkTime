@@ -1,0 +1,44 @@
+/* Shared theme, scale and motion tokens. Component overrides stay with their owners. */
+:root {
+  --ink: #233c3a;
+  --muted: #738681;
+  --accent: #157e68;
+  --accent-light: #e7f5ef;
+  --bg: #eef3f1;
+  --line: #e4ece8;
+  --amber: #a86d17;
+  --red: #bc554c;
+  --shadow:
+    0 4px 20px rgba(30, 68, 58, 0.035), 0 1px 3px rgba(30, 68, 58, 0.025);
+  --paper: #fff;
+  --form-control-height: var(--control-height);
+  --control-height: 2.428571rem;
+  --control-radius: 0.571429rem;
+  --input-height: 2.714286rem;
+  --ui-unit: clamp(14px, calc(0.4375vw + 5.6px), 16.8px);
+  --text-body: 1rem;
+  --text-small: 0.857143rem;
+  --text-title: 1.714286rem;
+  --text-number: 1.857143rem;
+  --space-unit: 0.571429rem;
+  --control-border: #d7e3de;
+  --control-hover: #eef5f1;
+  --control-shadow: 0 1px 2px #203b3608;
+  --clock-background: #f8fcfa;
+  --clock-border: #9dc4b5;
+  --clock-ink: #244e40;
+  --clock-placeholder: #839f93;
+  --clock-font: 16px;
+  --motion-fast: 160ms;
+  --motion-normal: 240ms;
+  --motion-enter: 360ms;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-ui:
+    "Bahnschrift", "Segoe UI Variable", "Segoe UI", "Microsoft YaHei",
+    sans-serif;
+  --font-numeric:
+    "Bahnschrift", "Cascadia Mono", "Consolas", "Microsoft YaHei", sans-serif;
+  --font-almanac: "Bahnschrift", "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-countdown: "Bahnschrift", "Cascadia Mono", "Consolas", monospace;
+  --font-feedback: "Bahnschrift", "Segoe UI", sans-serif;
+}

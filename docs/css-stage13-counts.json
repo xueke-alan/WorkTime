@@ -1,0 +1,56 @@
+[
+  {
+    "file": "calendar.css",
+    "rules": 304,
+    "declarations": 811,
+    "important": 4
+  },
+  {
+    "file": "controls.css",
+    "rules": 26,
+    "declarations": 86,
+    "important": 23
+  },
+  {
+    "file": "date-info.css",
+    "rules": 120,
+    "declarations": 349,
+    "important": 1
+  },
+  {
+    "file": "dialogs.css",
+    "rules": 161,
+    "declarations": 397,
+    "important": 22
+  },
+  {
+    "file": "editor.css",
+    "rules": 285,
+    "declarations": 800,
+    "important": 57
+  },
+  {
+    "file": "motion.css",
+    "rules": 49,
+    "declarations": 70,
+    "important": 6
+  },
+  {
+    "file": "styles.css",
+    "rules": 270,
+    "declarations": 706,
+    "important": 6
+  },
+  {
+    "file": "summary.css",
+    "rules": 295,
+    "declarations": 684,
+    "important": 0
+  },
+  {
+    "file": "tokens.css",
+    "rules": 1,
+    "declarations": 33,
+    "important": 0
+  }
+]

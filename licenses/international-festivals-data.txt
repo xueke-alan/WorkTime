@@ -1,0 +1,4 @@
+国际节日资料来自中文维基百科每日日期条目的节假日和习俗段落。
+Copyright Wikipedia contributors. CC BY-SA 4.0: https://creativecommons.org/licenses/by-sa/4.0/
+每条 sourceUrl 保存来源修订版本，url 指向简体中文页面。文本经 OpenCC 转为简体并提取名称。
+抓取日期：2026-10-01。维护脚本：scripts/update-international-festivals.cjs。

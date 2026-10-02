@@ -1,0 +1,19 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "width": 1610,
+      "timeWidth": 169.03125,
+      "dateWidth": 169.03125,
+      "leftDifference": 0,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "timeWidth": 122.3125,
+      "dateWidth": 122.3125,
+      "leftDifference": 0,
+      "overflow": false
+    }
+  ]
+}
