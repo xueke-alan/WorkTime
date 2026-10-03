@@ -13,7 +13,7 @@
     disposed = false,
     visible = false,
     timer = null;
-  const cacheKey = "worktime.weather.v1.";
+  const cacheKey = "worktime.weather.baidu.v1.";
   function resolveCity(value) {
     const text = String(value || "").trim();
     const exact = cities.filter(
@@ -32,16 +32,96 @@
       Number.isFinite(Date.parse(value.validAt)) &&
       value.timezone === "Asia/Shanghai" &&
       value.units?.temperature === "°C" &&
-      value.units?.wind === "m/s" &&
+      value.source === "百度天气" &&
       typeof value.current?.temperature === "number" &&
       Number.isFinite(value.current.temperature) &&
       Array.isArray(value.hourly) &&
-      value.hourly.length === 24 &&
+      value.hourly.length <= 24 &&
       value.hourly.every((row) => Number.isFinite(Date.parse(row.time))) &&
       Array.isArray(value.daily) &&
-      value.daily.length === 7 &&
+      value.daily.length >= 1 &&
       value.daily.every((row) => /^\d{4}-\d{2}-\d{2}$/.test(row.date))
     );
+  }
+  const number = (v) =>
+    typeof v === "number" && Number.isFinite(v) && v !== 999999 ? v : null;
+  function conditionCode(text) {
+    if (typeof text !== "string") return null;
+    if (text.includes("雷")) return 95;
+    if (text.includes("雪")) return 71;
+    if (/雨|冰雹/.test(text)) return 61;
+    if (/雾|霾|沙|尘/.test(text)) return 45;
+    if (text.includes("阴")) return 3;
+    if (text.includes("云")) return 2;
+    if (text.includes("晴")) return 0;
+    return null;
+  }
+  function beijingTime(value) {
+    if (typeof value !== "string" || !/^\d{14}$/.test(value)) return "";
+    return (
+      value.slice(0, 4) +
+      "-" +
+      value.slice(4, 6) +
+      "-" +
+      value.slice(6, 8) +
+      "T" +
+      value.slice(8, 10) +
+      ":" +
+      value.slice(10, 12) +
+      ":" +
+      value.slice(12, 14) +
+      "+08:00"
+    );
+  }
+  function normalize(snapshot, target) {
+    const { weatherKey: key, districtId } = target;
+    const entry = snapshot?.cities?.[key];
+    const raw = entry?.result;
+    const location = raw?.location || raw?.address;
+    if (
+      snapshot?.schemaVersion !== 1 ||
+      entry?.districtId !== districtId ||
+      String(location?.id) !== districtId ||
+      !raw?.now ||
+      !Array.isArray(raw.forecasts)
+    )
+      throw Error("城市天气数据不完整");
+    const value = {
+      cityId: target.id,
+      name: target.label,
+      source: "百度天气",
+      fetchedAt: snapshot.updatedAt,
+      validAt: beijingTime(raw.now.uptime),
+      timezone: "Asia/Shanghai",
+      units: { temperature: "°C", wind: "级" },
+      current: {
+        temperature: number(raw.now.temp),
+        apparentTemperature: number(raw.now.feels_like),
+        humidity: number(raw.now.rh),
+        weatherCode: conditionCode(raw.now.text),
+        text: raw.now.text,
+        windClass: raw.now.wind_class,
+        windDirectionText: raw.now.wind_dir,
+      },
+      hourly: (Array.isArray(raw.forecast_hours) ? raw.forecast_hours : [])
+        .map((row) => ({
+          time: beijingTime(row.data_time),
+          temperature: number(row.temp_fc),
+          precipitationProbability: number(row.pop),
+        }))
+        .filter((row) => Number.isFinite(Date.parse(row.time)))
+        .slice(0, 24),
+      daily: raw.forecasts.map((row) => ({
+        date: row.date,
+        weatherCode: conditionCode(row.text_day),
+        text: row.text_day,
+        high: number(row.high),
+        low: number(row.low),
+        precipitationProbability: null,
+      })),
+    };
+    if (!validRecord(value, target.id)) throw Error("城市天气数据不完整");
+    return value;
   }
   function cached(id) {
     try {
@@ -55,16 +135,16 @@
     document.dispatchEvent(new Event("worktime:weather"));
   }
   function baseUrl() {
-    const base = new URL(config.pagesBaseUrl);
+    const url = new URL(config.snapshotUrl);
     if (
-      base.protocol !== "https:" ||
-      !base.hostname.endsWith(".github.io") ||
-      base.search ||
-      base.hash
+      url.protocol !== "https:" ||
+      url.hostname !== "raw.githubusercontent.com" ||
+      url.pathname !== "/xueke-alan/WorkTime/main/data/weather.json" ||
+      url.search ||
+      url.hash
     )
-      throw Error("天气数据地址须为 HTTPS github.io 地址");
-    if (!base.pathname.endsWith("/")) base.pathname += "/";
-    return new URL(config.dataPath, base);
+      throw Error("天气数据地址配置无效");
+    return url;
   }
   async function json(url, signal) {
     const response = await fetch(url, {
@@ -74,7 +154,10 @@
     });
     if (!response.ok) throw Error("天气文件暂时无法读取");
     // Redirects must not silently introduce another network dependency.
-    if (response.url && !new URL(response.url).hostname.endsWith(".github.io"))
+    if (
+      response.url &&
+      new URL(response.url).hostname !== "raw.githubusercontent.com"
+    )
       throw Error("天气数据地址发生异常跳转");
     return response.json();
   }
@@ -97,30 +180,8 @@
     message = "";
     notify();
     try {
-      let result;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const base = baseUrl();
-        const index = await json(
-          new URL("index.json", base),
-          requestController.signal,
-        );
-        const file = index.provinces?.[target.provinceId];
-        if (
-          index.schemaVersion !== 1 ||
-          typeof index.version !== "string" ||
-          file !== target.provinceId + ".json"
-        )
-          throw Error("尚无该城市天气数据");
-        const url = new URL(file, base);
-        url.searchParams.set("v", index.version);
-        const province = await json(url, requestController.signal);
-        if (province.version !== index.version) continue;
-        result = province.cities?.[target.id];
-        if (province.schemaVersion !== 1 || !validRecord(result, target.id))
-          throw Error("城市天气数据不完整");
-        break;
-      }
-      if (!result) throw Error("天气数据正在更新，请稍后刷新");
+      const snapshot = await json(baseUrl(), requestController.signal);
+      const result = normalize(snapshot, target);
       if (disposed || token !== generation) return;
       record = result;
       try {
@@ -222,6 +283,7 @@
     g.removeEventListener("pagehide", dispose);
   }
   g.WorkWeather = {
+    normalize,
     resolveCity,
     validRecord,
     setCity,

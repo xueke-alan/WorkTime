@@ -9,7 +9,7 @@
   const number = (v, unit = "") =>
     typeof v === "number" && Number.isFinite(v)
       ? Math.round(v * 10) / 10 + unit
-      : "—";
+      : "暂无";
   function time(value) {
     return new Date(value).toLocaleString("zh-CN", {
       timeZone: "Asia/Shanghai",
@@ -45,8 +45,8 @@
     for (const [label, text] of [
       ["体感", number(now.apparentTemperature, "°C")],
       ["湿度", number(now.humidity, "%")],
-      ["风速", number(now.windSpeed, " m/s")],
-      ["风向", number(now.windDirection, "°")],
+      ["风力", now.windClass || "暂无"],
+      ["风向", now.windDirectionText || "暂无"],
     ])
       dl.append(node("dt", label), node("dd", text));
     panel.append(dl);
@@ -62,6 +62,8 @@
     if (value.stale) age.classList.add("weather-stale");
     panel.append(age, node("h3", "未来24小时"));
     const hourly = node("div", undefined, "weather-hourly");
+    if (!r.hourly.length)
+      hourly.append(node("p", "暂无逐小时预报", "date-info-empty"));
     for (const row of r.hourly) {
       const card = node("div", undefined, "weather-hour");
       card.append(
@@ -80,7 +82,7 @@
       );
       hourly.append(card);
     }
-    panel.append(hourly, node("h3", "7天预报"));
+    panel.append(hourly, node("h3", r.daily.length + "天预报"));
     const daily = node("div", undefined, "weather-daily");
     for (const row of r.daily) {
       const line = node("div", undefined, "weather-day");
@@ -94,11 +96,7 @@
     }
     panel.append(
       daily,
-      node(
-        "p",
-        "Open-Meteo · CC BY 4.0 · 预报数据经过整理 · 北京时间",
-        "date-info-source",
-      ),
+      node("p", "百度地图天气 · 北京时间", "date-info-source"),
     );
   }
   g.WorkWeatherUI = { render };

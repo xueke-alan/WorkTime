@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
 const { pathToFileURL } = require("node:url");
 const path = require("node:path");
+const cities = require("../assets/data/weather-locations.json");
 
 (async () => {
   const browser = await chromium.launch({ channel: "msedge", headless: true });
@@ -26,14 +27,10 @@ const path = require("node:path");
       const before = await layout();
       await input.focus();
       const list = page.locator("#workCityOptions");
-      assert.deepEqual(await list.locator("[data-city]").allTextContents(), [
-        "上海",
-        "北京",
-        "深圳",
-        "东莞",
-        "成都",
-        "西安",
-      ]);
+      assert.deepEqual(
+        await list.locator("[data-city]").allTextContents(),
+        cities.map((city) => city.name),
+      );
       assert.deepEqual(await layout(), before);
       assert.equal(await input.getAttribute("list"), null);
       assert.equal(
@@ -42,11 +39,14 @@ const path = require("node:path");
       );
       const box = await list.boundingBox();
       assert(box.y >= 0 && box.y + box.height <= 1244);
-      await input.fill("深");
-      assert.deepEqual(await list.locator("[data-city]").allTextContents(), [
-        "深圳",
-      ]);
-      await list.locator("[data-city]").click();
+      const readonly = (await input.getAttribute("readonly")) !== null;
+      if (!readonly) {
+        await input.fill("深");
+        assert.deepEqual(await list.locator("[data-city]").allTextContents(), [
+          "深圳",
+        ]);
+      }
+      await list.locator('[data-city="深圳"]').click();
       assert.equal(await input.inputValue(), "深圳");
       assert(await list.isHidden());
       await input.blur();
@@ -54,9 +54,14 @@ const path = require("node:path");
       await input.press("ArrowUp");
       assert.deepEqual(await layout(), before);
       await input.press("Enter");
-      assert.equal(await input.inputValue(), "西安");
-      await input.fill("无此城市");
-      assert.equal(await list.textContent(), "无匹配城市");
+      assert.equal(await input.inputValue(), "苏州");
+      if (!readonly) {
+        await input.fill("无此城市");
+        assert.equal(await list.textContent(), "无匹配城市");
+      } else {
+        await input.blur();
+        await input.focus();
+      }
       await input.press("Escape");
       assert(await list.isHidden());
       assert(await page.locator("#settingsDialog").evaluate((e) => e.open));
