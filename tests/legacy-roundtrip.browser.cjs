@@ -72,7 +72,10 @@ let browser;
   });
   assert.deepEqual(after, before);
   await page.locator("#sourceOpen").click();
-  assert.match(await page.locator("#sourceBody").innerText(), /旧 OA/);
+  assert.equal(
+    await page.locator("#sourceBody textarea").inputValue(),
+    after.state.imports[0].sources.map((source) => source.raw).join("\n\n"),
+  );
   assert.deepEqual(errors, []);
   console.log(
     "Legacy browser round trip passed: absent settings metadata, raw-only imports, estimates/drafts, custom breaks, statistics and source retained after restore/export/restore.",

@@ -79,6 +79,31 @@ const deficitMonths = Y.months(deficitState, 2026, "2026-10-02"),
 assert(deficitDay.overtime < 0);
 assert(deficitDay.color.ratio > 0);
 assert(deficitDay.description.includes("欠工时"));
+const categories = Y.months(C.defaultState(), 2026, "2026-01-01").flatMap(
+  (month) => month.days,
+);
+const holidayColors = new Set(
+  categories.filter((day) => day.holiday).map((day) => day.color.background),
+);
+const weekendColors = new Set(
+  categories
+    .filter((day) => day.weekend && !day.holiday)
+    .map((day) => day.color.background),
+);
+assert.deepEqual([...holidayColors], ["#f4e7d6"]);
+assert.deepEqual([...weekendColors], ["#dce8e3"]);
+assert.equal(
+  categories.find((day) => day.date === "2026-10-10").weekend,
+  false,
+);
+const restWorkState = C.defaultState();
+restWorkState.days["2026-10-11"] = {
+  actual: { start: "08:00", end: "10:00", nextDay: false },
+};
+assert.notEqual(
+  Y.months(restWorkState, 2026, "2026-10-03")[9].days[10].color.background,
+  "#dce8e3",
+);
 for (const year of [2024, 2026, 2028, 2100]) {
   const months = Y.months(state, year, "2026-10-02"),
     dates = months.flatMap((m) => m.days.map((d) => d.date));

@@ -48,5 +48,5 @@
   }
   reduced.addEventListener("change", onPreference);
   document.addEventListener("visibilitychange", onVisibility);
-  window.WorkMotion = { play, initial, dispose };
+  window.WorkMotion = { play, stop, initial, dispose };
 })();

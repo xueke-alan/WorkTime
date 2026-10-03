@@ -4,9 +4,11 @@
   "private": true,
   "description": "Offline work time records; development tools do not affect file:// use.",
   "scripts": {
+    "test:weather": "node tests/weather.test.cjs && node tests/weather.browser.cjs",
     "test": "node scripts/test.cjs",
-    "test:browser": "node tests/year-view.browser.cjs && node tests/persistence.browser.cjs && node tests/imports.browser.cjs && node tests/concurrency.browser.cjs && node tests/controls.browser.cjs && node tests/button-ink.browser.cjs && node tests/alignment-cache.browser.cjs && node tests/alignment-lifecycle.browser.cjs && node tests/alignment-local.browser.cjs && node tests/alignment-batch.browser.cjs && node tests/editor-flows.browser.cjs && node tests/controller-backup.browser.cjs && node tests/offline-entry.browser.cjs && node tests/startup-failure.browser.cjs && node tests/legacy-roundtrip.browser.cjs && node tests/date-behavior.browser.cjs && node tests/date-info-links.browser.cjs && node tests/continuous-updates.browser.cjs && node tests/day-save-idempotence.browser.cjs && node tests/preview-number-motion.browser.cjs",
+    "test:browser": "node tests/year-view.browser.cjs && node tests/persistence.browser.cjs && node tests/imports.browser.cjs && node tests/concurrency.browser.cjs && node tests/cumulative-average.browser.cjs && node tests/source-preview.browser.cjs && node tests/controls.browser.cjs && node tests/button-ink.browser.cjs && node tests/alignment-cache.browser.cjs && node tests/alignment-lifecycle.browser.cjs && node tests/alignment-local.browser.cjs && node tests/alignment-batch.browser.cjs && node tests/editor-flows.browser.cjs && node tests/controller-backup.browser.cjs && node tests/offline-entry.browser.cjs && node tests/startup-failure.browser.cjs && node tests/legacy-roundtrip.browser.cjs && node tests/date-behavior.browser.cjs && node tests/date-info-links.browser.cjs && node tests/continuous-updates.browser.cjs && node tests/day-save-idempotence.browser.cjs && node tests/preview-number-motion.browser.cjs && node tests/oa-sidebar.browser.cjs",
     "check": "node scripts/test.cjs --syntax",
+    "test:icons": "node tests/icons-offline.browser.cjs",
     "test:styles": "node tests/style-contract.browser.cjs && node tests/date-info-styles.browser.cjs && node tests/summary-styles.browser.cjs && node tests/calendar-styles.browser.cjs && node tests/forms-styles.browser.cjs",
     "format:css": "node scripts/clean-css.cjs",
     "lint": "eslint assets/js scripts tests eslint.config.cjs --max-warnings 0",

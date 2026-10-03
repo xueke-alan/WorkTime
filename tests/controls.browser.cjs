@@ -67,9 +67,7 @@ let browser;
       "0px",
     );
     await page.locator("#settingsOpen").press("Enter");
-    const closeButton = page
-      .locator('#settingsDialog [data-close="settingsDialog"]')
-      .first();
+    const closeButton = page.locator("#settingsOpen");
     await closeButton.focus();
     assert.equal(
       await closeButton.evaluate((e) => getComputedStyle(e).outlineWidth),

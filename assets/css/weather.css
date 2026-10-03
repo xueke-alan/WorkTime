@@ -1,0 +1,10 @@
+.weather-panel { padding: 0.8rem; }
+.weather-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.weather-current { display: flex; gap: 1rem; align-items: baseline; margin-top: 0.8rem; color: var(--accent); }
+.weather-temperature { font-size: 2rem; font-variant-numeric: tabular-nums; }
+.weather-panel h3 { font-size: 1rem; margin: 1rem 0 0.5rem; }
+.weather-hourly { display: flex; overflow-x: auto; gap: 0.5rem; padding-bottom: 0.5rem; }
+.weather-hour { display: grid; gap: 0.4rem; flex: 0 0 6rem; padding: 0.6rem; border: 1px solid var(--line); border-radius: 0.5rem; }
+.weather-hour time, .weather-hour span { color: var(--muted); font-size: 0.85rem; }
+.weather-day { display: grid; grid-template-columns: 3.2rem 1fr 1.4fr 1.4fr; gap: 0.4rem; padding: 0.5rem 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.weather-panel .weather-stale { color: #95631b; }

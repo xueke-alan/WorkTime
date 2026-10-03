@@ -1,4 +1,33 @@
 /* Residual shared-file rules restored to their component owner. */
+body .sidebar-actions > #importOpen {
+  position: relative;
+}
+body #importOpen .import-main {
+  margin-right: var(--control-height);
+  transition: margin-right 280ms ease, background 160ms ease;
+}
+body #importOpen .import-clipboard {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--control-height);
+  transition: transform 280ms ease, opacity 280ms ease, background 160ms ease;
+}
+body #importOpen.is-return .import-main {
+  margin-right: 0;
+}
+body #importOpen.is-return .import-clipboard {
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  body #importOpen .import-main,
+  body #importOpen .import-clipboard {
+    transition: none;
+  }
+}
+
 @keyframes ring-drain {
   to {
     stroke-dashoffset: 59.69;
@@ -59,12 +88,48 @@ body button:disabled {
 .motion-content {
   animation: motion-fade var(--motion-normal) var(--motion-ease);
 }
+body .motion-sidebar-forward {
+  animation: motion-sidebar-forward 280ms var(--motion-ease);
+}
+body .motion-sidebar-back {
+  animation: motion-sidebar-back 280ms var(--motion-ease);
+}
+@keyframes motion-sidebar-forward {
+  from { opacity: 0; translate: 8px 0; }
+  to { opacity: 1; translate: 0; }
+}
+@keyframes motion-sidebar-back {
+  from { opacity: 0; translate: -8px 0; }
+  to { opacity: 1; translate: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body .motion-sidebar-forward,
+  body .motion-sidebar-back { animation: none !important; }
+}
 .motion-day {
   animation: motion-month 280ms var(--motion-ease) var(--motion-delay, 0ms)
     backwards;
 }
 .motion-selection {
   animation: motion-selection 240ms ease-out;
+}
+body .calendar.is-batch-editing > button.day[data-date] {
+  animation: motion-batch-wiggle 320ms ease-in-out -80ms infinite;
+}
+body .calendar.is-batch-editing > button.day[data-date]:nth-child(3n) {
+  animation-duration: 350ms;
+  animation-delay: -170ms;
+}
+body .calendar.is-batch-editing > button.day[data-date]:nth-child(3n + 1) {
+  animation-duration: 290ms;
+  animation-delay: -230ms;
+}
+@keyframes motion-batch-wiggle {
+  0%, 100% { rotate: -0.65deg; }
+  50% { rotate: 0.65deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body .calendar.is-batch-editing > button.day[data-date] { animation: none !important; }
 }
 body dialog[open] {
   animation: motion-dialog 220ms var(--motion-ease);

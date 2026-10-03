@@ -249,6 +249,11 @@ const WorkValidation = (() => {
         (settings.employmentDate && !validDate(settings.employmentDate)))
     )
       fail("settings.employmentDate", "备份中的入职日期无效。");
+    if (
+      settings.workCity !== undefined &&
+      (typeof settings.workCity !== "string" || settings.workCity.length > 64)
+    )
+      fail("settings.workCity", "备份中的工作城市须为不超过64字的文本。");
     const clean = defaultState();
     clean.scheduleDefaultsVersion = input.scheduleDefaultsVersion === 1 ? 1 : 0;
     clean.settings = {
@@ -258,6 +263,7 @@ const WorkValidation = (() => {
       standardMinutes: standard,
       breaks,
       employmentDate: settings.employmentDate || "",
+      workCity: settings.workCity || "",
     };
     if (input.oaUrl !== undefined) {
       if (

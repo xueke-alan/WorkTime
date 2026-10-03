@@ -2,7 +2,7 @@
 /**
  * Runtime data contracts. Minutes are the internal unit; missing and null do not mean zero.
  * @typedef {{start:number,end:number}} WorkBreak
- * @typedef {{configured:boolean,workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[],employmentDate:string}} WorkSettings
+ * @typedef {{configured:boolean,workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[],employmentDate:string,workCity:string}} WorkSettings
  * @typedef {{start:string,end:string,nextDay:boolean,effectiveMinutes:number|null}} WorkManualRecord
  * @typedef {{start:string,end:string,nextDay:boolean}} WorkDraft
  * @typedef {{date:string,start:string,end:string,nextDay:boolean,status:'complete'|'pending'|'off',source:string,raw:string,importId?:string}} WorkOAObservation

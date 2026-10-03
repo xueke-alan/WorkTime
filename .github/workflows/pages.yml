@@ -1,0 +1,79 @@
+name: Pages and weather
+
+on:
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-and-weather
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      weather-outcome: ${{ steps.weather.outcome }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Fetch weather
+        if: github.event_name != 'push'
+        id: weather
+        continue-on-error: true
+        env:
+          OPEN_METEO_API_KEY: ${{ secrets.OPEN_METEO_API_KEY }}
+        run: node scripts/update-weather.cjs
+      - name: Commit weather files
+        if: steps.weather.outcome == 'success'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/data/weather
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update city weather'
+            git push
+          fi
+          node -e 'const i=require("./assets/data/weather/index.json");require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Weather: ${i.updated} updated, ${i.failed.length} retained or unavailable.\n`);'
+      - name: Prepare site
+        run: |
+          mkdir _site
+          cp index.html _site/
+          cp -R assets licenses _site/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Report fetch failure
+        if: steps.weather.outcome == 'failure'
+        run: |
+          echo 'Weather fetch failed. Existing weather files have been preserved.' >> "$GITHUB_STEP_SUMMARY"
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
+  weather-status:
+    needs: [build, deploy]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch outcome
+        env:
+          OUTCOME: ${{ needs.build.outputs.weather-outcome }}
+        run: test "$OUTCOME" != 'failure'

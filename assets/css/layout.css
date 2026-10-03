@@ -5,6 +5,7 @@
   padding: 30px 38px 48px;
 }
 .workspace {
+  --column-header-background: #f8fbf9;
   display: grid;
   grid-template-columns: 236px minmax(0, 1fr) 300px;
   gap: 18px;
@@ -218,4 +219,11 @@ body footer {
 }
 body .wrap > footer {
   padding-inline: 0.714286rem;
+}
+/* Shared solid surface stays unchanged when sidebar content switches. */
+body .workspace > .summary-sidebar .sidebar-brand,
+body .workspace > section.panel > .panel-head,
+body .workspace > .editor .editor-mode-header,
+body .workspace > .editor #settingsDialog > .dialog-head {
+  background: var(--column-header-background);
 }

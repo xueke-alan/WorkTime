@@ -9,6 +9,8 @@ WorkBootstrap.run(
     const elements = WorkUI.createElements(document);
     const { element: $, escape: esc, icon, controlIcon, trendIcon } = elements;
     elements.initialize();
+    const sidebarPanels = WorkUI.createSidebarPanels({ document, window });
+    lifecycle.defer(() => sidebarPanels.dispose());
     const persistence = WorkStorage.create({
       key: C.KEY,
       validate: C.validateBackup,
@@ -44,6 +46,17 @@ WorkBootstrap.run(
         "当前页面无法保存：" + access.error.message + "。";
     const defaultsUpdated =
       !model.loadCorrupt && C.applyScheduleDefaults(model.state);
+    let savedSnapshot = JSON.stringify(model.state),
+      inputChanged = false;
+    const markInputChanged = () => {
+      inputChanged = true;
+    };
+    for (const event of ["input", "change"]) {
+      document.addEventListener(event, markInputChanged, true);
+      lifecycle.defer(() =>
+        document.removeEventListener(event, markInputChanged, true),
+      );
+    }
     const derived = WorkDerived.create({
       core: C,
       getState: () => model.state,
@@ -136,6 +149,10 @@ WorkBootstrap.run(
       const result = persistence.save(model.state);
       model.storageFailed = !result.persisted;
       $("storageNotice").classList.toggle("hidden", result.persisted);
+      if (result.persisted) {
+        savedSnapshot = JSON.stringify(model.state);
+        inputChanged = false;
+      }
       if (!result.persisted)
         $("storageNoticeText").textContent =
           "更改未保存：" + result.error.message + "；关闭页面前请备份。";
@@ -159,7 +176,7 @@ WorkBootstrap.run(
       updateNotificationEmptyState();
     }
     function open(id) {
-      $(id).showModal();
+      if (!sidebarPanels.open(id)) $(id).showModal();
     }
     Object.assign(actions, {
       controlIcon,
@@ -168,6 +185,7 @@ WorkBootstrap.run(
       saveFeedback,
       render,
       open,
+      closeSettings: sidebarPanels.closeSettings,
       toast,
       previewDay,
       formDay,
@@ -221,6 +239,79 @@ WorkBootstrap.run(
     render();
     syncNotificationBarHeight();
     if (defaultsUpdated) save();
+    function recoverSaving(result) {
+      if (lifecycle.closed || !result.ok) return;
+      try {
+        // A stale read-only view can follow newer data only if all local fields are untouched.
+        if (
+          !model.loadCorrupt &&
+          !inputChanged &&
+          JSON.stringify(model.state) === savedSnapshot &&
+          persistence.hasExternalUpdate()
+        ) {
+          const latest = persistence.load();
+          if (latest.error) throw latest.error;
+          model.state = latest.state;
+          C.applyScheduleDefaults(model.state);
+          model.revision++;
+          if ($("settingsDialog").open) actions.refreshSettings();
+          render();
+          $("importDialog").dispatchEvent(new Event("sidebar-open"));
+        }
+        const hadInputChanges = inputChanged;
+        if (save()) {
+          // A persistence retry does not commit incomplete form fields.
+          inputChanged = hadInputChanges;
+          for (const [id, message] of [
+            ["dayError", "当前修改未保存，请查看提醒并备份。"],
+            ["dayLeaveError", "当前修改未保存，请查看提醒并备份。"],
+            ["settingsError", "设置尚未保存，请再次编辑重试或关闭后备份。"],
+          ]) {
+            if ($(id).textContent === message) $(id).textContent = "";
+          }
+        }
+      } catch (error) {
+        model.storageFailed = true;
+        $("storageNoticeText").textContent =
+          "重新检查失败：" + error.message + "；当前修改仍保留。";
+      }
+      renderStats();
+      updateNotificationEmptyState();
+    }
+    function waitForSaving() {
+      if (
+        !lifecycle.closed &&
+        !persistence.canWrite &&
+        navigator.locks?.request
+      )
+        void persistence
+          .acquireWriteAccess(navigator.locks, { wait: true })
+          .then(recoverSaving);
+    }
+    const retryStorage = $("retryStorage");
+    retryStorage.hidden = model.loadCorrupt || !navigator.locks?.request;
+    retryStorage.onclick = async () => {
+      retryStorage.disabled = true;
+      const result = await persistence.acquireWriteAccess(navigator.locks, {
+        retry: true,
+      });
+      if (lifecycle.closed) return;
+      if (result.ok) recoverSaving(result);
+      else {
+        $("storageNoticeText").textContent =
+          "重新检查结果：" +
+          result.error.message +
+          (result.error.message.includes("另一页面")
+            ? "。浏览器仍检测到占用保存权限的页面，可能位于后台。"
+            : "。当前修改仍保留。");
+        waitForSaving();
+      }
+      retryStorage.disabled = false;
+    };
+    lifecycle.defer(() => {
+      retryStorage.onclick = null;
+    });
+    if (!access.ok) waitForSaving();
     lifecycle.defer(
       clock.watch({
         document,

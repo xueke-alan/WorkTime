@@ -24,6 +24,15 @@ let browser;
     await b.locator("#storageNoticeText").innerText(),
     /另一页面正在编辑/,
   );
+  await b.locator("#retryStorage").click();
+  assert.match(
+    await b.locator("#storageNoticeText").innerText(),
+    /可能位于后台/,
+  );
+  assert.equal(
+    (await a.evaluate(() => navigator.locks.query())).held.length,
+    1,
+  );
   await a.locator("#dayStart").fill("08:00");
   await a.locator("#dayEnd").fill("18:00");
   await b.locator('[data-date="2026-10-09"]').click();
@@ -42,6 +51,19 @@ let browser;
   for await (const chunk of stream) text += chunk;
   assert(JSON.parse(text).days["2026-10-09"]);
   await a.close();
+  await b.waitForFunction(() =>
+    document
+      .getElementById("storageNoticeText")
+      .textContent.includes("外部更新"),
+  );
+  assert(
+    !(
+      await b.evaluate(
+        () => JSON.parse(localStorage.getItem(WorkTime.KEY)).days,
+      )
+    )["2026-10-09"],
+    "Automatic handover must not overwrite records written since this page loaded",
+  );
   await b.reload();
   await b.locator('[data-date="2026-10-09"]').click();
   await b.locator("#dayStart").fill("08:00");
@@ -67,6 +89,93 @@ let browser;
     "external",
   );
   await b.close();
+  const owner = await context.newPage(),
+    waiting = await context.newPage();
+  for (const page of [owner, waiting]) {
+    await page.clock.install({ time: new Date("2026-10-02T12:00:00+08:00") });
+    await page.goto(url);
+    await page.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+  }
+  await waiting.locator('[data-date="2026-10-13"]').click();
+  await waiting.locator("#dayStart").fill("08:00");
+  await waiting.locator("#dayEnd").fill("18:00");
+  await owner.close();
+  await waiting.locator("#storageNotice").waitFor({ state: "hidden" });
+  assert.equal(
+    await waiting.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem(WorkTime.KEY)).days["2026-10-13"]
+          .estimate.end,
+    ),
+    "18:00",
+    "Unchanged storage allows automatic saving of retained edits without reloading",
+  );
+  assert.equal(await waiting.locator("#dayError").innerText(), "");
+  const abandoned = await context.newPage();
+  await abandoned.goto(url);
+  await abandoned.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  await abandoned.close();
+  assert.equal(
+    (await waiting.evaluate(() => navigator.locks.query())).pending.length,
+    0,
+    "Closing a waiting page cancels its queued lock request",
+  );
+  await waiting.close();
+  // An untouched waiter follows the owner's latest state after a retry and release.
+  const latestOwner = await context.newPage(),
+    clean = await context.newPage();
+  for (const page of [latestOwner, clean]) {
+    await page.clock.install({ time: new Date("2026-10-02T12:00:00+08:00") });
+    await page.goto(url);
+    await page.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+  }
+  await clean.locator("#settingsOpen").click();
+  await clean.locator("#retryStorage").click();
+  await latestOwner.locator("#settingsOpen").click();
+  await latestOwner.locator("#standardStart").fill("08:15");
+  await latestOwner.close();
+  await clean.locator("#storageNotice").waitFor({ state: "hidden" });
+  assert.equal(await clean.locator("#standardStart").inputValue(), "08:15");
+  // A writable page can refresh externally changed data if no fields were edited.
+  await clean.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem(WorkTime.KEY));
+    state.settings.workStart = "08:30";
+    localStorage.setItem(WorkTime.KEY, JSON.stringify(state));
+  });
+  await clean.locator("#retryStorage").evaluate((e) => e.click());
+  await clean.waitForFunction(
+    () => document.getElementById("standardStart").value === "08:30",
+  );
+  assert.equal(await clean.locator("#standardStart").inputValue(), "08:30");
+  await clean.close();
+  // Incomplete input must remain untouched even if it never reached the model.
+  const fieldOwner = await context.newPage(),
+    partial = await context.newPage();
+  for (const page of [fieldOwner, partial]) {
+    await page.clock.install({ time: new Date("2026-10-02T12:00:00+08:00") });
+    await page.goto(url);
+    await page.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+  }
+  await partial.locator("#settingsOpen").click();
+  await partial.locator("#standardStart").fill("");
+  await fieldOwner.locator("#settingsOpen").click();
+  await fieldOwner.locator("#standardStart").fill("08:45");
+  await fieldOwner.close();
+  await partial.waitForFunction(() =>
+    document
+      .getElementById("storageNoticeText")
+      .textContent.includes("外部更新"),
+  );
+  assert.equal(await partial.locator("#standardStart").inputValue(), "");
+  await partial.close();
   const unsupported = await context.newPage();
   await unsupported.addInitScript(() =>
     Object.defineProperty(navigator, "locks", { value: undefined }),
@@ -78,7 +187,7 @@ let browser;
     /不支持安全写入锁/,
   );
   console.log(
-    "Concurrency passed: native single writer, read-only page export, handover, external-update protection and unsupported-lock fallback.",
+    "Concurrency passed: single writer, retained-edit export, automatic handover, external-update protection, canceled waiters and unsupported-lock fallback.",
   );
   await browser.close();
 })().catch(async (e) => {

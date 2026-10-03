@@ -1623,3 +1623,409 @@ body .summary-sidebar .fixed-record-count {
   will-change: transform;
   backface-visibility: hidden;
 }
+
+/* OA views replace only the content below the persistent sidebar divider. */
+body .summary-sidebar.is-oa-open {
+  overflow: hidden;
+}
+body .summary-sidebar .sidebar-overview-hidden,
+body .summary-sidebar .sidebar-pane-inactive,
+body .summary-sidebar .sidebar-oa-workspace[hidden] {
+  display: none !important;
+}
+body .summary-sidebar .sidebar-oa-workspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane[open] {
+  position: static;
+  inset: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  overflow: hidden;
+  animation: none;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane .dialog-head,
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane .dialog-foot {
+  flex: none;
+  padding: 1rem;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane .dialog-head h2 {
+  font-size: 1.142857rem;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane .dialog-body {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  padding: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane textarea {
+  width: 100%;
+  min-height: 12rem;
+  resize: vertical;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane .import-dialog-foot {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.714286rem;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane .import-footer-links,
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane .import-footer-actions {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.428571rem;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: none;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane .import-history-item > .row {
+  flex-wrap: wrap;
+  gap: 0.571429rem;
+}
+body .summary-sidebar :is(#importDialog, #importHistoryDialog, #sourceDialog).sidebar-oa-pane .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+@media (max-width: 1150px) {
+  body .summary-sidebar .sidebar-oa-workspace {
+    height: 75dvh;
+    min-height: 28rem;
+    flex: none;
+  }
+}
+/* Keep input and actions together; history uses the remaining sidebar height. */
+body .summary-sidebar #importDialog.sidebar-oa-pane .dialog-body {
+  flex: none;
+  max-height: 43%;
+  padding: 0.714286rem;
+}
+body .summary-sidebar #importDialog.sidebar-oa-pane textarea {
+  min-height: 7rem;
+  height: 9rem;
+  resize: none;
+}
+body .summary-sidebar #importDialog.sidebar-oa-pane .dialog-head,
+body .summary-sidebar #importDialog.sidebar-oa-pane .dialog-foot {
+  padding: 0.714286rem;
+}
+body .summary-sidebar #importDialog .import-footer-links {
+  justify-content: flex-end;
+}
+body .summary-sidebar #importDialog .import-footer-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+body .summary-sidebar #importDialog #previewImport {
+  grid-column: 1 / -1;
+}
+body .summary-sidebar #importHistoryOpen[hidden] { display: none; }
+.sidebar-import-history {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  border-top: 1px solid var(--line);
+  padding: 0.714286rem;
+  gap: 0.571429rem;
+}
+.sidebar-import-history > h3 {
+  margin: 0;
+  font-size: 1rem;
+  flex: none;
+}
+.sidebar-history-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+.sidebar-import-history .import-history-item > .row {
+  flex-wrap: wrap;
+  gap: 0.428571rem;
+}
+.sidebar-import-history .import-history-item h3 { font-size: 0.857143rem; }
+.sidebar-import-history .import-history-meta { overflow-wrap: anywhere; }
+body .summary-sidebar #importDialog .import-footer-actions,
+body .summary-sidebar #importDialog .import-footer-links {
+  width: 100%;
+}
+body .summary-sidebar #importDialog .import-dialog-foot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.428571rem;
+}
+body .summary-sidebar #importDialog .import-footer-actions {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+body .summary-sidebar #importDialog .import-dialog-foot button {
+  min-width: 0;
+  padding-inline: 0.428571rem;
+  white-space: nowrap;
+}
+body .summary-sidebar #importDialog .import-dialog-foot #oaShortcut {
+  padding-inline: 1rem;
+}
+body .summary-sidebar .sidebar-import-history {
+  padding-inline: 0;
+}
+body .summary-sidebar .sidebar-import-history > h3 {
+  padding-inline: 0.428571rem;
+}
+body .summary-sidebar .sidebar-import-history .import-history-item {
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 0.571429rem;
+  padding: 0.571429rem;
+  border-radius: 0.571429rem;
+}
+body .summary-sidebar .sidebar-import-history .import-history-item h3 {
+  margin: 0;
+  font-size: 0.785714rem;
+}
+body .summary-sidebar .sidebar-import-history .import-history-item > .row {
+  flex-wrap: nowrap;
+  gap: 0.285714rem;
+}
+body .summary-sidebar .sidebar-import-history .import-history-item .row .row {
+  flex: none;
+  gap: 0.285714rem;
+}
+body .summary-sidebar .sidebar-import-history .import-history-item .row button {
+  min-width: 0;
+  min-height: 0;
+  height: 1.714286rem;
+  padding: 0 0.357143rem;
+  font-size: 0.785714rem;
+  border-radius: 0.357143rem;
+}
+body .summary-sidebar .sidebar-import-history .import-history-meta {
+  margin-top: 0.428571rem;
+  line-height: 1.5;
+}
+body .summary-sidebar #importDialog .import-footer-actions { grid-template-columns: 1fr; }
+.sidebar-history-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.428571rem; }
+.sidebar-history-heading h3 { margin: 0; font-size: 1rem; }
+.sidebar-history-heading > span { font-size: 0.785714rem; white-space: nowrap; }
+body .summary-sidebar .sidebar-import-history .import-history-item h3 { font-size: 1rem; }
+body .summary-sidebar .sidebar-import-history .import-history-item .row button {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  width: 1.428571rem;
+  height: 1.428571rem;
+}
+body .summary-sidebar .sidebar-import-history .import-history-item .row button .ui-icon { width: 1.142857rem; height: 1.142857rem; }
+/* Override the shared button surface for the history's lightweight icon actions. */
+body #importDialog #importHistoryList .import-history-item .row button.ui-button,
+body #importDialog #importHistoryList .import-history-item .row button.ui-button:hover {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body #importDialog #importHistoryList .import-history-item .row .row {
+  gap: 0.714286rem;
+}
+body #sourceDialog.import-detail-view .dialog-head > [data-close] { display: none; }
+body #sourceDialog.import-detail-view .dialog-head h2 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.428571rem;
+  width: 100%;
+  margin: 0;
+  text-align: left;
+}
+body #sourceDialog.import-detail-view .import-detail-caption {
+  flex: none;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: var(--text-small);
+  font-weight: 400;
+  white-space: nowrap;
+  text-align: right;
+}
+body .summary-sidebar #sourceDialog.import-detail-view .dialog-head { padding-inline: 0.428571rem; }
+body #sourceDialog.import-detail-view .dialog-head h2 > span { font-size: 1.285714rem; }
+body #sourceDialog.import-detail-view .dialog-foot { display: flex; justify-content: space-between; align-items: center; gap: 0.428571rem; }
+.import-detail-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.571429rem; margin-bottom: 0.714286rem; }
+.import-detail-toolbar > span { font-size: 0.785714rem; }
+.import-parsed-list { display: grid; gap: 0.571429rem; }
+.import-parsed-list > article { display: flex; flex-direction: column; gap: 0.285714rem; padding: 0.714286rem; border: 1px solid var(--line); border-radius: 0.571429rem; }
+.import-parsed-list > article > span { color: var(--muted); font-variant-numeric: tabular-nums; }
+/* Reserve the longest OA label so changing to Return never shifts the icon. */
+body #importOpen .import-main > span {
+  width: 4em;
+  min-width: 4em;
+  flex: 0 0 4em;
+  text-align: center;
+  white-space: nowrap;
+}
+.sidebar-history-heading { flex-wrap: wrap; }
+.sidebar-history-heading #importHistoryCount { margin-left: auto; }
+/* Inset captions slightly from rounded field and card edges. */
+body #importDialog #importYearHint,
+body #importDialog #importSummary,
+body #importDialog .sidebar-history-heading > h3 {
+  padding-left: 0.428571rem;
+}
+/* Use the persistent OA button edges as the import workspace's horizontal guide. */
+body .summary-sidebar #importDialog.sidebar-oa-pane .dialog-body,
+body .summary-sidebar #importDialog.sidebar-oa-pane .import-dialog-foot {
+  padding-inline: 0;
+}
+/* Parsed imports use compact rows with separators instead of individual cards. */
+body #sourceBody .import-parsed-list { gap: 0; }
+body #sourceBody .import-parsed-list > article {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.285714rem 0.571429rem;
+  padding: 0.428571rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body #sourceBody .import-parsed-list > article > strong,
+body #sourceBody .import-parsed-list > article > span {
+  font-size: 0.857143rem;
+  white-space: nowrap;
+}
+body .summary-sidebar #sourceDialog.import-detail-view .dialog-foot {
+  padding: 0.428571rem 0.714286rem;
+}
+body #sourceDialog.import-detail-view .dialog-foot button[data-detail-step] {
+  width: 1.857143rem;
+  min-width: 1.857143rem;
+  max-width: 1.857143rem;
+  height: 1.857143rem;
+  min-height: 1.857143rem;
+  max-height: 1.857143rem;
+  padding: 0;
+  flex: none;
+}
+body #sourceDialog.import-detail-view .dialog-foot button[data-detail-step] .ui-icon {
+  width: 1.285714rem;
+  height: 1.285714rem;
+}
+body #importDialog #importSummary {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body #importDialog #importWarnings { display: none; }
+body .summary-sidebar #sourceDialog.import-detail-view #sourceBody {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+body #sourceDialog.import-detail-view .import-detail-toolbar {
+  flex: none;
+}
+body .summary-sidebar #sourceDialog.import-detail-view #sourceBody > .import-parsed-list {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 55%;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+body .summary-sidebar #sourceDialog.import-detail-view .import-detail-raw-label {
+  flex: none;
+  margin: 0.714286rem 0 0.428571rem;
+  padding-inline: 0.428571rem;
+  color: var(--muted);
+  font-size: var(--text-small);
+}
+body .summary-sidebar #sourceDialog.import-detail-view .import-detail-raw-field {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 0.714286rem;
+  border: 1px solid #dce6e0;
+  border-radius: var(--control-radius);
+  background: #fbfdfc;
+}
+body .summary-sidebar #sourceDialog.import-detail-view .import-detail-raw-text {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  padding: 0.285714rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+  overflow: auto;
+  overscroll-behavior: contain;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+body .summary-sidebar #sourceDialog.import-detail-view > .dialog-foot {
+  background: transparent;
+}
+body #importDialog #importRows { gap: 0; }
+body #importDialog #importRows > article {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 0.428571rem; padding: 0.714286rem 0; border: 0;
+  border-bottom: 1px solid var(--line); border-radius: 0;
+}
+body #importDialog #importRows > article > strong,
+body #importDialog #importRows > article > span { font-size: 0.857143rem; white-space: nowrap; }
+body #importDialog #importRows > article > span { color: var(--muted); }
+body #importDialog #importRows .conflict,
+body #importDialog #importRows select { width: 100%; min-width: 0; }
+/* Align detail content with the persistent sidebar action above it. */
+body .summary-sidebar #sourceDialog.import-detail-view #sourceBody {
+  padding-inline: 0;
+}
+/* Align detail navigation to the sidebar action and its lower rounded inset. */
+body .summary-sidebar #sourceDialog.import-detail-view > .dialog-foot {
+  padding: 0.571429rem 0 0;
+}
+body #sourceDialog.import-detail-view .dialog-foot button[data-detail-step] {
+  width: 2.571429rem;
+  min-width: 2.571429rem;
+  max-width: 2.571429rem;
+  aspect-ratio: auto;
+}
+/* Give both parsed and raw detail views a small shared inner inset. */
+body .summary-sidebar #sourceDialog.import-detail-view #sourceBody {
+  padding-inline: 0.428571rem;
+}
+body .summary-sidebar #sourceDialog.import-detail-view > .dialog-foot {
+  padding-top: calc(1rem + 1px);
+}
+@media (max-width: 1150px) {
+  body .summary-sidebar #sourceDialog.import-detail-view > .dialog-foot {
+    padding-top: 13px;
+  }
+}

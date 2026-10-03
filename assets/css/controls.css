@@ -44,6 +44,7 @@ body #importOpen .import-main > .ui-icon {
 body .editor #dayForm .time-fields .clock-input,
 body .editor #batchForm input.clock-input,
 body #settingsForm input.clock-input,
+body #settingsForm #workCity,
 body #timeTemplateForm input.clock-input,
 body #settingsForm input.number-input,
 body .editor #batchForm input.number-input,
@@ -70,6 +71,7 @@ body .editor #dayForm input.number-input {
   max-height: var(--input-height) !important;
 }
 body .editor #dayForm .time-entry .clock-input::placeholder,
+body #settingsForm #workCity::placeholder,
 body input.clock-input::placeholder {
   font: inherit;
   letter-spacing: inherit;
@@ -80,6 +82,7 @@ body input.clock-input::placeholder {
 body .editor #dayForm .time-fields .clock-input:focus,
 body .editor #batchForm input.clock-input:focus,
 body #settingsForm input.clock-input:focus,
+body #settingsForm #workCity:focus,
 body #timeTemplateForm input.clock-input:focus,
 body #settingsForm input.number-input:focus,
 body .editor #batchForm input.number-input:focus,
@@ -201,11 +204,4 @@ body .backup-button-group button.ui-button + button {
       height: round(nearest, 1.285714rem, 2px);
     }
   }
-}
-
-/* Move the input glyphs slightly down without moving the settings controls. */
-body #settingsForm input.clock-input,
-body #settingsForm input.number-input {
-  padding-top: 0.285714rem !important;
-  padding-bottom: 0 !important;
 }

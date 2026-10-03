@@ -15,6 +15,7 @@ WorkUI.createEditor = function (options) {
   } = options;
 
   let previewMarkup = null;
+  let renderedDate = null;
   function updateText(id, text) {
     const element = $(id);
     if (element.textContent !== text) element.textContent = text;
@@ -38,14 +39,19 @@ WorkUI.createEditor = function (options) {
     );
     $("plannedOvertimeToggle")
       .querySelector("use")
-      .setAttribute(
-        "href",
-        day.plannedOvertime ? "#ui-plan-check" : "#ms-today",
-      );
+      .setAttribute("href", day.plannedOvertime ? "#ms-check" : "#ms-today");
   }
   function renderEditor() {
     const state = getState();
     const { selected } = getView();
+    if (renderedDate !== null && renderedDate !== selected)
+      window.WorkMotion?.play(
+        $("dayForm"),
+        selected > renderedDate
+          ? "motion-sidebar-forward"
+          : "motion-sidebar-back",
+      );
+    renderedDate = selected;
     closeLeavePanel();
     const day = state.days[selected] || {},
       r = C.effectiveRecord(day, true) || day.oa || {},
@@ -66,6 +72,7 @@ WorkUI.createEditor = function (options) {
     $("dayError").textContent = "";
     previewDay();
     window.WorkCountdown?.setState(state);
+    window.WorkWeather?.setCity(state.settings.workCity);
     window.DateInfoUI?.setDate(selected);
   }
   /** @returns {WorkDay} A candidate day; does not mutate persisted state. */
@@ -153,7 +160,10 @@ WorkUI.createEditor = function (options) {
           esc(anomaly.end) +
           " 早于上班时间 " +
           esc(anomaly.start) +
-          "，暂不计入工时。"
+          "，暂不计入工时。" +
+          (c.work && !isFullLeave(day)
+            ? "<br>打卡未完成，暂不显示平均加班"
+            : "")
         : !c.work && c.minutes === null
           ? "休息日"
           : !state.settings.configured
@@ -163,7 +173,7 @@ WorkUI.createEditor = function (options) {
                 ? "全天请假 <strong>" +
                   C.formatMinutes(day.leaveMinutes) +
                   "</strong><br>折算出勤 <strong>0 d</strong>"
-                : "尚未填写完整时间，暂不计入工时。"
+                : "尚未填写完整时间，暂不计入工时。<br>打卡未完成，暂不显示平均加班"
               : "有效工时 <strong>" +
                 C.formatMinutes(c.minutes) +
                 "</strong><br>加班 <strong>" +
@@ -179,7 +189,8 @@ WorkUI.createEditor = function (options) {
         " 月 " +
         Number(selected.slice(8)) +
         ' 日</div><div class="preview-totals"><span>应出勤工时<strong id="expectedHours" data-number-motion>' +
-        C.formatMinutes(totals.expectedMinutes) +
+        (totals.expectedMinutes / 60).toFixed(0) +
+        " h" +
         '</strong><small id="expectedDays" data-number-motion>' +
         Number(
           (totals.expectedMinutes / state.settings.standardMinutes).toFixed(2),
@@ -191,7 +202,7 @@ WorkUI.createEditor = function (options) {
           (totals.workedMinutes / state.settings.standardMinutes).toFixed(2),
         ) +
         'd</small></span><span>平均加班<strong id="previewAverage" data-number-motion>' +
-        (average === null ? "- h" : C.formatMinutes(average)) +
+        (average === null ? "—" : C.formatMinutes(average)) +
         "</strong></span></div>";
       const employmentDate = state.settings.employmentDate;
       if (employmentDate && C.validDate(employmentDate)) {
@@ -256,12 +267,6 @@ WorkUI.createEditor = function (options) {
           : "填写请假时长"
         : "休息日无需请假",
     );
-    const leaveTip = canLeave
-      ? hasLeave
-        ? "请假 " + hours + " h · 点击修改"
-        : "填写请假时长"
-      : "休息日无需请假";
-    updateText("dayLeaveTip", leaveTip);
   }
   return {
     updateResetDayButton,

@@ -293,9 +293,9 @@ dialog::backdrop {
   color: var(--accent);
 }
 #oaShortcut .oa-link-icon {
-  width: 27px;
-  height: 27px;
-  padding: 4px;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  padding: 0;
 }
 #oaShortcut .oa-hold-icon {
   fill: none;
@@ -473,16 +473,6 @@ body .template-time-fields .nextday-toggle {
 }
 .import-source-heading {
   margin-top: 9px;
-}
-.source-record-text {
-  white-space: pre-wrap;
-  background: #f5f7f1;
-  padding: 12px;
-  border-radius: 8px;
-}
-.source-raw-text {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 #importDialog #previewImport[data-state="idle"] {
   color: var(--muted);

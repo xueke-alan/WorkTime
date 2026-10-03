@@ -37,7 +37,7 @@ let browser;
     });
     await page.goto(url);
     await page.locator("#settingsOpen").click();
-    await page.locator("#settingsForm button[type=submit]").click();
+    await page.locator("#standardEnd").fill("18:30");
     const notice = await page.locator("#storageNoticeText").innerText();
     const feedback = await page.locator("#feedbackList").innerText();
     const open = await page.locator("#settingsDialog").evaluate((e) => e.open);

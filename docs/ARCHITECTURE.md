@@ -130,3 +130,5 @@ SummaryNumbers只处理本轮新提交的原始文字，已包装的未变化数
 启动揭示的两个RAF与数字揭示定时器由startup.js保留句柄；pagehide或worktime:failed时取消，fonts.ready及初始化事件迟到均受disposed守卫约束。退出也解除等待事件监听；不会在页面销毁后继续调用文字校准或数字揭示。
 
 最后编辑预览把累计/单日/入职说明组合后一次按需写入；同值保留DOM，错误清空缓存并在合法输入恢复时重建。计算/候选校验每次仍执行，不缓存持久化状态或忽略失败重试。
+
+OA左栏导航由ui/sidebar-panels.js独立管理：复用原importDialog/importHistoryDialog/sourceDialog节点，以非模态dialog.show()呈现；不复制表单或改导入数据契约。隐藏前层视图而不close，因此历史/详情返回保留预览和草稿；真实关闭才触发原close清理。open统一入口将上述三视图路由到左栏，其余dialog仍用showModal。Escape仅在没有模态弹窗时返回当前侧栏层级；已注册生命周期释放监听。历史查看原文变为sourceDialog中的详情视图；删除批次仍由原确认弹窗及原删除逻辑处理。

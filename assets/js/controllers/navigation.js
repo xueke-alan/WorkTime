@@ -87,6 +87,7 @@ WorkUI.createNavigationController = function (options) {
     $("calendar").onclick = (e) => {
       const b = e.target.closest("button.day[data-date]");
       if (!b) return;
+      if ($("settingsDialog").open) actions.closeSettings();
       const k = b.dataset.date;
       if (model.batchMode) {
         if (e.shiftKey && model.batchAnchor) {
@@ -138,6 +139,7 @@ WorkUI.createNavigationController = function (options) {
     $("calendar").addEventListener("click", (e) => {
       const button = e.target.closest("[data-year-date]");
       if (!button) return;
+      if ($("settingsDialog").open) actions.closeSettings();
       model.yearMode = false;
       model.month = button.dataset.yearDate.slice(0, 7);
       model.selected = button.dataset.yearDate;
@@ -171,6 +173,7 @@ WorkUI.createNavigationController = function (options) {
       navigateMonth(model.today.slice(0, 7));
     };
     $("batchToggle").onclick = () => {
+      if ($("settingsDialog").open) actions.closeSettings();
       model.batchMode = !model.batchMode;
       model.batchDays.clear();
       model.batchAnchor = null;

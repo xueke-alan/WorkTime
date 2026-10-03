@@ -39,7 +39,7 @@ WorkUI.createSummary = function (options) {
         "平均加班",
         ready && valid
           ? actual.average === null
-            ? "0.000<small>h</small>"
+            ? "—"
             : (actual.average / 60).toFixed(3) + "<small>h</small>"
           : "—",
         "工作日加班 ÷ 折算出勤",

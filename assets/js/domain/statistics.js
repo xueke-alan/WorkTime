@@ -47,25 +47,37 @@ const WorkStatistics = (() => {
   function cumulativeAverageOvertime(state, start, end, endDay) {
     const values = {};
     if (!validDate(start) || !validDate(end) || start > end) return values;
+    // Denominator includes scheduled attendance only for complete workday records.
     let scheduledMinutes = 0,
       workOvertimeMinutes = 0;
     const cursor = localDate(start);
     while (dateKey(cursor) <= end) {
       const k = dateKey(cursor),
         day = k === end && endDay ? endDay : state.days[k] || {},
-        info = calendarInfo(k, day);
+        info = calendarInfo(k, day),
+        result = calculate(k, day, state.settings, true),
+        pending =
+          info.work &&
+          (day.leaveMinutes || 0) < state.settings.standardMinutes &&
+          result.minutes === null;
       if (state.settings.configured && info.work) {
-        scheduledMinutes += state.settings.standardMinutes;
-        const result = calculate(k, day, state.settings, true);
-        if (result.minutes !== null) workOvertimeMinutes += result.overtime;
+        if (result.minutes !== null) {
+          scheduledMinutes += Math.max(
+            0,
+            state.settings.standardMinutes - (day.leaveMinutes || 0),
+          );
+          workOvertimeMinutes += result.overtime;
+        }
       }
       values[k] = {
         scheduledMinutes,
         workOvertimeMinutes,
-        averageMinutes: scheduledMinutes
-          ? (workOvertimeMinutes * state.settings.standardMinutes) /
-            scheduledMinutes
-          : null,
+        pending,
+        averageMinutes:
+          scheduledMinutes && !pending
+            ? (workOvertimeMinutes * state.settings.standardMinutes) /
+              scheduledMinutes
+            : null,
       };
       cursor.setDate(cursor.getDate() + 1);
     }

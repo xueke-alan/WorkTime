@@ -16,6 +16,7 @@
     ".sidebar-brand h1",
     ".editor-day-header .editor-date",
     ".batch-editor-header h2",
+    "dialog:not(#sourceDialog) .dialog-head h2",
     "#calendarFoot",
     ".almanac-watermark-text",
   ];

@@ -99,11 +99,10 @@ let browser;
         await page.waitForFunction(
           () => !document.getElementById("commitImport").disabled,
         );
-        await page.locator("#previewImport").click();
       }
       if (mode === "history") {
         await page.locator("#importOpen").click();
-        await page.locator("#importHistoryOpen").click();
+        await page.locator("#importHistoryList").waitFor({ state: "visible" });
       }
       if (["festivals", "almanac", "countdown"].includes(mode))
         await page.locator("#date-tab-" + mode).click();

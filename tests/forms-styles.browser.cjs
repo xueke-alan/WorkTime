@@ -193,11 +193,12 @@ let browser;
             .locator("#pasteText")
             .fill("09/28\n08:00\n22:00\n09/29\n08:00\n17:30");
           await page.clock.fastForward(1000);
-          await page.locator("#previewImport").click();
         }
         if (["import-history", "delete-import"].includes(mode)) {
-          await page.locator("#importHistoryOpen").click();
-          selector = "#importHistoryDialog";
+          await page
+            .locator("#importHistoryList")
+            .waitFor({ state: "visible" });
+          selector = "#importDialog";
         }
         if (mode === "delete-import") {
           await page.locator("[data-delete-import]").click();

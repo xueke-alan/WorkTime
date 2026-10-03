@@ -1,0 +1,64 @@
+/* Official Material Symbols Rounded. Equal icon slots within each UI size group. */
+:root {
+  --icon-size: 1.428571rem;
+  --icon-size-small: 1.285714rem;
+  --icon-size-tab: 1.142857rem;
+  --icon-size-indicator: 1rem;
+  --toolbar-icon-color: #245b4a;
+}
+body .panel-head button:not(.primary) :is(.ui-icon, .backup-hold-icon) {
+  color: var(--toolbar-icon-color);
+}
+body .ui-icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  fill: currentColor;
+  stroke: none;
+  flex: none;
+}
+body .panel-head .month-controls :is(#prevMonth, #nextMonth, #todayButton) .ui-icon,
+body .panel-head .calendar-toolbar-actions :is(#batchToggle, #settingsOpen, #backup, #restore) .ui-icon,
+body #importOpen .ui-icon,
+body #sourceDialog.import-detail-view .dialog-foot button[data-detail-step] .ui-icon,
+body .editor :is(.nextday-toggle, #addTimeTemplate, #batchAddTimeTemplate, #batchCalculateEnd) .ui-icon,
+body dialog .nextday-toggle .ui-icon,
+body .editor #settingsForm .breakrow button .ui-icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+body .time-template-chip .template-edit.icon-only .ui-icon,
+body .editor .editor-actions.day-action-row .ui-icon,
+body .editor #dayForm :is(#dayLeaveToggle, #plannedOvertimeToggle) > .ui-icon,
+body .summary-sidebar .sidebar-import-history .import-history-item .row button .ui-icon {
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
+}
+body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle) {
+  grid-template-columns: var(--icon-size-small) minmax(0, 1fr);
+}
+body .editor > .notification-tabs {
+  --tab-icon-size: var(--icon-size-tab);
+}
+body .panel-head #backup .backup-icon-slot,
+body #oaShortcut .oa-icon-slot {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+body #backup .backup-hold-icon,
+body #oaShortcut .oa-hold-icon {
+  width: 100%;
+  height: 100%;
+}
+/* The rings show elapsed hold time; their central glyphs use the same SVG sprite. */
+body :is(#backup .download-glyph, #oaShortcut .oa-paperclip) {
+  fill: currentColor;
+  stroke: none;
+}
+body .calendar .day-average .trend-icon {
+  width: var(--icon-size-indicator);
+  height: var(--icon-size-indicator);
+}
+body .calendar .payday-icon svg {
+  width: 78%;
+  height: 78%;
+}

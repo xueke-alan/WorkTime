@@ -19,6 +19,7 @@ const WorkState = (() => {
       oaUrl: "",
       settings: {
         employmentDate: "",
+        workCity: "",
         configured: true,
         workStart: DEFAULT_START,
         workEnd: DEFAULT_END,

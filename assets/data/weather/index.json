@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "version": "2624ec45-4d49-4d63-b5cc-90cc8b7929e3",
+  "generatedAt": "2026-10-03T08:23:04.973Z",
+  "cityDirectoryVersion": "China-City-List v202506200",
+  "updated": 6,
+  "failed": [],
+  "provinces": {
+    "2e9414ca": "2e9414ca.json",
+    "18910c04": "18910c04.json",
+    "ee410024": "ee410024.json",
+    "516a7ed4": "516a7ed4.json",
+    "45db5e6d": "45db5e6d.json"
+  },
+  "source": "Open-Meteo",
+  "license": "CC BY 4.0",
+  "budget": {
+    "cities": 6,
+    "variables": 12,
+    "callsPerRun": 8,
+    "callsPerDay": 173,
+    "callsPer31Days": 5357
+  }
+}

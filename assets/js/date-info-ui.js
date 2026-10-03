@@ -1,13 +1,12 @@
 (function (g) {
   "use strict";
   const icons = {
-    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
-    notifications:
-      '<path d="M18 8a6 6 0 0 0-12 0v4c0 2-1 3-2 4h16c-1-1-2-2-2-4V8Z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
-    history: '<path d="M3 11a9 9 0 1 1 3 8M3 4v7h7M12 7v6l4 2"/>',
-    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
-    calendar:
-      '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2m-8 3h2"/>',
+    clock: "clock",
+    notifications: "notifications",
+    history: "history",
+    sun: "sun",
+    cloud: "cloud",
+    calendar: "calendar",
   };
   const tabStorageKey = "worktime.dateInfo.activeTab";
   let date = "",
@@ -49,6 +48,137 @@
     if (cls) e.className = cls;
     return e;
   }
+  function fitAlmanac() {
+    const grid = panel.querySelector(".almanac-guidance");
+    if (!grid || panel.hidden || !grid.clientWidth) return;
+    const lists = [...grid.querySelectorAll(".almanac-activities")],
+      width = grid.clientWidth,
+      canvas = document.createElement("canvas"),
+      context = canvas.getContext("2d"),
+      metrics = lists.map((list) => {
+        const style = getComputedStyle(list),
+          columnStyle = getComputedStyle(list.parentElement);
+        context.font = style.font;
+        return {
+          count: list.children.length,
+          items: [...list.children].map((item) =>
+            Math.ceil(context.measureText(item.textContent).width),
+          ),
+          wide: [...list.children].map((item) =>
+            item.classList.contains("almanac-activity-wide"),
+          ),
+          gap: parseFloat(style.columnGap),
+          inset:
+            parseFloat(columnStyle.paddingLeft) +
+            parseFloat(columnStyle.paddingRight) +
+            1,
+          rows: Math.max(
+            1,
+            Math.floor(
+              (grid.clientHeight -
+                2 -
+                parseFloat(columnStyle.paddingTop) -
+                parseFloat(columnStyle.paddingBottom) +
+                parseFloat(style.rowGap)) /
+                (parseFloat(style.lineHeight) + parseFloat(style.rowGap)),
+            ),
+          ),
+        };
+      });
+    let best = null;
+    for (const columns of [
+      [3, 3],
+      [4, 3],
+      [3, 4],
+      [4, 4],
+      [5, 3],
+      [3, 5],
+      [5, 4],
+      [4, 5],
+      [5, 5],
+    ]) {
+      const layouts = metrics.map((m, i) => {
+        const sizes = Array(columns[i]).fill(0);
+        let cursor = 0,
+          rows = 0,
+          wideWidth = 0;
+        m.items.forEach((size, j) => {
+          if (m.wide[j]) {
+            if (cursor) rows++;
+            rows++;
+            cursor = 0;
+            wideWidth = Math.max(wideWidth, size);
+            return;
+          }
+          sizes[cursor] = Math.max(sizes[cursor], size);
+          if (++cursor === columns[i]) {
+            rows++;
+            cursor = 0;
+          }
+        });
+        return {
+          sizes,
+          rows: rows + (cursor ? 1 : 0),
+          remainder: cursor,
+          wideWidth,
+        };
+      });
+      const tracks = layouts.map((layout) => layout.sizes);
+      const minimum = metrics.map(
+        (m, i) =>
+          Math.max(
+            layouts[i].wideWidth,
+            tracks[i].reduce((sum, size) => sum + size, 0) +
+              m.gap * (columns[i] - 1),
+          ) + m.inset,
+      );
+      if (minimum[0] + minimum[1] > width) continue;
+      const left = Math.max(
+          minimum[0],
+          Math.min(
+            width - minimum[1],
+            (width * columns[0]) / (columns[0] + columns[1]),
+          ),
+        ),
+        overflow = metrics.reduce(
+          (sum, m, i) => sum + Math.max(0, layouts[i].rows - m.rows),
+          0,
+        ),
+        score =
+          overflow * 1000 +
+          columns[0] +
+          columns[1] -
+          6 +
+          Math.abs(left / width - 0.5);
+      if (!best || score < best.score) best = { tracks, layouts, left, score };
+    }
+    if (!best) return;
+    grid.style.gridTemplateColumns = best.left + "px minmax(0, 1fr)";
+    lists.forEach(
+      (list, i) =>
+        (list.style.gridTemplateColumns = best.tracks[i]
+          .map((size) => "minmax(" + size + "px, 1fr)")
+          .join(" ")),
+    );
+    lists.forEach((list, i) => {
+      const items = [...list.children],
+        remainder = best.layouts[i].remainder;
+      items.forEach((item) => item.style.removeProperty("translate"));
+      if (!remainder) return;
+      const sizes = getComputedStyle(list)
+          .gridTemplateColumns.split(" ")
+          .map(parseFloat),
+        rowWidth =
+          sizes.slice(0, remainder).reduce((sum, size) => sum + size, 0) +
+          metrics[i].gap * (remainder - 1),
+        offset = (list.clientWidth - rowWidth) / 2;
+      items
+        .slice(-remainder)
+        .forEach((item) => (item.style.translate = offset + "px 0"));
+    });
+  }
+  const almanacResize = new ResizeObserver(fitAlmanac);
+  almanacResize.observe(panel);
   function link(text, url) {
     const e = node("a", text);
     try {
@@ -163,16 +293,23 @@
     notices.hidden = active !== "notifications";
     panel.hidden = active === "notifications";
     area.classList.toggle("has-date-info", active !== "notifications");
+    g.WorkWeather?.setVisible(active === "weather");
     if (active === "notifications") return;
     panel.setAttribute("aria-labelledby", "date-tab-" + active);
     panel.classList.toggle("countdown-panel", active === "countdown");
     panel.classList.toggle("almanac-panel", active === "almanac");
     panel.classList.toggle("festivals-panel", active === "festivals");
+    panel.classList.toggle("weather-panel", active === "weather");
     const c = g.DateInfo?.getContent(active, date) || {
       ok: false,
       title: "日期资讯",
       message: "本地资讯模块未能加载",
     };
+    if (c.ok && c.weather) {
+      countdownNodes = null;
+      g.WorkWeatherUI?.render(panel, c.weather);
+      return;
+    }
     if (c.ok && c.countdown) {
       renderCountdown(c.countdown);
       return;
@@ -205,15 +342,17 @@
     if (c.almanac) {
       const values = Object.fromEntries(c.rows),
         sheet = node("div", undefined, "almanac-sheet"),
-        head = node("div", undefined, "almanac-heading");
+        head = node("div", undefined, "almanac-heading"),
+        header = node("div", undefined, "almanac-header");
       head.append(
         node("span", c.almanac.month, "almanac-date-text"),
         node("span", c.almanac.day, "almanac-date-text"),
       );
-      sheet.append(
+      header.append(
         head,
         node("p", values["干支"] + " · 属" + values["生肖"], "almanac-cycle"),
       );
+      sheet.append(header);
       const grid = node("div", undefined, "almanac-guidance");
       for (const key of ["宜", "忌"]) {
         const column = node(
@@ -227,16 +366,25 @@
         watermark.setAttribute("aria-hidden", "true");
         const activities = node("p", undefined, "almanac-activities");
         for (const text of values[key].split("、"))
-          activities.append(node("span", text));
+          activities.append(
+            node(
+              "span",
+              text,
+              text.length >= 4 ? "almanac-activity-wide" : undefined,
+            ),
+          );
         column.append(watermark, activities);
         grid.append(column);
       }
-      sheet.append(grid, node("p", "冲" + values["冲煞"], "almanac-clash"));
+      const footer = node("div", undefined, "almanac-footer");
+      footer.append(node("p", "冲" + values["冲煞"], "almanac-clash"));
       const details = node("div", undefined, "almanac-details");
       for (const [label, value] of c.almanac.details || [])
         details.append(node("span", label + " " + value));
-      sheet.append(details);
+      footer.append(details);
+      sheet.append(grid, footer);
       panel.append(sheet);
+      fitAlmanac();
     } else if (c.sections) {
       for (const section of c.sections) {
         const block = node("section", undefined, "festival-section");
@@ -307,9 +455,9 @@
         p.id === "notifications" ? "editorInfo" : "dateInfoPanel",
       );
       b.innerHTML =
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<svg class="ui-icon" aria-hidden="true"><use href="#ms-' +
         (icons[p.icon] || icons.calendar) +
-        "</svg>";
+        '"></use></svg>';
       b.onclick = () => {
         active = p.id;
         rememberTab();
@@ -347,11 +495,26 @@
     disposed = true;
     synchronizeTimer();
     badgeObserver.disconnect();
+    almanacResize.disconnect();
     document.removeEventListener("visibilitychange", onVisibility);
     document.removeEventListener("worktime:failed", dispose);
     g.removeEventListener("pagehide", dispose);
+    document.removeEventListener("worktime:weather", onWeather);
   }
   document.addEventListener("visibilitychange", onVisibility);
+  function onWeather() {
+    if (active === "weather") {
+      const scroll = panel.scrollTop;
+      const focused =
+        panel.contains(document.activeElement) &&
+        document.activeElement.tagName === "BUTTON";
+      render();
+      panel.scrollTop = scroll;
+      if (focused)
+        panel.querySelector("button")?.focus({ preventScroll: true });
+    }
+  }
+  document.addEventListener("worktime:weather", onWeather);
   document.addEventListener("worktime:failed", dispose);
   g.addEventListener("pagehide", dispose);
   refreshTabs();

@@ -2,6 +2,16 @@
 /** templates controller. Instantiate once, then bind after all actions are connected. */
 WorkUI.createTemplateController = function (options) {
   const { model, element: $, escape: esc, actions, core: C } = options;
+  const templateLimit = 4;
+  function updateTemplateLimit() {
+    const full = model.state.timeTemplates.length >= templateLimit;
+    for (const id of ["addTimeTemplate", "batchAddTimeTemplate"]) {
+      $(id).disabled = full;
+      $(id).title = full
+        ? "最多保存 4 个模板，请先删除一个模板"
+        : "新增时间模板";
+    }
+  }
 
   let templateEditingId = null,
     renderedTemplateIds = null,
@@ -54,6 +64,10 @@ WorkUI.createTemplateController = function (options) {
     renderBatchTimeTemplates();
   }
   function openTimeTemplate(template = null, defaults = null) {
+    if (!template && model.state.timeTemplates.length >= templateLimit) {
+      actions.toast("最多保存 4 个模板，请先删除一个模板");
+      return;
+    }
     templateEditingId = template ? template.id : null;
     $("timeTemplateTitle").textContent = template
       ? "编辑时间模板"
@@ -82,6 +96,7 @@ WorkUI.createTemplateController = function (options) {
     );
   }
   function renderBatchTimeTemplates() {
+    updateTemplateLimit();
     const list = $("batchTimeTemplateList");
     if (!model.state.timeTemplates.length) {
       list.innerHTML = '<span class="template-empty">暂无模板</span>';
@@ -90,15 +105,9 @@ WorkUI.createTemplateController = function (options) {
     }
     list.innerHTML = model.state.timeTemplates
       .map((template) => {
-        const active =
-          $("batchStart").value === template.start &&
-          $("batchEnd").value === template.end &&
-          $("batchNext").checked === !!template.nextDay;
         return (
           '<div class="time-template-chip"><button type="button" class="template-fill" data-batch-template="' +
           esc(template.id) +
-          '" aria-pressed="' +
-          active +
           '" title="' +
           esc(
             template.name +
@@ -162,6 +171,11 @@ WorkUI.createTemplateController = function (options) {
     $("timeTemplateForm").onsubmit = (e) => {
       e.preventDefault();
       try {
+        if (
+          !templateEditingId &&
+          model.state.timeTemplates.length >= templateLimit
+        )
+          throw Error("最多保存 4 个模板，请先删除一个模板。");
         const template = C.validateTimeTemplate({
           id:
             templateEditingId ||

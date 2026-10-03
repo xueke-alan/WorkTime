@@ -108,6 +108,8 @@ const WorkYear = (() => {
             today: date === today,
             description,
             complete: calc.minutes !== null,
+            holiday: !!info.holiday,
+            weekend: info.weekend,
           };
         }),
       };
@@ -115,8 +117,15 @@ const WorkYear = (() => {
     const maximum = scaleMaximum(result),
       minimum = scaleMinimum(result);
     for (const month of result)
-      for (const day of month.days)
+      for (const day of month.days) {
         day.color = heatColor(day.overtime, maximum, minimum);
+        if (!day.overtime && (day.holiday || day.weekend))
+          day.color = {
+            ratio: 0,
+            background: day.holiday ? "#f4e7d6" : "#dce8e3",
+            text: "#3c4a45",
+          };
+      }
     return result;
   }
   return { heatColor, scaleMaximum, scaleMinimum, months };

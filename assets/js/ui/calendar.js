@@ -38,6 +38,19 @@ WorkUI.createCalendar = function (options) {
   function updateText(element, text) {
     if (element.textContent !== text) element.textContent = text;
   }
+  function updateMonthTitle(year, month, yearMode) {
+    const title = $("monthTitle");
+    if (!title.querySelector(".month-title-divider")) {
+      title.innerHTML =
+        '<span class="month-title-year"></span><svg class="month-title-divider" viewBox="0 0 12 24" aria-hidden="true" focusable="false"><path d="M9 4 3 20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg><span class="month-title-month"></span>';
+    }
+    updateText(title.querySelector(".month-title-year"), String(year));
+    updateText(title.querySelector(".month-title-month"), String(month));
+    title.classList.toggle("is-year-title", yearMode);
+    title
+      .querySelector(".month-title-month")
+      .setAttribute("aria-hidden", String(yearMode));
+  }
   function updateCalendar(html) {
     if (html === calendarMarkup) return;
     const container = $("calendar"),
@@ -152,6 +165,7 @@ WorkUI.createCalendar = function (options) {
       renderedYearMode !== null && renderedYearMode !== yearMode;
     renderedYearMode = yearMode;
     $("calendar").classList.toggle("year-calendar", yearMode);
+    $("calendar").classList.toggle("is-batch-editing", batchMode && !yearMode);
     document
       .querySelector(".panel>.weekdays")
       .classList.toggle("hidden", yearMode);
@@ -191,14 +205,7 @@ WorkUI.createCalendar = function (options) {
     const direction = month > renderedMonth ? "8px" : "-8px";
     const monthViewYear = month.slice(0, 4),
       yearNotice = $("yearNotice");
-    updateHTML(
-      $("monthTitle"),
-      '<span class="month-title-year">' +
-        Number(monthViewYear) +
-        '</span><svg class="month-title-divider" viewBox="0 0 12 24" aria-hidden="true" focusable="false"><path d="M9 4 3 20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg><span class="month-title-month">' +
-        Number(month.slice(5)) +
-        "</span>",
-    );
+    updateMonthTitle(Number(monthViewYear), Number(month.slice(5)), false);
     updateText(
       yearNotice.querySelector(".notification-body"),
       monthViewYear + "年未内置节假日，按周一至周五统计。",
@@ -260,14 +267,12 @@ WorkUI.createCalendar = function (options) {
         .join(" ");
       const average = dailyAverages[k]?.averageMinutes,
         showAverage =
-          info.work &&
-          !day.leaveMinutes &&
+          (info.work || (calc.minutes !== null && calc.minutes > 0)) &&
           (k <= today || (r && r.manual && C.complete(r))),
-        averageText =
-          !showAverage ||
-          average === null ||
-          (calc.minutes === null && !dailyAverages[k].workOvertimeMinutes)
-            ? ""
+        averageText = !showAverage
+          ? ""
+          : average === null
+            ? "—"
             : (average / 60).toFixed(2) + " h";
       const previous = C.localDate(k);
       previous.setDate(previous.getDate() - 1);
@@ -276,7 +281,7 @@ WorkUI.createCalendar = function (options) {
           ? dailyAverages[C.dateKey(previous)]?.averageMinutes
           : null;
       const trend =
-          !averageText || previousAverage === null
+          !averageText || average === null || previousAverage === null
             ? ""
             : Number((average / 60).toFixed(2)) >
                 Number((previousAverage / 60).toFixed(2))
@@ -347,11 +352,11 @@ WorkUI.createCalendar = function (options) {
         (k === state.settings.employmentDate
           ? '<span class="payday-icon employment-icon" role="img" aria-label="入职日" title="入职日：' +
             esc(k) +
-            '"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20v-2a7 7 0 0 1 14 0v2M9 14l3 3 3-3M12 17v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+            '"><svg class="ui-icon" aria-hidden="true"><use href="#ms-person-add"/></svg></span>'
           : k === payday.date
             ? '<span class="payday-icon" role="img" aria-label="发薪日" title="' +
               esc(paydayHint) +
-              '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 4 6 7 6-7M12 11v9M6 11h12M6 15h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+              '"><svg class="ui-icon" aria-hidden="true"><use href="#ms-currency-yen"/></svg></span>'
             : "") +
         '</span><span class="daykind">' +
         esc(kindLabel) +
@@ -362,7 +367,8 @@ WorkUI.createCalendar = function (options) {
         (calc.minutes !== null ? C.formatMinutes(calc.minutes) : "") +
         '</div><div class="day-average" title="' +
         esc(
-          "本月1日至当日：工作日加班 ÷ 应上班工时 × 标准日工时；包含调休补班与请假时段" +
+          "本月截至当日：累计工作日加班 ÷ 已完成记录的折算出勤" +
+            (dailyAverages[k].pending ? "；打卡未完成，暂不显示平均加班" : "") +
             (trendLabel ? "；" + trendLabel : ""),
         ) +
         '">' +
@@ -416,10 +422,10 @@ WorkUI.createCalendar = function (options) {
     $("batchBar").classList.toggle("hidden", !batchMode);
     $("dayEditor").classList.toggle("hidden", batchMode);
     $("batchToggle").setAttribute("aria-pressed", String(batchMode));
-    updateText(
-      $("batchToggle").querySelector("span"),
-      batchMode ? "取消填写" : "批量填写",
-    );
+    $("batchToggle").title = batchMode ? "取消批量填写" : "批量填写";
+    $("batchToggle")
+      .querySelector("use")
+      .setAttribute("href", batchMode ? "#ms-close" : "#ms-stacks");
     $("batchToggle").setAttribute(
       "aria-label",
       batchMode ? "取消批量填写" : "批量填写",
@@ -436,8 +442,12 @@ WorkUI.createCalendar = function (options) {
         $("calendar").querySelector(".selected"),
         "motion-selection",
       );
-    if (modeChanged)
-      window.WorkMotion?.play($(batchMode ? "batchBar" : "dayEditor"));
+    if (modeChanged) {
+      window.WorkMotion?.play(
+        $(batchMode ? "batchForm" : "dayForm"),
+        batchMode ? "motion-sidebar-forward" : "motion-sidebar-back",
+      );
+    }
     if (viewChanged)
       window.WorkMotion?.play($("calendar"), "motion-calendar-view");
     renderedMonth = month;
@@ -448,10 +458,7 @@ WorkUI.createCalendar = function (options) {
     const state = getState();
     const { today, selected, viewYear } = getView();
 
-    updateHTML(
-      $("monthTitle"),
-      '<span class="month-title-year">' + viewYear + "</span>",
-    );
+    updateMonthTitle(viewYear, Number(getView().month.slice(5)), true);
     const notice = $("yearNotice");
     updateText(
       notice.querySelector(".notification-body"),
@@ -531,7 +538,9 @@ WorkUI.createCalendar = function (options) {
     $("dayEditor").classList.remove("hidden");
     $("batchToggle").setAttribute("aria-pressed", "false");
     $("batchToggle").classList.remove("primary");
-    $("batchToggle").querySelector("span").textContent = "批量填写";
+    $("batchToggle").title = "批量填写";
+    $("batchToggle").setAttribute("aria-label", "批量填写");
+    $("batchToggle").querySelector("use").setAttribute("href", "#ms-stacks");
     renderedMonth = null;
     renderedMode = false;
     renderedSelection = selected;

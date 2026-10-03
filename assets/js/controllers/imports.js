@@ -21,29 +21,16 @@ WorkUI.createImportController = function (options) {
     invalidatePreview();
   }
   function setImportParseStatus(status) {
-    const button = $("previewImport"),
-      state = status === "pending" ? "idle" : status;
-    button.dataset.state = state;
-    button.textContent = {
-      idle: "暂无解析",
-      success: "解析成功",
-      error: "解析失败",
-      warning: "解析异常",
-    }[state];
-    button.disabled = !["success", "warning"].includes(state);
-    button.setAttribute("aria-busy", String(status === "pending"));
-    button.title =
-      state === "warning"
-        ? "点击查看具体解析情况"
-        : state === "success"
-          ? "没有异常，点击查看解析记录"
-          : state === "error"
-            ? "未能解析出可导入记录，请检查输入"
-            : "请粘贴 OA 文本";
+    const summary = $("importSummary");
+    summary.dataset.state = status;
+    summary.setAttribute("aria-busy", String(status === "pending"));
+    $("importDetails").classList.toggle(
+      "hidden",
+      ["idle", "pending"].includes(status),
+    );
   }
   function collapseImportDetails() {
     $("importDetails").classList.add("hidden");
-    $("previewImport").setAttribute("aria-expanded", "false");
   }
   function scheduleImportParse() {
     invalidatePreview();
@@ -60,6 +47,9 @@ WorkUI.createImportController = function (options) {
     $("importTable").classList.add("hidden");
     $("importSummary").textContent = "暂无解析";
     $("importWarnings").textContent = "";
+    $("importResultsTitle").textContent = "导入历史";
+    $("importHistoryList").classList.remove("hidden");
+    renderImportHistory();
   }
   function parseImport(inputSources = null) {
     invalidatePreview();
@@ -74,20 +64,27 @@ WorkUI.createImportController = function (options) {
       preview = rows.length ? plan : null;
       $("importWarnings").textContent = warnings.join("\n");
       $("importSummary").textContent =
+        "已解析 " +
         records.length +
-        " 条可导入记录 · " +
+        " 条 · " +
         warnings.length +
-        " 条提示 · " +
+        " 提示 · " +
         rows.filter((x) => x.result.conflict).length +
-        " 条冲突";
+        " 冲突";
+      $("importSummary").title =
+        warnings.join("\n") || $("importSummary").textContent;
       $("importRows").innerHTML = rows
         .map(
           (x, i) =>
-            "<tr><td>" +
+            "<article><strong>" +
             x.record.date +
-            "</td><td>" +
-            esc((x.record.start || "—") + " / " + (x.record.end || "—")) +
-            "</td><td>" +
+            "</strong><span>" +
+            esc(
+              x.record.start || x.record.end
+                ? ((x.record.start || "") + " - " + (x.record.end || "")).trim()
+                : "-",
+            ) +
+            "</span>" +
             (x.result.conflict
               ? '<div class="conflict">' +
                 (x.result.repeated
@@ -101,15 +98,27 @@ WorkUI.createImportController = function (options) {
                 '" aria-label="' +
                 x.record.date +
                 ' 冲突处理"><option value="new">采用本次导入</option><option value="old">保留已有记录或此前选择</option></select>'
-              : esc(x.result.action)) +
+              : "") +
             (model.state.days[x.record.date] &&
             model.state.days[x.record.date].actual
               ? '<div class="muted">手动填写仍保留</div>'
               : "") +
-            "</td></tr>",
+            "</article>",
         )
         .join("");
       $("importTable").classList.toggle("hidden", !rows.length);
+      $("importHistoryList").classList.add("hidden");
+      $("importResultsTitle").textContent = "记录解析结果";
+      const abnormalDates = new Set(
+        rows
+          .filter(
+            (row) =>
+              row.result.conflict || !row.record.start || !row.record.end,
+          )
+          .map((row) => row.record.date),
+      );
+      $("importHistoryCount").textContent =
+        "共 " + rows.length + " 条记录 · " + abnormalDates.size + " 条异常记录";
       $("commitImport").disabled = !rows.length;
       setImportParseStatus(
         !rows.length
@@ -157,6 +166,7 @@ WorkUI.createImportController = function (options) {
     }
     const saved = actions.save();
     actions.render();
+    renderImportHistory();
     return saved;
   }
   async function importFromClipboard() {
@@ -175,7 +185,6 @@ WorkUI.createImportController = function (options) {
         parseImport(sources);
         actions.open("importDialog");
         $("importDetails").classList.remove("hidden");
-        $("previewImport").setAttribute("aria-expanded", "true");
         actions.toast("剪贴板记录存在冲突或提示，请核查后确认导入");
         return;
       }
@@ -202,6 +211,12 @@ WorkUI.createImportController = function (options) {
   let importToDelete = null;
   function renderImportHistory() {
     const logs = model.state.imports.slice().reverse();
+    const dates = new Set(
+      logs.flatMap((log) => importIndex.describe(log).acceptedDates),
+    );
+    if (!preview)
+      $("importHistoryCount").textContent =
+        "共 " + logs.length + " 条记录 · " + dates.size + " 天有效记录";
     $("importHistoryList").innerHTML = logs.length
       ? logs
           .map((log) => {
@@ -213,75 +228,121 @@ WorkUI.createImportController = function (options) {
               '<article class="import-history-item" data-history-id="' +
               esc(log.id) +
               '"><div class="row between"><h3>' +
-              esc(new Date(log.at).toLocaleString("zh-CN")) +
+              esc(
+                new Date(log.at).toLocaleString("zh-CN", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }),
+              ) +
               '</h3><div class="row"><button type="button" data-view-import="' +
               esc(log.id) +
-              '">查看</button><button type="button" class="danger" data-delete-import="' +
+              '" aria-label="查看导入详情" title="查看详情"><svg class="ui-icon" aria-hidden="true"><use href="#ms-info"/></svg></button><button type="button" class="danger" data-delete-import="' +
               esc(log.id) +
-              '">删除</button></div></div><div class="import-history-meta">' +
-              esc(log.sources.map((s) => s.name).join("、")) +
-              "<br>" +
+              '" aria-label="删除导入批次" title="删除批次"><svg class="ui-icon" aria-hidden="true"><use href="#ms-delete-outline"/></svg></button></div></div><div class="import-history-meta">' +
               esc(range) +
-              " · 识别 " +
+              " · " +
               log.count +
-              " 条记录 · " +
-              log.sources.length +
-              " 个来源</div><details><summary>" +
-              actions.controlIcon("disclose") +
-              "<span>查看导入原文</span></summary>" +
-              log.sources
-                .map(
-                  (source) =>
-                    '<h3 class="import-source-heading">' +
-                    esc(source.name) +
-                    "</h3><pre>" +
-                    esc(source.raw) +
-                    "</pre>",
-                )
-                .join("") +
-              "</details></article>"
+              " 条记录</div></article>"
             );
           })
           .join("")
       : '<div class="import-history-empty">暂无导入历史</div>';
   }
+  let detailId = null;
+  function showImportDetail(id) {
+    const logs = model.state.imports.slice().reverse(),
+      index = logs.findIndex((log) => log.id === id),
+      log = logs[index];
+    if (!log) return;
+    const changedDetail = detailId !== null && detailId !== id;
+    detailId = id;
+    const pane = $("sourceDialog");
+    pane.classList.add("import-detail-view");
+    pane.classList.remove("import-detail-raw");
+    pane.querySelector("h2").innerHTML =
+      "<span>" +
+      esc(
+        new Date(log.at).toLocaleString("zh-CN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+      ) +
+      '</span><small class="import-detail-caption">改入记录</small>';
+    const records = Array.isArray(log.records)
+      ? log.records
+      : log.sources.flatMap(
+          (source) => C.parseText(source.raw, log.year, source.name).records,
+        );
+    $("sourceBody").innerHTML =
+      '<div class="import-detail-toolbar"><span class="muted">' +
+      records.length +
+      " 条记录 · " +
+      records.filter((record) => !record.start || !record.end).length +
+      " 条异常</span></div>" +
+      '<div class="import-parsed-list">' +
+      records
+        .map(
+          (record) =>
+            "<article><strong>" +
+            esc(record.date) +
+            "</strong><span>" +
+            esc(
+              record.start || record.end
+                ? (record.start || "") + " - " + (record.end || "")
+                : "-",
+            ).trim() +
+            (record.nextDay ? "（次日）" : "") +
+            "</span></article>",
+        )
+        .join("") +
+      (records.length
+        ? ""
+        : '<p class="muted">没有已接受的解析记录，可查看原文。</p>') +
+      "</div>" +
+      '<label class="import-detail-raw-label" for="importDetailRawText">原始数据</label>' +
+      '<div class="import-detail-raw-field"><textarea id="importDetailRawText" class="import-detail-raw-text" readonly aria-label="导入原始文本" spellcheck="false">' +
+      esc(log.sources.map((source) => source.raw).join("\n\n")) +
+      "</textarea></div>";
+    pane.querySelector(".dialog-foot").innerHTML =
+      '<button type="button" class="icon-only" aria-label="上一条导入记录" title="上一条" data-detail-step="-1"' +
+      (index === 0 ? " disabled" : "") +
+      '><svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-left"/></svg></button><span class="muted">' +
+      (index + 1) +
+      " / " +
+      logs.length +
+      '</span><button type="button" class="icon-only" aria-label="下一条导入记录" title="下一条" data-detail-step="1"' +
+      (index === logs.length - 1 ? " disabled" : "") +
+      '><svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-right"/></svg></button>';
+    $("sourceBody").scrollTop = 0;
+    if (changedDetail && pane.open)
+      window.WorkMotion?.play($("sourceBody"), "motion-sidebar-forward");
+    window.UIAlignment?.refresh([pane]);
+  }
   function showSources() {
     const day = model.state.days[model.selected] || {},
-      logs = importIndex.logsForDate(model.state.imports, model.selected);
-    $("sourceBody").innerHTML =
-      "<h3>" +
-      model.selected +
-      "</h3>" +
-      (day.oa
-        ? '<p class="help">当前 OA：' +
-          esc(day.oa.source) +
-          '</p><pre class="source-record-text">' +
-          esc(day.oa.raw) +
-          "</pre>"
-        : "") +
-      logs
-        .map(
-          (log) =>
-            '<details class="dialog-section-spacing"><summary>' +
-            actions.controlIcon("disclose") +
-            "<span>" +
-            esc(new Date(log.at).toLocaleString("zh-CN")) +
-            " · " +
-            log.count +
-            " 条记录</span></summary>" +
-            log.sources
-              .map(
-                (src) =>
-                  '<h3 class="dialog-section-spacing">' +
-                  esc(src.name) +
-                  '</h3><pre class="source-raw-text">' +
-                  esc(src.raw) +
-                  "</pre>",
-              )
-              .join("") +
-            "</details>",
-        )
-        .join("");
+      logs = importIndex.logsForDate(model.state.imports, model.selected),
+      log =
+        model.state.imports.find((item) => item.id === day.oa?.importId) ||
+        logs
+          .slice()
+          .reverse()
+          .find((item) =>
+            importIndex.describe(item).acceptedDates.includes(model.selected),
+          ) ||
+        logs.at(-1);
+    if (!log) {
+      actions.toast("没有对应的导入记录，可在导入历史中查看其他记录。");
+      return;
+    }
+    showImportDetail(log.id);
     actions.open("sourceDialog");
   }
   function updateImportYearHint() {
@@ -366,24 +427,21 @@ WorkUI.createImportController = function (options) {
     if (bound) return;
     bound = true;
     $("importDialog").addEventListener("close", resetImportInput);
-    $("previewImport").onclick = () => {
-      const expanded =
-        $("previewImport").getAttribute("aria-expanded") !== "true";
-      $("importDetails").classList.toggle("hidden", !expanded);
-      $("previewImport").setAttribute("aria-expanded", String(expanded));
-    };
+    $("importDialog").addEventListener("sidebar-open", renderImportHistory);
     $("importHistoryOpen").onclick = () => {
       renderImportHistory();
-      actions.open("importHistoryDialog");
+      $("importHistoryList").scrollIntoView({ block: "nearest" });
     };
     $("importHistoryList").onclick = (e) => {
       const view = e.target.closest("[data-view-import]"),
         remove = e.target.closest("[data-delete-import]");
       if (view) {
-        const details = view
-          .closest(".import-history-item")
-          .querySelector("details");
-        details.open = !details.open;
+        const log = model.state.imports.find(
+          (item) => item.id === view.dataset.viewImport,
+        );
+        if (!log) return;
+        showImportDetail(log.id);
+        actions.open("sourceDialog");
         return;
       }
       if (!remove) return;
@@ -423,6 +481,7 @@ WorkUI.createImportController = function (options) {
       actions.saveFeedback(saved, "导入记录已删除，工时统计已更新");
     };
     $("sourceOpen").onclick = showSources;
+    $("sourceDialog").addEventListener("click", detailClick);
     $("importOpen").onclick = (e) => {
       if (e.target.closest("[data-import-clipboard]")) importFromClipboard();
       else {
@@ -432,7 +491,11 @@ WorkUI.createImportController = function (options) {
       }
     };
     $("importOpen").onkeydown = (e) => {
-      if (e.key === "Enter" && e.shiftKey) {
+      if (
+        e.key === "Enter" &&
+        e.shiftKey &&
+        !$("importOpen").classList.contains("is-return")
+      ) {
         e.preventDefault();
         importFromClipboard();
       }
@@ -557,8 +620,20 @@ WorkUI.createImportController = function (options) {
       actions.saveFeedback(saved, "导入完成，已处理 " + processed + " 条记录");
     };
   }
+  function detailClick(event) {
+    if (!$("sourceDialog").classList.contains("import-detail-view")) return;
+    const step = event.target.closest("[data-detail-step]");
+    if (step && !step.disabled) {
+      const logs = model.state.imports.slice().reverse(),
+        index = logs.findIndex((log) => log.id === detailId);
+      const next = logs[index + Number(step.dataset.detailStep)];
+      if (next) showImportDetail(next.id);
+    }
+  }
   function dispose() {
+    $("sourceDialog").removeEventListener("click", detailClick);
     disposed = true;
+    $("importDialog").removeEventListener("sidebar-open", renderImportHistory);
     clearTimeout(oaFinishTimer);
     clearTimeout(importParseTimer);
     clearTimeout(oaHoldTimer);

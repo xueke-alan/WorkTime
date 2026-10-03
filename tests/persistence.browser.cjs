@@ -28,7 +28,6 @@ let browser;
   await page.goto(url);
   await page.locator("#settingsOpen").click();
   await page.locator("#standardEnd").fill("18:30");
-  await page.locator("#settingsForm button[type=submit]").click();
   assert(await page.locator("#settingsDialog").evaluate((e) => e.open));
   assert.match(await page.locator("#settingsError").innerText(), /尚未保存/);
   assert(
@@ -37,10 +36,10 @@ let browser;
     ),
   );
   await page.evaluate(() => (window.failPersistence = false));
-  await page.locator("#settingsForm button[type=submit]").click();
+  await page.locator("#standardEnd").dispatchEvent("change");
   assert.equal(
     await page.locator("#settingsDialog").evaluate((e) => e.open),
-    false,
+    true,
   );
   assert.equal(
     await page.evaluate(
@@ -48,6 +47,7 @@ let browser;
     ),
     "18:30",
   );
+  await page.locator("#settingsOpen").click();
   await page.evaluate(() => (window.failPersistence = true));
   await page.locator("#addTimeTemplate").click();
   await page.locator("#timeTemplateName").fill("重试模板");

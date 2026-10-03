@@ -185,10 +185,12 @@ const WorkDerived = (() => {
           [end]: {
             scheduledMinutes,
             workOvertimeMinutes,
-            averageMinutes: scheduledMinutes
-              ? (workOvertimeMinutes * input.settings.standardMinutes) /
-                scheduledMinutes
-              : null,
+            pending: last.pending,
+            averageMinutes:
+              scheduledMinutes && !last.pending
+                ? (workOvertimeMinutes * input.settings.standardMinutes) /
+                  scheduledMinutes
+                : null,
           },
         };
       },

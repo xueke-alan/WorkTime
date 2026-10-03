@@ -170,6 +170,7 @@ body .editor > .notification-tabs .notification-tab:hover {
 @media (min-width: 1151px) {
   body .editor .date-info-area {
     flex: 0 0 calc(100% * 7 / 24);
+    min-height: calc(18.514286rem + 1px);
     overflow: hidden;
   }
 }
@@ -581,6 +582,10 @@ body #dateInfoPanel.almanac-panel .almanac-activities {
   white-space: nowrap;
   overflow-wrap: normal;
 }
+.almanac-activities .almanac-activity-wide {
+  grid-column: 1 / -1;
+  text-align: center;
+}
 body .editor #dateInfoPanel.countdown-panel {
   container-type: inline-size;
 }
@@ -618,4 +623,52 @@ body #dateInfoPanel .date-info-date {
 }
 body .editor #dateInfoPanel {
   margin-bottom: 0.714286rem;
+}
+/* Compact the almanac so its full content fits the persistent information area. */
+body #dateInfoPanel.almanac-panel .almanac-sheet {
+  justify-content: center;
+  gap: 0.214286rem;
+  min-height: 0;
+}
+body #dateInfoPanel.almanac-panel .almanac-heading { padding: 0.142857rem 0; }
+body #dateInfoPanel.almanac-panel .almanac-cycle { margin: 0 0 0.214286rem; font-size: 0.785714rem; }
+body #dateInfoPanel.almanac-panel .almanac-column { min-height: 0; padding-block: 0.285714rem; }
+body #dateInfoPanel.almanac-panel .almanac-column p { font-size: 0.928571rem; line-height: 1.35; }
+body #dateInfoPanel.almanac-panel .almanac-activities { row-gap: 0.142857rem; }
+body #dateInfoPanel.almanac-panel .almanac-clash { padding: 0.142857rem 0; font-size: 0.785714rem; }
+body #dateInfoPanel.almanac-panel .almanac-details { row-gap: 0.142857rem; font-size: 0.785714rem; padding-bottom: 0; }
+/* Date changes keep the same three horizontal bands. Only the middle split moves. */
+body .editor #dateInfoPanel.almanac-panel {
+  padding-block: 0.5rem;
+}
+body #dateInfoPanel.almanac-panel .almanac-sheet {
+  display: grid;
+  grid-template-rows: 4.6rem 9.6rem 2.6rem;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  gap: 0;
+  flex: none;
+  margin-block: auto;
+}
+.almanac-header,
+.almanac-footer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+body #dateInfoPanel.almanac-panel .almanac-cycle,
+body #dateInfoPanel.almanac-panel .almanac-clash {
+  margin: 0;
+}
+body #dateInfoPanel.almanac-panel .almanac-guidance {
+  min-height: 0;
+}
+body #dateInfoPanel.almanac-panel .almanac-column {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+body #dateInfoPanel.almanac-panel .almanac-activities {
+  margin: 0;
 }

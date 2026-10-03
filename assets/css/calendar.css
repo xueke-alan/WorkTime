@@ -593,14 +593,13 @@
 .day.weekend:not([data-holiday]):not(.full-leave)::before {
   content: "";
   position: absolute;
-  right: 5px;
-  bottom: 4px;
-  width: 68px;
-  height: 68px;
-  max-width: 70%;
-  max-height: 75%;
-  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2072%2072%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23cbd6d8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M17%2026h34v14a17%2017%200%200%201-34%200Z%22%2F%3E%3Cpath%20d%3D%22M51%2029h4a7%207%200%200%201%200%2014h-5M13%2053h43M27%2020c-3-3%202-5%200-8M40%2020c-3-3%202-5%200-8%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E")
-    bottom right/contain no-repeat;
+  right: 0;
+  bottom: 0;
+  width: 95px;
+  height: 95px;
+  max-width: 88%;
+  max-height: 85%;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2096%2096%22%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23bdcec4%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M72%2055h5q8%200%207%207t-13%207%22%2F%3E%0A%20%20%20%20%3Cpath%20d%3D%22M45%2053h28l-2%2016q-1%208-12%208t-12-8Z%22%20fill%3D%22%23dce7de%22%2F%3E%0A%20%20%20%20%3Cellipse%20cx%3D%2259%22%20cy%3D%2253%22%20rx%3D%2214%22%20ry%3D%223%22%20fill%3D%22%23edf2eb%22%2F%3E%0A%20%20%20%20%3Cpath%20d%3D%22M54%2044q-4-5%200-10M65%2043q-4-5%200-10%22%20stroke%3D%22%23c9d8ce%22%2F%3E%0A%20%20%20%20%3Cpath%20d%3D%22M26%2085q26-7%2061-2%22%20stroke%3D%22%23d0dcd2%22%2F%3E%0A%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A") bottom right/contain no-repeat;
   pointer-events: none;
   z-index: -1;
 }
@@ -1125,6 +1124,40 @@ body .month-controls .month-title {
   text-align: center;
   flex: none;
 }
+/* Keep title nodes in place so toggling can reverse an in-flight transition. */
+body .month-controls .month-title {
+  overflow: hidden;
+}
+.month-title-year,
+.month-title-divider,
+.month-title-month {
+  translate: 0;
+  transition: translate 360ms var(--motion-ease);
+}
+.month-title-divider,
+.month-title-month {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    translate 360ms var(--motion-ease),
+    opacity 360ms var(--motion-ease),
+    visibility 0s;
+}
+.is-year-title > :is(.month-title-year, .month-title-divider, .month-title-month) {
+  translate: calc(1ch + 0.25em + var(--month-item-gap)) 0;
+}
+.is-year-title > :is(.month-title-divider, .month-title-month) {
+  opacity: 0;
+  visibility: hidden;
+  transition-delay: 0s, 0s, 360ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .month-title-year,
+  .month-title-divider,
+  .month-title-month {
+    transition: none;
+  }
+}
 @media (min-width: 1921px) {
   body .calendar-footer .legend {
     font-size: clamp(10px, calc(0.625vw - 2px), 14px);
@@ -1429,6 +1462,19 @@ body .month-controls .month-title {
 body .year-day > span.ui-aligned-text {
   transform: translate(var(--ui-ink-offset-x, 0px), var(--ui-ink-offset, 0px));
 }
+body .year-month .year-day > span {
+  opacity: 0.28;
+  transition: opacity 240ms ease;
+}
+body .year-month:hover .year-day > span,
+body .year-month:focus-within .year-day > span {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  body .year-month .year-day > span {
+    transition: none;
+  }
+}
 body .calendar .day-date {
   display: inline-flex;
   align-items: center;
@@ -1676,4 +1722,24 @@ body .workspace .calendar:not(.year-calendar) {
     grid-auto-rows: auto;
     align-content: start;
   }
+}
+
+/* Toolbar actions keep navigation icon scale with slightly wider controls. */
+body .panel-head .calendar-toolbar-actions button.icon-only {
+  width: calc(var(--control-height) * 1.4) !important;
+  min-width: calc(var(--control-height) * 1.4) !important;
+  max-width: calc(var(--control-height) * 1.4) !important;
+  flex: 0 0 calc(var(--control-height) * 1.4);
+  aspect-ratio: auto;
+  padding: 0;
+  gap: 0;
+}
+body .panel-head .calendar-toolbar-actions :is(#batchToggle, #settingsOpen, #backup, #restore) .ui-icon,
+body .panel-head #todayButton.icon-only .ui-icon {
+  width: 1.285714rem;
+  height: 1.285714rem;
+}
+body .panel-head #backup .backup-icon-slot {
+  width: 1.285714rem;
+  height: 1.285714rem;
 }

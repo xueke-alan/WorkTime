@@ -62,8 +62,10 @@ let runningBrowser;
       .evaluate((el) => getComputedStyle(el).fontSize),
     "16px",
   );
+  await page.locator(".month-title-month").waitFor({ state: "hidden" });
   const entered = await page.locator("#monthTitle").innerText();
   await page.locator("#prevMonth").click();
+  await page.locator(".month-title-month").waitFor({ state: "hidden" });
   assert.equal(await page.locator("#monthTitle").innerText(), "2025");
   assert.equal(
     await page
@@ -97,6 +99,7 @@ let runningBrowser;
   );
   await page.locator("#todayButton").click();
   await page.locator("#monthTitle").click();
+  await page.locator(".month-title-month").waitFor({ state: "hidden" });
   assert.equal(await page.locator("#monthTitle").innerText(), entered);
   await page.keyboard.press("Tab");
   await page.locator('[data-year-date="2026-01-01"]').focus();
