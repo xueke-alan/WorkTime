@@ -57,7 +57,10 @@
     return null;
   }
   function beijingTime(value) {
-    if (typeof value !== "string" || !/^\d{14}$/.test(value)) return "";
+    if (typeof value !== "string") return "";
+    if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.test(value))
+      return value.replace(" ", "T") + "+08:00";
+    if (!/^\d{14}$/.test(value)) return "";
     return (
       value.slice(0, 4) +
       "-" +

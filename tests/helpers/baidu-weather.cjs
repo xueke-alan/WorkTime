@@ -32,10 +32,11 @@ function snapshot(hourly = true) {
           ? {
               forecast_hours: Array.from({ length: 24 }, (_, i) => ({
                 data_time:
-                  "202610" +
+                  "2026-10-" +
                   (i < 12 ? "03" : "04") +
+                  " " +
                   String((12 + i) % 24).padStart(2, "0") +
-                  "0000",
+                  ":00:00",
                 temp_fc: 24,
                 pop: 999999,
               })),

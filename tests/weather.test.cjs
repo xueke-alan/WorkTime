@@ -47,6 +47,7 @@ for (const city of cities) {
   assert.equal(record.current.windClass, "3级");
   assert.equal(record.current.windDirectionText, "东北风");
   assert.equal(record.hourly.length, 24);
+  assert.equal(record.hourly[0].time, "2026-10-03T12:00:00+08:00");
   assert.equal(record.daily.length, 5);
   assert.equal(record.daily[0].precipitationProbability, null);
   assert(weather.validRecord(record, city.id));
@@ -54,6 +55,13 @@ for (const city of cities) {
   assert.equal(weather.normalize(snapshot(false), city).hourly.length, 0);
 }
 const invalid = snapshot();
+const compactTime = snapshot();
+compactTime.cities.dongguan.result.forecast_hours[0].data_time =
+  "20261003120000";
+assert.equal(
+  weather.normalize(compactTime, cities[0]).hourly[0].time,
+  "2026-10-03T12:00:00+08:00",
+);
 invalid.cities.dongguan.districtId = "110101";
 assert.throws(() => weather.normalize(invalid, cities[0]), /不完整/);
 const badTemperature = snapshot();
