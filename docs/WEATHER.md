@@ -4,6 +4,9 @@
 拉取 Open-Meteo 数据，提交到 `assets/data/weather/`，随后发布整个 GitHub Pages 站点。
 客户端只读取 Pages 上的索引和所选城市所在省份文件，不直连天气接口。
 
+Pages 构建时为 HTML 引用的脚本、样式添加内容哈希版本参数，避免浏览器混用新页面
+和旧缓存脚本。直接双击使用的源 `index.html` 保持不变；发布更新不清除本地工时记录。
+
 ## 首次启用
 
 1. 将代码推送到仓库默认分支。在仓库 Settings → Pages 中将 Source 设为 GitHub Actions。

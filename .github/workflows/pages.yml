@@ -50,6 +50,7 @@ jobs:
           mkdir _site
           cp index.html _site/
           cp -R assets licenses _site/
+          node scripts/version-site.cjs _site
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
