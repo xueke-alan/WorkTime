@@ -1,0 +1,47 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "width": 2250,
+      "geometry": {
+        "inside": true,
+        "bodyScrollable": "auto",
+        "footerVisible": true,
+        "pageOverflow": false,
+        "belowDivider": true
+      },
+      "historyLayout": {
+        "scrollable": true,
+        "height": 487,
+        "contentHeight": 487,
+        "belowActions": true
+      },
+      "importAndDelete": true,
+      "nestedBackRetainedDraft": true,
+      "noModalOA": true,
+      "persistentHeaderAndDivider": true,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "geometry": {
+        "inside": true,
+        "bodyScrollable": "auto",
+        "footerVisible": true,
+        "pageOverflow": false,
+        "belowDivider": true
+      },
+      "historyLayout": {
+        "scrollable": true,
+        "height": 346,
+        "contentHeight": 346,
+        "belowActions": true
+      },
+      "importAndDelete": true,
+      "nestedBackRetainedDraft": true,
+      "noModalOA": true,
+      "persistentHeaderAndDivider": true,
+      "pageErrors": []
+    }
+  ]
+}

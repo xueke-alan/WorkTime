@@ -1,0 +1,33 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "width": 2250,
+      "geometry": {
+        "nonmodal": true,
+        "inside": true,
+        "overflow": false,
+        "bodyOverflow": false,
+        "footerVisible": true,
+        "pageOverflow": false,
+        "tabsReserved": true,
+        "infoReserved": true
+      },
+      "saveCancelReturn": true
+    },
+    {
+      "width": 390,
+      "geometry": {
+        "nonmodal": true,
+        "inside": true,
+        "overflow": false,
+        "bodyOverflow": false,
+        "footerVisible": true,
+        "pageOverflow": false,
+        "tabsReserved": true,
+        "infoReserved": true
+      },
+      "saveCancelReturn": true
+    }
+  ]
+}

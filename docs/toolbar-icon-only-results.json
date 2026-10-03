@@ -1,0 +1,113 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "viewport": 390,
+      "geometry": [
+        {
+          "id": "batchToggle",
+          "text": "",
+          "label": "批量填写",
+          "title": "批量填写",
+          "width": 47.59375,
+          "iconWidth": 17.984375,
+          "iconHeight": 17.984375,
+          "ref": 17.984375,
+          "centerX": 0.0078125,
+          "centerY": 0
+        },
+        {
+          "id": "settingsOpen",
+          "text": "",
+          "label": "计算设置",
+          "title": "计算设置",
+          "width": 47.59375,
+          "iconWidth": 17.984375,
+          "iconHeight": 17.984375,
+          "ref": 17.984375,
+          "centerX": 0.0078125,
+          "centerY": 0
+        },
+        {
+          "id": "backup",
+          "text": "",
+          "label": "迁移，点击复制备份，按住两秒下载备份",
+          "title": "点击复制备份，按住两秒下载备份",
+          "width": 47.59375,
+          "iconWidth": 17.984375,
+          "iconHeight": 17.984375,
+          "ref": 17.984375,
+          "centerX": 0.0078125,
+          "centerY": 0
+        },
+        {
+          "id": "restore",
+          "text": "",
+          "label": "恢复",
+          "title": "恢复",
+          "width": 47.59375,
+          "iconWidth": 17.984375,
+          "iconHeight": 17.984375,
+          "ref": 17.984375,
+          "centerX": 0.4921875,
+          "centerY": 0
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": 2250,
+      "geometry": [
+        {
+          "id": "batchToggle",
+          "text": "",
+          "label": "批量填写",
+          "title": "批量填写",
+          "width": 52.5,
+          "iconWidth": 19.84375,
+          "iconHeight": 19.84375,
+          "ref": 19.84375,
+          "centerX": 0,
+          "centerY": 0
+        },
+        {
+          "id": "settingsOpen",
+          "text": "",
+          "label": "计算设置",
+          "title": "计算设置",
+          "width": 52.5,
+          "iconWidth": 19.84375,
+          "iconHeight": 19.84375,
+          "ref": 19.84375,
+          "centerX": 0,
+          "centerY": 0
+        },
+        {
+          "id": "backup",
+          "text": "",
+          "label": "迁移，点击复制备份，按住两秒下载备份",
+          "title": "点击复制备份，按住两秒下载备份",
+          "width": 52.5,
+          "iconWidth": 19.84375,
+          "iconHeight": 19.84375,
+          "ref": 19.84375,
+          "centerX": 0,
+          "centerY": 0
+        },
+        {
+          "id": "restore",
+          "text": "",
+          "label": "恢复",
+          "title": "恢复",
+          "width": 52.5,
+          "iconWidth": 19.84375,
+          "iconHeight": 19.84375,
+          "ref": 19.84375,
+          "centerX": 0.5,
+          "centerY": 0
+        }
+      ],
+      "pageErrors": []
+    }
+  ]
+}

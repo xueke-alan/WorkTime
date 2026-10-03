@@ -15,15 +15,18 @@ WorkUI.createSettingsController = function (options) {
     const list = $("workCityOptions");
     if (list.hidden) return;
     const rect = $("workCity").getBoundingClientRect();
-    const gap = 5;
+    const row = $("workCity")
+      .closest(".settings-employment")
+      .getBoundingClientRect();
+    const width = Math.min(row.width, window.innerWidth - 16);
+    const gap = 6;
     const below = window.innerHeight - rect.bottom - gap - 8;
     const above = rect.top - gap - 8;
     const height = Math.min(224, Math.max(below, above));
-    list.style.width = rect.width + "px";
+    list.style.width = width + "px";
     list.style.maxHeight = height + "px";
     list.style.left =
-      Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)) +
-      "px";
+      Math.max(8, Math.min(row.left, window.innerWidth - width - 8)) + "px";
     const openBelow =
       below >= Math.min(list.scrollHeight, 224) || below >= above;
     list.style.top =

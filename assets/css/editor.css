@@ -1852,6 +1852,7 @@ body .editor #settingsForm #workCity {
   min-width: 0;
   text-align: center;
   font-size: var(--text-small);
+  font-weight: 500;
 }
 body #workCityOptions {
   position: fixed;
@@ -1860,11 +1861,15 @@ body #workCityOptions {
   box-sizing: border-box;
   overflow-y: auto;
   overscroll-behavior: contain;
-  border: 1px solid var(--clock-border);
-  border-radius: var(--control-radius);
+  border: 1px solid var(--control-border);
+  border-radius: 0.571429rem;
   background: #fff;
   padding: 0.285714rem;
-  box-shadow: 0 3px 10px #245b4a0d;
+  box-shadow: 0 6px 18px #245b4a14;
+}
+body #workCityOptions:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 body #workCityOptions button {
   display: flex;
@@ -1872,10 +1877,11 @@ body #workCityOptions button {
   justify-content: center;
   width: 100%;
   border: 0;
-  border-radius: 0.285714rem !important;
+  border-radius: 0 !important;
   background: transparent;
   color: var(--clock-ink);
   font-size: var(--text-small);
+  font-weight: 500;
   line-height: 1.4;
   min-height: var(--control-height);
   margin: 0;
@@ -1884,10 +1890,14 @@ body #workCityOptions button {
 body #workCityOptions button:is(:hover, [aria-selected="true"]) {
   background: #e7f1eb;
 }
-body #workCityOptions button + button {
+body #workCityOptions button:nth-of-type(n + 3) {
   border-top: 1px solid var(--line);
 }
+body #workCityOptions button:nth-of-type(even) {
+  border-left: 1px solid var(--line);
+}
 body #workCityOptions .work-city-empty {
+  grid-column: 1 / -1;
   padding: 0.571429rem 0.285714rem;
   color: var(--muted);
   font-size: var(--text-small);
