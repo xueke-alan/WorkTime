@@ -1,10 +1,11 @@
 "use strict";
 /** calendar domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
-const WorkCalendar = (() => {
-  const { dateKey, localDate } = WorkTimeValues;
+WorkTimeApp.domain.calendar = (() => {
+  const { dateKey, localDate } = WorkTimeApp.domain.time;
   const holidays = {},
     makeups = new Set();
-  const calendarSchedules = WorkCalendarData.schedules;
+  const calendarSchedules = WorkTimeApp.data.calendars.schedules;
+  const struggleDays = new Set(WorkTimeApp.data.struggleDays);
   for (const [year, schedule] of Object.entries(calendarSchedules)) {
     for (const [start, end, name] of schedule.off) {
       const date = localDate(year + "-" + start);
@@ -29,6 +30,7 @@ const WorkCalendar = (() => {
       work = true;
       label = "调休补班";
     }
+    if (struggleDays.has(k)) label = "奋斗日";
     if (day.kind === "work") {
       work = true;
       label = "工作日 · 手动";
@@ -39,6 +41,7 @@ const WorkCalendar = (() => {
     }
     return {
       work,
+      makeup: makeups.has(k),
       label,
       holiday: work ? "" : holidays[k] || "",
       weekend: weekend && !work,

@@ -1,7 +1,7 @@
 "use strict";
 /** observations domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
-const WorkObservations = (() => {
-  const { pad, localDate, validDate, timeMin } = WorkTimeValues;
+WorkTimeApp.domain.observations = (() => {
+  const { pad, localDate, validDate, timeMin } = WorkTimeApp.domain.time;
   function parseText(raw, year, source = "粘贴文本") {
     const warnings = [],
       records = [];
@@ -79,21 +79,22 @@ const WorkObservations = (() => {
       warnings.push(source + "：未识别到 MM/DD 日期记录。");
     return { records, warnings };
   }
+  /** @returns {WorkObservationMerge} Stable semantics; presentation owns labels. */
   function mergeObservation(old, incoming) {
-    if (!old) return { record: incoming, action: "新增" };
+    if (!old) return { record: incoming, code: "ADDED" };
     if (
       ["start", "end", "nextDay", "status"].every((k) => old[k] === incoming[k])
     )
-      return { record: old, action: "重复，保持不变" };
+      return { record: old, code: "DUPLICATE" };
     if (old.status === "complete" && incoming.status !== "complete")
-      return { record: old, action: "保留已有完整记录" };
+      return { record: old, code: "KEEP_COMPLETE" };
     if (old.status === "complete" && incoming.status === "complete")
-      return { record: incoming, action: "完整打卡冲突", conflict: true };
+      return { record: incoming, code: "COMPLETE_CONFLICT", conflict: true };
     if (incoming.status === "complete")
-      return { record: incoming, action: "补全打卡" };
+      return { record: incoming, code: "COMPLETED" };
     if (old.start && !incoming.start)
-      return { record: old, action: "保留已有上班打卡" };
-    return { record: incoming, action: "更新记录" };
+      return { record: old, code: "KEEP_START" };
+    return { record: incoming, code: "UPDATED" };
   }
   function applyObservation(state, record, importId) {
     const day = state.days[record.date] || (state.days[record.date] = {});
@@ -103,10 +104,7 @@ const WorkObservations = (() => {
     return result;
   }
   function importRecords(log) {
-    if (Array.isArray(log.records)) return log.records;
-    return log.sources.flatMap(
-      (source) => parseText(source.raw, log.year, source.name).records,
-    );
+    return log.records;
   }
   function deleteImport(state, id) {
     if (!state.imports.some((log) => log.id === id))

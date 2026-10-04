@@ -1,5 +1,5 @@
-window.DateInfoData=window.DateInfoData||{history:{},festivals:[]};
-DateInfoData.festivals.push(
+
+WorkTimeApp.data.dateInfo.festivals.push(
 {id:'new-year',kind:'solar',month:1,day:1,name:'元旦'},
 {id:'women',category:'international',kind:'solar',month:3,day:8,name:'国际妇女节'},
 {id:'labour',kind:'solar',month:5,day:1,name:'劳动节'},
@@ -16,5 +16,5 @@ DateInfoData.festivals.push(
 {id:'father',category:'international',kind:'weekday',month:6,week:3,weekday:0,name:'父亲节'}
 );
 
-DateInfoData.festivalAliases={'元旦节':'元旦','妇女节':'国际妇女节','消费者权益日':'国际消费者权益日'};
-DateInfoData.internationalFestivals=['国际妇女节','国际消费者权益日','情人节','愚人节','母亲节','父亲节','世界住房日','感恩节','万圣节前夜','万圣节','平安夜','圣诞节'];
+WorkTimeApp.data.dateInfo.festivalAliases={'元旦节':'元旦','妇女节':'国际妇女节','消费者权益日':'国际消费者权益日'};
+WorkTimeApp.data.dateInfo.internationalFestivals=['国际妇女节','国际消费者权益日','情人节','愚人节','母亲节','父亲节','世界住房日','感恩节','万圣节前夜','万圣节','平安夜','圣诞节'];

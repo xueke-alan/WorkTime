@@ -5,251 +5,301 @@
   "opticalSize": 24,
   "license": "Apache-2.0",
   "source": "https://fonts.google.com/icons",
+  "revision": "737e3324305806514d7909874fa1818ae1808232",
   "icons": [
+    {
+      "id": "ms-event-note",
+      "name": "event_note",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/event_note/materialsymbolsrounded/event_note_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "53cd240ef63e80a7f0a043467594cc40e7d74796cb796e040f89b6a3a378c0b8"
+    },
+    {
+      "id": "ms-weather-thunder",
+      "name": "thunderstorm",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/thunderstorm/materialsymbolsrounded/thunderstorm_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "4b4604bfc66cc30a7f995a985a4757c32a9e0c0aae6a12f0236aeba864444f4a"
+    },
+    {
+      "id": "ms-weather-fog",
+      "name": "foggy",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/foggy/materialsymbolsrounded/foggy_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "5019e7cddcc692ef96aec2329a940d4a7a2099eb3d5c4c42378b347b72bae9bc"
+    },
+    {
+      "id": "ms-weather-snow",
+      "name": "weather_snowy",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/weather_snowy/materialsymbolsrounded/weather_snowy_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "f761f522a06b44e27dcd2e70f054e5773287232a2d600c92446717acf1359b50"
+    },
+    {
+      "id": "ms-weather-rain",
+      "name": "rainy",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/rainy/materialsymbolsrounded/rainy_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "e2b7d5f0876181a8f395138c8bbd2319b9602a7b37ec4b726d46d76e50de93b8"
+    },
+    {
+      "id": "ms-cloud",
+      "name": "cloud",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/cloud/materialsymbolsrounded/cloud_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "82e81a8f7f3747c2813cf48b8be7596f4a7ae489e54aece35ad49289580c4165"
+    },
     {
       "id": "ms-stacks",
       "name": "stacks",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/stacks/materialsymbolsrounded/stacks_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/stacks/materialsymbolsrounded/stacks_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "f223aad0e4cb8ab6c20f1bb152a28be82d890e1811bc38108b7f91b37f6b3953"
     },
     {
       "id": "ms-add",
       "name": "add",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/add/materialsymbolsrounded/add_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/add/materialsymbolsrounded/add_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "a3f12b6561069cc586e38d4ecfee6819ac54acf94ff9a965aa514834f816194b"
     },
     {
       "id": "ms-content-paste-go",
       "name": "content_paste_go",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/content_paste_go/materialsymbolsrounded/content_paste_go_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/content_paste_go/materialsymbolsrounded/content_paste_go_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "64b81358702f11b79991b1facddc986d9857e2748256c6e2b7c4fbef69225490"
     },
     {
       "id": "ms-settings",
       "name": "settings",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/settings/materialsymbolsrounded/settings_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/settings/materialsymbolsrounded/settings_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "f7a449b3bb688be84c8f252ecec92c70d2e18d4de62d8bb01070241d5f28b2ff"
     },
     {
       "id": "ms-history",
       "name": "history",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/history/materialsymbolsrounded/history_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/history/materialsymbolsrounded/history_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "5bb4f693e68da77e3031ae21bf7afec71a2a37fc5ede92793633ab502e5bcd23"
     },
     {
       "id": "ms-backup",
-      "name": "backup",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/backup/materialsymbolsrounded/backup_24px.svg",
+      "name": "share_windows",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/share_windows/materialsymbolsrounded/share_windows_24px.svg",
       "viewBox": "0 -960 960 960",
-      "sha256": "65c1a42d34104f6185620d78ce4acc14ca514212da7ac8450f8e61bc427ebf4b"
+      "sha256": "01be0a3149d84591e7ea978e0aac9e71c43b0de862452723db956e0b080797af"
     },
     {
       "id": "ms-restore",
-      "name": "history",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/history/materialsymbolsrounded/history_24px.svg",
+      "name": "output_circle",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/output_circle/materialsymbolsrounded/output_circle_24px.svg",
       "viewBox": "0 -960 960 960",
-      "sha256": "5bb4f693e68da77e3031ae21bf7afec71a2a37fc5ede92793633ab502e5bcd23"
+      "sha256": "dbd7d379f19f1de42a00aaec7e0f617ddc961658b498110424c8da24b631874b"
     },
     {
       "id": "ms-chevron-left",
       "name": "chevron_left",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/chevron_left/materialsymbolsrounded/chevron_left_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/chevron_left/materialsymbolsrounded/chevron_left_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "15dbc9f46f7fd1f729d1faf525acd164078023d45503dd35bbf71d73f707916e"
     },
     {
       "id": "ms-chevron-right",
       "name": "chevron_right",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/chevron_right/materialsymbolsrounded/chevron_right_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/chevron_right/materialsymbolsrounded/chevron_right_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "0be2d088029fb831d53c65a4ae7369c0e732efe5dd1f384a8b4f20bfd339946a"
     },
     {
       "id": "ms-adjust",
       "name": "adjust",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/adjust/materialsymbolsrounded/adjust_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/adjust/materialsymbolsrounded/adjust_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "356488b239e6b52ca4f39bac3fddbf7f6c3dae308f67ba4f95002a691db5d701"
     },
     {
       "id": "ms-today",
       "name": "today",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/today/materialsymbolsrounded/today_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/today/materialsymbolsrounded/today_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "4f9b0dcc58f8c45a81df0d6a567d2f64d1478f06ba3bd8d3f4f7beece7af668c"
     },
     {
       "id": "ms-dark-mode",
       "name": "dark_mode",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/dark_mode/materialsymbolsrounded/dark_mode_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/dark_mode/materialsymbolsrounded/dark_mode_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "414de7e568b53c0b3e4a358f614060172385635e29e8ccc6ab4fcea827241d59"
     },
     {
       "id": "ms-event-busy",
       "name": "event_busy",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/event_busy/materialsymbolsrounded/event_busy_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/event_busy/materialsymbolsrounded/event_busy_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "e91ad271f804e8b8f195d9777b9ee99216f7e19469d02b00879d93bce007b2bf"
     },
     {
       "id": "ms-close",
       "name": "close",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/close/materialsymbolsrounded/close_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/close/materialsymbolsrounded/close_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "be5de606c1fe6b92d913e258633351a4a5100c57e4c8cb739e17e8cf38c83c3f"
     },
     {
       "id": "ms-delete-outline",
       "name": "delete",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/delete/materialsymbolsrounded/delete_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/delete/materialsymbolsrounded/delete_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "1a42bea241782f3c4b4c13101b77b5f3097899d72ec09bd7eff998e5fdde4a33"
     },
     {
       "id": "ms-more-horiz",
       "name": "more_horiz",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/more_horiz/materialsymbolsrounded/more_horiz_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/more_horiz/materialsymbolsrounded/more_horiz_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "c98e0d78380fa684fcf4df7d8f766f1d9fa3e09b2813106e9f05b480515d66cd"
     },
     {
       "id": "ms-open-in-new",
       "name": "open_in_new",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/open_in_new/materialsymbolsrounded/open_in_new_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/open_in_new/materialsymbolsrounded/open_in_new_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "e1a2d4f9b2cfaa20351daeb04f8a5f9faf2f3edc051deed3aa2c438cb539232f"
     },
     {
       "id": "ms-trending-up",
       "name": "trending_up",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/trending_up/materialsymbolsrounded/trending_up_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/trending_up/materialsymbolsrounded/trending_up_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "6359952d171a6e2c2498e99b82347142e5153ce810c2afcdf98ee5801ab7a8a5"
     },
     {
       "id": "ms-trending-down",
       "name": "trending_down",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/trending_down/materialsymbolsrounded/trending_down_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/trending_down/materialsymbolsrounded/trending_down_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "7c64a8b9feedd55f7c5f362e0883802cfe45aad603ee131c39417b8d26094c7b"
     },
     {
       "id": "ms-trending-flat",
       "name": "trending_flat",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/trending_flat/materialsymbolsrounded/trending_flat_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/trending_flat/materialsymbolsrounded/trending_flat_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "b6b727c6601095b8f3d6617426e246ccbc538bb5e59641f29a9cd7d48f197dfe"
     },
     {
       "id": "ms-info",
       "name": "info",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/info/materialsymbolsrounded/info_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/info/materialsymbolsrounded/info_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "97fa2a945d3abc67bcad892a38e219e4b862c3b190b25391e25b344f4e8777dc"
     },
     {
       "id": "ms-error",
       "name": "error",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/error/materialsymbolsrounded/error_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/error/materialsymbolsrounded/error_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "9a9a00adea1dd25bae2ee38a2d013dc74c770acd4c884454db34ed3b37c6dda1"
     },
     {
       "id": "ms-warning",
       "name": "warning",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/warning/materialsymbolsrounded/warning_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/warning/materialsymbolsrounded/warning_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "689ee6523f9827f47fea72664ba82bc3e9f441b6e9356f14504db5f671959aba"
     },
     {
       "id": "ms-check",
       "name": "check",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/check/materialsymbolsrounded/check_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/check/materialsymbolsrounded/check_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "a3dd0b5f92a2425555cb15eb0f483e1554869978b7e7dff75ad805b1c63a204e"
     },
     {
       "id": "ms-calculate",
       "name": "calculate",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/calculate/materialsymbolsrounded/calculate_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/calculate/materialsymbolsrounded/calculate_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "b02e00092ce2a7f3eda9c81b0d97beace4993ab202cd42375c79e3375c53f4c2"
     },
     {
       "id": "ms-notifications",
       "name": "notifications",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/notifications/materialsymbolsrounded/notifications_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/notifications/materialsymbolsrounded/notifications_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "954d0b2307000078146a5f269425aa9029487c20f067a0aca58f342824c2bf40"
     },
     {
       "id": "ms-notifications-off",
       "name": "notifications_off",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/notifications_off/materialsymbolsrounded/notifications_off_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/notifications_off/materialsymbolsrounded/notifications_off_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "d54f240c24f752a6ee7b577a6413ee682f399514f89b1ffc999e2f222e61e84e"
     },
     {
       "id": "ms-clock",
       "name": "schedule",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/schedule/materialsymbolsrounded/schedule_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/schedule/materialsymbolsrounded/schedule_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "79960c6cb220ec3c0102d09cb4418af463d428d2abe04d734003117077df8021"
     },
     {
       "id": "ms-sun",
       "name": "light_mode",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/light_mode/materialsymbolsrounded/light_mode_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/light_mode/materialsymbolsrounded/light_mode_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "acb1c6cab890c4fd90cb6e0eef4f486ff1fca2b59d701f37b1b68064e1bfbe60"
     },
     {
       "id": "ms-calendar",
       "name": "calendar_month",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/calendar_month/materialsymbolsrounded/calendar_month_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/calendar_month/materialsymbolsrounded/calendar_month_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "b17728fb9d768c22b34f0e4c3ec10b3185a26d03a707898130aad750c861dcf0"
     },
     {
       "id": "ms-person-add",
       "name": "person_add",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/person_add/materialsymbolsrounded/person_add_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/person_add/materialsymbolsrounded/person_add_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "cc1d524f4d567c541b536bbed6135197ee0035db096e531ec0a3e44bea3b8682"
     },
     {
       "id": "ms-currency-yen",
       "name": "currency_yen",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/currency_yen/materialsymbolsrounded/currency_yen_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/currency_yen/materialsymbolsrounded/currency_yen_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "59de662fa80c1f079a841b275b67d8cf66d0fe687fe3c5e85714cef62f55a256"
     },
     {
       "id": "ms-download",
       "name": "download",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/download/materialsymbolsrounded/download_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/download/materialsymbolsrounded/download_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "157523271128e86d0d42f12a25a7961e914231f18d1e812927d743036b78ab80"
     },
     {
       "id": "ms-attach-file",
       "name": "attach_file",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/attach_file/materialsymbolsrounded/attach_file_24px.svg",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/attach_file/materialsymbolsrounded/attach_file_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "97167a12fe2334f99aa24e9890ee51beb2ff97107d65fa1bc36dd35bcb90b2b6"
     },
     {
-      "id": "ms-cloud",
-      "name": "cloud",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/cloud/materialsymbolsrounded/cloud_24px.svg",
+      "id": "ms-manage-accounts",
+      "name": "manage_accounts",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/manage_accounts/materialsymbolsrounded/manage_accounts_24px.svg",
       "viewBox": "0 -960 960 960",
-      "sha256": "82e81a8f7f3747c2813cf48b8be7596f4a7ae489e54aece35ad49289580c4165"
+      "sha256": "4790e20658634819b99fd673c9bbb49fa4b7bcd01c4286165065913db3f791e4"
+    },
+    {
+      "id": "ms-view-timeline",
+      "name": "view_timeline",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/view_timeline/materialsymbolsrounded/view_timeline_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "ec080849651c1e24efec5d00c7b49fdd531fa426e1082d7ff341324673663ffb"
     }
   ]
 }

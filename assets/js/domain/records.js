@@ -1,8 +1,8 @@
 "use strict";
 /** records domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
-const WorkRecords = (() => {
-  const { pad, timeMin } = WorkTimeValues;
-  const { calendarInfo } = WorkCalendar;
+WorkTimeApp.domain.records = (() => {
+  const { pad, timeMin } = WorkTimeApp.domain.time;
+  const { calendarInfo } = WorkTimeApp.domain.calendar;
   function actualRecord(day = {}) {
     if (day.actual) return { ...day.actual, type: "actual", manual: true };
     if (day.oa && day.oa.status === "complete")
@@ -35,6 +35,42 @@ const WorkRecords = (() => {
     const a = timeMin(r.start),
       b = timeMin(r.end);
     return a !== null && b !== null && b + (r.nextDay ? 1440 : 0) >= a;
+  }
+  /**
+   * Build an editing candidate without mutating the existing day or OA source.
+   * @param {WorkDay} old
+   * @param {{start:string,end:string,nextDay:boolean,leaveMinutes:number}} input Validated form values; empty clocks are allowed.
+   * @returns {WorkDay}
+   */
+  function editedDay(old, { start, end, nextDay, leaveMinutes }) {
+    const day = { ...old, leaveMinutes },
+      record = { start, end, nextDay, effectiveMinutes: null },
+      oa = old.oa;
+    const unchangedOA =
+      oa &&
+      !old.actual &&
+      !old.estimate &&
+      start === oa.start &&
+      end === oa.end &&
+      nextDay === oa.nextDay;
+    if (unchangedOA) delete day.draft;
+    else if (complete(record)) {
+      delete day.draft;
+      if (
+        (oa && (oa.status === "complete" || start !== oa.start)) ||
+        old.actual
+      ) {
+        day.actual = record;
+        delete day.estimate;
+      } else day.estimate = record;
+    } else if (start || end || nextDay || oa)
+      day.draft = { start, end, nextDay };
+    else {
+      delete day.draft;
+      delete day.actual;
+      delete day.estimate;
+    }
+    return day;
   }
   /**
    * @param {WorkManualRecord|WorkOAObservation|null} r
@@ -71,6 +107,28 @@ const WorkRecords = (() => {
     }
     if (left !== null) deduction += right - left;
     return Math.max(0, end - start - deduction);
+  }
+  /**
+   * Earliest end reaching the target, within strictly less than 24 elapsed hours.
+   * @param {string} start Valid HH:mm.
+   * @param {number} targetMinutes Nonnegative effective minutes.
+   * @param {{breaks:WorkBreak[]}} schedule
+   * @returns {{end:string,nextDay:boolean}|null} Null means unreachable.
+   */
+  function endForDuration(start, targetMinutes, schedule) {
+    const startMinutes = timeMin(start);
+    for (let elapsed = 0; elapsed < 1440; elapsed++) {
+      const absolute = startMinutes + elapsed,
+        endMinute = absolute % 1440,
+        end = pad(Math.floor(endMinute / 60)) + ":" + pad(endMinute % 60),
+        nextDay = absolute >= 1440;
+      if (
+        duration({ start, end, nextDay, effectiveMinutes: null }, schedule) >=
+        targetMinutes
+      )
+        return { end, nextDay };
+    }
+    return null;
   }
   function inferWorkEnd(start, targetMinutes, breaks) {
     const startMinutes = timeMin(start);
@@ -126,7 +184,9 @@ const WorkRecords = (() => {
     actualRecord,
     effectiveRecord,
     complete,
+    editedDay,
     duration,
+    endForDuration,
     inferWorkEnd,
     calculate,
   };

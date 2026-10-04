@@ -25,19 +25,19 @@
     finishWaiting?.();
   }
   const reveal = () => {
-    window.UIAlignment?.refresh();
+    WorkTimeApp.ui.alignment?.refresh();
     schedule(() => {
       document
         .querySelectorAll(".workspace>.panel,main.wrap>footer")
         .forEach((element, index) =>
-          window.WorkMotion?.play(element, "motion-startup", index * 45),
+          WorkTimeApp.ui.motion?.play(element, "motion-startup", index * 45),
         );
       document.documentElement.classList.remove("app-loading");
       numberTimer = setTimeout(() => {
         numberTimer = null;
-        if (!disposed) window.SummaryNumbers?.reveal(document);
+        if (!disposed) WorkTimeApp.ui.numbers?.reveal();
       }, 200);
-      window.NotificationMotion?.reveal();
+      WorkTimeApp.ui.notificationMotion?.reveal();
       clearTimeout(window.appRevealFallback);
     });
   };

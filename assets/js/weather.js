@@ -1,7 +1,7 @@
 (function (g) {
   "use strict";
-  const cities = g.WorkWeatherCities?.cities || [];
-  const config = g.WorkWeatherConfig;
+  const cities = WorkTimeApp.data.weatherCities?.cities || [];
+  const config = WorkTimeApp.services.weatherConfig;
   let selected = "",
     city = null,
     record = null,
@@ -10,10 +10,15 @@
     generation = 0;
   let controller = null,
     attemptedAt = 0,
-    disposed = false,
-    visible = false,
-    timer = null;
+    disposed = true,
+    timer = null,
+    requestTimeout = null;
+  const subscribers = new Set(),
+    demands = new Set();
   const cacheKey = "worktime.weather.baidu.v1.";
+  function beijingDate(value = Date.now()) {
+    return new Date(value + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  }
   function resolveCity(value) {
     const text = String(value || "").trim();
     const exact = cities.filter(
@@ -40,6 +45,7 @@
       value.hourly.every((row) => Number.isFinite(Date.parse(row.time))) &&
       Array.isArray(value.daily) &&
       value.daily.length >= 1 &&
+      value.daily.length <= 14 &&
       value.daily.every((row) => /^\d{4}-\d{2}-\d{2}$/.test(row.date))
     );
   }
@@ -135,7 +141,8 @@
     }
   }
   function notify() {
-    document.dispatchEvent(new Event("worktime:weather"));
+    const value = snapshot();
+    for (const subscriber of subscribers) subscriber(value);
   }
   function baseUrl() {
     const url = new URL(config.snapshotUrl);
@@ -169,15 +176,17 @@
     if (
       !force &&
       attemptedAt &&
+      beijingDate(attemptedAt) === beijingDate() &&
       Date.now() - attemptedAt < config.refreshAfterMs
     )
       return;
     const target = city;
     const token = ++generation;
-    controller?.abort();
+    cancelRequest();
     const requestController = new AbortController();
     controller = requestController;
     const timeout = setTimeout(() => requestController.abort(), 20000);
+    requestTimeout = timeout;
     attemptedAt = Date.now();
     loading = true;
     message = "";
@@ -199,6 +208,7 @@
           : error.message;
     } finally {
       clearTimeout(timeout);
+      if (requestTimeout === timeout) requestTimeout = null;
       if (!disposed && token === generation) {
         loading = false;
         controller = null;
@@ -207,35 +217,49 @@
     }
   }
   function setCity(value) {
+    if (disposed) return;
     const text = String(value || "").trim();
     if (text === selected) return;
     selected = text;
     ++generation;
-    controller?.abort();
-    controller = null;
+    cancelRequest();
     city = resolveCity(text);
     record = city ? cached(city.id) : null;
     loading = false;
     message = "";
     attemptedAt = 0;
     notify();
-    if (visible) void refresh();
+    if (demands.size) void refresh();
   }
   function schedule() {
     clearTimeout(timer);
     timer = null;
-    if (!disposed && visible && !document.hidden)
+    if (!disposed && demands.size && !document.hidden)
       timer = setTimeout(() => {
         notify();
         void refresh();
         schedule();
       }, 60000);
   }
-  function setVisible(value) {
-    if (visible === value) return;
-    visible = value;
+  function setDemand(consumer, enabled) {
+    if (disposed) return;
+    if (demands.has(consumer) === enabled) return;
+    if (enabled) demands.add(consumer);
+    else demands.delete(consumer);
+    if (!demands.size && controller) {
+      ++generation;
+      cancelRequest();
+      loading = false;
+      attemptedAt = 0;
+      notify();
+    }
     schedule();
-    if (visible) void refresh();
+    if (enabled) void refresh();
+  }
+  function subscribe(listener) {
+    if (disposed) return () => {};
+    subscribers.add(listener);
+    return () => subscribers.delete(listener);
   }
   function snapshot() {
     return {
@@ -249,9 +273,10 @@
           : message,
       stale:
         !!record &&
-        Date.now() -
-          Math.min(Date.parse(record.fetchedAt), Date.parse(record.validAt)) >
-          config.staleAfterMs,
+        (beijingDate(Date.parse(record.validAt)) < beijingDate() ||
+          Date.now() -
+            Math.min(Date.parse(record.fetchedAt), Date.parse(record.validAt)) >
+            config.staleAfterMs),
     };
   }
   function weatherText(code) {
@@ -271,55 +296,57 @@
   }
   function onVisibility() {
     schedule();
-    if (visible && !document.hidden) {
+    if (demands.size && !document.hidden) {
       notify();
       void refresh();
     }
   }
   function dispose() {
+    if (disposed) return;
     disposed = true;
     ++generation;
-    controller?.abort();
+    if (controller) attemptedAt = 0;
+    cancelRequest();
+    loading = false;
     clearTimeout(timer);
+    timer = null;
+    subscribers.clear();
+    demands.clear();
     document.removeEventListener("visibilitychange", onVisibility);
     document.removeEventListener("worktime:failed", dispose);
     g.removeEventListener("pagehide", dispose);
   }
-  g.WorkWeather = {
+  function cancelRequest() {
+    controller?.abort();
+    controller = null;
+    if (requestTimeout !== null) clearTimeout(requestTimeout);
+    requestTimeout = null;
+  }
+  function mount() {
+    if (!disposed) return;
+    disposed = false;
+    document.addEventListener("visibilitychange", onVisibility);
+    document.addEventListener("worktime:failed", dispose);
+    g.addEventListener("pagehide", dispose);
+  }
+  WorkTimeApp.services.weather = {
     normalize,
     resolveCity,
     validRecord,
     setCity,
-    setVisible,
+    setDemand,
+    subscribe,
     snapshot,
     refresh,
     weatherText,
+    mount,
     dispose,
   };
-  g.DateInfo?.register({
+  WorkTimeApp.services.dateInfo?.register({
     id: "weather",
     label: "天气",
     icon: "cloud",
     getContent: () => ({ title: "天气", weather: snapshot() }),
   });
-  const input = document.getElementById("workCity");
-  if (
-    input &&
-    input.tagName === "INPUT" &&
-    input.getAttribute("role") !== "combobox"
-  ) {
-    const list = document.createElement("datalist");
-    list.id = "weatherCityOptions";
-    for (const c of cities) {
-      const option = document.createElement("option");
-      option.value = c.name;
-      option.label = c.label;
-      list.append(option);
-    }
-    input.setAttribute("list", list.id);
-    input.after(list);
-  }
-  document.addEventListener("visibilitychange", onVisibility);
-  document.addEventListener("worktime:failed", dispose);
-  g.addEventListener("pagehide", dispose);
+  mount();
 })(window);

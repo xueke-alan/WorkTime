@@ -1,39 +1,109 @@
 "use strict";
-/** Reuse OA dialogs as nonmodal sidebar views, retaining drafts on nested navigation. */
-WorkUI.createSidebarPanels = function ({ document, window }) {
+/** Navigate static sidebar views, retaining drafts on nested navigation. */
+WorkTimeApp.ui.createSidebarPanels = function ({
+  document,
+  window,
+  leaveBatch,
+}) {
   const sidebar = document.querySelector(".summary-sidebar"),
-    ids = ["importDialog", "importHistoryDialog", "sourceDialog"],
+    ids = ["importDialog", "sourceDialog"],
     panes = new Map(ids.map((id) => [id, document.getElementById(id)])),
     overview = [...sidebar.children].filter(
-      (element) => !element.matches(".sidebar-header, .summary-divider"),
+      (element) =>
+        !element.matches(
+          ".sidebar-header, .summary-divider, .sidebar-oa-workspace",
+        ),
     ),
-    host = document.createElement("div"),
+    host = sidebar.querySelector(".sidebar-oa-workspace"),
     stack = [];
   let disposed = false;
   const editor = document.querySelector(".workspace > .editor"),
     editorViews = [editor.querySelector(".editor-content")],
     settings = document.getElementById("settingsDialog");
   const editorTabs = editor.querySelector(".notification-tabs");
-  editor.insertBefore(settings, editor.querySelector(".date-info-area"));
+  const pageSettingsButton = document.getElementById("pageSettingsOpen"),
+    pageSettings = document.getElementById("pageSettingsPane");
+  const themeSettings = WorkTimeApp.ui.theme.mount(
+    pageSettings.querySelector(".theme-settings-host"),
+  );
+  function bindSettingsCancel(id, close) {
+    const button = document.getElementById(id);
+    button.addEventListener("click", close);
+    return button;
+  }
+  const workSettingsCancel = bindSettingsCancel(
+    "workSettingsCancel",
+    closeSettingsPanel,
+  );
+  const personalSettingsCancel = bindSettingsCancel(
+    "personalSettingsCancel",
+    closePageSettings,
+  );
+  function closePageSettings(focus = true) {
+    if (pageSettings.hidden) return;
+    pageSettings.hidden = true;
+    pageSettings.dispatchEvent(new Event("personal-settings-close"));
+    editor.classList.remove("is-page-settings-open");
+    pageSettingsButton.classList.remove("primary");
+    pageSettingsButton.setAttribute("aria-pressed", "false");
+    pageSettingsButton.setAttribute("aria-label", "我的设置");
+    pageSettingsButton.title = "我的设置";
+    pageSettingsButton
+      .querySelector("use")
+      .setAttribute("href", "#ms-settings");
+    if (focus) pageSettingsButton.focus({ preventScroll: true });
+  }
+  function togglePageSettings() {
+    if (disposed) return;
+    if (!pageSettings.hidden) {
+      closePageSettings();
+      return;
+    }
+    closeSettingsPanel();
+    if (settings.open) return;
+    leaveBatch();
+    pageSettings.dispatchEvent(new Event("personal-settings-open"));
+    pageSettings.hidden = false;
+    editor.classList.add("is-page-settings-open");
+    pageSettingsButton.classList.add("primary");
+    pageSettingsButton.setAttribute("aria-pressed", "true");
+    pageSettingsButton.setAttribute("aria-label", "关闭我的设置");
+    pageSettingsButton.title = "关闭我的设置";
+    pageSettingsButton.querySelector("use").setAttribute("href", "#ms-close");
+    WorkTimeApp.ui.motion?.play(pageSettings, "motion-sidebar-forward");
+    WorkTimeApp.ui.alignment?.refresh([pageSettings]);
+    if (window.matchMedia("(max-width: 1150px)").matches)
+      editor.scrollIntoView({ block: "start" });
+    pageSettingsButton.focus({ preventScroll: true });
+  }
+  function leavePageSettings(event) {
+    if (
+      !pageSettings.hidden &&
+      event.target.closest(
+        "#batchToggle, #settingsOpen, #setupButton, #restore",
+      )
+    )
+      closePageSettings(false);
+  }
+  pageSettingsButton.addEventListener("click", togglePageSettings);
+  document.addEventListener("click", leavePageSettings, true);
   function leaveSettingsFromTab(event) {
     if (settings.open && event.target.closest(".notification-tab"))
-      window.UIAlignment?.refresh([editor.querySelector(".editor-info")]);
+      WorkTimeApp.ui.alignment?.refresh([editor.querySelector(".editor-info")]);
   }
   editorTabs.addEventListener("click", leaveSettingsFromTab);
-  settings.classList.add("settings-sidebar-pane");
-  settings.setAttribute("aria-modal", "false");
-  settings
-    .querySelector(".settings-layout")
-    .append(settings.querySelector(".settings-employment"));
   function updateSettingsButton(open) {
     const button = document.getElementById("settingsOpen");
     button.classList.toggle("primary", open);
     button.setAttribute("aria-pressed", String(open));
-    button.setAttribute("aria-label", open ? "关闭计算设置" : "计算设置");
-    button.title = open ? "关闭计算设置" : "计算设置";
+    button.setAttribute(
+      "aria-label",
+      open ? "关闭工作时间设置" : "工作时间设置",
+    );
+    button.title = open ? "关闭工作时间设置" : "工作时间设置";
     button
       .querySelector("use")
-      .setAttribute("href", open ? "#ms-close" : "#ms-settings");
+      .setAttribute("href", open ? "#ms-close" : "#ms-manage-accounts");
   }
   function closeSettings() {
     if (settings.open || !editor.classList.contains("is-settings-open")) return;
@@ -42,7 +112,7 @@ WorkUI.createSidebarPanels = function ({ document, window }) {
       view.classList.remove("settings-view-hidden"),
     );
     updateSettingsButton(false);
-    window.WorkMotion?.play(
+    WorkTimeApp.ui.motion?.play(
       document.getElementById("dayForm"),
       "motion-sidebar-back",
     );
@@ -50,31 +120,16 @@ WorkUI.createSidebarPanels = function ({ document, window }) {
   }
   settings.addEventListener("close", closeSettings);
   function closeSettingsPanel() {
+    if (
+      settings.open &&
+      !settings.dispatchEvent(
+        new Event("settings-close-request", { cancelable: true }),
+      )
+    )
+      return;
     if (settings.open) settings.close();
     closeSettings();
   }
-  host.className = "sidebar-oa-workspace";
-  host.hidden = true;
-  sidebar.append(host);
-  for (const pane of panes.values()) {
-    pane.classList.add("sidebar-oa-pane");
-    pane.setAttribute("aria-modal", "false");
-    host.append(pane);
-  }
-  const importPane = panes.get("importDialog"),
-    history = document.createElement("section");
-  history.className = "sidebar-import-history";
-  history.setAttribute("aria-label", "导入历史");
-  history.innerHTML =
-    '<div class="sidebar-history-heading"><h3 id="importResultsTitle">导入历史</h3><span id="importHistoryCount" class="muted" aria-live="polite"></span></div><div class="sidebar-history-scroll"></div>';
-  history
-    .querySelector(".sidebar-history-scroll")
-    .append(document.getElementById("importHistoryList"));
-  history
-    .querySelector(".sidebar-history-scroll")
-    .append(document.getElementById("importDetails"));
-  importPane.append(history);
-  document.getElementById("importHistoryOpen").hidden = true;
   function render() {
     const active = stack.at(-1);
     sidebar.classList.toggle("is-oa-open", !!active);
@@ -109,22 +164,24 @@ WorkUI.createSidebarPanels = function ({ document, window }) {
         close.title = back;
       }
       pane.querySelectorAll(".dialog-foot [data-close]").forEach((button) => {
-        button.textContent = active.id === "importDialog" ? "取消" : "返回";
+        button.querySelector(".button-label").textContent =
+          active.id === "importDialog" ? "取消" : "返回";
       });
     }
   }
   function open(id) {
     if (id === "settingsDialog" && !disposed) {
+      closePageSettings(false);
       const trigger = document.activeElement;
       editor.classList.add("is-settings-open");
       editorViews.forEach((view) => view.classList.add("settings-view-hidden"));
       if (!settings.open) settings.show();
-      window.WorkMotion?.play(
+      WorkTimeApp.ui.motion?.play(
         document.getElementById("settingsForm"),
         "motion-sidebar-forward",
       );
       updateSettingsButton(true);
-      window.UIAlignment?.refresh([settings]);
+      WorkTimeApp.ui.alignment?.refresh([settings]);
       if (window.matchMedia("(max-width: 1150px)").matches)
         editor.scrollIntoView({ block: "start" });
       trigger?.focus({ preventScroll: true });
@@ -139,15 +196,16 @@ WorkUI.createSidebarPanels = function ({ document, window }) {
     render();
     const pane = panes.get(id);
     if (!pane.open) pane.show();
-    window.WorkMotion?.play(host, "motion-sidebar-forward");
+    WorkTimeApp.ui.motion?.play(host, "motion-sidebar-forward");
     if (id === "importDialog") pane.dispatchEvent(new Event("sidebar-open"));
-    window.UIAlignment?.refresh([pane]);
+    WorkTimeApp.ui.alignment?.refresh([pane]);
     if (window.matchMedia("(max-width: 1150px)").matches)
       sidebar.scrollIntoView({ block: "nearest" });
     (id === "importDialog"
       ? document.getElementById("pasteText")
-      : pane.querySelector("[data-detail-toggle]") ||
-        pane.querySelector(".dialog-head [data-close]")
+      : pane.querySelector(
+          "#importDetailRawText,[data-detail-step]:not(:disabled)",
+        ) || pane.querySelector(".dialog-head [data-close]")
     ).focus({ preventScroll: true });
     return true;
   }
@@ -159,16 +217,25 @@ WorkUI.createSidebarPanels = function ({ document, window }) {
       if (panes.get(entry.id).open) panes.get(entry.id).close();
     render();
     const previous = stack.at(-1);
-    window.WorkMotion?.play(
+    WorkTimeApp.ui.motion?.play(
       previous ? host : document.getElementById("cards"),
       "motion-sidebar-back",
     );
-    if (previous) window.UIAlignment?.refresh([panes.get(previous.id)]);
+    if (previous) WorkTimeApp.ui.alignment?.refresh([panes.get(previous.id)]);
     const trigger = removed[0].trigger;
     if (trigger?.isConnected && trigger.getClientRects().length)
       trigger.focus({ preventScroll: true });
   }
   function keydown(event) {
+    if (
+      event.key === "Escape" &&
+      !pageSettings.hidden &&
+      !document.querySelector("dialog:modal")
+    ) {
+      event.preventDefault();
+      closePageSettings();
+      return;
+    }
     if (
       event.key === "Escape" &&
       settings.open &&
@@ -190,6 +257,12 @@ WorkUI.createSidebarPanels = function ({ document, window }) {
   function dispose() {
     if (disposed) return;
     disposed = true;
+    themeSettings.dispose();
+    workSettingsCancel.removeEventListener("click", closeSettingsPanel);
+    personalSettingsCancel.removeEventListener("click", closePageSettings);
+    pageSettingsButton.removeEventListener("click", togglePageSettings);
+    document.removeEventListener("click", leavePageSettings, true);
+    closePageSettings(false);
     settings.removeEventListener("close", closeSettings);
     editorTabs.removeEventListener("click", leaveSettingsFromTab);
     document.removeEventListener("keydown", keydown);

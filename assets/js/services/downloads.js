@@ -1,5 +1,5 @@
 "use strict";
-const WorkDownloads = (() => {
+WorkTimeApp.services.downloads = (() => {
   function create({
     document,
     URL,

@@ -1,13 +1,13 @@
 "use strict";
-const WorkUI = {};
 /** Create an isolated presentation view; state/view getters remain live after restore and navigation. */
-WorkUI.createDayPresentation = function (options) {
+WorkTimeApp.ui.createDayPresentation = function (options) {
   const { core: C, escape: esc, getState, getView } = options;
 
-  function isFullLeave(day = {}) {
+  function isFullLeave(day = {}, date = getView().selected) {
     const state = getState();
     return (
-      day.leaveMinutes > 0 && day.leaveMinutes >= state.settings.standardMinutes
+      day.leaveMinutes > 0 &&
+      day.leaveMinutes >= C.scheduleForDate(state, date).standardMinutes
     );
   }
   function timeAnomaly(day = {}, r = C.effectiveRecord(day, true) || day.oa) {
@@ -29,7 +29,7 @@ WorkUI.createDayPresentation = function (options) {
       k &&
       k <= today &&
       C.calendarInfo(k, day).work &&
-      (day.leaveMinutes || 0) < state.settings.standardMinutes
+      (day.leaveMinutes || 0) < C.scheduleForDate(state, k).standardMinutes
     )
       return "待录入";
     return "未填写";

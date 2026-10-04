@@ -1,7 +1,8 @@
 "use strict";
 /** day-editor controller. Instantiate once, then bind after all actions are connected. */
-WorkUI.createDayController = function (options) {
-  const { core: C, element: $, model, actions } = options;
+WorkTimeApp.ui.createDayController = function (options) {
+  const events = WorkTimeApp.ui.createEventScope();
+  const { core: C, element: $, model, actions, application } = options;
 
   function saveDayEdit() {
     actions.previewDay();
@@ -13,20 +14,21 @@ WorkUI.createDayController = function (options) {
       let saved = true;
       // A failed write must remain retryable even when the fields are unchanged.
       if (changed || model.storageFailed) {
-        model.state.days[model.selected] = day;
-        saved = actions.save();
+        saved = application.saveDay(model.selected, day).persisted;
         actions.renderStats();
         actions.renderCalendar(true);
       }
       actions.updateResetDayButton(day);
-      $("dayError").textContent = saved
-        ? ""
-        : "当前修改未保存，请查看提醒并备份。";
-      $("dayLeaveError").textContent = $("dayError").textContent;
+      const error = saved
+        ? null
+        : { code: "UNSAVED", message: "当前修改未保存，请查看提醒并备份。" };
+      WorkTimeApp.ui.fieldErrors.show($("dayError"), error);
+      WorkTimeApp.ui.fieldErrors.show($("dayLeaveError"), error);
       return saved;
     } catch (err) {
-      $("dayError").textContent = err.message;
-      $("dayLeaveError").textContent = err.message;
+      const error = { code: "VALIDATION", message: err.message };
+      WorkTimeApp.ui.fieldErrors.show($("dayError"), error);
+      WorkTimeApp.ui.fieldErrors.show($("dayLeaveError"), error);
       return false;
     }
   }
@@ -42,34 +44,50 @@ WorkUI.createDayController = function (options) {
   function bind() {
     if (bound) return;
     bound = true;
-    $("plannedOvertimeToggle").onclick = () => {
+    events.handler($("plannedOvertimeToggle"), "onclick", () => {
       const day = model.state.days[model.selected] || {};
       if (C.calendarInfo(model.selected, day).work) return;
-      if (day.plannedOvertime) delete day.plannedOvertime;
-      else day.plannedOvertime = true;
-      model.state.days[model.selected] = day;
-      const saved = actions.save();
+      const saved = application.togglePlanned(model.selected).persisted;
       actions.render();
       if (!saved) actions.toast("计划标记未能保存，请查看提醒", "error");
-    };
-    $("dayForm").onsubmit = (e) => {
+    });
+    events.handler($("dayForm"), "onsubmit", (e) => {
       e.preventDefault();
       saveDayEdit();
-    };
-    $("dayLeaveToggle").onclick = () => {
-      if (!$("dayLeavePanel").classList.contains("hidden")) {
+    });
+    events.handler($("dayLeaveToggle"), "onclick", () => {
+      if ($("dayLeaveToggle").getAttribute("aria-expanded") === "true") {
         actions.closeLeavePanel();
         return;
       }
-      $("dayLeaveError").textContent = "";
-      $("dayLeavePanel").classList.remove("hidden");
-      $("dayLeaveToggle").setAttribute("aria-expanded", "true");
-      $("dayLeave").focus();
+      WorkTimeApp.ui.fieldErrors.clear($("dayLeaveError"));
+      actions.openLeavePanel();
+      $("dayLeave").focus({ preventScroll: true });
       $("dayLeave").select();
-    };
-    $("dayLeaveFull").onclick = () => {
-      $("dayLeave").value = C.hours(model.state.settings.standardMinutes);
-      $("dayLeaveError").textContent = "";
+    });
+    for (const id of ["dayLeaveFull", "dayLeaveDone"]) {
+      // Mouse/touch actions keep the input focused until the click submits.
+      events.listen($(id), "pointerdown", (event) => event.preventDefault());
+    }
+    events.listen($("dayLeave"), "blur", (event) => {
+      if (!$("dayLeavePanel").contains(event.relatedTarget))
+        actions.closeLeavePanel();
+    });
+    events.listen($("dayLeavePanel"), "focusout", (event) => {
+      if (!$("dayLeavePanel").contains(event.relatedTarget))
+        actions.closeLeavePanel();
+    });
+    events.listen($("dayLeave"), "keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        $("dayLeaveDone").click();
+      }
+    });
+    events.handler($("dayLeaveFull"), "onclick", () => {
+      $("dayLeave").value = C.hours(
+        C.scheduleForDate(model.state, model.selected).standardMinutes,
+      );
+      WorkTimeApp.ui.fieldErrors.clear($("dayLeaveError"));
       if (saveDayEdit()) {
         actions.closeLeavePanel(true);
         actions.toast(
@@ -78,15 +96,15 @@ WorkUI.createDayController = function (options) {
             : "全天请假已保存",
         );
       }
-    };
-    $("dayLeaveDone").onclick = () => {
+    });
+    events.handler($("dayLeaveDone"), "onclick", () => {
       if (saveDayEdit()) actions.closeLeavePanel(true);
       else $("dayLeave").focus();
-    };
-    document.addEventListener("click", (e) => {
+    });
+    events.listen(document, "click", (e) => {
       if (!e.target.closest(".leave-control")) actions.closeLeavePanel();
     });
-    document.addEventListener("keydown", (e) => {
+    events.listen(document, "keydown", (e) => {
       if (
         e.key === "Escape" &&
         !$("dayLeavePanel").classList.contains("hidden")
@@ -95,11 +113,12 @@ WorkUI.createDayController = function (options) {
         actions.closeLeavePanel(true);
       }
     });
-    $("dayNextToggle").onclick = () => {
+    events.handler($("dayNextToggle"), "onclick", () => {
       $("dayNext").checked = !$("dayNext").checked;
       $("dayNext").dispatchEvent(new Event("input", { bubbles: true }));
-    };
-    document.addEventListener(
+    });
+    events.listen(
+      document,
       "input",
       (event) => {
         const input = event.target;
@@ -127,7 +146,7 @@ WorkUI.createDayController = function (options) {
       },
       true,
     );
-    document.addEventListener("keydown", (event) => {
+    events.listen(document, "keydown", (event) => {
       const input = event.target;
       if (
         !input.matches("input.clock-input") ||
@@ -145,12 +164,12 @@ WorkUI.createDayController = function (options) {
     });
     for (const id of ["dayStart", "dayEnd"]) {
       const input = $(id);
-      input.addEventListener("input", () => {
+      events.listen(input, "input", () => {
         const time = normalizeClock(input.value);
         if (time !== null) input.value = time;
         if (!input.value || time !== null) saveDayEdit();
       });
-      input.addEventListener("blur", () => {
+      events.listen(input, "blur", () => {
         if (input.value && normalizeClock(input.value) === null) {
           const day = model.state.days[model.selected] || {},
             record = C.effectiveRecord(day, true) || day.oa || {};
@@ -159,7 +178,7 @@ WorkUI.createDayController = function (options) {
         input.setSelectionRange(input.value.length, input.value.length);
         actions.previewDay();
       });
-      input.addEventListener("keydown", (event) => {
+      events.listen(input, "keydown", (event) => {
         if (event.key === "Escape") {
           event.preventDefault();
           input.blur();
@@ -170,21 +189,14 @@ WorkUI.createDayController = function (options) {
         }
       });
     }
-    ["dayNext", "dayLeave"].forEach((id) =>
-      $(id).addEventListener("input", saveDayEdit),
-    );
-    $("clearManual").onclick = () => {
+    events.listen($("dayNext"), "input", saveDayEdit);
+    events.listen($("dayLeave"), "input", () => {
+      WorkTimeApp.ui.fieldErrors.clear($("dayLeaveError"));
+    });
+    events.handler($("clearManual"), "onclick", () => {
       const d = model.state.days[model.selected];
       if (!d) return;
-      delete d.actual;
-      delete d.estimate;
-      delete d.draft;
-      delete d.note;
-      delete d.leaveMinutes;
-      delete d.kind;
-      delete d.plannedOvertime;
-      if (!d.oa) delete model.state.days[model.selected];
-      const saved = actions.save();
+      const saved = application.resetDay(model.selected).persisted;
       actions.render();
       actions.toast(
         saved
@@ -194,8 +206,33 @@ WorkUI.createDayController = function (options) {
           : "重置未能保存，请查看提醒",
         saved ? "countdown" : "error",
       );
-    };
+    });
   }
-  function dispose() {}
-  return { bind, dispose, saveDayEdit };
+  function dispose() {
+    events.dispose();
+    bound = false;
+  }
+  function hasDraft() {
+    if (model.batchMode) return false;
+    const day = model.state.days[model.selected] || {};
+    const record = C.effectiveRecord(day, true) || day.oa || {};
+    return (
+      $("dayStart").value !== (record.start || "") ||
+      $("dayEnd").value !== (record.end || "") ||
+      $("dayNext").checked !== !!record.nextDay ||
+      $("dayLeave").validity.badInput ||
+      Number($("dayLeave").value || 0) !==
+        Number(C.hours(day.leaveMinutes || 0))
+    );
+  }
+  return {
+    bind,
+    dispose,
+    saveDayEdit,
+    hasDraft,
+    onSaveRecovered() {
+      WorkTimeApp.ui.fieldErrors.saved($("dayError"));
+      WorkTimeApp.ui.fieldErrors.saved($("dayLeaveError"));
+    },
+  };
 };

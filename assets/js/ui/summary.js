@@ -1,7 +1,7 @@
 "use strict";
 
 /** Create an isolated summary view; state/view getters remain live after restore and navigation. */
-WorkUI.createSummary = function (options) {
+WorkTimeApp.ui.createSummary = function (options) {
   const {
     core: C,
     element: $,
@@ -11,7 +11,7 @@ WorkUI.createSummary = function (options) {
     getRange: monthBounds,
     isStorageFailed,
     document,
-    window,
+    numbers,
   } = options;
   const bounds = monthBounds;
   const markup = new WeakMap();
@@ -37,43 +37,41 @@ WorkUI.createSummary = function (options) {
     const data = [
       [
         "平均加班",
-        ready && valid
-          ? actual.average === null
-            ? "—"
-            : (actual.average / 60).toFixed(3) + "<small>h</small>"
-          : "—",
+        ready && valid && actual.average !== null ? actual.average / 60 : 0,
         "工作日加班 ÷ 折算出勤",
+        { decimals: 3, unit: "h" },
       ],
       [
         "折算出勤",
-        ready && valid
-          ? Number(actual.attendance.toFixed(4)) + "<small>d</small>"
-          : "—",
+        ready && valid ? Number(actual.attendance.toFixed(4)) : null,
         "按请假时长折算",
+        { unit: "d" },
       ],
       [
         "工作日加班",
-        ready && valid ? C.formatMinutes(actual.workOvertime) : "—",
+        ready && valid ? actual.workOvertime / 60 : null,
         "包含调休补班",
+        { decimals: 2, unit: " h" },
       ],
       [
         "休息日加班",
-        ready && valid ? C.formatMinutes(actual.restOvertime) : "—",
+        ready && valid ? actual.restOvertime / 60 : null,
         "不参与平均加班",
+        { decimals: 2, unit: " h" },
       ],
       [
         "总工时",
-        ready && valid ? C.formatMinutes(actual.total) : "—",
+        ready && valid ? actual.total / 60 : null,
         '<span class="fixed-record-count">' +
           actual.completeDays +
           "</span> d · 完整记录",
+        { decimals: 2, unit: " h" },
       ],
       [
         "待录入",
-        valid
-          ? C.pendingWorkdays(state, a, b, today) + "<small>d</small>"
-          : "—",
+        valid ? C.pendingWorkdays(state, a, b, today) : null,
         "未完整打卡的工作日",
+        { unit: "d" },
       ],
     ];
     const targetPanel = document.querySelector(".target-panel");
@@ -90,16 +88,16 @@ WorkUI.createSummary = function (options) {
       cards[0].after(targetPanel);
     }
     data.forEach((item, index) => {
-      updateHTML(
-        cards[index].querySelector(".metric"),
-        item[1].replace(/ h$/, "<small> h</small>"),
-      );
+      numbers.set(cards[index].querySelector(".metric"), item[1], {
+        ...item[3],
+        alignInk: true,
+        unit: item[1] === null ? "" : item[3].unit,
+      });
       updateHTML(cards[index].querySelector(".card-foot"), item[2]);
     });
     $("setupNotice").classList.toggle("hidden", ready);
     $("storageNotice").classList.toggle("hidden", !storageFailed);
     renderTarget();
-    window.SummaryNumbers?.update(document.querySelector(".summary-sidebar"));
   }
   function renderTarget() {
     const state = getState();
@@ -108,9 +106,9 @@ WorkUI.createSummary = function (options) {
       message: "",
       totalLabel: "剩余合计",
       dailyLabel: "平均每天",
-      total: "-",
-      daily: "-",
-      target: "-",
+      total: null,
+      daily: 0,
+      target: null,
       counts: "",
       remaining: null,
     };
@@ -124,9 +122,9 @@ WorkUI.createSummary = function (options) {
     const label =
       display.remaining === null
         ? esc(display.totalLabel)
-        : '后续 <span class="fixed-remaining-count">' +
+        : '后续<span class="fixed-remaining-count">' +
           display.remaining +
-          "</span> 天" +
+          "</span>天" +
           esc(display.totalLabel);
     if (display.remaining === null) {
       const element = $("targetTotalLabel");
@@ -134,16 +132,21 @@ WorkUI.createSummary = function (options) {
         element.textContent = display.totalLabel;
       markup.delete(element);
     } else updateHTML($("targetTotalLabel"), label);
-    for (const [id, value, unit] of [
-      ["targetMetric", display.total, "h"],
-      ["targetDailyMetric", display.daily, "h/d"],
-      ["targetValue", display.target, "h"],
+    for (const [id, value, unit, decimals] of [
+      ["targetMetric", display.total, "h", null],
+      ["targetDailyMetric", display.daily, "h/d", 1],
+      ["targetValue", display.target, "h", 1],
     ])
-      updateHTML($(id), value + "<small>" + unit + "</small>");
+      numbers.set($(id), value, {
+        unit,
+        decimals,
+        alignInk: true,
+        placeholder: "-",
+      });
   }
   function buildTarget(display, state, today) {
     if (!state.settings.configured) {
-      display.message = "请先完成计算设置";
+      display.message = "请先完成工作时间设置";
       return;
     }
     const [start, end] = monthBounds(),
@@ -156,11 +159,9 @@ WorkUI.createSummary = function (options) {
             : condition.tier + "天档";
     display.counts = "计划本月加班 " + condition.plannedDays + " 天";
     display.target =
-      condition.targetMinutes === null
-        ? "-"
-        : (condition.targetMinutes / 60).toFixed(1);
+      condition.targetMinutes === null ? null : condition.targetMinutes / 60;
     if (condition.targetMinutes === null) {
-      display.message = "请在计算设置中配置" + tierLabel;
+      display.message = "请在工作时间设置中配置" + tierLabel;
       return;
     }
     const pace = C.targetPace(

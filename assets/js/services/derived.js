@@ -1,6 +1,6 @@
 "use strict";
 /** Revision-scoped derived values. The public domain API remains uncached and pure. */
-const WorkDerived = (() => {
+WorkTimeApp.services.derived = (() => {
   function create({ core, getState, getRevision, now = () => new Date() }) {
     let state = null,
       revision = null,
@@ -83,7 +83,6 @@ const WorkDerived = (() => {
       );
     }
     const api = {
-      ...core,
       summary,
       countRestOvertimeDays: (...args) =>
         rangeValue("countRestOvertimeDays", ...args),
@@ -105,17 +104,14 @@ const WorkDerived = (() => {
             ),
         );
       },
-      pendingWorkdays(
-        input,
-        start,
-        end,
-        asOf = core.businessDate(now()),
-        at = now(),
-      ) {
+      pendingWorkdays(input, start, end, asOf, at = now()) {
         const date = core.businessDate(at),
           beforeStart =
             core.businessMinutes(at) <
-            core.timeMin(input.settings.workStart || core.DEFAULT_START);
+            core.timeMin(
+              core.scheduleForDate(input, date).workStart || core.DEFAULT_START,
+            );
+        asOf ??= date;
         if (input !== synchronize())
           return core.pendingWorkdays(input, start, end, asOf, at);
         return cached(
@@ -148,11 +144,18 @@ const WorkDerived = (() => {
           base =
             previous >= start
               ? rangeValue("attendanceHoursThrough", input, start, previous)
-              : { expectedMinutes: 0, workedMinutes: 0 },
+              : {
+                  expectedMinutes: 0,
+                  workedMinutes: 0,
+                  expectedDays: 0,
+                  workedDays: 0,
+                },
           last = core.attendanceHoursThrough(input, end, end, endDay);
         return {
           expectedMinutes: base.expectedMinutes + last.expectedMinutes,
           workedMinutes: base.workedMinutes + last.workedMinutes,
+          expectedDays: base.expectedDays + last.expectedDays,
+          workedDays: base.workedDays + last.workedDays,
         };
       },
       cumulativeAverageOvertime(input, start, end, endDay) {
@@ -179,17 +182,18 @@ const WorkDerived = (() => {
           scheduledMinutes =
             (prior?.scheduledMinutes || 0) + last.scheduledMinutes,
           workOvertimeMinutes =
-            (prior?.workOvertimeMinutes || 0) + last.workOvertimeMinutes;
+            (prior?.workOvertimeMinutes || 0) + last.workOvertimeMinutes,
+          attendance = (prior?.attendance || 0) + last.attendance;
         return {
           ...base,
           [end]: {
             scheduledMinutes,
+            attendance,
             workOvertimeMinutes,
             pending: last.pending,
             averageMinutes:
-              scheduledMinutes && !last.pending
-                ? (workOvertimeMinutes * input.settings.standardMinutes) /
-                  scheduledMinutes
+              attendance && !last.pending
+                ? workOvertimeMinutes / attendance
                 : null,
           },
         };
@@ -203,7 +207,7 @@ const WorkDerived = (() => {
         );
       },
     };
-    return { core: api, dispose: clear };
+    return { queries: api, dispose: clear };
   }
   return { create };
 })();

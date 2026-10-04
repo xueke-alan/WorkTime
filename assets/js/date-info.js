@@ -47,7 +47,7 @@
     icon: "history",
     getContent(date) {
       const [year] = validDate(date),
-        rows = g.DateInfoData?.history?.[date.slice(5)];
+        rows = WorkTimeApp.data.dateInfo.history[date.slice(5)];
       if (!rows) throw Error("该日期的本地历史资料未能加载");
       return {
         title: "历史上的今天",
@@ -67,7 +67,7 @@
       const l = lunar(date),
         s = l.getSolar(),
         [y, m, d] = validDate(date),
-        data = g.DateInfoData || {},
+        data = WorkTimeApp.data.dateInfo,
         aliases = data.festivalAliases || {},
         internationalNames = new Set(data.internationalFestivals || []),
         entries = new Map();
@@ -191,13 +191,13 @@
         ],
         source:
           "lunar-javascript " +
-          (g.DateInfoData?.sources?.lunar.version || "") +
+          (WorkTimeApp.data.dateInfo.sources?.lunar.version || "") +
           " · 传统民俗参考",
         sourceUrl: "https://github.com/6tail/lunar-javascript",
       };
     },
   });
-  g.DateInfo = {
+  WorkTimeApp.services.dateInfo = {
     register,
     getContent,
     list: () => [...providers.values()],

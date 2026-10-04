@@ -1,6 +1,6 @@
 "use strict";
 /** Application state and navigation model. Storage and views are supplied separately. */
-const WorkApplication = (() => {
+WorkTimeApp.services.application = (() => {
   /** @param {{state:WorkStateData,writable:boolean,readError:Error|null,corrupt:boolean,today:string}} input @returns {WorkApplicationModel} */
   function create(input) {
     return {
@@ -19,5 +19,185 @@ const WorkApplication = (() => {
       returnMonth: input.today.slice(0, 7),
     };
   }
-  return { create };
+  /** Own business state. Views receive frozen snapshots, operations own all writes. */
+  function createState({
+    state: initial,
+    persistence,
+    core: C,
+    failed = false,
+    corrupt = false,
+    unsaved = false,
+  }) {
+    const clone = (value) => JSON.parse(JSON.stringify(value));
+    function freeze(value) {
+      if (value && typeof value === "object" && !Object.isFrozen(value)) {
+        Object.values(value).forEach(freeze);
+        Object.freeze(value);
+      }
+      return value;
+    }
+    let state = freeze(clone(initial)),
+      revision = 0,
+      dirty = unsaved,
+      saveFailed = failed,
+      loadCorrupt = corrupt;
+    function commit(candidate, { atomic = false, restore = false } = {}) {
+      const changed = JSON.stringify(candidate) !== JSON.stringify(state);
+      if (!changed && !dirty && !saveFailed && !restore)
+        return {
+          changed: false,
+          applied: false,
+          persisted: true,
+          dirty: false,
+          error: null,
+          code: null,
+          message: "",
+        };
+      if (restore) {
+        persistence.allowValidatedRestore();
+        loadCorrupt = false;
+      }
+      if (changed && !atomic) {
+        state = freeze(candidate);
+        revision++;
+      }
+      const saved = persistence.save(candidate);
+      if (saved.persisted && changed && atomic) {
+        state = freeze(candidate);
+        revision++;
+      }
+      saveFailed = !saved.persisted;
+      dirty = saved.persisted ? false : atomic ? dirty : true;
+      return {
+        changed,
+        applied: changed && (!atomic || saved.persisted),
+        persisted: saved.persisted,
+        dirty,
+        error: saved.error || null,
+        code: saved.error?.code || (saved.persisted ? null : "WRITE_FAILED"),
+        message: saved.error?.userMessage || saved.error?.message || "",
+      };
+    }
+    const service = {
+      get state() {
+        return state;
+      },
+      get revision() {
+        return revision;
+      },
+      get dirty() {
+        return dirty;
+      },
+      get failed() {
+        return saveFailed;
+      },
+      get loadCorrupt() {
+        return loadCorrupt;
+      },
+      markUnsaved() {
+        dirty = true;
+        saveFailed = true;
+      },
+      retry() {
+        return commit(state);
+      },
+      saveDay(date, day) {
+        return commit({
+          ...state,
+          days: { ...state.days, [date]: clone(day) },
+        });
+      },
+      togglePlanned(date) {
+        const day = { ...state.days[date] };
+        if (C.calendarInfo(date, day).work) return commit(state);
+        if (day.plannedOvertime) delete day.plannedOvertime;
+        else day.plannedOvertime = true;
+        return service.saveDay(date, day);
+      },
+      resetDay(date) {
+        const days = { ...state.days },
+          old = days[date];
+        if (!old) return commit(state);
+        if (old.oa) days[date] = { oa: old.oa };
+        else delete days[date];
+        return commit({ ...state, days });
+      },
+      saveTemplate(template, editing) {
+        const clean = C.validateTimeTemplate(template),
+          templates = [...state.timeTemplates];
+        if (editing) {
+          const index = templates.findIndex((item) => item.id === clean.id);
+          if (index < 0) throw Error("模板已不存在。");
+          templates[index] = clean;
+        } else {
+          if (templates.length >= 4)
+            throw Error("最多保存 4 个模板，请先删除一个模板。");
+          templates.push(clean);
+        }
+        return commit({ ...state, timeTemplates: templates });
+      },
+      removeTemplate(id) {
+        return commit({
+          ...state,
+          timeTemplates: state.timeTemplates.filter((item) => item.id !== id),
+        });
+      },
+      saveBatch(dates, record) {
+        const days = { ...state.days };
+        for (const date of dates) {
+          const day = { ...days[date] };
+          if (day.oa || day.actual) {
+            day.actual = { ...record };
+            delete day.estimate;
+          } else day.estimate = { ...record };
+          delete day.draft;
+          days[date] = day;
+        }
+        return commit({ ...state, days });
+      },
+      importRecords(log) {
+        const candidate = clone(state);
+        for (const record of log.records)
+          C.applyObservation(candidate, record, log.id);
+        candidate.imports.push(clone(log));
+        return commit(candidate);
+      },
+      removeImport(id) {
+        const candidate = clone(state),
+          impact = C.deleteImport(candidate, id);
+        return { ...commit(candidate), impact };
+      },
+      saveOAUrl(oaUrl) {
+        return commit({ ...state, oaUrl });
+      },
+      saveSettings(settings, overtimeRequirements) {
+        return commit({
+          ...state,
+          settings: clone(settings),
+          overtimeRequirements: [...overtimeRequirements],
+        });
+      },
+      applySchedule(candidate) {
+        return commit(clone(candidate), { atomic: true });
+      },
+      savePersonal(personal) {
+        return commit({ ...state, personal: clone(personal) });
+      },
+      restore(candidate) {
+        return commit(clone(candidate), { restore: true });
+      },
+      reload(candidate) {
+        const changed = JSON.stringify(candidate) !== JSON.stringify(state);
+        if (changed) {
+          state = freeze(clone(candidate));
+          revision++;
+        }
+        dirty = false;
+        saveFailed = false;
+        loadCorrupt = false;
+      },
+    };
+    return service;
+  }
+  return { create, createState };
 })();

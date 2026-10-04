@@ -1,12 +1,18 @@
 "use strict";
 /** Startup boundary and lifetime cleanup for the explicitly assembled application. */
-const WorkBootstrap = (() => {
+WorkTimeApp.services.bootstrap = (() => {
+  function restoreCachedPage(event) {
+    const window = event.currentTarget;
+    window.removeEventListener("pageshow", restoreCachedPage);
+    if (event.persisted) window.location.reload();
+  }
   async function run(initialize, { document }) {
     let closed = false;
     const cleanups = [];
     function dispose() {
       if (closed) return;
       closed = true;
+      document.defaultView.removeEventListener("pagehide", onPageHide);
       for (const cleanup of cleanups.reverse()) {
         try {
           cleanup();
@@ -27,7 +33,16 @@ const WorkBootstrap = (() => {
       dispose,
     };
     document.documentElement.dataset.appState = "initializing";
-    document.defaultView.addEventListener("pagehide", dispose, { once: true });
+    function onPageHide(event) {
+      dispose();
+      if (event.persisted)
+        document.defaultView.addEventListener("pageshow", restoreCachedPage, {
+          once: true,
+        });
+    }
+    document.defaultView.addEventListener("pagehide", onPageHide, {
+      once: true,
+    });
     try {
       await initialize(lifecycle);
       if (closed) return { ok: false, closed: true };

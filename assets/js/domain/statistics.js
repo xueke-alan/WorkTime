@@ -1,6 +1,6 @@
 "use strict";
 /** statistics domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
-const WorkStatistics = (() => {
+WorkTimeApp.domain.statistics = (() => {
   const {
     dateKey,
     localDate,
@@ -8,11 +8,12 @@ const WorkStatistics = (() => {
     timeMin,
     businessDate,
     businessMinutes,
-  } = WorkTimeValues;
-  const { DEFAULT_START } = WorkState;
-  const { calendarInfo } = WorkCalendar;
-  const { effectiveRecord, complete, duration, calculate } = WorkRecords;
-  function oaStaleness(state, today = businessDate()) {
+  } = WorkTimeApp.domain.time;
+  const { DEFAULT_START } = WorkTimeApp.domain.state;
+  const { calendarInfo } = WorkTimeApp.domain.calendar;
+  const { effectiveRecord, complete, duration, calculate } =
+    WorkTimeApp.domain.records;
+  function oaStaleness(state, today) {
     const latest = Object.keys(state.days)
       .filter((k) => validDate(k) && k <= today && state.days[k].oa)
       .sort()
@@ -25,71 +26,76 @@ const WorkStatistics = (() => {
     const days = dayNumber(today) - dayNumber(latest);
     return { date: latest, days, stale: days >= 3 };
   }
+  const { scheduleForDate } = WorkTimeApp.domain.schedule;
   function attendanceHoursThrough(state, start, end, endDay) {
     if (!validDate(start) || !validDate(end) || start > end) return null;
     let expectedMinutes = 0,
-      workedMinutes = 0;
+      workedMinutes = 0,
+      expectedDays = 0,
+      workedDays = 0;
     const cursor = localDate(start);
     while (dateKey(cursor) <= end) {
       const k = dateKey(cursor),
-        day = k === end && endDay ? endDay : state.days[k] || {};
-      if (calendarInfo(k, day).work)
-        expectedMinutes += Math.max(
+        day = k === end && endDay ? endDay : state.days[k] || {},
+        schedule = scheduleForDate(state, k);
+      if (calendarInfo(k, day).work) {
+        const minutes = Math.max(
           0,
-          state.settings.standardMinutes - (day.leaveMinutes || 0),
+          schedule.standardMinutes - (day.leaveMinutes || 0),
         );
-      const actual = calculate(k, day, state.settings, true);
-      if (actual.minutes !== null) workedMinutes += actual.minutes;
+        expectedMinutes += minutes;
+        expectedDays += minutes / schedule.standardMinutes;
+      }
+      const actual = calculate(k, day, schedule, true);
+      if (actual.minutes !== null) {
+        workedMinutes += actual.minutes;
+        workedDays += actual.minutes / schedule.standardMinutes;
+      }
       cursor.setDate(cursor.getDate() + 1);
     }
-    return { expectedMinutes, workedMinutes };
+    return { expectedMinutes, workedMinutes, expectedDays, workedDays };
   }
   function cumulativeAverageOvertime(state, start, end, endDay) {
     const values = {};
     if (!validDate(start) || !validDate(end) || start > end) return values;
     // Denominator includes scheduled attendance only for complete workday records.
     let scheduledMinutes = 0,
-      workOvertimeMinutes = 0;
+      workOvertimeMinutes = 0,
+      attendance = 0;
     const cursor = localDate(start);
     while (dateKey(cursor) <= end) {
       const k = dateKey(cursor),
         day = k === end && endDay ? endDay : state.days[k] || {},
+        schedule = scheduleForDate(state, k),
         info = calendarInfo(k, day),
-        result = calculate(k, day, state.settings, true),
+        result = calculate(k, day, schedule, true),
         pending =
           info.work &&
-          (day.leaveMinutes || 0) < state.settings.standardMinutes &&
+          (day.leaveMinutes || 0) < schedule.standardMinutes &&
           result.minutes === null;
       if (state.settings.configured && info.work) {
         if (result.minutes !== null) {
           scheduledMinutes += Math.max(
             0,
-            state.settings.standardMinutes - (day.leaveMinutes || 0),
+            schedule.standardMinutes - (day.leaveMinutes || 0),
           );
           workOvertimeMinutes += result.overtime;
+          attendance += result.attendance;
         }
       }
       values[k] = {
         scheduledMinutes,
+        attendance,
         workOvertimeMinutes,
         pending,
         averageMinutes:
-          scheduledMinutes && !pending
-            ? (workOvertimeMinutes * state.settings.standardMinutes) /
-              scheduledMinutes
-            : null,
+          attendance && !pending ? workOvertimeMinutes / attendance : null,
       };
       cursor.setDate(cursor.getDate() + 1);
     }
     return values;
   }
-  function pendingWorkdays(
-    state,
-    start,
-    end,
-    asOf = businessDate(),
-    now = new Date(),
-  ) {
+  function pendingWorkdays(state, start, end, asOf, now) {
     if (!validDate(start) || !validDate(end) || !validDate(asOf)) return 0;
     const last = end < asOf ? end : asOf;
     if (start > last) return 0;
@@ -97,7 +103,9 @@ const WorkStatistics = (() => {
       beforeWorkStart =
         asOf === currentDate &&
         businessMinutes(now) <
-          timeMin(state.settings.workStart || DEFAULT_START);
+          timeMin(
+            scheduleForDate(state, currentDate).workStart || DEFAULT_START,
+          );
     let count = 0;
     const cursor = localDate(start);
     while (dateKey(cursor) <= last) {
@@ -106,7 +114,7 @@ const WorkStatistics = (() => {
       if (
         !(k === asOf && beforeWorkStart) &&
         calendarInfo(k, day).work &&
-        (day.leaveMinutes || 0) < state.settings.standardMinutes &&
+        (day.leaveMinutes || 0) < scheduleForDate(state, k).standardMinutes &&
         !complete(effectiveRecord(day, true))
       )
         count++;
@@ -127,7 +135,7 @@ const WorkStatistics = (() => {
     };
     for (const [k, day] of Object.entries(state.days)) {
       if (k < start || k > end) continue;
-      const c = calculate(k, day, state.settings, includeEstimate);
+      const c = calculate(k, day, scheduleForDate(state, k), includeEstimate);
       if (
         day.oa &&
         day.oa.status === "pending" &&
@@ -152,7 +160,9 @@ const WorkStatistics = (() => {
     for (const [date, day] of Object.entries(state.days)) {
       if (date < start || date > end || calendarInfo(date, day).work) continue;
       const record = effectiveRecord(day, true),
-        worked = complete(record) && duration(record, state.settings) > 0;
+        worked =
+          complete(record) &&
+          duration(record, scheduleForDate(state, date)) > 0;
       if (worked) actualDays++;
       else if (day.plannedOvertime) plannedDays++;
     }
@@ -161,13 +171,7 @@ const WorkStatistics = (() => {
   function selectOvertimeRequirement(state, start, end) {
     const counts = countRestOvertimeDays(state, start, end),
       tier = Math.min(4, counts.totalDays),
-      requirements = state.overtimeRequirements || [
-        state.targetAverageMinutes ?? 120,
-        null,
-        null,
-        null,
-        null,
-      ];
+      requirements = state.overtimeRequirements;
     return { ...counts, tier, targetMinutes: requirements[tier] };
   }
   function targetPace(state, start, end, asOf, targetMinutes, derivedSummary) {
@@ -180,8 +184,7 @@ const WorkStatistics = (() => {
       targetMinutes < 0
     )
       return null;
-    const standard = state.settings.standardMinutes,
-      earned = (derivedSummary || summary(state, start, end)).workOvertime;
+    const earned = (derivedSummary || summary(state, start, end)).workOvertime;
     let plannedDays = 0,
       remainingDays = 0;
     const cursor = localDate(start);
@@ -189,6 +192,7 @@ const WorkStatistics = (() => {
       const k = dateKey(cursor),
         day = state.days[k] || {};
       if (calendarInfo(k, day).work) {
+        const standard = scheduleForDate(state, k).standardMinutes;
         const portion =
           Math.max(
             0,

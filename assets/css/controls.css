@@ -45,6 +45,7 @@ body .editor #dayForm .time-fields .clock-input,
 body .editor #batchForm input.clock-input,
 body #settingsForm input.clock-input,
 body #settingsForm #workCity,
+body #personalSettingsForm :is(#employmentDate, #workCity),
 body #timeTemplateForm input.clock-input,
 body #settingsForm input.number-input,
 body .editor #batchForm input.number-input,
@@ -82,6 +83,7 @@ body input.clock-input::placeholder {
 body .editor #dayForm .time-fields .clock-input:focus,
 body .editor #batchForm input.clock-input:focus,
 body #settingsForm input.clock-input:focus,
+body #personalSettingsForm :is(#employmentDate, #workCity):focus,
 body #settingsForm #workCity:focus,
 body #timeTemplateForm input.clock-input:focus,
 body #settingsForm input.number-input:focus,
@@ -110,10 +112,6 @@ body button.ui-button:not(.notification-tab):not(#importOpen) {
   font-weight: 500;
   line-height: 1.3;
   gap: 0.357143rem;
-  transition:
-    background 0.15s,
-    border-color 0.15s,
-    box-shadow 0.15s;
 }
 body
   button.ui-button:not(.notification-tab):not(#importOpen):not(
@@ -130,7 +128,7 @@ body
     :disabled
   ) {
   background: var(--control-hover);
-  border-color: #aecdbf;
+  border-color: var(--theme-border, #aecdbf);
 }
 body button.ui-button.primary {
   background: var(--accent);
@@ -138,11 +136,17 @@ body button.ui-button.primary {
   color: #fff;
 }
 body button.ui-button.primary:hover:not(:disabled) {
-  background: #10634f;
-  border-color: #10634f;
+  background: var(--theme-accent-deep, #10634f);
+  border-color: var(--theme-edge, #10634f);
 }
-body button.ui-button:focus-visible {
+/* Keyboard focus stays inside existing hit areas; no outer ring. */
+body button.ui-button:focus-visible,
+body .month-controls .month-title:focus-visible,
+body .calendar .day:focus-visible,
+body .year-month .year-day:focus-visible,
+body .editor > .notification-tabs button.notification-tab:focus-visible {
   outline: 0;
+  box-shadow: inset 0 -2px 0 currentColor !important;
 }
 body button.ui-button:disabled {
   opacity: 0.45;
@@ -177,11 +181,11 @@ body #batchAddTimeTemplate {
   padding: 0 !important;
 }
 /* Joined backup buttons keep one outside border rather than duplicate borders. */
-body .backup-button-group button.ui-button {
+body :is(.backup-button-group, .settings-button-group) button.ui-button {
   border: 0 !important;
   box-shadow: none;
 }
-body .backup-button-group button.ui-button + button {
+body :is(.backup-button-group, .settings-button-group) button.ui-button + button {
   border-left: 1px solid var(--control-border) !important;
 }
 /* Keep OA text and symbols on stable raster sizes at desktop scaling. */

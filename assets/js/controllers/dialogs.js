@@ -1,6 +1,7 @@
 "use strict";
 /** dialogs controller. Instantiate once, then bind after all actions are connected. */
-WorkUI.createDialogController = function (options) {
+WorkTimeApp.ui.createDialogController = function (options) {
+  const events = WorkTimeApp.ui.createEventScope();
   const { element: $, actions } = options;
 
   let bound = false;
@@ -9,12 +10,17 @@ WorkUI.createDialogController = function (options) {
     bound = true;
     document
       .querySelectorAll("[data-close]")
-      .forEach((b) => (b.onclick = () => $(b.dataset.close).close()));
-    $("helpOpen").onclick = (event) => {
+      .forEach((b) =>
+        events.handler(b, "onclick", () => $(b.dataset.close).close()),
+      );
+    events.handler($("helpOpen"), "onclick", (event) => {
       event.preventDefault();
       actions.open("helpDialog");
-    };
+    });
   }
-  function dispose() {}
+  function dispose() {
+    events.dispose();
+    bound = false;
+  }
   return { bind, dispose };
 };

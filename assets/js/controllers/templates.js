@@ -1,7 +1,15 @@
 "use strict";
 /** templates controller. Instantiate once, then bind after all actions are connected. */
-WorkUI.createTemplateController = function (options) {
-  const { model, element: $, escape: esc, actions, core: C } = options;
+WorkTimeApp.ui.createTemplateController = function (options) {
+  const events = WorkTimeApp.ui.createEventScope();
+  const {
+    model,
+    element: $,
+    escape: esc,
+    actions,
+    core: C,
+    application,
+  } = options;
   const templateLimit = 4;
   function updateTemplateLimit() {
     const full = model.state.timeTemplates.length >= templateLimit;
@@ -14,6 +22,7 @@ WorkUI.createTemplateController = function (options) {
   }
 
   let templateEditingId = null,
+    renderedTemplates = null,
     renderedTemplateIds = null,
     renderedBatchTemplateIds = null;
   function animateNewTemplates(list, previous) {
@@ -25,16 +34,19 @@ WorkUI.createTemplateController = function (options) {
           ),
           id = button?.dataset.templateFill || button?.dataset.batchTemplate;
         if (id && !previous.has(id))
-          window.WorkMotion?.play(chip, "motion-enter");
+          WorkTimeApp.ui.motion?.play(chip, "motion-enter");
       });
     return current;
   }
   function renderTimeTemplates() {
+    const signature = JSON.stringify(model.state.timeTemplates);
+    if (signature === renderedTemplates) return;
+    renderedTemplates = signature;
     $("timeTemplateList").innerHTML = model.state.timeTemplates.length
       ? model.state.timeTemplates
           .map(
             (t) =>
-              '<div class="time-template-chip"><button type="button" class="template-fill" data-template-fill="' +
+              '<div class="time-template-chip"><button type="button" class="ui-button template-fill" data-template-fill="' +
               esc(t.id) +
               '" title="' +
               esc(
@@ -45,9 +57,9 @@ WorkUI.createTemplateController = function (options) {
                   t.end +
                   (t.nextDay ? "（次日）" : ""),
               ) +
-              '">' +
+              '"><span class="button-label">' +
               esc(t.name) +
-              '</button><button type="button" class="template-edit icon-only" data-template-edit="' +
+              '</span></button><button type="button" class="ui-button template-edit icon-only" data-template-edit="' +
               esc(t.id) +
               '" aria-label="编辑模板 ' +
               esc(t.name) +
@@ -76,10 +88,13 @@ WorkUI.createTemplateController = function (options) {
     $("timeTemplateStart").value = template
       ? template.start
       : (defaults?.start ??
-        ($("dayStart").value || model.state.settings.workStart));
+        ($("dayStart").value ||
+          C.scheduleForDate(model.state, model.selected).workStart));
     $("timeTemplateEnd").value = template
       ? template.end
-      : (defaults?.end ?? ($("dayEnd").value || model.state.settings.workEnd));
+      : (defaults?.end ??
+        ($("dayEnd").value ||
+          C.scheduleForDate(model.state, model.selected).workEnd));
     $("timeTemplateNext").checked = template
       ? template.nextDay
       : (defaults?.nextDay ?? $("dayNext").checked);
@@ -87,7 +102,8 @@ WorkUI.createTemplateController = function (options) {
     $("deleteTimeTemplate").classList.toggle("hidden", !template);
     $("timeTemplateError").textContent = "";
     actions.open("timeTemplateDialog");
-    $("timeTemplateName").focus();
+    WorkTimeApp.ui.alignment?.refresh([$("timeTemplateDialog")]);
+    $("timeTemplateName").focus({ preventScroll: true });
   }
   function updateTimeTemplateNextToggle() {
     $("timeTemplateNextToggle").setAttribute(
@@ -106,7 +122,7 @@ WorkUI.createTemplateController = function (options) {
     list.innerHTML = model.state.timeTemplates
       .map((template) => {
         return (
-          '<div class="time-template-chip"><button type="button" class="template-fill" data-batch-template="' +
+          '<div class="time-template-chip"><button type="button" class="ui-button template-fill" data-batch-template="' +
           esc(template.id) +
           '" title="' +
           esc(
@@ -117,9 +133,9 @@ WorkUI.createTemplateController = function (options) {
               template.end +
               (template.nextDay ? "（次日）" : ""),
           ) +
-          '">' +
+          '"><span class="button-label">' +
           esc(template.name) +
-          '</button><button type="button" class="template-edit icon-only" data-batch-template-edit="' +
+          '</span></button><button type="button" class="ui-button template-edit icon-only" data-batch-template-edit="' +
           esc(template.id) +
           '" aria-label="编辑模板 ' +
           esc(template.name) +
@@ -138,12 +154,12 @@ WorkUI.createTemplateController = function (options) {
   function bind() {
     if (bound) return;
     bound = true;
-    $("timeTemplateNextToggle").onclick = () => {
+    events.handler($("timeTemplateNextToggle"), "onclick", () => {
       $("timeTemplateNext").checked = !$("timeTemplateNext").checked;
       updateTimeTemplateNextToggle();
-    };
-    $("addTimeTemplate").onclick = () => openTimeTemplate();
-    $("timeTemplateList").onclick = (e) => {
+    });
+    events.handler($("addTimeTemplate"), "onclick", () => openTimeTemplate());
+    events.handler($("timeTemplateList"), "onclick", (e) => {
       const fill = e.target.closest("[data-template-fill]"),
         edit = e.target.closest("[data-template-edit]"),
         id = fill
@@ -160,15 +176,15 @@ WorkUI.createTemplateController = function (options) {
       $("dayStart").value = template.start;
       $("dayEnd").value = template.end;
       $("dayNext").checked = template.nextDay;
-      $("dayError").textContent = "";
+      WorkTimeApp.ui.fieldErrors.clear($("dayError"));
       if (actions.saveDayEdit())
         actions.toast(
           model.storageFailed
             ? "已应用模板，保存异常请查看提醒"
             : "已应用并保存“" + template.name + "”",
         );
-    };
-    $("timeTemplateForm").onsubmit = (e) => {
+    });
+    events.handler($("timeTemplateForm"), "onsubmit", (e) => {
       e.preventDefault();
       try {
         if (
@@ -188,15 +204,11 @@ WorkUI.createTemplateController = function (options) {
           end: $("timeTemplateEnd").value,
           nextDay: $("timeTemplateNext").checked,
         });
-        if (templateEditingId) {
-          const index = model.state.timeTemplates.findIndex(
-            (t) => t.id === templateEditingId,
-          );
-          if (index < 0) throw Error("模板已不存在。");
-          model.state.timeTemplates[index] = template;
-        } else model.state.timeTemplates.push(template);
+        const saved = application.saveTemplate(
+          template,
+          !!templateEditingId,
+        ).persisted;
         templateEditingId = template.id;
-        const saved = actions.save();
         renderTimeTemplates();
         if (saved) $("timeTemplateDialog").close();
         else
@@ -206,24 +218,22 @@ WorkUI.createTemplateController = function (options) {
       } catch (err) {
         $("timeTemplateError").textContent = err.userMessage || err.message;
       }
-    };
-    $("deleteTimeTemplate").onclick = () => {
+    });
+    events.handler($("deleteTimeTemplate"), "onclick", () => {
       if (!templateEditingId) return;
-      model.state.timeTemplates = model.state.timeTemplates.filter(
-        (t) => t.id !== templateEditingId,
-      );
-      const saved = actions.save();
+      const saved = application.removeTemplate(templateEditingId).persisted;
       renderTimeTemplates();
       $("timeTemplateDialog").close();
       actions.saveFeedback(saved, "时间模板已删除");
-    };
-    $("batchAddTimeTemplate").onclick = () =>
+    });
+    events.handler($("batchAddTimeTemplate"), "onclick", () =>
       openTimeTemplate(null, {
         start: $("batchStart").value,
         end: $("batchEnd").value,
         nextDay: $("batchNext").checked,
-      });
-    $("batchTimeTemplateList").onclick = (e) => {
+      }),
+    );
+    events.handler($("batchTimeTemplateList"), "onclick", (e) => {
       const fill = e.target.closest("[data-batch-template]"),
         edit = e.target.closest("[data-batch-template-edit]"),
         id = fill
@@ -244,10 +254,31 @@ WorkUI.createTemplateController = function (options) {
       actions.updateBatchNextToggle();
       renderBatchTimeTemplates();
       $("batchError").textContent = "";
-    };
+    });
     for (const id of ["batchStart", "batchEnd"])
-      $(id).addEventListener("input", renderBatchTimeTemplates);
+      events.listen($(id), "input", renderBatchTimeTemplates);
   }
-  function dispose() {}
-  return { bind, dispose, renderTimeTemplates, renderBatchTimeTemplates };
+  function dispose() {
+    events.dispose();
+    bound = false;
+  }
+  function hasDraft() {
+    if (!$("timeTemplateDialog").open) return false;
+    const original = model.state.timeTemplates.find(
+      (item) => item.id === templateEditingId,
+    );
+    return (
+      $("timeTemplateName").value !== (original?.name || "") ||
+      $("timeTemplateStart").value !== (original?.start || "") ||
+      $("timeTemplateEnd").value !== (original?.end || "") ||
+      $("timeTemplateNext").checked !== !!original?.nextDay
+    );
+  }
+  return {
+    bind,
+    dispose,
+    renderTimeTemplates,
+    renderBatchTimeTemplates,
+    hasDraft,
+  };
 };

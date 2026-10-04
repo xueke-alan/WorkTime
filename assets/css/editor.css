@@ -13,10 +13,10 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  color: #25463f;
+  color: var(--theme-text-strong, #25463f);
 }
 #editorInfo .tone-info {
-  background: #eaf4ef;
+  background: var(--theme-surface-subtle, #eaf4ef);
 }
 #editorInfo .tone-warning {
   background: #fff5df;
@@ -84,7 +84,7 @@
 #editorInfo
   > .info-notification:not(.hidden)
   ~ .info-notification:not(.hidden) {
-  border-top: 1px solid #d5e0da;
+  border-top: 1px solid var(--theme-border-soft, #d5e0da);
 }
 #editorInfo .ring-count {
   font-size: 12px;
@@ -126,7 +126,7 @@
   justify-content: center;
   gap: 12px;
   padding: 28px 18px;
-  color: #8aa098;
+  color: var(--theme-text-muted, #8aa098);
   text-align: center;
 }
 #editorInfo .notification-empty svg {
@@ -157,26 +157,18 @@ body .notification-empty {
     line-height: 1.5;
     align-items: flex-start;
   }
-}
-@media (min-width: 1921px) {
   body #editorInfo .notification-body {
     white-space: normal;
     overflow-wrap: anywhere;
   }
-}
-@media (min-width: 1921px) {
   body #editorInfo .notification-icon,
   body #editorInfo .notification-icon svg {
     width: 1.25em;
     height: 1.25em;
   }
-}
-@media (min-width: 1921px) {
   body #editorInfo .notification-icon {
     margin-top: 0.125em;
   }
-}
-@media (min-width: 1921px) {
   body #editorInfo .notification-empty span {
     font-size: 1rem;
   }
@@ -213,8 +205,6 @@ body .notification-empty {
   .editor {
     position: static;
   }
-}
-@media (max-width: 850px) {
   .editor .two {
     max-width: 100%;
   }
@@ -231,34 +221,22 @@ body .notification-empty {
   .editor {
     overflow: auto;
   }
-}
-@media (min-width: 1151px) {
   .editor-note {
     margin-top: 6px;
     line-height: 1.5;
   }
-}
-@media (min-width: 1151px) {
   .editor .calc-preview {
     line-height: 1.5;
   }
-}
-@media (min-width: 1151px) {
   .editor #dayError:empty {
     display: none;
   }
-}
-@media (min-width: 1151px) {
   .editor .editor-actions {
     gap: 7px;
   }
-}
-@media (min-width: 1151px) {
   .editor .editor-actions + .editor-actions {
     margin-top: 8px;
   }
-}
-@media (min-width: 1151px) {
   .editor .editor-actions button {
     font-size: 12px;
   }
@@ -312,7 +290,7 @@ body .notification-empty {
 }
 .time-template-chip {
   display: inline-flex;
-  border: 1px solid #d4e3d1;
+  border: 1px solid var(--theme-border-soft, #d4e3d1);
   overflow: hidden;
   flex: none;
 }
@@ -329,7 +307,7 @@ body .notification-empty {
   text-overflow: ellipsis;
 }
 .time-template-chip .template-edit {
-  border-left: 1px solid #d4e3d1;
+  border-left: 1px solid var(--theme-border-soft, #d4e3d1);
   color: var(--muted);
 }
 
@@ -350,10 +328,6 @@ body .notification-empty {
 .editor-mode-form {
   margin: 0;
   min-width: 0;
-}
-.batch-inline-form .batch-time-fields .nextday-toggle {
-  width: 40px !important;
-  height: 44px !important;
 }
 .batch-inline-form .batch-overtime-calculator {
   margin-top: 12px;
@@ -392,36 +366,36 @@ body .notification-empty {
   font-variant-numeric: tabular-nums;
 }
 .editor-note {
-  color: #8b9b90;
+  color: var(--theme-text-muted, #8b9b90);
 }
 .time-template-area {
   padding: 9px 0;
-  border-bottom: 1px solid #eef2ee;
+  border-bottom: 1px solid var(--theme-border-soft, #eef2ee);
 }
 .time-template-chip {
-  border-color: #cee2d4;
-  background: #edf6ee;
+  border-color: var(--theme-border-soft, #cee2d4);
+  background: var(--theme-surface-subtle, #edf6ee);
   border-radius: 6px;
 }
 .time-template-chip button:hover {
-  background: #dfefdf;
+  background: var(--theme-surface-soft, #dfefdf);
 }
 .time-template-chip .template-edit {
-  border-color: #cee2d4;
+  border-color: var(--theme-border-soft, #cee2d4);
 }
 .template-toolbar #addTimeTemplate {
   color: var(--accent);
-  background: #f5faf6;
-  border-color: #d8e7db;
+  background: var(--theme-surface-paper, #f5faf6);
+  border-color: var(--theme-border-soft, #d8e7db);
 }
 .calc-preview {
-  background: #eef6f0;
-  border: 1px solid #e4eee5;
-  color: #4e7160;
+  background: var(--theme-surface-subtle, #eef6f0);
+  border: 1px solid var(--theme-border-soft, #e4eee5);
+  color: var(--theme-text-strong, #4e7160);
   border-radius: 10px;
 }
 .calc-preview strong {
-  color: #20593f;
+  color: var(--theme-text-strong, #20593f);
 }
 .batch-editor-actions button {
   border-radius: 9px;
@@ -430,44 +404,30 @@ body .notification-empty {
   .editor {
     padding: 18px;
   }
-}
-@media (min-width: 1151px) {
   .editor-date {
     font-size: 19px;
     margin-top: 4px;
   }
-}
-@media (min-width: 1151px) {
   .editor .field {
     margin-top: 13px;
     gap: 5px;
   }
-}
-@media (min-width: 1151px) {
   .editor input,
   .editor select {
     padding: 7px 9px;
     font-size: 12px;
   }
-}
-@media (min-width: 1151px) {
   .editor .calc-preview {
     margin-top: 15px;
     padding: 12px;
     font-size: 12px;
   }
-}
-@media (min-width: 1151px) {
   .editor .editor-actions {
     margin-top: 13px;
   }
-}
-@media (min-width: 1151px) {
   .editor .editor-actions button {
     padding: 7px 10px;
   }
-}
-@media (min-width: 1151px) {
   .editor .hr {
     margin: 16px 0;
   }
@@ -476,29 +436,19 @@ body .notification-empty {
   .editor {
     padding: 14px;
   }
-}
-@media (min-width: 1151px) and (max-height: 720px) {
   .editor .field {
     margin-top: 9px;
   }
-}
-@media (min-width: 1151px) and (max-height: 720px) {
   .editor .calc-preview {
     margin-top: 10px;
     padding: 9px;
   }
-}
-@media (min-width: 1151px) and (max-height: 720px) {
   .editor .editor-actions {
     margin-top: 10px;
   }
-}
-@media (min-width: 1151px) and (max-height: 720px) {
   .editor .hr {
     margin: 10px 0;
   }
-}
-@media (min-width: 1151px) and (max-height: 720px) {
   .time-template-area {
     padding: 5px 0;
   }
@@ -517,36 +467,24 @@ body .notification-empty {
   .editor {
     padding: 22px;
   }
-}
-@media (min-width: 1800px) and (min-height: 900px) {
   .editor-date {
     margin-top: 6px;
   }
-}
-@media (min-width: 1800px) and (min-height: 900px) {
   .editor .field {
     margin-top: 16px;
     gap: 6px;
   }
-}
-@media (min-width: 1800px) and (min-height: 900px) {
   .editor input,
   .editor select {
     padding: 9px 11px;
   }
-}
-@media (min-width: 1800px) and (min-height: 900px) {
   .editor-note {
     line-height: 1.7;
   }
-}
-@media (min-width: 1800px) and (min-height: 900px) {
   .editor .calc-preview {
     padding: 14px;
     margin-top: 18px;
   }
-}
-@media (min-width: 1800px) and (min-height: 900px) {
   .editor .editor-actions button {
     padding: 9px 11px;
   }
@@ -591,9 +529,9 @@ body .notification-empty {
   padding: 0;
   display: grid;
   place-items: center;
-  color: #7c9187;
-  background: #f6faf7;
-  border-color: #dce7df;
+  color: var(--theme-text-muted, #7c9187);
+  background: var(--theme-surface-paper, #f6faf7);
+  border-color: var(--theme-border-soft, #dce7df);
 }
 .nextday-toggle .ui-icon {
   width: 21px;
@@ -602,24 +540,24 @@ body .notification-empty {
   stroke: none;
 }
 .nextday-toggle[aria-pressed="true"] {
-  color: #155943;
-  background: #d4eadb;
-  border-color: #3b8c68;
-  box-shadow: inset 0 0 0 1px #3b8c6838;
+  color: var(--theme-text-strong, #155943);
+  background: var(--theme-surface-soft, #d4eadb);
+  border-color: var(--theme-edge, #3b8c68);
+  box-shadow: inset 0 0 0 1px rgba(var(--theme-rgb, 59, 140, 104), 0.219608);
 }
 .nextday-toggle[aria-pressed="true"]:hover:not(:disabled),
 .nextday-toggle[aria-pressed="true"]:focus-visible {
   color: #fff;
-  background: #155943;
-  border-color: #0e4834;
+  background: var(--theme-accent-deep, #155943);
+  border-color: var(--theme-edge, #0e4834);
 }
 .nextday-toggle[aria-pressed="true"]:focus-visible {
   box-shadow:
     inset 0 0 0 1px #ffffff30,
-    0 2px 7px #15594326;
+    0 2px 7px rgba(var(--theme-rgb, 21, 89, 67), 0.14902);
 }
 .nextday-toggle[aria-pressed="true"]:active:not(:disabled) {
-  background: #0e4834;
+  background: var(--theme-accent-deep, #0e4834);
 }
 .nextday-tip {
   position: absolute;
@@ -627,12 +565,12 @@ body .notification-empty {
   bottom: calc(100% + 8px);
   padding: 6px 10px;
   border-radius: 7px;
-  background: #254b3e;
+  background: var(--theme-accent-deep, #254b3e);
   color: white;
   font-size: 12px;
   line-height: 1.5;
   white-space: nowrap;
-  box-shadow: 0 3px 12px #203b3620;
+  box-shadow: 0 3px 12px rgba(var(--theme-rgb, 32, 59, 54), 0.12549);
   pointer-events: none;
   visibility: hidden;
   opacity: 0;
@@ -667,8 +605,8 @@ body .notification-empty {
   border-radius: 7px;
   font-size: 17px;
   color: var(--accent);
-  background: #f5faf6;
-  border-color: #d8e7db;
+  background: var(--theme-surface-paper, #f5faf6);
+  border-color: var(--theme-border-soft, #d8e7db);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -689,17 +627,17 @@ body .notification-empty {
   margin-top: 0;
 }
 .batch-calc-fields input[type="number"] {
-  border-color: #c9d0cc;
+  border-color: var(--theme-border-soft, #c9d0cc);
   background: #f4f6f5;
-  color: #45534d;
+  color: var(--theme-text-strong, #45534d);
   box-shadow:
     inset 0 1px 0 #fff,
-    0 1px 2px #34433c0d;
+    0 1px 2px rgba(var(--theme-rgb, 52, 67, 60), 0.05098);
 }
 .batch-calc-fields input[type="number"]:focus {
-  border-color: #8e9a94;
+  border-color: var(--theme-edge, #8e9a94);
   background: #fff;
-  box-shadow: 0 0 0 3px #66736d18;
+  box-shadow: 0 0 0 3px rgba(var(--theme-rgb, 102, 115, 109), 0.094118);
 }
 .batch-calc-fields button {
   height: 44px;
@@ -710,14 +648,12 @@ body .notification-empty {
   min-height: 20px;
   margin-top: 6px;
   font-size: 11px;
-  color: #4f7462;
+  color: var(--theme-text-strong, #4f7462);
 }
 @media (max-width: 540px) {
   .batch-calc-fields {
     grid-template-columns: 1fr 1fr;
   }
-}
-@media (max-width: 540px) {
   .batch-calc-fields button {
     grid-column: 1 / -1;
   }
@@ -732,37 +668,77 @@ body .notification-empty {
   position: relative;
   align-self: end;
 }
-.leave-popover {
+.leave-inline-error:empty { display: none; }
+body .editor #dayForm .day-action-row { position: relative; }
+body .editor #dayForm .day-action-row #dayLeaveArea { position: static; }
+body .editor #dayForm .day-action-row.is-leave-editing > :not(#dayLeaveArea) {
+  pointer-events: none;
+}
+body .editor #dayForm .day-action-row.is-leave-animating { overflow: hidden; }
+body .editor #dayForm .is-leave-animating #dayLeaveToggle {
+  position: relative;
+  z-index: 3;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+body .editor #dayForm .is-leave-editing #dayLeaveToggle {
+  pointer-events: none;
+}
+body .editor #dayForm .leave-inline {
   position: absolute;
-  right: 0;
-  top: calc(100% + 9px);
-  width: 260px;
-  max-width: calc(100vw - 42px);
-  padding: 16px;
-  border: 1px solid #d7e5dd;
-  border-radius: 13px;
-  background: white;
-  box-shadow: 0 10px 35px #203b3622;
-  z-index: 6;
+  inset: auto auto 0 0;
+  width: 100%;
+  height: var(--control-height);
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: var(--control-radius);
+  z-index: 2;
 }
-.editor .leave-popover .field {
+body .editor #dayForm .leave-inline-content {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-height: 0 !important;
+  box-sizing: border-box;
+}
+body .editor #dayForm .leave-inline #dayLeave {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
+  min-height: 0 !important;
+  padding: 0;
   margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--ink);
+  appearance: textfield;
 }
-.leave-popover .editor-note {
-  margin-top: 9px;
-  font-size: 11px;
-  line-height: 1.6;
+.leave-inline #dayLeave::-webkit-inner-spin-button,
+.leave-inline #dayLeave::-webkit-outer-spin-button { appearance: none; margin: 0; }
+body .editor #dayForm .leave-inline-unit {
+  flex: none;
+  font-size: var(--text-small);
+  color: var(--muted);
 }
-.leave-popover .warnings:empty {
-  display: none;
+body .editor #dayForm .leave-inline button.icon-only {
+  flex: 0 0 calc(var(--control-height) - 0.4rem);
+  width: calc(var(--control-height) - 0.4rem) !important;
+  min-width: 0 !important;
+  height: calc(var(--control-height) - 0.4rem) !important;
+  min-height: 0 !important;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
 }
-.leave-popover #dayLeaveDone {
-  display: block;
-  margin-top: 12px;
-  margin-left: auto;
-  padding: 6px 14px;
-  font-size: 12px;
+body .editor #dayForm .leave-inline button.icon-only:hover {
+  border-color: var(--accent);
+  background: var(--paper);
 }
+body .editor #dayForm .leave-inline .ui-icon { width: 1.2rem; height: 1.2rem; }
 @media (min-width: 1800px) and (min-height: 900px) {
   #dayForm .time-fields {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 40px 40px;
@@ -778,8 +754,6 @@ body .notification-empty {
   padding: var(--editor-gutter);
   padding-bottom: 0;
   min-width: 0;
-}
-.editor-content {
   display: flex;
   flex-direction: column;
 }
@@ -804,12 +778,12 @@ body .notification-empty {
   border-left: 0;
   border-right: 0;
   border-radius: 0;
-  background: #edf4f8;
-  border-color: #d8e6ee;
-  color: #466472;
+  background: color-mix(in srgb, var(--accent) 4%, white);
+  border-color: color-mix(in srgb, var(--accent) 14%, white);
+  color: var(--muted);
 }
 #dayPreview strong {
-  color: #1d5664;
+  color: var(--accent);
 }
 #dayPreview .preview-day {
   min-height: 48px;
@@ -820,9 +794,9 @@ body .notification-empty {
 #dayPreview .preview-period {
   margin-top: 9px;
   padding-top: 8px;
-  border-top: 1px solid #d4e1e8;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 14%, white);
   font-size: 11px;
-  color: #5b7580;
+  color: var(--muted);
 }
 #dayPreview .preview-totals {
   display: grid;
@@ -846,12 +820,12 @@ body .notification-empty {
   margin-top: 3px;
   font-size: 10px;
   font-weight: 400;
-  color: #68818b;
+  color: var(--muted);
 }
 .editor-info {
   padding: 0 18px 16px;
-  border-top: 1px solid #e1eae4;
-  background: #f6faf7;
+  border-top: 1px solid var(--theme-border-soft, #e1eae4);
+  background: var(--theme-surface-paper, #f6faf7);
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -863,7 +837,7 @@ body .notification-empty {
   gap: 7px;
   font-size: 12px;
   font-weight: 600;
-  color: #6b8678;
+  color: var(--theme-text-muted, #6b8678);
   flex: none;
 }
 .editor-info-heading .ui-icon {
@@ -885,15 +859,11 @@ body .notification-empty {
     display: flex;
     flex-direction: column;
   }
-}
-@media (min-width: 1151px) {
   .editor-content {
     flex: 1 1 0;
     min-height: 0;
     overflow: auto;
   }
-}
-@media (min-width: 1151px) {
   .editor-info {
     flex: 0 0 25%;
     min-height: 0;
@@ -904,8 +874,6 @@ body .notification-empty {
   .editor-content {
     --editor-gutter: 22px;
   }
-}
-@media (min-width: 1800px) and (min-height: 900px) {
   .editor-info {
     padding: 0 22px 18px;
     gap: 14px;
@@ -915,8 +883,6 @@ body .notification-empty {
   .editor-content {
     --editor-gutter: 20px;
   }
-}
-@media (max-width: 1150px) {
   .editor-info {
     padding: 0 20px 18px;
     min-height: 170px;
@@ -926,29 +892,9 @@ body .notification-empty {
   .editor-content {
     --editor-gutter: 18px;
   }
-}
-@media (max-width: 540px) {
   .editor-info {
     padding: 0 18px 16px;
   }
-}
-
-.leave-popover-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-}
-.leave-popover .leave-popover-actions #dayLeaveDone {
-  margin: 0;
-}
-.leave-popover #dayLeaveFull {
-  padding: 6px 12px;
-  font-size: 12px;
-  color: #83669c;
-  background: #f5f0fa;
-  border-color: #e1d4ed;
 }
 
 .editor .editor-actions.day-action-row {
@@ -1006,8 +952,8 @@ body .notification-empty {
 .editor-info .feedback-notice {
   padding: 8px 10px;
   border-left: 3px solid var(--accent);
-  background: #eaf4ee;
-  color: #235f4e;
+  background: var(--theme-surface-subtle, #eaf4ee);
+  color: var(--theme-text-strong, #235f4e);
   font-size: 12px;
   line-height: 1.55;
   word-break: break-word;
@@ -1033,7 +979,7 @@ body .notification-empty {
 }
 .time-template-title {
   margin: 0 0 5px;
-  color: #637f70;
+  color: var(--theme-text-muted, #637f70);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.3;
@@ -1045,8 +991,6 @@ body .notification-empty {
   .editor {
     --editor-column-gutter: 18px;
   }
-}
-@media (min-width: 1151px) {
   .editor-mode-header {
     flex: none;
     min-height: var(--column-header-height);
@@ -1058,13 +1002,9 @@ body .notification-empty {
     justify-content: center;
     border-bottom: 1px solid var(--line);
   }
-}
-@media (min-width: 1151px) {
   .editor-day-header .editor-date {
     margin-top: 2px;
   }
-}
-@media (min-width: 1151px) {
   .batch-editor-header h2 {
     margin: 0;
     font-size: 19px;
@@ -1084,22 +1024,13 @@ body .notification-empty {
 .editor .time-fields .nextday-toggle,
 .editor .batch-time-fields input,
 .editor .batch-time-fields .nextday-toggle {
-  height: var(--form-control-height) !important;
-  min-height: var(--form-control-height) !important;
-  max-height: var(--form-control-height) !important;
   padding-block: 0;
 }
 .editor .time-fields .clock-input {
-  height: var(--form-control-height) !important;
-  min-height: var(--form-control-height) !important;
-  max-height: var(--form-control-height) !important;
   padding-block: 0;
 }
 .editor .time-fields .nextday-toggle,
 .editor .batch-time-fields .nextday-toggle {
-  width: var(--form-control-height) !important;
-  min-width: var(--form-control-height) !important;
-  max-width: var(--form-control-height) !important;
   padding: 0;
 }
 #dayForm .time-fields .nextday-toggle,
@@ -1108,9 +1039,6 @@ body .notification-empty {
   aspect-ratio: 1;
 }
 .batch-inline-form .batch-time-fields {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(
-      --form-control-height
-    ) !important;
   gap: 8px !important;
 }
 .batch-inline-form .batch-calc-fields button {
@@ -1195,16 +1123,7 @@ body .time-template-chip {
   border-radius: var(--control-radius);
   overflow: hidden;
 }
-body .time-template-chip button {
-  height: 100% !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  border-radius: 0 !important;
-}
 body .time-template-chip .template-edit.icon-only {
-  width: 30px !important;
-  min-width: 30px !important;
-  max-width: 30px !important;
   flex-basis: 30px;
 }
 .editor #batchForm .batch-calc-fields {
@@ -1213,9 +1132,9 @@ body .time-template-chip .template-edit.icon-only {
 }
 .editor #batchCalculateEnd {
   grid-column: auto;
-  color: #7c9187;
-  background: #f6faf7;
-  border-color: #dce7df;
+  color: var(--theme-text-muted, #7c9187);
+  background: var(--theme-surface-paper, #f6faf7);
+  border-color: var(--theme-border-soft, #dce7df);
 }
 .editor #batchCalculateEnd .ui-icon {
   width: 18px;
@@ -1233,9 +1152,6 @@ body #batchCalculateEnd {
   height: var(--input-height) !important;
   min-height: var(--input-height) !important;
   max-height: var(--input-height) !important;
-}
-body button.nextday-toggle,
-body #batchCalculateEnd {
   width: var(--input-height) !important;
   min-width: var(--input-height) !important;
   max-width: var(--input-height) !important;
@@ -1273,14 +1189,8 @@ body #batchForm .batch-time-fields .nextday-toggle {
 @media (min-width: 1800px) and (min-height: 820px) and (max-height: 1050px) {
   .editor-content {
     --editor-gutter: 20px;
-  }
-}
-@media (min-width: 1800px) and (min-height: 820px) and (max-height: 1050px) {
-  .editor-content {
     flex: 1 1 0;
   }
-}
-@media (min-width: 1800px) and (min-height: 820px) and (max-height: 1050px) {
   .editor-info {
     flex-basis: 28%;
   }
@@ -1297,13 +1207,18 @@ body .editor #dayForm .time-fields .clock-input {
   margin-top: 4px;
   background: var(--line);
 }
+.editor #dayForm .editor-time-fields::after { display: none; }
+.editor .day-schedule { display: flex; flex-wrap: wrap; gap: 0.15rem 0.6rem; margin: 0.5rem 0 0.35rem; padding-inline: 8px; font-size: 0.78rem; line-height: 1.45; font-variant-numeric: tabular-nums; }
+.editor .day-schedule::after { content: ""; flex-basis: 100%; height: 1px; margin-top: 4px; background: var(--line); }
+.editor .schedule-work { color: #187e69; }
+.editor .schedule-break { color: #99651d; }
 .editor .field > label,
 .editor .time-template-title,
 .editor #batchCalcResult {
   font-size: 12px;
   font-weight: 500;
   line-height: 1.6;
-  color: #637f70;
+  color: var(--theme-text-muted, #637f70);
   padding-inline-start: 8px;
 }
 .editor .time-template-title {
@@ -1355,6 +1270,7 @@ body .editor #dayForm .time-fields .clock-input {
   height: 16px;
 }
 body .editor .field > label,
+body .editor .theme-settings > legend,
 body .editor .time-template-title,
 body .editor #batchCalcResult,
 body .time-template-chip button,
@@ -1382,14 +1298,6 @@ body .editor .field {
 body #dayPreview,
 body .editor-info .notice {
   font-size: var(--text-small);
-}
-body #dayPreview .preview-totals > span {
-  font-size: var(--text-small);
-}
-body #dayPreview .preview-totals strong {
-  font-size: 1.071429rem;
-  white-space: normal;
-  overflow-wrap: anywhere;
 }
 body #dayPreview .preview-totals small {
   font-size: var(--text-small);
@@ -1458,30 +1366,22 @@ body .editor #batchForm .batch-editor-actions button {
     flex-direction: column;
     flex: 1 0 auto;
   }
-}
-@media (min-width: 1151px) {
   body .editor #batchForm {
     display: flex;
     flex-direction: column;
     flex: 1;
   }
-}
-@media (min-width: 1151px) {
   body .editor #batchForm .batch-editor-actions {
     margin-top: auto;
     padding-top: 0.857143rem;
     padding-bottom: var(--editor-gutter);
     flex: none;
   }
-}
-@media (min-width: 1151px) {
   body .editor #dayForm .day-action-row {
     margin-top: auto;
     padding-top: 0.857143rem;
     flex: none;
   }
-}
-@media (min-width: 1151px) {
   body .editor #dayPreview {
     margin-top: 0;
     flex: none;
@@ -1491,30 +1391,34 @@ body .editor #dayPreview {
   margin-inline: 0;
   margin-bottom: var(--editor-gutter);
   padding: 0.857143rem;
-  border: 1px solid #d8e6ee;
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, white);
   border-radius: 0.857143rem;
-  background: #f2f7fa;
-  box-shadow: 0 2px 8px #203b3605;
+  background: color-mix(in srgb, var(--accent) 4%, white);
+  box-shadow: 0 2px 8px rgba(var(--theme-rgb, 32, 59, 54), 0.019608);
 }
 body #dayPreview .preview-day {
-  height: 3.2em;
-  min-height: 3.2em;
-  max-height: 3.2em;
-  line-height: 1.6;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
+  height: 1.5rem;
+  min-height: 1.5rem;
+  max-height: 1.5rem;
+  font-size: 0.8rem;
+  line-height: 1.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 body #dayPreview .preview-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.2rem 0.5rem;
   font-size: var(--text-small);
-  margin-top: 0.714286rem;
+  line-height: 1.5rem;
+  margin-top: 0.571429rem;
   padding-top: 0.571429rem;
 }
 body #dayPreview .preview-totals {
   margin-top: 0.571429rem;
-}
-body #dayPreview .preview-totals {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
 }
 body #dayPreview .preview-totals > span {
@@ -1531,7 +1435,7 @@ body #dayPreview .preview-totals > span:last-child {
   padding-inline-end: 0;
 }
 body #dayPreview .preview-totals > span + span {
-  border-inline-start: 1px solid #dce7ed;
+  border-inline-start: 0;
 }
 body .editor #dayForm .time-fields {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--input-height);
@@ -1560,19 +1464,7 @@ body .editor #dayLeaveToggle[aria-pressed="true"] {
 }
 body .editor #dayLeaveToggle[aria-expanded="true"] {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px #157e6814;
-}
-body .editor .day-action-row .leave-popover {
-  top: auto;
-  bottom: calc(100% + 0.571429rem);
-  left: 0;
-  right: auto;
-  width: min(260px, calc(22rem - 2 * var(--editor-gutter)));
-  max-width: calc(100vw - 80px);
-}
-body .editor .day-action-row .leave-popover-actions button {
-  height: var(--control-height) !important;
-  min-height: var(--control-height) !important;
+  box-shadow: 0 0 0 2px rgba(var(--theme-rgb, 21, 126, 104), 0.078431);
 }
 body
   .editor
@@ -1613,10 +1505,10 @@ body .editor .time-template-chip .template-edit.icon-only {
   max-width: var(--control-height) !important;
   flex: 0 0 var(--control-height);
   padding: 0;
-  border-left: 1px solid #cee2d4;
+  border-left: 1px solid var(--theme-border-soft, #cee2d4);
 }
 body .editor .time-template-chip button:hover:not(:disabled) {
-  background: #dfefdf;
+  background: var(--theme-surface-soft, #dfefdf);
 }
 body .editor .template-toolbar {
   align-items: center;
@@ -1643,12 +1535,6 @@ body
   margin-block: 0;
   border-width: 1px;
   line-height: 1;
-}
-body
-  .editor
-  #dayForm
-  .day-action-row
-  :is(#plannedOvertimeToggle, #clearManual, #sourceOpen) {
   font-size: var(--text-small);
   gap: 0.357143rem;
   align-items: center;
@@ -1667,35 +1553,34 @@ body .editor .batch-editor-header h2 {
   font-weight: 650;
   line-height: 1.3;
   text-align: center;
-}
-body .editor .editor-day-header .editor-date,
-body .editor .batch-editor-header h2 {
   transform: translateY(calc(var(--ui-ink-offset, 0px) + 0.142857rem));
 }
 #dayPreview .preview-employment {
-  margin-top: 0.714286rem;
-  padding-top: 0.571429rem;
-  border-top: 1px solid #d4e1e8;
+  margin-inline-start: auto;
+  text-align: right;
   font-size: var(--text-small);
-  color: #5b7580;
+  color: var(--muted);
 }
 #dayPreview .preview-employment strong {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
 body #dayPreview .preview-employment {
-  padding-top: 0.857143rem;
-  line-height: 1.3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  line-height: inherit;
 }
+body #dayPreview .preview-employment strong {
+  display: inline-flex;
+  align-items: center;
+}
+body #dayPreview .preview-period > span { white-space: nowrap; }
 
 /* Leave and planned overtime share a fixed icon slot and centered label slot. */
 body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle) {
   display: inline-grid;
   grid-template-columns: 1.142857rem minmax(0, 1fr);
-  width: 8rem;
-  min-width: 8rem;
-  max-width: 8rem;
-  padding-inline: 0.571429rem;
   column-gap: 0.357143rem;
   align-items: center;
 }
@@ -1719,8 +1604,6 @@ body .workspace > .editor #settingsDialog.settings-sidebar-pane[open] {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: 0;
-  height: 100%;
   max-height: none;
   margin: 0;
   padding: 0;
@@ -1730,6 +1613,11 @@ body .workspace > .editor #settingsDialog.settings-sidebar-pane[open] {
   animation: none;
   background: transparent;
 }
+/* Keep the daily actions on one row as the sidebar becomes narrower. */
+body .editor #dayForm .day-action-row { flex-wrap: nowrap; }
+body .editor #dayForm .day-action-row :is(#dayLeaveArea, #plannedOvertimeArea) { flex: 1 1 0; min-width: 0; justify-content: flex-start; }
+body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle) { width: min(8rem, 100%); min-width: 0; max-width: 100%; padding-inline: 0.4rem; }
+body .editor #dayForm .day-action-row :is(#clearManual, #sourceOpen) { flex: 0 0 auto; min-width: 0; padding-inline: 0.5rem; gap: 0.25rem; white-space: nowrap; }
 body .editor #settingsDialog .dialog-head {
   flex: none;
   padding: 1rem;
@@ -1746,25 +1634,21 @@ body .editor #settingsForm .dialog-body {
   min-height: 0;
   max-height: none;
   overflow-y: auto;
-  padding: 1rem;
 }
-body .editor #settingsForm .dialog-foot { flex: none; padding: 1rem; }
-body .editor #settingsForm .settings-layout { grid-template-columns: 1fr; gap: 1rem; }
-body .editor #settingsForm .settings-work-time { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--input-height); gap: 8px; }
-
-body .editor #settingsForm .settings-time-spacer { display: block; }
+body .editor #settingsForm .dialog-foot { flex: none; }
+body .editor #settingsForm .settings-layout { grid-template-columns: 1fr; }
+body .editor #settingsForm .settings-work-time { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--input-height); }
 body .editor #settingsForm .breakrow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--input-height); gap: 8px; }
 
 body .editor #settingsForm .settings-goal { padding: 1rem 0 0; border-left: 0; border-top: 1px solid var(--line); }
 body .editor #settingsForm .requirements-unit { padding-left: 0; }
-body .editor #settingsForm .settings-requirement { display: grid; grid-template-columns: minmax(0, 1fr) 5rem; align-items: center; }
+body .editor #settingsForm .settings-requirement { grid-template-columns: minmax(0, 1fr) 5rem; }
 body .editor #settingsForm .settings-requirement label { margin: 0; }
-body .editor #settingsForm .settings-employment { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--input-height); gap: 8px; }
-body .editor #settingsForm .settings-standard-summary > strong { font-size: 1.285714rem; }
 @media(max-width:1150px) {
   body .workspace > .editor #settingsDialog.settings-sidebar-pane[open] { height: 80dvh; min-height: 32rem; }
 }
-body .editor #settingsDialog .dialog-head {
+body .editor #settingsDialog .dialog-head,
+body .editor .page-settings-header {
   height: var(--column-header-height);
   min-height: var(--column-header-height);
   padding: 0 1rem;
@@ -1772,7 +1656,8 @@ body .editor #settingsDialog .dialog-head {
   align-items: center;
   text-align: center;
 }
-body .editor #settingsDialog .dialog-head h2 {
+body .editor #settingsDialog .dialog-head h2,
+body .editor .page-settings-header h2 {
   width: 100%;
   margin: 0;
   font-size: 1.571429rem;
@@ -1782,15 +1667,10 @@ body .editor #settingsDialog .dialog-head h2 {
 }
 /* Settings share the right column with its persistent bottom tabs. */
 body .workspace > .editor #settingsDialog.settings-sidebar-pane[open] {
-  flex: 1;
   height: auto;
   min-height: 0;
 }
-body .editor #settingsForm .dialog-body { padding: 0.714286rem 1rem; }
 body .editor #settingsForm .dialog-foot { padding: 0.571429rem 1rem; }
-body .editor #settingsForm .settings-layout { gap: 0.714286rem; }
-body .editor #settingsForm .settings-employment { margin-top: 0.714286rem; padding-top: 0.571429rem; }
-body .editor #settingsForm .settings-goal { padding-top: 0.714286rem; }
 body .editor #settingsForm .settings-requirement { margin-top: 0.428571rem; }
 body .editor.is-settings-open > .notification-tabs { flex: none; }
 @media(max-width:1150px) {
@@ -1811,7 +1691,8 @@ body .editor #settingsForm .settings-work-time .field { margin-top: 14px; }
   body .editor #settingsForm .settings-work-time .field { margin-top: 0.928571rem; }
 }
 @media (max-width: 1150px) {
-  body .editor #settingsDialog .dialog-head {
+  body .editor #settingsDialog .dialog-head,
+  body .editor .page-settings-header {
     height: auto;
     min-height: 0;
     padding: var(--editor-gutter) var(--editor-gutter) 0;
@@ -1821,10 +1702,8 @@ body .editor #settingsForm .settings-work-time .field { margin-top: 14px; }
 body .editor #settingsForm .dialog-foot {
   padding-inline: 1.428571rem;
 }
-body .editor #settingsForm .settings-layout { gap: 0.714286rem; }
 body .editor #settingsForm .settings-goal {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.571429rem;
   padding-top: 0.714286rem;
 }
@@ -1836,36 +1715,18 @@ body .editor #settingsForm .settings-requirement {
   gap: 0.428571rem;
   margin: 0;
 }
-body .editor #settingsForm .settings-employment {
-  margin-top: 0;
-  padding-top: 0.714286rem;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: start;
-}
-body .editor #settingsForm #employmentDate {
-  grid-column: auto;
-  width: 10rem;
-  max-width: 100%;
-}
-body .editor #settingsForm #workCity {
-  width: 100%;
-  min-width: 0;
-  text-align: center;
-  font-size: var(--text-small);
-  font-weight: 500;
-}
 body #workCityOptions {
   position: fixed;
   z-index: 1000;
-  max-height: 16rem;
+  max-height: 24rem;
   box-sizing: border-box;
   overflow-y: auto;
   overscroll-behavior: contain;
   border: 1px solid var(--control-border);
   border-radius: 0.571429rem;
   background: #fff;
-  padding: 0.285714rem;
-  box-shadow: 0 6px 18px #245b4a14;
+  padding: 0;
+  box-shadow: 0 6px 18px rgba(var(--theme-rgb, 36, 91, 74), 0.078431);
 }
 body #workCityOptions:not([hidden]) {
   display: grid;
@@ -1873,6 +1734,7 @@ body #workCityOptions:not([hidden]) {
 }
 body #workCityOptions button {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -1880,22 +1742,24 @@ body #workCityOptions button {
   border-radius: 0 !important;
   background: transparent;
   color: var(--clock-ink);
-  font-size: var(--text-small);
-  font-weight: 500;
+  font-size: var(--clock-font);
+  font-weight: 650;
   line-height: 1.4;
-  min-height: var(--control-height);
+  height: 3.285714rem !important;
+  min-height: 3.285714rem !important;
+  max-height: 3.285714rem !important;
+  padding: 0.2rem 0.4rem;
+  gap: 0.1rem;
   margin: 0;
   box-shadow: none;
 }
 body #workCityOptions button:is(:hover, [aria-selected="true"]) {
-  background: #e7f1eb;
+  background: var(--theme-surface-soft, #e7f1eb);
 }
-body #workCityOptions button:nth-of-type(n + 3) {
-  border-top: 1px solid var(--line);
-}
-body #workCityOptions button:nth-of-type(even) {
-  border-left: 1px solid var(--line);
-}
+body #workCityOptions button:nth-child(odd) { border-right: 1px solid var(--line); }
+body #workCityOptions button:nth-child(n + 3) { border-top: 1px solid var(--line); }
+body #workCityOptions .work-city-name { font-size: 1rem; font-weight: 650; line-height: 1.3; }
+body #workCityOptions .work-city-office { font-size: 0.75rem; font-weight: 400; color: var(--muted); opacity: 0.8; line-height: 1.25; text-align: center; overflow-wrap: anywhere; }
 body #workCityOptions .work-city-empty {
   grid-column: 1 / -1;
   padding: 0.571429rem 0.285714rem;
@@ -1903,7 +1767,7 @@ body #workCityOptions .work-city-empty {
   font-size: var(--text-small);
   text-align: center;
 }
-body .editor #settingsForm .settings-breaks { margin-top: 0.714286rem; }
+body .editor #settingsForm #breaksList > .breakrow:first-child { margin-top: 0; }
 body .editor #settingsForm .breakrow button {
   background: #fff;
   border-color: var(--control-border);
@@ -1912,31 +1776,21 @@ body .editor #settingsForm .breakrow button {
 }
 body .editor #settingsForm .breakrow button:hover:not(:disabled) {
   background: var(--control-hover);
-  border-color: #aecdbf;
+  border-color: var(--theme-border, #aecdbf);
 }
 body .editor #settingsForm .breakrow button .ui-icon { width: 18px; height: 18px; }
 body .editor #settingsForm .settings-goal {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: 8px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: stretch;
 }
 body .editor #settingsForm .settings-requirement { justify-content: flex-end; }
 
-/* Let the settings content determine its height before allocating the remaining
-   sidebar space to weather/notifications. Keep scrolling available on short screens. */
+/* Keep the shared lower region reserved; settings scroll within the editor region. */
 @media (min-width: 1151px) {
-  body .workspace > .editor #settingsDialog.settings-sidebar-pane[open] {
-    flex: 0 1 auto;
-  }
-  body .editor.is-settings-open > .date-info-area {
-    flex: 1 1 0;
-    min-height: 10rem;
-  }
   body .editor #settingsForm .settings-layout {
     gap: 0.5rem;
   }
-  body .editor #settingsForm .settings-goal,
-  body .editor #settingsForm .settings-employment {
+  body .editor #settingsForm .settings-goal {
     padding-top: 0.5rem;
   }
   body .editor #settingsForm .settings-requirement {
@@ -1945,10 +1799,324 @@ body .editor #settingsForm .settings-requirement { justify-content: flex-end; }
 }
 body .editor #settingsForm .settings-requirement label {
   padding-inline: 8px 0;
-  font-size: var(--text-small);
+  font-size: 0.75rem;
+  text-align: left;
   white-space: nowrap;
 }
+body .editor #settingsForm .settings-requirement input {
+  --input-height: 2.285714rem;
+  appearance: textfield;
+  padding-block: 0.285714rem;
+}
+body .editor #settingsForm .settings-requirement input::-webkit-inner-spin-button,
+body .editor #settingsForm .settings-requirement input::-webkit-outer-spin-button { appearance: none; margin: 0; }
 body .editor #settingsForm .settings-breaks > .label,
+body .editor #settingsForm #scheduleEditingDate,
 body .editor #settingsForm .requirements-unit {
   padding-inline-start: 8px;
 }
+
+/* Page settings share the editor area while the lower tabs remain available. */
+body .editor.is-page-settings-open > .editor-content { display: none !important; }
+body .editor .page-settings-pane[hidden] { display: none !important; }
+body .editor .page-settings-pane { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+body .editor .page-settings-header { display: flex; flex: none; width: 100%; margin: 0; }
+body .editor .page-settings-body { flex: 1; min-height: 0; overflow-y: auto; padding: 1rem var(--editor-gutter); font-size: var(--text-small); }
+body .editor .settings-pane-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex: none;
+  padding: 0.857143rem var(--editor-gutter) var(--editor-gutter);
+}
+body .editor .settings-pane-actions button {
+  height: var(--control-height);
+  min-height: var(--control-height);
+  padding: 0 0.857143rem;
+}
+@media (min-width: 1151px) {
+  body .editor .page-settings-body { padding-top: 0.928571rem; }
+}
+@media (max-width: 1150px) {
+  body .editor.is-page-settings-open { height: 80dvh; min-height: 32rem; }
+}
+
+/* Equal-width expected attendance, recorded attendance and average overtime. */
+body #dayPreview .preview-day.has-daily-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: 0; font-size: 0.75rem; line-height: 1.4; }
+body #dayPreview .preview-day.has-daily-metrics > span { display: inline-flex; align-items: baseline; min-width: 0; gap: 0.15rem; white-space: nowrap; }
+body #dayPreview .preview-day.has-daily-metrics > span + span { padding-inline-start: 0.25rem; }
+body #dayPreview .preview-day.has-daily-metrics strong { font-size: 0.9rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+body #dayPreview .preview-totals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+body #dayPreview .preview-totals > span { padding-inline: 0.35rem; font-size: 0.85rem; }
+body #dayPreview .preview-values { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.2rem; margin-top: 0.15rem; white-space: nowrap; }
+body #dayPreview .preview-totals strong { font-size: 0.95rem; white-space: nowrap; overflow-wrap: normal; }
+body #dayPreview #expectedHours { flex: 0 0 4.6ch; width: 4.6ch; }
+body #dayPreview #workedHours { flex: 0 0 auto; width: auto; }
+body #dayPreview .preview-values > small { flex: 0 0 4.8ch; width: 4.8ch; font-size: 0.8rem; margin-top: 0; white-space: nowrap; }
+body #dayPreview .preview-values > :is(strong, small) { line-height: 1; }
+body #dayPreview #expectedDays { flex-basis: 3.4ch; width: 3.4ch; }
+
+/* Shared rhythm for calculation settings and batch editing. */
+body .editor :is(#settingsForm, #batchForm, #dayForm) {
+  --section-spacing: 1rem;
+  --field-spacing: 0.428571rem;
+  --row-spacing: 0.571429rem;
+}
+body .editor #settingsForm .dialog-body {
+  padding-block: var(--section-spacing);
+}
+body .editor #settingsForm .settings-layout { gap: 0; }
+body .editor #settingsForm .settings-work-time {
+  gap: var(--row-spacing);
+  align-items: end;
+}
+body .editor #settingsForm .settings-work-time .field,
+body .editor #batchForm .batch-time-fields .field,
+body .editor #batchForm .batch-calc-fields .field {
+  margin-block: 0;
+  gap: var(--field-spacing);
+}
+body .editor #settingsForm .settings-breaks {
+  margin-top: var(--section-spacing);
+  gap: var(--field-spacing);
+}
+body .editor #settingsForm #breaksList {
+  display: grid;
+  gap: var(--row-spacing);
+}
+body .editor #settingsForm #breaksList > .breakrow {
+  margin: 0;
+  gap: var(--row-spacing);
+}
+body .editor #settingsForm #scheduleEditingDate {
+  margin-block: var(--section-spacing) 0;
+}
+body .editor #settingsForm :is(.settings-goal, .settings-employment) {
+  margin-top: var(--section-spacing);
+  padding-top: var(--section-spacing);
+  border-top: 1px solid var(--line);
+  gap: var(--row-spacing);
+}
+body .editor #settingsForm .settings-goal { column-gap: 0.285714rem; }
+body .editor #settingsForm :is(.settings-requirement, .settings-employment .field) {
+  margin: 0;
+  gap: var(--field-spacing);
+}
+body .editor #batchForm {
+  --control-height: var(--input-height);
+  padding-top: var(--section-spacing);
+}
+body .editor #batchForm .editor-time-fields::after { display: none; }
+body .editor #batchForm :is(.batch-template-area, .batch-overtime-calculator) {
+  margin-top: var(--section-spacing);
+  padding-block: var(--section-spacing) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
+}
+body .editor #batchForm .time-template-title {
+  margin: 0 0 var(--field-spacing);
+}
+body .editor #batchForm :is(.batch-time-fields, .batch-calc-fields) {
+  column-gap: var(--row-spacing);
+  align-items: end;
+}
+body .editor #batchForm .batch-calc-result:empty { display: none; }
+body .editor #batchForm .batch-calc-result { margin-top: var(--field-spacing); }
+
+/* The date editor follows the same section and row rhythm as settings and batch. */
+body .editor #dayForm {
+  --control-height: var(--input-height);
+  padding-top: var(--section-spacing);
+}
+body .editor #dayForm .time-fields {
+  gap: var(--row-spacing);
+  align-items: end;
+}
+body .editor #dayForm .time-fields .field {
+  margin-block: 0;
+  gap: var(--field-spacing);
+}
+body .editor #dayForm .day-schedule {
+  margin-block: var(--field-spacing) 0;
+}
+body .editor #dayForm .day-schedule::after { display: none; }
+body .editor #dayForm .time-template-area {
+  margin-top: var(--section-spacing);
+  padding-block: var(--section-spacing) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
+}
+body .editor #dayForm .time-template-title {
+  margin: 0 0 var(--field-spacing);
+}
+body .editor #dayForm .template-toolbar { gap: var(--row-spacing); }
+body .editor #dayForm .day-action-row {
+  margin-bottom: var(--section-spacing);
+  padding-top: var(--section-spacing);
+}
+body .editor #dayForm #dayPreview { margin-bottom: var(--section-spacing); }
+
+body .editor #personalSettingsForm {
+  --section-spacing: 1rem;
+  margin-top: var(--section-spacing);
+  padding-top: var(--section-spacing);
+  border-top: 1px solid var(--line);
+}
+body .editor #personalSettingsForm .settings-employment {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.571429rem;
+  margin: 0;
+  padding: 0;
+}
+body .editor #personalSettingsForm .field { margin: 0; gap: 0.428571rem; }
+body .editor #personalSettingsForm .field > label { padding-inline-start: 8px; }
+body .editor #personalSettingsForm :is(#employmentDate, #workCity) {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
+body .editor #personalSettingsForm #workCity {
+  font-weight: 650;
+  cursor: pointer;
+}
+#personalSettingsError:empty { display: none; }
+
+/* Shared 2:1:1 action slots; leave editing only swaps their contents. */
+body .editor #dayForm .day-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--row-spacing, 0.571429rem);
+}
+body .editor #dayForm .day-action-row :is(#dayLeaveArea, #plannedOvertimeArea) {
+  grid-column: 1;
+  width: 100%;
+}
+body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle, #clearManual, #sourceOpen) {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+body .editor #dayForm .day-action-row.is-leave-open > :not(#dayLeaveArea) {
+  opacity: 0;
+}
+body .editor #dayForm .day-action-row > :not(#dayLeaveArea) {
+  transition: opacity 180ms ease;
+}
+body .editor #dayForm #dayLeaveToggle {
+  position: relative;
+  z-index: 3;
+  max-width: none;
+  background: transparent;
+  border-color: var(--control-border);
+  box-shadow: none;
+}
+body .editor #dayForm #dayLeaveToggle[aria-pressed="false"]:hover:not(:disabled) {
+  border-color: var(--theme-border, #aecdbf);
+}
+body .editor #dayForm #dayLeaveToggle[aria-pressed="true"] {
+  color: var(--red);
+  background: #fbeeea;
+  border-color: #e6b8b2;
+}
+body .editor #dayForm #dayLeaveToggle[aria-pressed="true"][aria-expanded="true"] {
+  background: transparent;
+}
+body .editor #dayForm #dayLeaveToggle > .ui-icon {
+  position: absolute;
+  left: 0.4rem;
+  opacity: 1;
+  transform: none;
+}
+body .editor #dayForm #dayLeaveLabel {
+  grid-column: 2;
+  min-width: 0;
+  width: 100%;
+  text-align: center;
+  transition: opacity 150ms ease;
+}
+body .editor #dayForm .is-leave-open #dayLeaveLabel { opacity: 0; }
+body .editor #dayForm .leave-inline-content :is(#dayLeaveFull, #dayLeaveDone) {
+  transition: opacity 180ms ease, background-color 180ms ease;
+}
+body .editor #dayForm .leave-inline-content :is(#dayLeaveFull, #dayLeaveDone) > * {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+body .editor #dayForm .day-action-row:not(.is-leave-open) .leave-inline-content :is(#dayLeaveFull, #dayLeaveDone) {
+  opacity: 0;
+}
+body .editor #dayForm .day-action-row:not(.is-leave-open) .leave-inline-content :is(#dayLeaveFull, #dayLeaveDone) > * {
+  opacity: 0;
+  transform: translateY(0.3rem);
+}
+body .editor #dayForm .leave-inline {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  contain: none;
+}
+body .editor #dayForm .leave-inline-content {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--row-spacing, 0.571429rem);
+  height: var(--control-height) !important;
+  padding: 0;
+  align-items: center;
+}
+body .editor #dayForm .leave-input-wrap {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--control-height);
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: var(--control-radius);
+  background: transparent;
+}
+body .editor #dayForm .leave-inline #dayLeave {
+  height: calc(var(--control-height) - 2px) !important;
+  padding-inline: 2rem 0.285714rem;
+  font-family: var(--font-numeric);
+  font-size: var(--clock-font);
+  font-weight: 650;
+}
+body .editor #dayForm .leave-inline-unit { padding-inline: 0.285714rem 0.714286rem; }
+body .editor #dayForm .leave-inline :is(#dayLeaveFull, #dayLeaveDone) {
+  width: 100%;
+  min-width: 0;
+  height: var(--control-height) !important;
+  padding: 0 0.285714rem;
+  white-space: nowrap;
+}
+body .editor #dayForm #dayLeaveDone {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: none;
+}
+body .editor #dayForm #dayLeaveDone:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--paper));
+}
+@media (prefers-reduced-motion: reduce) {
+  body .editor #dayForm :is(#dayLeaveLabel, .day-action-row > :not(#dayLeaveArea), #dayLeaveFull, #dayLeaveDone, #dayLeaveFull > *, #dayLeaveDone > *) { transition: none; }
+}
+body #dayPreview .preview-totals strong small { display: inline; margin: 0; font-size: 0.75em; }
+body #dayPreview #previewAverage { margin-top: 0.15rem; }
+
+/* Accessible appearance picker, using the existing sidebar's scrolling body. */
+.theme-settings { border: 0; margin: 0; padding: 0; min-width: 0; }
+.theme-settings legend { padding-block: 0; padding-inline-end: 0; }
+.theme-grid { display: grid; grid-template-columns: repeat(6, var(--control-height)); gap: 0.2rem; margin-top: 0.428571rem; justify-content: space-between; }
+.theme-card { --theme-option-light: color-mix(in srgb, var(--theme-option-color) 18%, white); display: grid; place-items: center; width: var(--control-height); height: var(--control-height); aspect-ratio: 1; min-width: 0; position: relative; padding: 0; border: 2px solid color-mix(in srgb, var(--theme-option-color) 40%, white); border-radius: var(--control-radius); background: #fff; cursor: pointer; }
+.theme-card input { position: absolute; width: 1px; height: 1px; opacity: 0; padding: 0; margin: 0; }
+.theme-card:has(input:checked) { border-color: var(--theme-option-color); background: var(--theme-option-light); }
+.theme-card:has(input:focus-visible) { outline: 2px solid var(--theme-option-color); outline-offset: 3px; }
+.theme-swatch { width: 68%; aspect-ratio: 1; background: var(--theme-option-light); border-radius: calc(var(--control-radius) * 0.55); }
+.theme-card:has(input:checked) .theme-swatch { background: var(--theme-option-color); }
+.theme-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.theme-save-notice { margin-top: 0.85rem; color: var(--ink); }
+.theme-save-notice:empty { display: none; }

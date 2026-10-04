@@ -3,7 +3,7 @@
   "use strict";
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const running = new Map();
-  let disposed = false;
+  let disposed = true;
   function stop(element) {
     const entry = running.get(element);
     if (!entry) return;
@@ -46,7 +46,12 @@
     reduced.removeEventListener("change", onPreference);
     document.removeEventListener("visibilitychange", onVisibility);
   }
-  reduced.addEventListener("change", onPreference);
-  document.addEventListener("visibilitychange", onVisibility);
-  window.WorkMotion = { play, stop, initial, dispose };
+  function mount() {
+    if (!disposed) return;
+    disposed = false;
+    reduced.addEventListener("change", onPreference);
+    document.addEventListener("visibilitychange", onVisibility);
+  }
+  WorkTimeApp.ui.motion = { play, stop, initial, mount, dispose };
+  mount();
 })();

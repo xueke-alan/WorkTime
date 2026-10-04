@@ -2,7 +2,7 @@
 (() => {
   "use strict";
   const selectors = [
-    "button:not(.day):not(.year-day)",
+    "button.ui-button",
     ".month-title-year",
     ".month-title-month",
     ".calendar .daystatus .pill-text",
@@ -10,12 +10,11 @@
     ".day-date .daynum-text",
     ".calendar .daykind",
     ".summary-sidebar .card-label",
-    ".summary-sidebar .metric",
-    ".summary-sidebar .target-value",
-    ".summary-sidebar .target-metric",
+    ".summary-sidebar [data-number-ink]",
     ".sidebar-brand h1",
     ".editor-day-header .editor-date",
     ".batch-editor-header h2",
+    ".page-settings-header h2",
     "dialog:not(#sourceDialog) .dialog-head h2",
     "#calendarFoot",
     ".almanac-watermark-text",
@@ -93,7 +92,7 @@
   let scheduled = false;
   let frame = 0;
   let suspended = false;
-  let disposed = false;
+  let disposed = true;
   const probe = document.createElement("i");
   probe.setAttribute("aria-hidden", "true");
   probe.style.cssText =
@@ -232,50 +231,13 @@
     }
     candidates.forEach((element) => {
       if (element.tagName === "BUTTON") {
-        element.classList.add("ui-button");
         // Ordinary controls share a baseline. Per-string ink corrections break that contract.
-        element.childNodes.forEach((node) => {
-          if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-            const label = document.createElement("span");
-            label.className = "button-label";
-            node.replaceWith(label);
-            label.append(node);
-          } else if (
-            node.nodeType === Node.ELEMENT_NODE &&
-            node.tagName === "SPAN" &&
-            !node.children.length &&
-            node.getAttribute("aria-hidden") !== "true" &&
-            node.getAttribute("role") !== "tooltip"
-          )
-            node.classList.add("button-label");
-        });
         return;
       }
-      if (
-        element.tagName !== "BUTTON" &&
-        !element.matches(".metric,.target-value,.target-metric")
-      ) {
-        targets.add(element);
-        return;
-      }
-      // Keep controls, icons, tooltips and nested layout containers intact.
-      element.childNodes.forEach((node) => {
-        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-          const span = document.createElement("span");
-          node.replaceWith(span);
-          span.appendChild(node);
-          targets.add(span);
-        } else if (
-          node.nodeType === Node.ELEMENT_NODE &&
-          (node.tagName === "SPAN" || node.tagName === "SMALL") &&
-          !node.children.length &&
-          !node.classList.contains("import-clipboard")
-        ) {
-          targets.add(node);
-        }
-      });
+      // Components declare text layers; alignment never changes their structure.
+      targets.add(element);
     });
-    // Classify font size once after wrapping; all labels in a profile share a baseline.
+    // Font profiles share a baseline; label structure belongs to each component.
     const buttonProfiles = [...candidates]
       .filter((element) => element.tagName === "BUTTON")
       .map((element) => {
@@ -431,14 +393,20 @@
     document.fonts.removeEventListener("loadingdone", fontsLoaded);
   }
   const observer = new MutationObserver(mutationsChanged);
-  window.addEventListener("resize", schedule, { passive: true });
-  window.addEventListener("pagehide", pageHidden);
-  window.addEventListener("pageshow", pageShown);
-  document.addEventListener("visibilitychange", visibilityChanged);
-  document.addEventListener("worktime:failed", dispose);
+  function mount() {
+    if (!disposed || document.documentElement.dataset.appState === "failed")
+      return;
+    disposed = false;
+    suspended = false;
+    window.addEventListener("resize", schedule, { passive: true });
+    window.addEventListener("pagehide", pageHidden);
+    window.addEventListener("pageshow", pageShown);
+    document.addEventListener("visibilitychange", visibilityChanged);
+    document.addEventListener("worktime:failed", dispose);
+    document.fonts.addEventListener("loadingdone", fontsLoaded);
+    schedule();
+  }
   document.fonts.ready.then(schedule);
-  document.fonts.addEventListener("loadingdone", fontsLoaded);
-  window.UIAlignment = { refresh, dispose };
-  if (document.documentElement.dataset.appState === "failed") dispose();
-  else schedule();
+  WorkTimeApp.ui.alignment = { refresh, mount, dispose };
+  mount();
 })();

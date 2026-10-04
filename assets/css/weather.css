@@ -1,10 +1,45 @@
-.weather-panel { padding: 0.8rem; }
-.weather-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-.weather-current { display: flex; gap: 1rem; align-items: baseline; margin-top: 0.8rem; color: var(--accent); }
-.weather-temperature { font-size: 2rem; font-variant-numeric: tabular-nums; }
-.weather-panel h3 { font-size: 1rem; margin: 1rem 0 0.5rem; }
-.weather-hourly { display: flex; overflow-x: auto; gap: 0.5rem; padding-bottom: 0.5rem; }
-.weather-hour { display: grid; gap: 0.4rem; flex: 0 0 6rem; padding: 0.6rem; border: 1px solid var(--line); border-radius: 0.5rem; }
-.weather-hour time, .weather-hour span { color: var(--muted); font-size: 0.85rem; }
-.weather-day { display: grid; grid-template-columns: 3.2rem 1fr 1.4fr 1.4fr; gap: 0.4rem; padding: 0.5rem 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+body .editor #dateInfoPanel.weather-panel { position: relative; padding: 1rem 1.1rem 0.65rem; display: flex; flex-direction: column; gap: 0.35rem; overflow: hidden; margin-bottom: 0; }
+.weather-panel > * { flex-shrink: 0; }
+.weather-heading { display: flex; align-items: center; gap: 0.6rem; min-height: 0; height: auto; padding-inline-end: 5rem; font-size: 1.65rem; line-height: 1.3; color: var(--theme-text-strong, #374746); }
+.weather-heading strong { font-size: inherit; font-weight: 700; }
+.weather-heading > strong { color: var(--theme-text-strong, #202727); }
+.weather-current { display: flex; gap: 0.4rem; align-items: flex-end; font-size: inherit; }
+.weather-panel > .weather-condition { position: absolute; top: 1rem; right: 1.1rem; width: 5rem; height: 5rem; margin: 0; font-size: 1rem; line-height: 1.4; padding: 0; }
+.weather-temperature { font-variant-numeric: tabular-nums; }
+.weather-temperature[data-tone="comfortable"] { color: #168269; }
+.weather-temperature[data-tone="warm"] { color: #b96a16; }
+.weather-temperature[data-tone="hot"] { color: #c04438; }
+.weather-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem 0.6rem; margin: 0; padding-inline-end: 5rem; }
+.weather-detail { display: flex; align-items: baseline; gap: 0.45rem; }
+.weather-detail dt { color: var(--muted); }
+.weather-detail dd { margin: 0; font-variant-numeric: tabular-nums; }
+.weather-details { padding-bottom: 0.35rem; border-bottom: 1px solid var(--line); }
+.weather-panel > .weather-forecast { display: flex; flex-direction: column; gap: 0.35rem; flex: 1 1 auto; min-height: 0; margin-inline: -0.7rem; }
+.weather-footer { display: flex; align-items: baseline; justify-content: space-between; gap: 0.4rem; min-width: 0; }
+.weather-forecast-tabs { display: flex; gap: 0.35rem; flex-shrink: 0; align-items: baseline; }
+.weather-forecast-tabs button + button::before { content: "/"; color: var(--muted); margin-inline-end: 0.35rem; font-weight: 400; }
+/* Forecast tabs are text actions; they do not inherit ordinary button geometry. */
+body #dateInfoPanel .weather-forecast-tabs button.ui-text-action { display: inline-flex; justify-content: center; gap: 0.357143rem; height: auto; min-height: 0; max-height: none; min-width: 0; padding: 0; font-family: inherit; font-size: 0.75rem; font-weight: 500; line-height: 1.3; align-items: baseline; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--muted); cursor: pointer; white-space: nowrap; }
+body #dateInfoPanel .weather-forecast-tabs button[aria-selected="true"] { color: var(--accent); font-weight: 700; }
+body #dateInfoPanel .weather-forecast-tabs button[aria-selected="false"] { color: var(--theme-text-faint, #a5b7b0); }
+body #dateInfoPanel .weather-forecast-tabs button .button-label { translate: none; line-height: inherit; }
+.weather-forecast-tabs button:focus-visible, .weather-forecast [role="tabpanel"]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.weather-hourly, .weather-daily { display: flex; flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; scrollbar-width: thin; border: 0; border-radius: 0; }
+.weather-forecast [hidden] { display: none; }
+.weather-hour, .weather-day { position: relative; display: flex; flex-direction: column; justify-content: center; text-align: center; gap: 0.25rem; padding: 0.3rem; flex: 0 0 3.4rem; min-width: 0; border: 0; font-variant-numeric: tabular-nums; }
+.weather-hour:not(:nth-child(6n))::after, .weather-day:not(:last-child)::after { content: ""; position: absolute; right: 0; top: 18%; bottom: 18%; width: 1px; background: var(--line); pointer-events: none; }
+.weather-hourly { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); overflow: hidden; }
+.weather-hour { gap: 0.1rem; padding: 0.15rem 0.05rem; line-height: 1.15; }
+.weather-hour:nth-child(-n+6)::before { content: ""; position: absolute; bottom: 0; left: 18%; right: 18%; height: 1px; background: var(--line); pointer-events: none; }
+.weather-hour time, .weather-hour span { color: var(--theme-text-strong, #526b66); font-size: 0.85rem; white-space: nowrap; }
+.weather-hour strong { font-size: 0.95rem; font-weight: 700; white-space: nowrap; }
+.weather-daily { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); container-type: inline-size; overflow: hidden; }
+.weather-day { padding-inline: 0.08rem; font-size: clamp(0.85rem, 4.2cqi, 1.05rem); line-height: 1.35; white-space: nowrap; }
+.weather-day-temperatures { display: flex; flex-direction: column; gap: 0.1rem; line-height: 1.3; }
+.weather-day-icon { display: block; width: 32px; height: 32px; margin-inline: auto; flex-shrink: 0; }
+.weather-day-icon img { display: block; width: 100%; height: 100%; }
+.weather-day-low { color: var(--theme-text-strong, #526b66); }
+.weather-day time, .weather-day span:last-child { color: var(--theme-text-strong, #526b66); font-size: inherit; }
+body #dateInfoPanel.weather-panel .date-info-source { margin: 0; font-size: 0.75rem; line-height: 1.3; }
 .weather-panel .weather-stale { color: #95631b; }
+.weather-panel .weather-time { margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -1,6 +1,11 @@
 "use strict";
 /* Pure year-view data; shared calculations keep month and year consistent. */
-const WorkYear = (() => {
+WorkTimeApp.ui.year = (() => {
+  const { pad, localDate, hours } = WorkTimeApp.domain.time;
+  const { summary } = WorkTimeApp.domain.statistics;
+  const { calendarInfo } = WorkTimeApp.domain.calendar;
+  const { calculate } = WorkTimeApp.domain.records;
+  const { scheduleForDate } = WorkTimeApp.domain.schedule;
   const zeroColor = [231, 238, 233],
     maxColor = [74, 145, 106],
     deficitColor = [194, 101, 96];
@@ -64,19 +69,20 @@ const WorkYear = (() => {
   }
   function months(state, year, today) {
     const result = Array.from({ length: 12 }, (_, index) => {
-      const prefix = year + "-" + WorkTime.pad(index + 1),
+      const prefix = year + "-" + pad(index + 1),
         first = prefix + "-01",
         total = new Date(year, index + 1, 0, 12).getDate();
       return {
         month: index + 1,
-        offset: (WorkTime.localDate(first).getDay() + 6) % 7,
+        summary: summary(state, first, prefix + "-" + pad(total)),
+        offset: (localDate(first).getDay() + 6) % 7,
         days: Array.from({ length: total }, (_, i) => {
-          const date = prefix + "-" + WorkTime.pad(i + 1),
+          const date = prefix + "-" + pad(i + 1),
             day = state.days[date] || {},
-            info = WorkTime.calendarInfo(date, day),
-            calc = WorkTime.calculate(date, day, state.settings, true);
+            info = calendarInfo(date, day),
+            calc = calculate(date, day, scheduleForDate(state, date), true);
           const leave = Math.min(
-            state.settings.standardMinutes,
+            scheduleForDate(state, date).standardMinutes,
             Math.max(0, day.leaveMinutes || 0),
           );
           const rest =
@@ -90,9 +96,9 @@ const WorkYear = (() => {
             calc.overtime === null
               ? "无完整工时记录"
               : (calc.overtime < 0 ? "欠工时 " : "加班 ") +
-                WorkTime.hours(Math.abs(calc.overtime)) +
+                hours(Math.abs(calc.overtime)) +
                 " 小时",
-            leave ? "请假 " + WorkTime.hours(leave) + " 小时" : "",
+            leave ? "请假 " + hours(leave) + " 小时" : "",
             rest ? "休息" : "",
             day.plannedOvertime ? "计划加班" : "",
             calc.record?.type === "estimate" ? "手动填写" : "",

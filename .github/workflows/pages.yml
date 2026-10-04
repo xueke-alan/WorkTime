@@ -34,6 +34,7 @@ jobs:
           mkdir _site
           cp index.html _site/
           cp -R assets licenses _site/
+          cp -R tools _site/
           if [ -d data ]; then cp -R data _site/; fi
           node scripts/version-site.cjs _site
           touch _site/.nojekyll

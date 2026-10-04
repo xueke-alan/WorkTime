@@ -1,50 +1,56 @@
 "use strict";
 /** backup controller. Instantiate once, then bind after all actions are connected. */
-WorkUI.createBackupController = function (options) {
+WorkTimeApp.ui.createBackupController = function (options) {
+  const events = WorkTimeApp.ui.createEventScope();
   const {
     core: C,
     element: $,
-    persistence,
+    application,
+    originalStorageText,
     model,
     actions,
     clipboard,
     downloads,
     clock,
+    preferences,
   } = options;
   let restoreData = null;
   let disposed = false;
+  let generation = 0;
   const download = downloads.download;
-  let backupFinishTimer = null,
-    copyResetTimer = null;
-  const BACKUP_MAX_BYTES = WorkBackup.MAX_BYTES;
-  const compressBackupText = WorkBackup.encode;
-  const readBackupText = (text) => WorkBackup.decode(text, C.validateBackup);
+  let copyResetTimer = null,
+    holdAction = null;
+  const BACKUP_MAX_BYTES = WorkTimeApp.services.backup.MAX_BYTES;
+  const compressBackupText = WorkTimeApp.services.backup.encode;
+  const readBackupText = (text) =>
+    WorkTimeApp.services.backup.decode(text, C.validateBackup);
+  function exportedState() {
+    return {
+      ...model.state,
+      preferences: preferences.state,
+      exportedAt: clock.now().toISOString(),
+    };
+  }
   function backup() {
     download(
       "工作记录备份-" + model.today + ".json",
-      JSON.stringify(
-        { ...model.state, exportedAt: clock.now().toISOString() },
-        null,
-        2,
-      ),
+      JSON.stringify(exportedState(), null, 2),
       "application/json;charset=utf-8",
     );
     actions.toast("备份已下载", "countdown");
   }
   let backupCopying = false;
   async function copyBackup() {
+    const lifetime = generation;
     const button = $("backup");
     if (backupCopying) return;
     backupCopying = true;
     try {
-      const raw = JSON.stringify({
-        ...model.state,
-        exportedAt: clock.now().toISOString(),
-      });
+      const raw = JSON.stringify(exportedState());
       const text = await compressBackupText(raw);
-      if (disposed) return;
+      if (disposed || lifetime !== generation) return;
       await clipboard.writeText(text);
-      if (disposed) return;
+      if (disposed || lifetime !== generation) return;
       button.classList.remove("is-copying");
       void button.offsetWidth;
       button.classList.add("is-copying");
@@ -54,7 +60,7 @@ WorkUI.createBackupController = function (options) {
       );
       actions.toast("备份已复制到剪贴板", "countdown");
     } catch (error) {
-      if (disposed) return;
+      if (disposed || lifetime !== generation) return;
       actions.toast(
         "备份复制失败：" +
           (error?.name === "NotAllowedError"
@@ -63,7 +69,7 @@ WorkUI.createBackupController = function (options) {
         "error",
       );
     } finally {
-      backupCopying = false;
+      if (lifetime === generation) backupCopying = false;
     }
   }
   function previewRestore(data, source) {
@@ -78,196 +84,119 @@ WorkUI.createBackupController = function (options) {
       data.imports.length +
       " 次导入、" +
       data.timeTemplates.length +
-      " 个时间模板，标准日工时 " +
+      " 个时间模板、" +
+      data.scheduleRanges.length +
+      " 个作息区间，基础标准日工时 " +
       C.hours(data.settings.standardMinutes) +
-      " 小时。";
+      " 小时。" +
+      (data.preferences.pageTheme
+        ? "页面主题：" +
+          WorkTimeApp.domain.preferences.themes.find(
+            (theme) => theme.id === data.preferences.pageTheme,
+          ).name +
+          "。"
+        : "");
     actions.open("restoreDialog");
   }
   async function restoreFromClipboard() {
+    const lifetime = generation;
     const button = $("restore");
     if (button.disabled) return;
     button.disabled = true;
     restoreData = null;
     try {
       const text = await clipboard.readText();
+      if (disposed || lifetime !== generation) return;
       const decoded = await readBackupText(text);
-      if (disposed) return;
+      if (disposed || lifetime !== generation) return;
       previewRestore(decoded, "剪贴板");
       actions.toast("剪贴板备份解析成功，请确认恢复");
     } catch (error) {
-      if (disposed) return;
+      if (disposed || lifetime !== generation) return;
       actions.toast("剪贴板读取或解析失败，请选择备份文件", "error");
       $("backupFile").click();
     } finally {
-      button.disabled = false;
+      if (lifetime === generation) button.disabled = false;
     }
-  }
-  const backupButton = $("backup");
-  let backupHoldTimer = null,
-    backupRingTimer = null,
-    backupHolding = false,
-    backupCompleting = false,
-    backupResetAnimation = null,
-    backupHeld = false;
-  function endBackupHold() {
-    clearTimeout(backupHoldTimer);
-    clearTimeout(backupRingTimer);
-    backupHoldTimer = null;
-    backupRingTimer = null;
-    const wasHolding = backupHolding;
-    backupHolding = false;
-    if (backupCompleting || !wasHolding) return;
-    if (!backupButton.classList.contains("is-holding")) return;
-    const ring = backupButton.querySelector(".hold-progress"),
-      offset = getComputedStyle(ring).strokeDashoffset;
-    backupButton.classList.remove("is-holding");
-    backupButton.classList.add("is-resetting");
-    const duration = matchMedia("(prefers-reduced-motion: reduce)").matches
-      ? 0
-      : 300;
-    backupResetAnimation = ring.animate(
-      [{ strokeDashoffset: offset }, { strokeDashoffset: "100" }],
-      { duration, easing: "ease-out", fill: "forwards" },
-    );
-    const animation = backupResetAnimation;
-    animation.finished
-      .then(() => {
-        if (backupResetAnimation !== animation) return;
-        backupButton.classList.remove("is-resetting");
-        animation.cancel();
-        backupResetAnimation = null;
-      })
-      .catch(() => {});
-  }
-  function startBackupHold() {
-    if (backupHolding || backupCompleting || backupButton.disabled) return;
-    backupHeld = false;
-    backupResetAnimation?.cancel();
-    backupResetAnimation = null;
-    backupButton.classList.remove("is-resetting");
-    backupHolding = true;
-    backupRingTimer = setTimeout(() => {
-      if (backupHolding) backupButton.classList.add("is-holding");
-    }, 200);
-    backupHoldTimer = setTimeout(() => {
-      backupHeld = true;
-      backupCompleting = true;
-      endBackupHold();
-      backupButton.classList.add("is-completing");
-      backupFinishTimer = setTimeout(() => {
-        backupButton.classList.remove("is-holding", "is-completing");
-        backupCompleting = false;
-        backup();
-      }, 450);
-    }, 2000);
   }
   let bound = false;
   function bind() {
     if (bound) return;
     bound = true;
-    if (model.loadCorrupt && persistence.originalText !== null) {
-      const exportOriginal = document.createElement("button");
+    disposed = false;
+    generation++;
+    if (model.loadCorrupt && originalStorageText !== null) {
+      const body = $("storageNotice").querySelector(".notification-body"),
+        exportOriginal =
+          body.querySelector("#exportCorruptStorage") ||
+          document.createElement("button");
+      exportOriginal.className = "ui-button";
       exportOriginal.id = "exportCorruptStorage";
       exportOriginal.type = "button";
-      exportOriginal.textContent = "导出无法读取的原始数据";
-      exportOriginal.onclick = () =>
+      exportOriginal.innerHTML =
+        '<span class="button-label">导出无法读取的原始数据</span>';
+      events.handler(exportOriginal, "onclick", () =>
         download(
           "工作记录原始数据-" + model.today + ".txt",
-          persistence.originalText,
+          originalStorageText,
           "text/plain;charset=utf-8",
-        );
-      $("storageNotice")
-        .querySelector(".notification-body")
-        .append(exportOriginal);
+        ),
+      );
+      if (!exportOriginal.parentElement) body.append(exportOriginal);
     }
-    backupButton.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0) return;
-      backupButton.setPointerCapture(event.pointerId);
-      startBackupHold();
+    holdAction = WorkTimeApp.ui.createHoldAction({
+      button: $("backup"),
+      onShort: copyBackup,
+      onLong: backup,
+      keys: ["Space", "Enter"],
     });
-    backupButton.addEventListener("pointermove", (event) => {
-      if (!backupHolding) return;
-      const r = backupButton.getBoundingClientRect();
-      if (
-        event.clientX < r.left ||
-        event.clientX > r.right ||
-        event.clientY < r.top ||
-        event.clientY > r.bottom
-      ) {
-        backupHeld = true;
-        endBackupHold();
-      }
-    });
-    ["pointerup", "pointercancel", "lostpointercapture", "blur"].forEach(
-      (type) => backupButton.addEventListener(type, endBackupHold),
-    );
-    backupButton.addEventListener("contextmenu", (event) =>
-      event.preventDefault(),
-    );
-    backupButton.addEventListener("keydown", (event) => {
-      if (event.code === "Space" || event.code === "Enter") {
-        event.preventDefault();
-        if (!event.repeat) startBackupHold();
-      }
-      if (event.key === "Escape") endBackupHold();
-    });
-    backupButton.addEventListener("keyup", (event) => {
-      if (event.code === "Space" || event.code === "Enter") {
-        event.preventDefault();
-        endBackupHold();
-        backupButton.click();
-      }
-    });
-    backupButton.onclick = (event) => {
-      event.preventDefault();
-      if (backupCompleting || backupHeld) {
-        backupHeld = false;
-        return;
-      }
-      copyBackup();
-    };
-    $("backupBeforeRestore").onclick = backup;
-    $("restore").onclick = restoreFromClipboard;
-    $("backupFile").onchange = async (e) => {
+    events.handler($("backupBeforeRestore"), "onclick", backup);
+    events.handler($("restore"), "onclick", restoreFromClipboard);
+    events.handler($("backupFile"), "onchange", async (e) => {
+      const lifetime = generation;
       const f = e.target.files[0];
       if (!f) return;
       restoreData = null;
       try {
         if (f.size > BACKUP_MAX_BYTES) throw Error("备份超过 30MB。");
         const decoded = await readBackupText(await f.text());
-        if (disposed) return;
+        if (disposed || lifetime !== generation) return;
         previewRestore(decoded, "文件");
         actions.toast("备份文件解析成功，请确认恢复");
       } catch (err) {
-        if (disposed) return;
+        if (disposed || lifetime !== generation) return;
         actions.toast("恢复失败：" + err.message, "error");
       }
       e.target.value = "";
-    };
-    $("confirmRestore").onclick = () => {
+    });
+    events.handler($("confirmRestore"), "onclick", () => {
       if (!restoreData) return;
-      model.state = restoreData;
-      model.state.scheduleDefaultsVersion = 1;
+      const saved = application.restore(restoreData).persisted;
       restoreData = null;
-      model.loadCorrupt = false;
-      persistence.allowValidatedRestore();
-      const saved = actions.save();
+      const themeSaved = preferences.saveTheme(
+        model.state.preferences.pageTheme,
+      ).persisted;
       $("restoreDialog").close();
       actions.render();
       actions.toast(
-        saved ? "备份已恢复" : "备份已读取，但未能保存，请查看信息与提醒",
-        saved ? "countdown" : "error",
+        saved && themeSaved
+          ? "备份已恢复"
+          : "备份已读取，但未能完整保存，请查看信息与提醒",
+        saved && themeSaved ? "countdown" : "error",
       );
-    };
+    });
   }
   function dispose() {
+    generation++;
+    backupCopying = false;
+    $("restore").disabled = false;
+    events.dispose();
+    bound = false;
     disposed = true;
     restoreData = null;
-    clearTimeout(backupFinishTimer);
+    holdAction?.dispose();
     clearTimeout(copyResetTimer);
-    clearTimeout(backupHoldTimer);
-    clearTimeout(backupRingTimer);
-    backupResetAnimation?.cancel();
   }
-  return { bind, dispose };
+  const hasDraft = () => restoreData !== null;
+  return { bind, dispose, hasDraft };
 };

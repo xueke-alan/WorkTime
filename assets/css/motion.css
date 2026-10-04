@@ -134,8 +134,9 @@ body .calendar.is-batch-editing > button.day[data-date]:nth-child(3n + 1) {
 body dialog[open] {
   animation: motion-dialog 220ms var(--motion-ease);
 }
-/* Keep settings inputs stationary throughout the opening fade. */
-body #settingsDialog[open] {
+/* Keep editable dialog inputs stationary throughout the opening fade. */
+body #settingsDialog[open],
+body #timeTemplateDialog[open] {
   animation-name: motion-fade;
 }
 body dialog[open]::backdrop {
@@ -181,7 +182,7 @@ body .leave-popover:not(.hidden) {
 }
 @keyframes motion-selection {
   from {
-    outline: 2px solid #72a99180;
+    outline: 2px solid rgba(var(--theme-rgb, 114, 169, 145), 0.501961);
     outline-offset: -2px;
   }
   to {
@@ -226,16 +227,6 @@ body .leave-popover:not(.hidden) {
   body .feedback-notice.motion-leaving,
   body .leave-popover:not(.hidden) {
     animation: none !important;
-  }
-  body button,
-  body button.ui-button,
-  body .card,
-  body .time-template-chip,
-  body .notification-tab svg,
-  body input,
-  body select,
-  body textarea {
-    transition: none !important;
   }
   body .notification-tab svg {
     transform: none !important;

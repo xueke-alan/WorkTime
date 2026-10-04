@@ -1,20 +1,59 @@
 "use strict";
 /** imports controller. Instantiate once, then bind after all actions are connected. */
-WorkUI.createImportController = function (options) {
+WorkTimeApp.ui.createImportController = function (options) {
+  const events = WorkTimeApp.ui.createEventScope();
   const {
     element: $,
     core: C,
     escape: esc,
     model,
+    application,
     actions,
     clipboard,
     clock,
     importIndex,
   } = options;
-  let oaFinishTimer = null;
+  let holdAction = null;
   let preview = null;
   let disposed = false;
+  let generation = 0;
   let importParseTimer = null;
+  let resultsMode = "history";
+  function anomalyReason(record) {
+    if (!record.start && !record.end) return "无记录";
+    if (!record.start) return "缺上班卡";
+    if (!record.end) return "缺下班卡";
+    const start = C.timeMin(record.start),
+      end = C.timeMin(record.end);
+    if (start === null || end === null) return "时间无效";
+    if (!record.nextDay && end < start) return "时间倒置";
+    return "";
+  }
+  function recordCells(record) {
+    const time =
+      record.start || record.end
+        ? ((record.start || "") + " - " + (record.end || "")).trim()
+        : "-";
+    return (
+      "<strong>" +
+      esc(record.date.replace(/-/g, "/")) +
+      "</strong><span>" +
+      esc(time) +
+      (record.nextDay ? "（次日）" : "") +
+      '</span><span class="import-record-anomaly">' +
+      esc(anomalyReason(record)) +
+      "</span>"
+    );
+  }
+  function animateResults(mode) {
+    if (mode === resultsMode) return;
+    resultsMode = mode;
+    if ($("importDialog").open)
+      WorkTimeApp.ui.motion?.play(
+        $("importResultsTitle").closest(".sidebar-import-history"),
+        mode === "results" ? "motion-sidebar-forward" : "motion-sidebar-back",
+      );
+  }
   function resetImportInput() {
     $("pasteText").value = "";
     $("importRows").innerHTML = "";
@@ -33,33 +72,44 @@ WorkUI.createImportController = function (options) {
     $("importDetails").classList.add("hidden");
   }
   function scheduleImportParse() {
-    invalidatePreview();
+    invalidatePreview(!$("pasteText").value.trim());
     setImportParseStatus("pending", "正在解析…");
     importParseTimer = setTimeout(parseImport, 250);
   }
-  function invalidatePreview() {
+  function invalidatePreview(showHistory = true) {
     collapseImportDetails();
     clearTimeout(importParseTimer);
     importParseTimer = null;
     setImportParseStatus("idle", "");
     preview = null;
     $("commitImport").disabled = true;
-    $("importTable").classList.add("hidden");
+    if (showHistory) $("importTable").classList.add("hidden");
     $("importSummary").textContent = "暂无解析";
     $("importWarnings").textContent = "";
-    $("importResultsTitle").textContent = "导入历史";
-    $("importHistoryList").classList.remove("hidden");
-    renderImportHistory();
+    if (showHistory) {
+      $("importResultsTitle").textContent = "导入历史";
+      $("importHistoryList").classList.remove("hidden");
+      renderImportHistory();
+      animateResults("history");
+    }
   }
   function parseImport(inputSources = null) {
-    invalidatePreview();
+    invalidatePreview(false);
     const year = updateImportYearHint(),
       sources = Array.isArray(inputSources) ? inputSources : [];
     if (!inputSources && $("pasteText").value.trim())
       sources.push({ name: "粘贴文本", raw: $("pasteText").value });
-    if (!sources.length) return;
+    if (!sources.length) {
+      invalidatePreview();
+      return;
+    }
     try {
-      const plan = WorkImports.prepare(C, model.state, sources, year),
+      const plan = WorkTimeApp.services.imports.prepare(
+          C,
+          model.state,
+          sources,
+          year,
+        ),
         { records, warnings, rows } = plan;
       preview = rows.length ? plan : null;
       $("importWarnings").textContent = warnings.join("\n");
@@ -76,15 +126,8 @@ WorkUI.createImportController = function (options) {
       $("importRows").innerHTML = rows
         .map(
           (x, i) =>
-            "<article><strong>" +
-            x.record.date +
-            "</strong><span>" +
-            esc(
-              x.record.start || x.record.end
-                ? ((x.record.start || "") + " - " + (x.record.end || "")).trim()
-                : "-",
-            ) +
-            "</span>" +
+            "<article>" +
+            recordCells(x.record) +
             (x.result.conflict
               ? '<div class="conflict">' +
                 (x.result.repeated
@@ -109,16 +152,14 @@ WorkUI.createImportController = function (options) {
       $("importTable").classList.toggle("hidden", !rows.length);
       $("importHistoryList").classList.add("hidden");
       $("importResultsTitle").textContent = "记录解析结果";
+      animateResults("results");
       const abnormalDates = new Set(
         rows
-          .filter(
-            (row) =>
-              row.result.conflict || !row.record.start || !row.record.end,
-          )
+          .filter((row) => row.result.conflict || anomalyReason(row.record))
           .map((row) => row.record.date),
       );
       $("importHistoryCount").textContent =
-        "共 " + rows.length + " 条记录 · " + abnormalDates.size + " 条异常记录";
+        rows.length + " 条记录 · " + abnormalDates.size + " 条异常";
       $("commitImport").disabled = !rows.length;
       setImportParseStatus(
         !rows.length
@@ -151,33 +192,37 @@ WorkUI.createImportController = function (options) {
       clock.now().getTime() +
       "-" +
       Math.random().toString(36).slice(2, 8);
-    for (const record of records) C.applyObservation(model.state, record, id);
-    model.state.imports.push({
+    const saved = application.importRecords({
       id,
       at: clock.now().toISOString(),
       year,
       sources,
       count,
       records: records.map((record) => ({ ...record })),
-    });
+    }).persisted;
     if (focusDate) {
       model.month = focusDate.slice(0, 7);
       model.selected = focusDate;
     }
-    const saved = actions.save();
     actions.render();
     renderImportHistory();
     return saved;
   }
   async function importFromClipboard() {
+    const lifetime = generation;
     try {
       const raw = await clipboard.readText();
-      if (disposed) return;
+      if (disposed || lifetime !== generation) return;
       if (!raw.trim()) throw Error("剪贴板中没有 OA 文本");
       if (raw.length > 5 * 1024 * 1024) throw Error("剪贴板文本超过 5MB");
       const year = clock.year(),
         sources = [{ name: "剪贴板", raw }],
-        plan = WorkImports.prepare(C, model.state, sources, year);
+        plan = WorkTimeApp.services.imports.prepare(
+          C,
+          model.state,
+          sources,
+          year,
+        );
       if (!plan.records.length)
         throw Error(plan.warnings[0] || "未识别到 OA 记录");
       if (plan.needsReview) {
@@ -189,7 +234,7 @@ WorkUI.createImportController = function (options) {
         return;
       }
       const saved = commitOARecords(
-        WorkImports.acceptedRecords(plan),
+        WorkTimeApp.services.imports.acceptedRecords(plan),
         year,
         sources,
       );
@@ -198,7 +243,7 @@ WorkUI.createImportController = function (options) {
         "已从剪贴板导入 " + plan.records.length + " 条 OA 记录",
       );
     } catch (err) {
-      if (disposed) return;
+      if (disposed || lifetime !== generation) return;
       actions.toast(
         "剪贴板导入失败：" +
           (err.name === "NotAllowedError"
@@ -222,7 +267,9 @@ WorkUI.createImportController = function (options) {
           .map((log) => {
             const dates = importIndex.describe(log).rawDates;
             const range = dates.length
-              ? dates[0] + " → " + dates[dates.length - 1]
+              ? dates[0].replaceAll("-", "/") +
+                " - " +
+                dates[dates.length - 1].replaceAll("-", "/")
               : "未识别日期";
             return (
               '<article class="import-history-item" data-history-id="' +
@@ -238,9 +285,9 @@ WorkUI.createImportController = function (options) {
                   hour12: false,
                 }),
               ) +
-              '</h3><div class="row"><button type="button" data-view-import="' +
+              '</h3><div class="row"><button type="button" class="ui-button" data-view-import="' +
               esc(log.id) +
-              '" aria-label="查看导入详情" title="查看详情"><svg class="ui-icon" aria-hidden="true"><use href="#ms-info"/></svg></button><button type="button" class="danger" data-delete-import="' +
+              '" aria-label="查看导入详情" title="查看详情"><svg class="ui-icon" aria-hidden="true"><use href="#ms-info"/></svg></button><button type="button" class="ui-button danger" data-delete-import="' +
               esc(log.id) +
               '" aria-label="删除导入批次" title="删除批次"><svg class="ui-icon" aria-hidden="true"><use href="#ms-delete-outline"/></svg></button></div></div><div class="import-history-meta">' +
               esc(range) +
@@ -275,33 +322,17 @@ WorkUI.createImportController = function (options) {
           hour12: false,
         }),
       ) +
-      '</span><small class="import-detail-caption">改入记录</small>';
-    const records = Array.isArray(log.records)
-      ? log.records
-      : log.sources.flatMap(
-          (source) => C.parseText(source.raw, log.year, source.name).records,
-        );
+      '</span><small class="import-detail-caption">导入记录</small>';
+    const records = log.records;
     $("sourceBody").innerHTML =
       '<div class="import-detail-toolbar"><span class="muted">' +
       records.length +
       " 条记录 · " +
-      records.filter((record) => !record.start || !record.end).length +
+      records.filter((record) => anomalyReason(record)).length +
       " 条异常</span></div>" +
       '<div class="import-parsed-list">' +
       records
-        .map(
-          (record) =>
-            "<article><strong>" +
-            esc(record.date) +
-            "</strong><span>" +
-            esc(
-              record.start || record.end
-                ? (record.start || "") + " - " + (record.end || "")
-                : "-",
-            ).trim() +
-            (record.nextDay ? "（次日）" : "") +
-            "</span></article>",
-        )
+        .map((record) => "<article>" + recordCells(record) + "</article>")
         .join("") +
       (records.length
         ? ""
@@ -312,19 +343,19 @@ WorkUI.createImportController = function (options) {
       esc(log.sources.map((source) => source.raw).join("\n\n")) +
       "</textarea></div>";
     pane.querySelector(".dialog-foot").innerHTML =
-      '<button type="button" class="icon-only" aria-label="上一条导入记录" title="上一条" data-detail-step="-1"' +
+      '<button type="button" class="ui-button icon-only" aria-label="上一条导入记录" title="上一条" data-detail-step="-1"' +
       (index === 0 ? " disabled" : "") +
       '><svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-left"/></svg></button><span class="muted">' +
       (index + 1) +
       " / " +
       logs.length +
-      '</span><button type="button" class="icon-only" aria-label="下一条导入记录" title="下一条" data-detail-step="1"' +
+      '</span><button type="button" class="ui-button icon-only" aria-label="下一条导入记录" title="下一条" data-detail-step="1"' +
       (index === logs.length - 1 ? " disabled" : "") +
       '><svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-right"/></svg></button>';
     $("sourceBody").scrollTop = 0;
     if (changedDetail && pane.open)
-      window.WorkMotion?.play($("sourceBody"), "motion-sidebar-forward");
-    window.UIAlignment?.refresh([pane]);
+      WorkTimeApp.ui.motion?.play($("sourceBody"), "motion-sidebar-forward");
+    WorkTimeApp.ui.alignment?.refresh([pane]);
   }
   function showSources() {
     const day = model.state.days[model.selected] || {},
@@ -351,88 +382,21 @@ WorkUI.createImportController = function (options) {
     return year;
   }
   const oaShortcut = $("oaShortcut");
-  let oaHoldTimer = null,
-    oaRingTimer = null,
-    oaHeld = false,
-    oaPressActive = false,
-    oaCompleting = false,
-    oaResetAnimation = null;
   function editOALink() {
     $("oaLinkInput").value = model.state.oaUrl || "";
     $("oaLinkError").textContent = "";
     actions.open("oaLinkDialog");
     $("oaLinkInput").focus();
   }
-  function endOAHold() {
-    clearTimeout(oaHoldTimer);
-    clearTimeout(oaRingTimer);
-    oaHoldTimer = null;
-    oaRingTimer = null;
-    const wasActive = oaPressActive;
-    oaPressActive = false;
-    if (
-      oaCompleting ||
-      !wasActive ||
-      !oaShortcut.classList.contains("is-holding")
-    )
-      return;
-    const ring = oaShortcut.querySelector(".hold-progress"),
-      offset = getComputedStyle(ring).strokeDashoffset;
-    oaShortcut.classList.remove("is-holding");
-    oaShortcut.classList.add("is-resetting");
-    oaResetAnimation = ring.animate(
-      [{ strokeDashoffset: offset }, { strokeDashoffset: "100" }],
-      {
-        duration: matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? 0
-          : 300,
-        easing: "ease-out",
-        fill: "forwards",
-      },
-    );
-    const animation = oaResetAnimation;
-    animation.finished
-      .then(() => {
-        if (oaResetAnimation !== animation) return;
-        oaShortcut.classList.remove("is-resetting");
-        animation.cancel();
-        oaResetAnimation = null;
-      })
-      .catch(() => {});
-  }
-  function startOAHold() {
-    if (!model.state.oaUrl || oaPressActive || oaCompleting) return;
-    oaResetAnimation?.cancel();
-    oaResetAnimation = null;
-    oaShortcut.classList.remove("is-resetting");
-    oaHeld = false;
-    oaPressActive = true;
-    oaRingTimer = setTimeout(() => {
-      if (oaPressActive) oaShortcut.classList.add("is-holding");
-    }, 200);
-    oaHoldTimer = setTimeout(() => {
-      oaHeld = true;
-      oaCompleting = true;
-      endOAHold();
-      oaShortcut.classList.add("is-completing");
-      oaFinishTimer = setTimeout(() => {
-        oaShortcut.classList.remove("is-holding", "is-completing");
-        oaCompleting = false;
-        editOALink();
-      }, 450);
-    }, 2000);
-  }
   let bound = false;
   function bind() {
     if (bound) return;
     bound = true;
-    $("importDialog").addEventListener("close", resetImportInput);
-    $("importDialog").addEventListener("sidebar-open", renderImportHistory);
-    $("importHistoryOpen").onclick = () => {
-      renderImportHistory();
-      $("importHistoryList").scrollIntoView({ block: "nearest" });
-    };
-    $("importHistoryList").onclick = (e) => {
+    disposed = false;
+    generation++;
+    events.listen($("importDialog"), "close", resetImportInput);
+    events.listen($("importDialog"), "sidebar-open", renderImportHistory);
+    events.handler($("importHistoryList"), "onclick", (e) => {
       const view = e.target.closest("[data-view-import]"),
         remove = e.target.closest("[data-delete-import]");
       if (view) {
@@ -465,32 +429,33 @@ WorkUI.createImportController = function (options) {
         impact.cleared +
         " 个日期撤回该批次打卡。";
       actions.open("deleteImportDialog");
-    };
-    $("confirmDeleteImport").onclick = () => {
+    });
+    events.handler($("confirmDeleteImport"), "onclick", () => {
       if (!importToDelete) return;
-      const result = C.deleteImport(model.state, importToDelete);
+      const commit = application.removeImport(importToDelete);
+      const result = commit.impact;
       importToDelete = null;
       $("deleteImportDialog").close();
       if (!result.removed) {
         actions.toast("该导入记录已不存在");
         return;
       }
-      const saved = actions.save();
+      const saved = commit.persisted;
       actions.render();
       renderImportHistory();
       actions.saveFeedback(saved, "导入记录已删除，工时统计已更新");
-    };
-    $("sourceOpen").onclick = showSources;
-    $("sourceDialog").addEventListener("click", detailClick);
-    $("importOpen").onclick = (e) => {
+    });
+    events.handler($("sourceOpen"), "onclick", showSources);
+    events.listen($("sourceDialog"), "click", detailClick);
+    events.handler($("importOpen"), "onclick", (e) => {
       if (e.target.closest("[data-import-clipboard]")) importFromClipboard();
       else {
         updateImportYearHint();
         parseImport();
         actions.open("importDialog");
       }
-    };
-    $("importOpen").onkeydown = (e) => {
+    });
+    events.handler($("importOpen"), "onkeydown", (e) => {
       if (
         e.key === "Enter" &&
         e.shiftKey &&
@@ -499,86 +464,31 @@ WorkUI.createImportController = function (options) {
         e.preventDefault();
         importFromClipboard();
       }
-    };
-    oaShortcut.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0) return;
-      oaShortcut.setPointerCapture(event.pointerId);
-      startOAHold();
     });
-    oaShortcut.addEventListener("pointerup", () => {
-      if (oaShortcut.classList.contains("is-holding")) oaHeld = true;
-      endOAHold();
+    holdAction = WorkTimeApp.ui.createHoldAction({
+      button: oaShortcut,
+      enabled: () => !!model.state.oaUrl,
+      onShort: () => {
+        if (!model.state.oaUrl) {
+          editOALink();
+          return;
+        }
+        try {
+          const url = new URL(model.state.oaUrl);
+          if (!["http:", "https:"].includes(url.protocol))
+            throw Error("请使用 http 或 https 链接。");
+          window.open(url.href, "_blank", "noopener,noreferrer");
+        } catch (error) {
+          if (disposed) return;
+          editOALink();
+          $("oaLinkError").textContent = error.message;
+        }
+      },
+      onLong: editOALink,
+      cancelShortAfterFeedback: true,
     });
-    oaShortcut.addEventListener("pointermove", (event) => {
-      if (!oaPressActive) return;
-      const r = oaShortcut.getBoundingClientRect();
-      if (
-        event.clientX < r.left ||
-        event.clientX > r.right ||
-        event.clientY < r.top ||
-        event.clientY > r.bottom
-      ) {
-        oaHeld = true;
-        endOAHold();
-      }
-    });
-    oaShortcut.addEventListener("pointercancel", () => {
-      endOAHold();
-      oaHeld = false;
-    });
-    oaShortcut.addEventListener("pointerleave", () => {
-      if (oaPressActive) oaHeld = true;
-      endOAHold();
-    });
-    oaShortcut.addEventListener("contextmenu", (event) =>
-      event.preventDefault(),
-    );
-    oaShortcut.addEventListener("keydown", (event) => {
-      if (event.code === "Space") {
-        event.preventDefault();
-        if (!event.repeat) startOAHold();
-      }
-      if (event.key === "Escape") {
-        endOAHold();
-        oaHeld = false;
-      }
-    });
-    oaShortcut.addEventListener("keyup", (event) => {
-      if (event.code === "Space") {
-        event.preventDefault();
-        if (oaShortcut.classList.contains("is-holding")) oaHeld = true;
-        endOAHold();
-        oaShortcut.click();
-      }
-    });
-    oaShortcut.addEventListener("blur", endOAHold);
-    $("importDialog").addEventListener("close", () => {
-      endOAHold();
-      oaHeld = false;
-    });
-    oaShortcut.onclick = () => {
-      if (oaCompleting) return;
-      if (oaHeld) {
-        oaHeld = false;
-        return;
-      }
-      endOAHold();
-      if (!model.state.oaUrl) {
-        editOALink();
-        return;
-      }
-      try {
-        const url = new URL(model.state.oaUrl);
-        if (!["http:", "https:"].includes(url.protocol))
-          throw Error("请使用 http 或 https 链接。");
-        window.open(url.href, "_blank", "noopener,noreferrer");
-      } catch (error) {
-        if (disposed) return;
-        editOALink();
-        $("oaLinkError").textContent = error.message;
-      }
-    };
-    $("oaLinkForm").onsubmit = (event) => {
+    events.listen($("importDialog"), "close", () => holdAction.cancel());
+    events.handler($("oaLinkForm"), "onsubmit", (event) => {
       event.preventDefault();
       try {
         const url = new URL($("oaLinkInput").value.trim());
@@ -588,22 +498,21 @@ WorkUI.createImportController = function (options) {
           url.password
         )
           throw Error("请填写有效的 http 或 https 网页地址。");
-        model.state.oaUrl = url.href;
-        if (actions.save()) {
+        if (application.saveOAUrl(url.href).persisted) {
           $("oaLinkDialog").close();
           actions.toast("OA系统链接已保存");
         }
       } catch (error) {
         $("oaLinkError").textContent = error.message;
       }
-    };
+    });
     updateImportYearHint();
-    $("pasteText").oninput = scheduleImportParse;
-    $("commitImport").onclick = () => {
+    events.handler($("pasteText"), "oninput", scheduleImportParse);
+    events.handler($("commitImport"), "onclick", () => {
       if (!preview || !preview.rows.length || $("commitImport").disabled)
         return;
       const processed = preview.rows.length,
-        acceptedRecords = WorkImports.acceptedRecords(
+        acceptedRecords = WorkTimeApp.services.imports.acceptedRecords(
           preview,
           (row, i) =>
             $("importRows").querySelector('[data-conflict="' + i + '"]')
@@ -618,7 +527,7 @@ WorkUI.createImportController = function (options) {
       );
       $("importDialog").close();
       actions.saveFeedback(saved, "导入完成，已处理 " + processed + " 条记录");
-    };
+    });
   }
   function detailClick(event) {
     if (!$("sourceDialog").classList.contains("import-detail-view")) return;
@@ -631,14 +540,18 @@ WorkUI.createImportController = function (options) {
     }
   }
   function dispose() {
+    generation++;
+    events.dispose();
+    bound = false;
     $("sourceDialog").removeEventListener("click", detailClick);
     disposed = true;
     $("importDialog").removeEventListener("sidebar-open", renderImportHistory);
-    clearTimeout(oaFinishTimer);
+    holdAction?.dispose();
     clearTimeout(importParseTimer);
-    clearTimeout(oaHoldTimer);
-    clearTimeout(oaRingTimer);
-    oaResetAnimation?.cancel();
   }
-  return { bind, dispose };
+  const hasDraft = () =>
+    !!$("pasteText").value.trim() ||
+    ($("oaLinkDialog").open &&
+      $("oaLinkInput").value.trim() !== model.state.oaUrl);
+  return { bind, dispose, hasDraft };
 };

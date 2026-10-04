@@ -6,14 +6,14 @@
 
 - `assets/data/calendars.js`：2020–2026 年全国调休安排；metadata 保存覆盖范围、时区、官方通知链接及核查日期。2020 年含春节延期，2022 年含次年元旦跨年日期。资料外按周一至周五推算，个人日期覆盖仍优先。更新时核对年度原通知和补充通知，运行 `node tests/holiday-calendar.test.cjs`，并保持来源及元信息同步；日历提示依据实际覆盖范围。
 
-- `assets/vendor/lunar.js`：固定为 lunar-javascript 1.7.7，许可证位于 `licenses/lunar-javascript.txt`。支持 1900–2100 年。农历、节气、黄历独立于法定工作日规则。
+- `assets/vendor/lunar.js`：保持本地供应商源码快照，`sources.js`声明版本为 lunar-javascript 1.7.7，许可证位于 `licenses/lunar-javascript.txt`。业务包装支持 1900–2100 年；该范围不是对供应商全部算法的声明。农历、节气、黄历独立于法定工作日规则。
 - `assets/data/history/01.js` 至 `12.js`：全年 366 天的中文维基百科事件快照，每日 3–5 条；尽量兼顾中国与世界事件及不同年代。摘要在本地生成时统一转换为简体中文。每条有 ID、年份、摘要、来源名称和具体修订 URL；属于 CC BY-SA 4.0 资料，修改和再分发时保留来源及同许可证要求。资料为百科条目摘选，不表示已通过独立史料考证。
 - `assets/data/festivals.js`：补充公历、农历及按星期计算的节日。农历闰月不重复普通月份节日；除夕通过次日是否为正月初一判定。
 - `assets/data/sources.js`：资料来源、版本及快照日期。历史资料只收录至 2025 年的事件，显示时进一步过滤晚于选中年份的事件。
 
 ## 新增和更新数据
 
-历史月份数据以 `MM-DD` 为键，每条格式为 `{id,year,text,sourceUrl,sourceName,sourceDateUrl}`。年份为整数，公元前为负数。使用稳定 ID；同一 ID 后加载的记录覆盖前记录。新增补充包应放在 `assets/data/` 并在 `index.html` 中以普通 defer 脚本加载，顺序在基础资料之后、资讯模块之前；通过 `DateInfoData.history[key].push(...)` 增补或覆盖。
+历史月份数据以 `MM-DD` 为键，每条格式为 `{id,year,text,sourceUrl,sourceName,sourceDateUrl}`。年份为整数，公元前为负数。使用稳定 ID；同一 ID 后加载的记录覆盖前记录。新增补充包应放在 `assets/data/` 并在 `index.html` 中以普通 defer 脚本加载，顺序在namespace.js和基础资料之后、资讯模块之前；通过 `WorkTimeApp.data.dateInfo.history[key].push(...)` 增补或覆盖。旧DateInfoData全局名不再存在。
 
 节日规则格式为 `{id,name,kind,month,...}`，kind 为 solar（公历，含 day）、lunar（农历，含 day）或 weekday（含 week、weekday，星期日为 0）。相同 ID 后加入的规则覆盖前规则。官方工作日与调休仍由工时核心管理，不通过资讯节日改变。
 
@@ -25,15 +25,15 @@
 
 ## 新增页签
 
-在普通 defer 脚本中调用 `DateInfo.register({id,label,icon,getContent})`。id 唯一；label 用于悬停及无障碍名称；icon 支持 history、sun、calendar，未知图标使用 calendar。getContent 接收 YYYY-MM-DD，返回 `{title,rows,events,source,sourceUrl,empty}`：rows 为 `[名称,内容]` 数组，events 沿用历史条目格式；两种可以单独或一起返回。
+在普通 defer 脚本中调用 `WorkTimeApp.services.dateInfo.register({id,label,icon,getContent})`。id 唯一；label 用于悬停及无障碍名称；icon 支持 history、sun、calendar，未知图标使用 calendar。getContent 接收 YYYY-MM-DD，返回 `{title,rows,events,source,sourceUrl,empty}`：rows 为 `[名称,内容]` 数组，events 沿用历史条目格式；两种可以单独或一起返回。
 
-首次注册脚本置于 date-info.js 与 date-info-ui.js 之间。运行中注册后调用 `DateInfoUI.refreshTabs()`。通知模块由 UI 适配器注册，保留原通知节点。每次 getContent 的异常仅显示在当前页签，不影响其他页签；内容使用 textContent 渲染，来源只允许 HTTPS 链接。
+首次注册脚本置于 date-info.js 与 date-info-ui.js 之间。运行中注册后调用 `WorkTimeApp.ui.dateInfo.refreshTabs()`。通知模块由 UI 适配器注册，保留原通知节点。每次 getContent 的异常仅显示在当前页签，不影响其他页签；内容使用 textContent 渲染，来源只允许 HTTPS 链接。
 
 扩展数量较多时底部标签栏可横向滚动。页签使用方向键、Home、End 切换。切换日历日期后保持当前页签；重新打开页面恢复上次所选页签，保存不可用或页签已移除时回到通知。数据包不进入工时 JSON 备份。
 
 节气节日页按国内节日、节气、国际节日排序。扩展节日规则可加入 `category:'international'` 和 HTTPS `url`；不指定分类时依据本地 `internationalFestivals` 名单分类，其他按国内节日展示。国际节日默认链接到同名中文维基百科页面。`festivalAliases` 用于统一内置节日和补充规则的名称，防止重复。分组数据使用 `sections:[{label,text,rows,links,empty}]`，links 为 `{text,url}` 数组；此页不展示库来源文本，资料来源继续保存在项目内。
 
-历史事件整条文本可点击，不单独显示每条来源名称；链接保留页面修订号并使用 zh-cn 简体变体。生成脚本使用本地 OpenCC JS 1.4.2（scripts/vendor/opencc-t2cn.cjs）进行繁转简，不需要运行时转换。原来源名称及链接继续保存在资料包；转换及依赖许可证见 licenses/。
+历史事件卡片显示纯文字，不逐条提供点击或Tab入口；来源名称及具体修订链接保留在资料包，资料区的来源链接只接受HTTPS。生成脚本使用本地 OpenCC JS 1.4.2（scripts/vendor/opencc-t2cn.cjs）进行繁转简，不需要运行时转换。转换及依赖许可证见 licenses/。
 
 倒计时模块位于 `assets/js/work-countdown.js`，注册 id 为 countdown 的页签。它忽略选中日期，使用应用传入的当前内存状态和实时中国标准时间；不修改工时数据，也不为不工作日启动计时。图标支持 clock。
 

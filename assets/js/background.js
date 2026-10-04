@@ -7,7 +7,7 @@
     h,
     points = [],
     frame = null,
-    disposed = false;
+    disposed = true;
   function resize() {
     w = innerWidth;
     h = innerHeight;
@@ -27,6 +27,14 @@
     );
     synchronize();
   }
+  let themeRGB = "21,126,104";
+  function updateTheme() {
+    themeRGB =
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--theme-rgb")
+        .trim() || "21,126,104";
+    synchronize();
+  }
   function draw() {
     frame = null;
     if (disposed || document.hidden) return;
@@ -43,14 +51,14 @@
           dy = p.y - q.y,
           d = dx * dx + dy * dy;
         if (d < 16900) {
-          ctx.strokeStyle = `rgba(21,126,104,${(1 - d / 16900) * 0.14})`;
+          ctx.strokeStyle = `rgba(${themeRGB},${(1 - d / 16900) * 0.14})`;
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(q.x, q.y);
           ctx.stroke();
         }
       }
-      ctx.fillStyle = "rgba(21,126,104,.24)";
+      ctx.fillStyle = `rgba(${themeRGB},.24)`;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, 7);
       ctx.fill();
@@ -69,14 +77,26 @@
     removeEventListener("resize", resize);
     removeEventListener("pagehide", dispose);
     document.removeEventListener("visibilitychange", synchronize);
+    document.removeEventListener("worktime:themechange", updateTheme);
     document.removeEventListener("worktime:failed", dispose);
     reduced.removeEventListener("change", synchronize);
+    points = [];
   }
-  addEventListener("resize", resize);
-  addEventListener("pagehide", dispose);
-  document.addEventListener("visibilitychange", synchronize);
-  document.addEventListener("worktime:failed", dispose);
-  reduced.addEventListener("change", synchronize);
-  window.WorkBackground = { dispose };
-  resize();
+  function mount() {
+    if (!disposed) return;
+    disposed = false;
+    addEventListener("resize", resize);
+    addEventListener("pagehide", dispose);
+    document.addEventListener("visibilitychange", synchronize);
+    document.addEventListener("worktime:failed", dispose);
+    reduced.addEventListener("change", synchronize);
+    document.addEventListener("worktime:themechange", updateTheme);
+    themeRGB =
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--theme-rgb")
+        .trim() || themeRGB;
+    resize();
+  }
+  WorkTimeApp.ui.background = { mount, dispose };
+  mount();
 })();

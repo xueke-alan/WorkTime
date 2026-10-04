@@ -1,6 +1,6 @@
 "use strict";
 /** Raw-source lookup is separate from accepted records used by domain replay. */
-const WorkImportIndex = (() => {
+WorkTimeApp.services.importIndex = (() => {
   function create({ core }) {
     let descriptions = new WeakMap(),
       indexedLogs = [],
@@ -17,13 +17,12 @@ const WorkImportIndex = (() => {
             ),
           ),
         ].sort();
-        const acceptedDates = Array.isArray(log.records)
-          ? [...new Set(log.records.map((record) => record.date))].sort()
-          : rawDates;
+        const acceptedDates = [
+          ...new Set(log.records.map((record) => record.date)),
+        ].sort();
         value = Object.freeze({
           rawDates: Object.freeze(rawDates),
           acceptedDates: Object.freeze(acceptedDates),
-          legacy: !Array.isArray(log.records),
         });
         descriptions.set(log, value);
       }

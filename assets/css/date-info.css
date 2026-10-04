@@ -15,19 +15,25 @@ body .editor > .notification-tabs {
   display: flex;
   width: 100%;
   margin: 0;
-  border-top: 1px solid #d7e3dc;
+  border-top: 1px solid var(--line);
   border-bottom: 0;
+  background: #fbfdfb;
 }
 body .editor > .notification-tabs .notification-tab {
   position: relative;
   display: grid;
   place-items: center;
+  justify-content: center;
+  gap: 5px;
   flex: 0 0 auto;
   width: 3.5rem;
   height: 100%;
   margin: -1px 0 0;
   padding: 0;
-  border-top: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  isolation: isolate;
   box-shadow: none;
   color: var(--accent);
   line-height: 1;
@@ -50,25 +56,14 @@ body .editor > .notification-tabs .notification-tab::after {
   background: radial-gradient(
     circle at 100% 100%,
     transparent 7px,
-    #f6faf7 8px
+    var(--theme-surface-paper, #f6faf7) 8px
   );
 }
 body .editor > .notification-tabs .notification-tab svg {
   position: relative;
   z-index: 1;
   display: block;
-}
-body .editor > .notification-tabs {
-  background: #fbfdfb;
-}
-body .editor > .notification-tabs {
-  border-top-color: var(--line);
-}
-body .editor > .notification-tabs .notification-tab {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  isolation: isolate;
+  vertical-align: initial;
 }
 body .editor > .notification-tabs .notification-tab::before {
   inset: 0 -8px auto;
@@ -82,11 +77,14 @@ body .editor > .notification-tabs .notification-tab::before {
 body .editor > .notification-tabs .notification-tab::after {
   content: none;
 }
+body .editor > .notification-tabs .notification-tab.date-tab-group-start {
+  margin-inline-start: auto;
+}
 body .editor .date-info-area {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #f6faf7;
+  background: var(--theme-surface-paper, #f6faf7);
 }
 body .editor .date-info-area > #editorInfo {
   flex: 1;
@@ -260,19 +258,12 @@ body #dateInfoPanel .festival-section .date-info-rows {
 body #dateInfoPanel .festival-links a {
   font-size: inherit;
 }
-body #dateInfoPanel .history-event-link {
+body #dateInfoPanel .history-event-content {
   display: block;
   color: var(--ink);
   font-size: inherit;
   text-decoration: none;
   border-radius: 0.428571rem;
-}
-body #dateInfoPanel .history-event-link:hover {
-  background: #eaf3ee;
-  text-decoration: none;
-}
-body #dateInfoPanel .history-event-link:focus-visible {
-  outline: 0;
 }
 body .editor > .notification-tabs {
   --tab-icon-size: 1rem;
@@ -296,12 +287,62 @@ body .editor > .notification-tabs .notification-tab svg {
   flex: none;
 }
 .work-countdown {
+  position: relative;
+  isolation: isolate;
   padding: 1rem 0;
   text-align: center;
 }
+.countdown-rest-icon {
+  display: none;
+}
+.work-countdown.is-rest .countdown-rest-icon {
+  display: block;
+  position: absolute;
+  width: min(65%, 11rem);
+  height: auto;
+  left: 50%;
+  top: 50%;
+  color: var(--accent);
+  opacity: 0.075;
+  pointer-events: none;
+  z-index: -1;
+  transform: translate(-50%, -50%);
+  animation: countdown-rest-float 6s ease-in-out infinite;
+}
+.countdown-rest-steam {
+  animation: countdown-rest-steam 4s ease-in-out infinite;
+}
+@keyframes countdown-rest-float {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotate(-3deg);
+  }
+  50% {
+    transform: translate(-50%, calc(-50% - 0.3rem)) rotate(3deg);
+  }
+}
+@keyframes countdown-rest-steam {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .work-countdown.is-rest .countdown-rest-icon,
+  .countdown-rest-steam {
+    animation: none;
+  }
+}
 .countdown-message {
-  color: var(--muted);
-  font-size: 1rem;
+  color: color-mix(in srgb, var(--muted) 65%, white);
+  font-size: 1.714286rem;
+  font-weight: 700;
+  line-height: 1.4;
 }
 .countdown-time {
   display: block;
@@ -319,8 +360,8 @@ body .editor > .notification-tabs .notification-tab svg {
 
 body .editor > .notification-tabs .notification-badge {
   position: absolute;
-  top: calc(50% - var(--tab-icon-size) / 2 - 1px);
-  left: calc(50% + var(--tab-icon-size) / 2 - 1px);
+  top: calc(50% - var(--tab-icon-size) / 2 + 2px);
+  left: calc(50% + var(--tab-icon-size) / 2 - 5px);
   right: auto;
   width: 5px;
   height: 5px;
@@ -495,27 +536,11 @@ body #dateInfoPanel.festivals-panel .festival-empty {
   font-weight: 400;
 }
 body #dateInfoPanel.almanac-panel .almanac-sheet {
-  display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  flex: 1;
-  min-height: min-content;
-}
-body #dateInfoPanel.almanac-panel .almanac-heading {
-  padding: 0.428571rem 0;
-}
-body #dateInfoPanel.almanac-panel .almanac-cycle {
-  margin: 0.142857rem 0 0.571429rem;
 }
 body #dateInfoPanel.almanac-panel .almanac-column {
   padding: 0.571429rem 0.571429rem;
   gap: 0.428571rem;
-}
-body #dateInfoPanel.almanac-panel .almanac-details {
-  row-gap: 0.285714rem;
-  padding-bottom: 0.285714rem;
-}
-body #dateInfoPanel.almanac-panel .almanac-column {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -548,28 +573,18 @@ body #dateInfoPanel.almanac-panel .almanac-clash {
   font-size: 0.928571rem;
   color: #7c8176;
 }
-body #dateInfoPanel.almanac-panel .almanac-column {
-  min-height: 6.571429rem;
-  padding-block: 0.714286rem;
-}
-body #dateInfoPanel.almanac-panel .almanac-column p {
-  font-size: 1rem;
-  line-height: 1.55;
-}
 body #dateInfoPanel.almanac-panel .almanac-watermark {
   opacity: 0.17;
 }
 body #dateInfoPanel.almanac-panel .almanac-details {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   column-gap: 0.285714rem;
-  font-size: 0.857143rem;
   color: #77887e;
 }
 body #dateInfoPanel.almanac-panel .almanac-details span {
   white-space: nowrap;
 }
 body #dateInfoPanel.almanac-panel .almanac-column {
-  justify-content: flex-start;
   padding-inline: 0.428571rem;
 }
 body #dateInfoPanel.almanac-panel .almanac-activities {
@@ -596,7 +611,7 @@ body .editor .countdown-time {
   font-stretch: condensed;
   letter-spacing: 0.015em;
   line-height: 1.15;
-  text-shadow: 0 2px 8px #157e6810;
+  text-shadow: 0 2px 8px rgba(var(--theme-rgb, 21, 126, 104), 0.062745);
 }
 
 body #dateInfoPanel .date-info-source {
@@ -622,33 +637,53 @@ body #dateInfoPanel .date-info-date {
   letter-spacing: 0;
 }
 body .editor #dateInfoPanel {
-  margin-bottom: 0.714286rem;
+  margin-bottom: 0;
 }
 /* Compact the almanac so its full content fits the persistent information area. */
 body #dateInfoPanel.almanac-panel .almanac-sheet {
   justify-content: center;
-  gap: 0.214286rem;
   min-height: 0;
 }
-body #dateInfoPanel.almanac-panel .almanac-heading { padding: 0.142857rem 0; }
-body #dateInfoPanel.almanac-panel .almanac-cycle { margin: 0 0 0.214286rem; font-size: 0.785714rem; }
-body #dateInfoPanel.almanac-panel .almanac-column { min-height: 0; padding-block: 0.285714rem; }
-body #dateInfoPanel.almanac-panel .almanac-column p { font-size: 0.928571rem; line-height: 1.35; }
-body #dateInfoPanel.almanac-panel .almanac-activities { row-gap: 0.142857rem; }
-body #dateInfoPanel.almanac-panel .almanac-clash { padding: 0.142857rem 0; font-size: 0.785714rem; }
-body #dateInfoPanel.almanac-panel .almanac-details { row-gap: 0.142857rem; font-size: 0.785714rem; padding-bottom: 0; }
+body #dateInfoPanel.almanac-panel .almanac-heading {
+  padding: 0.142857rem 0;
+}
+body #dateInfoPanel.almanac-panel .almanac-cycle {
+  margin: 0 0 0.214286rem;
+  font-size: 0.9rem;
+}
+body #dateInfoPanel.almanac-panel .almanac-column {
+  min-height: 0;
+  padding-block: 0.285714rem;
+}
+body #dateInfoPanel.almanac-panel .almanac-column p {
+  font-size: 0.928571rem;
+  line-height: 1.35;
+  color: #493b2e;
+}
+body #dateInfoPanel.almanac-panel .almanac-activities {
+  row-gap: 0.142857rem;
+}
+body #dateInfoPanel.almanac-panel .almanac-clash {
+  padding: 0.142857rem 0;
+  font-size: 0.9rem;
+}
+body #dateInfoPanel.almanac-panel .almanac-details {
+  row-gap: 0.142857rem;
+  font-size: 0.9rem;
+  padding-bottom: 0;
+}
 /* Date changes keep the same three horizontal bands. Only the middle split moves. */
 body .editor #dateInfoPanel.almanac-panel {
   padding-block: 0.5rem;
 }
 body #dateInfoPanel.almanac-panel .almanac-sheet {
   display: grid;
-  grid-template-rows: 4.6rem 9.6rem 2.6rem;
+  grid-template-rows: 4.6rem 9.6rem minmax(2.6rem, 1fr);
   grid-template-columns: minmax(0, 1fr);
   width: 100%;
   gap: 0;
-  flex: none;
-  margin-block: auto;
+  flex: 1;
+  margin-block: 0;
 }
 .almanac-header,
 .almanac-footer {
@@ -656,6 +691,14 @@ body #dateInfoPanel.almanac-panel .almanac-sheet {
   flex-direction: column;
   justify-content: center;
   min-height: 0;
+}
+body #dateInfoPanel.almanac-panel .almanac-footer {
+  gap: 0.2rem;
+  padding-top: 0.35rem;
+}
+body #dateInfoPanel.almanac-panel .almanac-footer .almanac-clash {
+  padding: 0;
+  line-height: 1.4;
 }
 body #dateInfoPanel.almanac-panel .almanac-cycle,
 body #dateInfoPanel.almanac-panel .almanac-clash {
@@ -671,4 +714,120 @@ body #dateInfoPanel.almanac-panel .almanac-column {
 }
 body #dateInfoPanel.almanac-panel .almanac-activities {
   margin: 0;
+}
+
+/* One date-dependent panel with a persistent header and compact text navigation. */
+.date-context-header[hidden] {
+  display: none;
+}
+.date-context-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex: none;
+  padding: 0.75rem 1rem 0.6rem;
+  border-top: 1px solid var(--line);
+}
+.date-context-header::after {
+  content: "";
+  position: absolute;
+  inset-inline: 1rem;
+  bottom: 0;
+  height: 1px;
+  background: var(--line);
+  pointer-events: none;
+}
+.date-context-date {
+  font-size: 1.2rem;
+  line-height: 1.2;
+  font-weight: 650;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.date-context-switch {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+/* Center the date and navigation together without the shared button label offset. */
+body .date-context-header .date-context-switch .ui-text-action .button-label {
+  display: inline-block;
+  font: inherit;
+  translate: none;
+  line-height: inherit;
+}
+body .date-context-header .date-context-switch .ui-text-action {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.357143rem;
+  border: 0;
+  border-radius: var(--control-radius);
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: var(--theme-text-muted, #94a69e);
+}
+body
+  .date-context-header
+  .date-context-switch
+  .ui-text-action[aria-selected="true"] {
+  color: var(--accent);
+  font-weight: 650;
+}
+body .date-context-switch button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+body .editor .has-date-context #dateInfoPanel {
+  border-top: 0;
+}
+body .editor .has-date-context #dateInfoPanel.almanac-panel {
+  padding-block: 0.3rem;
+}
+body .has-date-context #dateInfoPanel.almanac-panel .almanac-sheet {
+  grid-template-rows: 3.5rem minmax(0, 1fr) 3rem;
+}
+body .has-date-context #dateInfoPanel .history-event + .history-event {
+  border-top: 1px solid var(--line);
+}
+body .has-date-context #dateInfoPanel .history-event-content strong {
+  color: var(--accent);
+}
+
+body .date-context-switch button + button::before {
+  content: "/";
+  color: var(--theme-text-faint, #b2bfb8);
+  margin-inline-end: 0.5rem;
+  font-weight: 400;
+}
+
+/* Keep the lunar date on the left and its cycle in two compact lines on the right. */
+body #dateInfoPanel.almanac-panel .almanac-header {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+body #dateInfoPanel.almanac-panel .almanac-heading {
+  justify-content: flex-start;
+  text-align: left;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+body #dateInfoPanel.almanac-panel .almanac-cycle {
+  text-align: right;
+  line-height: 1.5;
+}
+body #dateInfoPanel.almanac-panel .almanac-cycle > span {
+  display: block;
+  white-space: nowrap;
 }

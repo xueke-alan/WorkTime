@@ -1,6 +1,6 @@
 "use strict";
 /** Offline national holiday schedules. Weekday fallback outside coverage. */
-const WorkCalendarData = (() => {
+WorkTimeApp.data.calendars = (() => {
   const calendarSchedules = {
     2020: {
       off: [

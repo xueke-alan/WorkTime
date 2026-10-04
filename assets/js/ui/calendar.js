@@ -1,7 +1,7 @@
 "use strict";
 
 /** Create an isolated calendar view; state/view getters remain live after restore and navigation. */
-WorkUI.createCalendar = function (options) {
+WorkTimeApp.ui.createCalendar = function (options) {
   const {
     core: C,
     element: $,
@@ -20,7 +20,8 @@ WorkUI.createCalendar = function (options) {
     trendIcon,
     year: WorkYear,
     document,
-    window,
+    numbers,
+    weatherLayer,
   } = options;
   let renderedMonth = null,
     renderedMode = null,
@@ -42,14 +43,50 @@ WorkUI.createCalendar = function (options) {
     const title = $("monthTitle");
     if (!title.querySelector(".month-title-divider")) {
       title.innerHTML =
-        '<span class="month-title-year"></span><svg class="month-title-divider" viewBox="0 0 12 24" aria-hidden="true" focusable="false"><path d="M9 4 3 20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg><span class="month-title-month"></span>';
+        '<span id="monthTitleYear" class="month-title-year" data-number-motion></span><svg class="month-title-divider" viewBox="0 0 12 24" aria-hidden="true" focusable="false"><path d="M9 4 3 20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg><span id="monthTitleMonth" class="month-title-month" data-number-motion></span>';
     }
-    updateText(title.querySelector(".month-title-year"), String(year));
-    updateText(title.querySelector(".month-title-month"), String(month));
+    for (const [selector, value] of [
+      [".month-title-year", String(year)],
+      [".month-title-month", String(month)],
+    ]) {
+      const number = title.querySelector(selector);
+      numbers.set(number, Number(value));
+    }
     title.classList.toggle("is-year-title", yearMode);
     title
       .querySelector(".month-title-month")
       .setAttribute("aria-hidden", String(yearMode));
+  }
+  function updateYearMonth(element, candidate) {
+    const buttons = new Map(
+      [...element.querySelectorAll("[data-year-date]")].map((button) => [
+        button.dataset.yearDate,
+        button,
+      ]),
+    );
+    const nextButtons = [...candidate.querySelectorAll("[data-year-date]")];
+    if (
+      buttons.size !== nextButtons.length ||
+      nextButtons.some((button) => !buttons.has(button.dataset.yearDate))
+    )
+      return false;
+    // The same year/month has fixed day order and blank offsets. Keep every day
+    // button and its aligned text layer, including keyboard focus and animation.
+    updateHTML(
+      element.querySelector(".year-month-stats"),
+      candidate.querySelector(".year-month-stats").innerHTML,
+    );
+    for (const next of nextButtons) {
+      const button = buttons.get(next.dataset.yearDate);
+      for (const attribute of [...button.attributes])
+        if (!next.hasAttribute(attribute.name))
+          button.removeAttribute(attribute.name);
+      for (const attribute of next.attributes)
+        if (button.getAttribute(attribute.name) !== attribute.value)
+          button.setAttribute(attribute.name, attribute.value);
+      updateText(button.querySelector("span"), next.textContent);
+    }
+    return true;
   }
   function updateCalendar(html) {
     if (html === calendarMarkup) return;
@@ -91,8 +128,31 @@ WorkUI.createCalendar = function (options) {
           for (const attribute of candidate.attributes)
             if (element.getAttribute(attribute.name) !== attribute.value)
               element.setAttribute(attribute.name, attribute.value);
-          if (previous.content !== candidate.innerHTML)
-            element.innerHTML = candidate.innerHTML;
+          if (
+            previous.content !== candidate.innerHTML &&
+            !(
+              element.matches(".year-month") &&
+              updateYearMonth(element, candidate)
+            )
+          ) {
+            // Weather owns these persistent layers. Keep them attached so editing
+            // attendance neither reloads the SVG nor replays the weather fade.
+            for (const child of [...element.childNodes])
+              if (
+                !(child instanceof Element) ||
+                !child.matches(
+                  ".calendar-weather-icon, .calendar-weather-outgoing",
+                )
+              )
+                child.remove();
+            const content = document.createDocumentFragment();
+            content.append(
+              ...[...candidate.childNodes].map((node) => node.cloneNode(true)),
+            );
+            element.insertBefore(content, element.firstChild);
+          }
+          if (element.querySelector(".calendar-weather-icon"))
+            element.classList.add("has-weather");
         }
       }
       next.set(key, {
@@ -111,6 +171,7 @@ WorkUI.createCalendar = function (options) {
     calendarNodes.clear();
     for (const [key, value] of next) calendarNodes.set(key, value);
     calendarMarkup = html;
+    weatherLayer.refresh();
   }
   function monthWorkdayNumber(k) {
     const state = getState();
@@ -121,10 +182,32 @@ WorkUI.createCalendar = function (options) {
     }
     return count;
   }
+  function hasScheduleChange(
+    state,
+    date,
+    schedule = C.scheduleForDate(state, date),
+  ) {
+    const previous = C.localDate(date);
+    previous.setDate(previous.getDate() - 1);
+    const previousDate = C.dateKey(previous);
+    return (
+      C.validDate(previousDate) &&
+      C.scheduleSignature(schedule) !==
+        C.scheduleSignature(C.scheduleForDate(state, previousDate))
+    );
+  }
+  function scheduleChangeTag() {
+    return (
+      '<div class="schedule-change-tag" title="作息较前一天发生变化">' +
+      tag("工时变更", "blue") +
+      "</div>"
+    );
+  }
   function adjacentDayCard(k) {
     const state = getState();
     const info = C.calendarInfo(k, state.days[k] || {}),
       date = C.localDate(k),
+      scheduleChanged = hasScheduleChange(state, k),
       kind =
         info.label.replace(" · 手动", "") +
         (info.work ? " " + monthWorkdayNumber(k) : "");
@@ -147,13 +230,18 @@ WorkUI.createCalendar = function (options) {
       k +
       " " +
       esc(kind) +
+      (scheduleChanged ? " 工时变更" : "") +
       '"><div class="daytop"><span class="daynum">' +
       date.getDate() +
       "<small>" +
       Number(k.slice(5, 7)) +
       '月</small></span><span class="daykind">' +
       esc(kind) +
-      "</span></div></div>"
+      "</span></div>" +
+      (scheduleChanged
+        ? '<div class="daystatus">' + scheduleChangeTag() + "</div>"
+        : "") +
+      "</div>"
     );
   }
   function renderCalendar(keepLeavePanel = false) {
@@ -187,13 +275,13 @@ WorkUI.createCalendar = function (options) {
         direction = viewYear > renderedViewYear ? "12px" : "-12px";
       renderYear();
       if (viewChanged) {
-        window.WorkMotion?.play($("calendar"), "motion-calendar-view");
+        WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-view");
         [...$("calendar").children].forEach((element, i) =>
-          window.WorkMotion?.play(element, "motion-year-month", i * 12),
+          WorkTimeApp.ui.motion?.play(element, "motion-year-month", i * 12),
         );
       } else if (yearChanged) {
         $("calendar").style.setProperty("--motion-direction", direction);
-        window.WorkMotion?.play($("calendar"), "motion-calendar-year");
+        WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-year");
       }
       renderedViewYear = viewYear;
       return;
@@ -220,7 +308,7 @@ WorkUI.createCalendar = function (options) {
       workdayNumber = 0,
       counts = { actual: 0, estimate: 0, pending: 0 },
       dailyAverages = C.cumulativeAverageOvertime(state, first, last);
-    const payday = window.Payday.calculate(first),
+    const payday = C.payday(first),
       paydayHint =
         "发薪日：" +
         payday.date +
@@ -242,7 +330,15 @@ WorkUI.createCalendar = function (options) {
         day = state.days[k] || {},
         info = C.calendarInfo(k, day),
         r = C.effectiveRecord(day, true),
-        calc = C.calculate(k, day, state.settings, true),
+        punch = C.actualRecord(day) || day.draft || day.oa,
+        hasPunch =
+          !!punch &&
+          (!!punch.start ||
+            !!punch.end ||
+            Number.isFinite(punch.effectiveMinutes)),
+        schedule = C.scheduleForDate(state, k),
+        scheduleChanged = hasScheduleChange(state, k, schedule),
+        calc = C.calculate(k, day, schedule, true),
         label = stateLabel(day, r, k),
         kindLabel =
           info.label.replace(" · 手动", "") +
@@ -254,7 +350,7 @@ WorkUI.createCalendar = function (options) {
         "day",
         !info.work ? "restday" : "",
         info.weekend ? "weekend" : "",
-        isFullLeave(day)
+        isFullLeave(day, k)
           ? "full-leave"
           : day.leaveMinutes
             ? "partial-leave"
@@ -333,15 +429,16 @@ WorkUI.createCalendar = function (options) {
         esc(kindLabel) +
         " " +
         visibleStatus(label, info) +
+        (scheduleChanged ? " 工时变更" : "") +
         (averageText
           ? " 日均加班 " + averageText + (trendLabel ? "，" + trendLabel : "")
           : "") +
-        (isFullLeave(day)
+        (isFullLeave(day, k)
           ? " 全天请假"
           : day.leaveMinutes
             ? " 请假 " + C.hours(day.leaveMinutes) + "h"
             : "") +
-        (k === state.settings.employmentDate
+        (k === state.personal.employmentDate
           ? " 入职日"
           : k === payday.date
             ? " 发薪日"
@@ -349,7 +446,7 @@ WorkUI.createCalendar = function (options) {
         '"><div class="daytop"><span class="day-date"><span class="daynum"><span class="daynum-text">' +
         i +
         "</span></span>" +
-        (k === state.settings.employmentDate
+        (k === state.personal.employmentDate
           ? '<span class="payday-icon employment-icon" role="img" aria-label="入职日" title="入职日：' +
             esc(k) +
             '"><svg class="ui-icon" aria-hidden="true"><use href="#ms-person-add"/></svg></span>'
@@ -392,10 +489,11 @@ WorkUI.createCalendar = function (options) {
                       : "green",
             )) +
         (!info.work && day.plannedOvertime
-          ? "<div>" + tag("计划加班", "amber") + "</div>"
+          ? "<div>" + tag(hasPunch ? "加班" : "计划加班", "amber") + "</div>"
           : "") +
+        (scheduleChanged ? scheduleChangeTag() : "") +
         (day.leaveMinutes
-          ? isFullLeave(day)
+          ? isFullLeave(day, k)
             ? "<div>" + tag("全天请假", "leave") + "</div>"
             : "<div>" +
               tag("请假 " + C.hours(day.leaveMinutes) + "h", "leave") +
@@ -435,21 +533,21 @@ WorkUI.createCalendar = function (options) {
     if (monthChanged) {
       $("calendar").style.setProperty("--motion-direction", direction);
       [...$("calendar").children].forEach((day, i) =>
-        window.WorkMotion?.play(day, "motion-day", Math.floor(i / 7) * 22),
+        WorkTimeApp.ui.motion?.play(day, "motion-day", Math.floor(i / 7) * 22),
       );
     } else if (selectionChanged && !batchMode)
-      window.WorkMotion?.play(
+      WorkTimeApp.ui.motion?.play(
         $("calendar").querySelector(".selected"),
         "motion-selection",
       );
     if (modeChanged) {
-      window.WorkMotion?.play(
+      WorkTimeApp.ui.motion?.play(
         $(batchMode ? "batchForm" : "dayForm"),
         batchMode ? "motion-sidebar-forward" : "motion-sidebar-back",
       );
     }
     if (viewChanged)
-      window.WorkMotion?.play($("calendar"), "motion-calendar-view");
+      WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-view");
     renderedMonth = month;
     renderedMode = batchMode;
     renderedSelection = selected;
@@ -475,9 +573,19 @@ WorkUI.createCalendar = function (options) {
             viewYear +
             "年" +
             m.month +
-            '月"><h3>' +
+            '月"><h3><span class="year-month-number">' +
             m.month +
-            '月</h3><div class="year-days">' +
+            '</span><span class="year-month-stats"><span title="总加班时长（工作日与休息日合计）" aria-label="总加班时长">' +
+            Number(
+              ((m.summary.workOvertime + m.summary.restOvertime) / 60).toFixed(
+                2,
+              ),
+            ) +
+            'h</span><span title="平均加班工时（工作日加班 ÷ 折算出勤）" aria-label="平均加班工时">' +
+            (m.summary.average === null
+              ? "—"
+              : (m.summary.average / 60).toFixed(2)) +
+            'h/d</span></span></h3><div class="year-days">' +
             '<span aria-hidden="true"></span>'.repeat(m.offset) +
             m.days
               .map(

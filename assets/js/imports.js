@@ -1,6 +1,6 @@
 "use strict";
 /** Pure import planning; both clipboard and pasted text use the same conflict policy. */
-const WorkImports = (() => {
+WorkTimeApp.services.imports = (() => {
   function prepare(core, state, sources, year) {
     const records = [],
       warnings = [],

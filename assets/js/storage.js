@@ -1,6 +1,9 @@
 "use strict";
 /** Persistence adapter. Memory edits remain available for export after a failed write. */
-const WorkStorage = (() => {
+WorkTimeApp.services.storage = (() => {
+  function storageError(code, message) {
+    return Object.assign(Error(message), { code });
+  }
   function create({ key, validate, defaultState, getStorage }) {
     let dirty = false;
     let corrupt = false;
@@ -14,6 +17,14 @@ const WorkStorage = (() => {
     let requestVersion = 0;
     let lastResult = { ok: true, persisted: true, dirty: false, error: null };
     function failure(error) {
+      if (typeof error.code !== "string")
+        error = Object.assign(Error(error.message), {
+          name: error.name,
+          code:
+            error.name === "QuotaExceededError"
+              ? "QUOTA_EXCEEDED"
+              : "STORAGE_UNAVAILABLE",
+        });
       dirty = true;
       lastResult = { ok: false, persisted: false, dirty, error };
       return lastResult;
@@ -28,7 +39,8 @@ const WorkStorage = (() => {
         if (retry) lockRequest?.abort();
         writeAccess = false;
         if (!locks?.request) {
-          accessError = Error(
+          accessError = storageError(
+            "LOCK_UNSUPPORTED",
             "当前浏览器不支持安全写入锁，请使用新版 Edge 或 Chrome；当前修改可导出备份",
           );
           return failure(accessError);
@@ -51,7 +63,8 @@ const WorkStorage = (() => {
                   return;
                 }
                 if (!lock) {
-                  accessError = Error(
+                  accessError = storageError(
+                    "LOCK_BUSY",
                     "另一页面正在编辑；关闭该页面后会自动重试保存，当前修改可先导出备份",
                   );
                   resolve(failure(accessError));
@@ -73,7 +86,8 @@ const WorkStorage = (() => {
                 return;
               }
               writeAccess = false;
-              accessError = Error(
+              accessError = storageError(
+                "LOCK_FAILED",
                 "无法取得安全写入锁：" + error.message + "；当前修改可导出备份",
               );
               resolve(failure(accessError));
@@ -84,7 +98,10 @@ const WorkStorage = (() => {
         released = true;
         requestVersion++;
         writeAccess = false;
-        accessError = Error("页面写入锁已释放，请刷新后继续保存");
+        accessError = storageError(
+          "LOCK_RELEASED",
+          "页面写入锁已释放，请刷新后继续保存",
+        );
         lockRequest?.abort();
         lockRequest = null;
         releaseLock?.();
@@ -108,11 +125,19 @@ const WorkStorage = (() => {
       save(state) {
         dirty = true;
         try {
-          if (!writeAccess) throw accessError || Error("未取得安全写入权");
-          if (corrupt) throw Error("存储数据无法读取，请先恢复有效备份");
+          if (!writeAccess)
+            throw (
+              accessError || storageError("LOCK_REQUIRED", "未取得安全写入权")
+            );
+          if (corrupt)
+            throw storageError(
+              "CORRUPT_STORAGE",
+              "存储数据无法读取，请先恢复有效备份",
+            );
           const storage = getStorage();
           if (storage.getItem(key) !== expectedText)
-            throw Error(
+            throw storageError(
+              "EXTERNAL_UPDATE",
               "浏览器数据已被外部更新，请先备份当前改动并刷新，避免覆盖其他记录",
             );
           const text = JSON.stringify(state);

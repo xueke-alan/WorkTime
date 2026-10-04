@@ -1,5 +1,5 @@
 /* Wikipedia daily observances, CC BY-SA 4.0; retrieved 2026-10-01. */
-DateInfoData.internationalByDate={
+WorkTimeApp.data.dateInfo.internationalByDate={
   "01-01": [],
   "01-02": [],
   "01-03": [],

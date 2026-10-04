@@ -4,9 +4,10 @@
   --icon-size-small: 1.285714rem;
   --icon-size-tab: 1.142857rem;
   --icon-size-indicator: 1rem;
-  --toolbar-icon-color: #245b4a;
+  --toolbar-icon-color: var(--theme-icon-color, #245b4a);
 }
-body .panel-head button:not(.primary) :is(.ui-icon, .backup-hold-icon) {
+body .panel-head button:not(.primary) :is(.ui-icon, .backup-hold-icon),
+body .editor #scheduleApplyOpen .ui-icon {
   color: var(--toolbar-icon-color);
 }
 body .ui-icon {
@@ -17,11 +18,12 @@ body .ui-icon {
   flex: none;
 }
 body .panel-head .month-controls :is(#prevMonth, #nextMonth, #todayButton) .ui-icon,
-body .panel-head .calendar-toolbar-actions :is(#batchToggle, #settingsOpen, #backup, #restore) .ui-icon,
+body .panel-head .calendar-toolbar-actions :is(#batchToggle, #settingsOpen, #backup, #restore, #pageSettingsOpen) .ui-icon,
 body #importOpen .ui-icon,
 body #sourceDialog.import-detail-view .dialog-foot button[data-detail-step] .ui-icon,
 body .editor :is(.nextday-toggle, #addTimeTemplate, #batchAddTimeTemplate, #batchCalculateEnd) .ui-icon,
 body dialog .nextday-toggle .ui-icon,
+body .editor #scheduleApplyOpen .ui-icon,
 body .editor #settingsForm .breakrow button .ui-icon {
   width: var(--icon-size);
   height: var(--icon-size);

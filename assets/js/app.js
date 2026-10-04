@@ -1,20 +1,28 @@
 "use strict";
-WorkBootstrap.run(
+WorkTimeApp.services.bootstrap.run(
   async (lifecycle) => {
-    lifecycle.defer(() => window.UIAlignment?.dispose());
-    lifecycle.defer(() => window.DateInfoUI?.dispose());
-    lifecycle.defer(() => window.WorkMotion?.dispose());
-    lifecycle.defer(() => window.WorkBackground?.dispose());
-    let C = WorkTime;
-    const elements = WorkUI.createElements(document);
+    lifecycle.defer(() => WorkTimeApp.services.preferences.page.dispose());
+    lifecycle.defer(() => WorkTimeApp.ui.theme.dispose());
+    lifecycle.defer(() => WorkTimeApp.ui.alignment?.dispose());
+    lifecycle.defer(() => WorkTimeApp.ui.numbers?.dispose());
+    lifecycle.defer(() => WorkTimeApp.ui.dateInfo?.dispose());
+    lifecycle.defer(() => WorkTimeApp.ui.motion?.dispose());
+    lifecycle.defer(() => WorkTimeApp.ui.background?.dispose());
+    lifecycle.defer(() => WorkTimeApp.ui.notificationMotion?.dispose());
+    const D = WorkTimeApp.domain;
+    const elements = WorkTimeApp.ui.createElements(document);
     const { element: $, escape: esc, icon, controlIcon, trendIcon } = elements;
     elements.initialize();
-    const sidebarPanels = WorkUI.createSidebarPanels({ document, window });
+    const sidebarPanels = WorkTimeApp.ui.createSidebarPanels({
+      document,
+      window,
+      leaveBatch: () => workspace.leaveBatch(),
+    });
     lifecycle.defer(() => sidebarPanels.dispose());
-    const persistence = WorkStorage.create({
-      key: C.KEY,
-      validate: C.validateBackup,
-      defaultState: C.defaultState,
+    const persistence = WorkTimeApp.services.storage.create({
+      key: D.state.KEY,
+      validate: D.validation.validateBackup,
+      defaultState: D.state.defaultState,
       getStorage: () => localStorage,
     });
     lifecycle.defer(() => persistence.releaseWriteAccess());
@@ -23,12 +31,22 @@ WorkBootstrap.run(
       persistence.releaseWriteAccess();
       return;
     }
-    window.addEventListener("pageshow", (event) => {
-      if (event.persisted) location.reload();
-    });
     const loaded = persistence.load();
-    const clock = WorkClock.create({ dateKey: C.businessDate });
-    const model = WorkApplication.create({
+    const storageStatus = WorkTimeApp.ui.createStorageStatus({
+      element: $,
+      key: D.state.KEY,
+      getStorage: () => localStorage,
+      window,
+    });
+    lifecycle.defer(() => storageStatus.dispose());
+    storageStatus.mount({
+      readError: loaded.error,
+      accessError: access.ok ? null : access.error,
+    });
+    const clock = WorkTimeApp.services.clock.create({
+      dateKey: D.time.businessDate,
+    });
+    const model = WorkTimeApp.services.application.create({
       state: loaded.state,
       writable: access.ok,
       readError: loaded.error,
@@ -36,35 +54,53 @@ WorkBootstrap.run(
       today: clock.today(),
     });
     const actions = {};
-    if (loaded.error)
-      $("storageNoticeText").textContent =
-        "浏览器数据无法读取：" +
-        loaded.error.message +
-        "。当前数据尚未保存，请先下载备份或恢复有效备份。";
-    else if (!access.ok)
-      $("storageNoticeText").textContent =
-        "当前页面无法保存：" + access.error.message + "。";
-    const defaultsUpdated =
-      !model.loadCorrupt && C.applyScheduleDefaults(model.state);
-    let savedSnapshot = JSON.stringify(model.state),
-      inputChanged = false;
-    const markInputChanged = () => {
-      inputChanged = true;
-    };
-    for (const event of ["input", "change"]) {
-      document.addEventListener(event, markInputChanged, true);
-      lifecycle.defer(() =>
-        document.removeEventListener(event, markInputChanged, true),
-      );
-    }
-    const derived = WorkDerived.create({
-      core: C,
+    const stateOwner = WorkTimeApp.services.application.createState({
+      state: model.state,
+      persistence,
+      core: {
+        applyObservation: D.observations.applyObservation,
+        calendarInfo: D.calendar.calendarInfo,
+        deleteImport: D.observations.deleteImport,
+        validateTimeTemplate: D.validation.validateTimeTemplate,
+      },
+      failed: !!loaded.error || !access.ok,
+      corrupt: loaded.corrupt,
+      unsaved: !!loaded.error,
+    });
+    Object.defineProperties(model, {
+      state: { get: () => stateOwner.state },
+      revision: { get: () => stateOwner.revision },
+      storageFailed: { get: () => stateOwner.failed },
+      loadCorrupt: { get: () => stateOwner.loadCorrupt },
+    });
+    const derived = WorkTimeApp.services.derived.create({
+      core: {
+        DEFAULT_START: D.state.DEFAULT_START,
+        attendanceHoursThrough: D.statistics.attendanceHoursThrough,
+        businessDate: D.time.businessDate,
+        businessMinutes: D.time.businessMinutes,
+        calculate: D.records.calculate,
+        countRestOvertimeDays: D.statistics.countRestOvertimeDays,
+        cumulativeAverageOvertime: D.statistics.cumulativeAverageOvertime,
+        dateKey: D.time.dateKey,
+        localDate: D.time.localDate,
+        oaStaleness: D.statistics.oaStaleness,
+        pendingWorkdays: D.statistics.pendingWorkdays,
+        scheduleForDate: D.schedule.scheduleForDate,
+        selectOvertimeRequirement: D.statistics.selectOvertimeRequirement,
+        summary: D.statistics.summary,
+        targetPace: D.statistics.targetPace,
+        timeMin: D.time.timeMin,
+        validDate: D.time.validDate,
+      },
       getState: () => model.state,
       getRevision: () => model.revision,
       now: clock.now,
     });
-    C = derived.core;
-    const importIndex = WorkImportIndex.create({ core: C });
+    const queries = derived.queries;
+    const importIndex = WorkTimeApp.services.importIndex.create({
+      core: { parseText: D.observations.parseText },
+    });
     lifecycle.defer(() => derived.dispose());
     lifecycle.defer(() => importIndex.dispose());
     const getState = () => model.state;
@@ -77,12 +113,13 @@ WorkBootstrap.run(
       yearMode: model.yearMode,
       viewYear: model.viewYear,
     });
+    const monthBounds = () => D.time.monthBounds(model.month);
     const shared = {
-      core: C,
       element: $,
       escape: esc,
       getState,
       getView,
+      numbers: WorkTimeApp.ui.numbers,
       document,
       window,
     };
@@ -93,26 +130,72 @@ WorkBootstrap.run(
       visibleStatus,
       tag,
       statusTag,
-    } = WorkUI.createDayPresentation(shared);
+    } = WorkTimeApp.ui.createDayPresentation({
+      ...shared,
+      core: {
+        calendarInfo: D.calendar.calendarInfo,
+        complete: D.records.complete,
+        effectiveRecord: D.records.effectiveRecord,
+        scheduleForDate: D.schedule.scheduleForDate,
+        timeMin: D.time.timeMin,
+      },
+    });
+    const notifications = WorkTimeApp.ui.createNotifications({
+      ...shared,
+      core: { oaStaleness: queries.oaStaleness },
+      getRange: monthBounds,
+      icon,
+      timeAnomaly,
+    });
+    lifecycle.defer(() => notifications.dispose());
     const {
       decorateStaticNotices,
       updateNotificationEmptyState,
       toast,
       renderTimeAnomalyNotice,
-      renderOAStaleNotice,
-    } = WorkUI.createNotifications({
+    } = notifications;
+    const { renderStats } = WorkTimeApp.ui.createSummary({
       ...shared,
-      getRange: monthBounds,
-      icon,
-      timeAnomaly,
-    });
-    const { renderStats } = WorkUI.createSummary({
-      ...shared,
+      core: {
+        pendingWorkdays: queries.pendingWorkdays,
+        selectOvertimeRequirement: queries.selectOvertimeRequirement,
+        summary: queries.summary,
+        targetPace: queries.targetPace,
+        validDate: D.time.validDate,
+      },
       getRange: monthBounds,
       isStorageFailed: () => model.storageFailed,
     });
-    const calendarUI = WorkUI.createCalendar({
+    const weatherLayer = WorkTimeApp.ui.createCalendarWeather({
+      calendar: $("calendar"),
+      weather: WorkTimeApp.services.weather,
+      weatherUI: WorkTimeApp.ui.weather,
+      now: clock.now,
+      businessDate: D.time.businessDate,
+    });
+    lifecycle.defer(() => weatherLayer.dispose());
+    WorkTimeApp.ui.calendarWeather = weatherLayer;
+    const calendarUI = WorkTimeApp.ui.createCalendar({
       ...shared,
+      core: {
+        actualRecord: D.records.actualRecord,
+        calculate: queries.calculate,
+        calendarInfo: D.calendar.calendarInfo,
+        calendarKnown: D.calendar.calendarKnown,
+        complete: D.records.complete,
+        cumulativeAverageOvertime: queries.cumulativeAverageOvertime,
+        dateKey: D.time.dateKey,
+        effectiveRecord: D.records.effectiveRecord,
+        formatMinutes: D.time.formatMinutes,
+        hours: D.time.hours,
+        localDate: D.time.localDate,
+        pad: D.time.pad,
+        payday: D.payday.calculate,
+        pendingWorkdays: queries.pendingWorkdays,
+        scheduleForDate: D.schedule.scheduleForDate,
+        scheduleSignature: D.schedule.scheduleSignature,
+        validDate: D.time.validDate,
+      },
       getRange: monthBounds,
       closeLeavePanel: (...args) => closeLeavePanel(...args),
       renderTimeAnomalyNotice,
@@ -123,7 +206,8 @@ WorkBootstrap.run(
       statusTag,
       tag,
       trendIcon,
-      year: WorkYear,
+      year: WorkTimeApp.ui.year,
+      weatherLayer,
     });
     const { renderCalendar } = calendarUI;
     const {
@@ -131,57 +215,84 @@ WorkBootstrap.run(
       renderEditor,
       formDay,
       previewDay,
+      openLeavePanel,
       closeLeavePanel,
-    } = WorkUI.createEditor({
+    } = WorkTimeApp.ui.createEditor({
       ...shared,
+      core: {
+        attendanceHoursThrough: queries.attendanceHoursThrough,
+        calculate: queries.calculate,
+        calendarInfo: D.calendar.calendarInfo,
+        editedDay: D.records.editedDay,
+        employmentDay: D.time.employmentDay,
+        cumulativeAverageOvertime: queries.cumulativeAverageOvertime,
+        effectiveRecord: D.records.effectiveRecord,
+        formatMinutes: D.time.formatMinutes,
+        hours: D.time.hours,
+        localDate: D.time.localDate,
+        scheduleForDate: D.schedule.scheduleForDate,
+      },
       renderTimeTemplates: (...args) => actions.renderTimeTemplates(...args),
       timeAnomaly,
       isFullLeave,
     });
-    function clone(x) {
-      return JSON.parse(JSON.stringify(x));
-    }
+    const workspace = WorkTimeApp.ui.createWorkspace({
+      model,
+      element: $,
+      document,
+      window,
+      sidebarPanels,
+      notifications,
+      renderStats,
+      renderCalendar,
+      renderEditor,
+      refreshSettings: () => actions.refreshSettings(),
+    });
+    const { render, open, saveFeedback } = workspace;
+    lifecycle.defer(() => workspace.dispose());
     decorateStaticNotices();
-    function save() {
-      // Every committed in-memory change invalidates derived values, even if storage fails.
-      model.revision++;
-      window.WorkCountdown?.setState(model.state);
-      const result = persistence.save(model.state);
-      model.storageFailed = !result.persisted;
-      $("storageNotice").classList.toggle("hidden", result.persisted);
-      if (result.persisted) {
-        savedSnapshot = JSON.stringify(model.state);
-        inputChanged = false;
-      }
-      if (!result.persisted)
-        $("storageNoticeText").textContent =
-          "更改未保存：" + result.error.message + "；关闭页面前请备份。";
-      return result.persisted;
-    }
-    function saveFeedback(saved, message) {
-      toast(
-        saved ? message : "更改保留在当前页面，但未能保存，请查看提醒并备份",
-        saved ? "countdown" : "error",
-      );
-    }
-    function monthBounds() {
-      const [y, m] = model.month.split("-").map(Number);
-      return [model.month + "-01", C.dateKey(new Date(y, m, 0, 12))];
-    }
-    function render() {
-      renderOAStaleNotice();
-      renderStats();
-      renderCalendar();
-      renderEditor();
-      updateNotificationEmptyState();
-    }
-    function open(id) {
-      if (!sidebarPanels.open(id)) $(id).showModal();
-    }
+    const saveSession = WorkTimeApp.services.createSaveSession({
+      owner: stateOwner,
+      persistence,
+      locks: navigator.locks,
+      hasDraft: () => controllers.some((controller) => controller.hasDraft?.()),
+      onCommit(result) {
+        if (result.applied)
+          WorkTimeApp.services.countdown.setState(model.state);
+        storageStatus.commit(result, stateOwner.failed);
+      },
+      onReload: workspace.reload,
+      onRecovered() {
+        for (const controller of controllers) controller.onSaveRecovered?.();
+      },
+      onRecoveryError: storageStatus.recoveryFailed,
+      onAccessError: storageStatus.accessFailed,
+      onRecoveryDone: workspace.recoveryDone,
+    });
+    lifecycle.defer(() => saveSession.dispose());
+    const application = Object.fromEntries(
+      [
+        "saveDay",
+        "togglePlanned",
+        "resetDay",
+        "saveTemplate",
+        "removeTemplate",
+        "saveBatch",
+        "importRecords",
+        "removeImport",
+        "saveOAUrl",
+        "saveSettings",
+        "savePersonal",
+        "restore",
+        "applySchedule",
+      ].map((name) => [
+        name,
+        (...args) => saveSession.commit(stateOwner[name](...args)),
+      ]),
+    );
     Object.assign(actions, {
       controlIcon,
-      clone,
-      save,
+      clone: D.state.cloneState,
       saveFeedback,
       render,
       open,
@@ -192,136 +303,131 @@ WorkBootstrap.run(
       renderStats,
       renderCalendar,
       updateResetDayButton,
+      openLeavePanel,
       closeLeavePanel,
       renderEditor,
     });
     const controllerOptions = {
-      core: C,
       element: $,
       escape: esc,
       model,
-      persistence,
+      application,
+      originalStorageText: persistence.originalText,
       actions,
       clock,
+      preferences: {
+        get state() {
+          return WorkTimeApp.services.preferences.page.state;
+        },
+        saveTheme: WorkTimeApp.services.preferences.page.saveTheme,
+      },
       importIndex,
-      clipboard: WorkClipboard.create(() => navigator.clipboard),
-      downloads: WorkDownloads.create({ document, URL, Blob }),
+      clipboard: WorkTimeApp.services.clipboard.create(
+        () => navigator.clipboard,
+      ),
+      downloads: WorkTimeApp.services.downloads.create({ document, URL, Blob }),
     };
     lifecycle.defer(() => controllerOptions.downloads.dispose());
     const controllers = [];
-    for (const create of [
-      WorkUI.createTemplateController,
-      WorkUI.createSettingsController,
-      WorkUI.createBackupController,
-      WorkUI.createImportController,
-      WorkUI.createDayController,
-      WorkUI.createNavigationController,
-      WorkUI.createDialogController,
+    for (const [create, operations, core] of [
+      [
+        WorkTimeApp.ui.createTemplateController,
+        ["saveTemplate", "removeTemplate"],
+        {
+          scheduleForDate: D.schedule.scheduleForDate,
+          validateTimeTemplate: D.validation.validateTimeTemplate,
+        },
+      ],
+      [
+        WorkTimeApp.ui.createSettingsController,
+        ["saveSettings", "applySchedule"],
+        {
+          applyScheduleRange: D.schedule.applyScheduleRange,
+          breakMin: D.time.breakMin,
+          hours: D.time.hours,
+          pad: D.time.pad,
+          scheduleForDate: D.schedule.scheduleForDate,
+          scheduleRangeForChoice: D.schedule.scheduleRangeForChoice,
+          validateOvertimeRequirements:
+            D.validation.validateOvertimeRequirements,
+          validateSchedule: D.schedule.validateSchedule,
+        },
+      ],
+      [
+        WorkTimeApp.ui.createPersonalSettingsController,
+        ["savePersonal"],
+        { validDate: D.time.validDate },
+      ],
+      [
+        WorkTimeApp.ui.createBackupController,
+        ["restore"],
+        { hours: D.time.hours, validateBackup: D.validation.validateBackup },
+      ],
+      [
+        WorkTimeApp.ui.createImportController,
+        ["importRecords", "removeImport", "saveOAUrl"],
+        {
+          deleteImport: D.observations.deleteImport,
+          timeMin: D.time.timeMin,
+          parseText: D.observations.parseText,
+          mergeObservation: D.observations.mergeObservation,
+        },
+      ],
+      [
+        WorkTimeApp.ui.createDayController,
+        ["saveDay", "togglePlanned", "resetDay"],
+        {
+          calendarInfo: D.calendar.calendarInfo,
+          effectiveRecord: D.records.effectiveRecord,
+          hours: D.time.hours,
+          pad: D.time.pad,
+          scheduleForDate: D.schedule.scheduleForDate,
+        },
+      ],
+      [
+        WorkTimeApp.ui.createNavigationController,
+        ["saveBatch"],
+        {
+          calendarInfo: D.calendar.calendarInfo,
+          complete: D.records.complete,
+          dateKey: D.time.dateKey,
+          endForDuration: D.records.endForDuration,
+          localDate: D.time.localDate,
+          scheduleForDate: D.schedule.scheduleForDate,
+          scheduleSignature: D.schedule.scheduleSignature,
+          timeMin: D.time.timeMin,
+          validDate: D.time.validDate,
+        },
+      ],
+      [WorkTimeApp.ui.createDialogController, [], {}],
     ]) {
-      const controller = create(controllerOptions);
+      const controller = create({
+        ...controllerOptions,
+        core,
+        application: Object.fromEntries(
+          operations.map((name) => [name, application[name]]),
+        ),
+      });
       controllers.push(controller);
       lifecycle.defer(() => controller.dispose());
     }
     for (const controller of controllers) {
-      const { bind, dispose, ...commands } = controller;
+      const { bind, dispose, hasDraft, onSaveRecovered, ...commands } =
+        controller;
       Object.assign(actions, commands);
     }
     for (const controller of controllers) controller.bind();
-    const calendarFooter = document.querySelector(".calendar-footer"),
-      notificationTabs = document.querySelector(".editor>.notification-tabs");
-    const syncNotificationBarHeight = () => {
-      notificationTabs.style.height =
-        calendarFooter.getBoundingClientRect().height + "px";
-    };
-    const footerObserver = new ResizeObserver(syncNotificationBarHeight);
-    footerObserver.observe(calendarFooter);
-    lifecycle.defer(() => footerObserver.disconnect());
-    render();
-    syncNotificationBarHeight();
-    if (defaultsUpdated) save();
-    function recoverSaving(result) {
-      if (lifecycle.closed || !result.ok) return;
-      try {
-        // A stale read-only view can follow newer data only if all local fields are untouched.
-        if (
-          !model.loadCorrupt &&
-          !inputChanged &&
-          JSON.stringify(model.state) === savedSnapshot &&
-          persistence.hasExternalUpdate()
-        ) {
-          const latest = persistence.load();
-          if (latest.error) throw latest.error;
-          model.state = latest.state;
-          C.applyScheduleDefaults(model.state);
-          model.revision++;
-          if ($("settingsDialog").open) actions.refreshSettings();
-          render();
-          $("importDialog").dispatchEvent(new Event("sidebar-open"));
-        }
-        const hadInputChanges = inputChanged;
-        if (save()) {
-          // A persistence retry does not commit incomplete form fields.
-          inputChanged = hadInputChanges;
-          for (const [id, message] of [
-            ["dayError", "当前修改未保存，请查看提醒并备份。"],
-            ["dayLeaveError", "当前修改未保存，请查看提醒并备份。"],
-            ["settingsError", "设置尚未保存，请再次编辑重试或关闭后备份。"],
-          ]) {
-            if ($(id).textContent === message) $(id).textContent = "";
-          }
-        }
-      } catch (error) {
-        model.storageFailed = true;
-        $("storageNoticeText").textContent =
-          "重新检查失败：" + error.message + "；当前修改仍保留。";
-      }
-      renderStats();
-      updateNotificationEmptyState();
-    }
-    function waitForSaving() {
-      if (
-        !lifecycle.closed &&
-        !persistence.canWrite &&
-        navigator.locks?.request
-      )
-        void persistence
-          .acquireWriteAccess(navigator.locks, { wait: true })
-          .then(recoverSaving);
-    }
-    const retryStorage = $("retryStorage");
-    retryStorage.hidden = model.loadCorrupt || !navigator.locks?.request;
-    retryStorage.onclick = async () => {
-      retryStorage.disabled = true;
-      const result = await persistence.acquireWriteAccess(navigator.locks, {
-        retry: true,
-      });
-      if (lifecycle.closed) return;
-      if (result.ok) recoverSaving(result);
-      else {
-        $("storageNoticeText").textContent =
-          "重新检查结果：" +
-          result.error.message +
-          (result.error.message.includes("另一页面")
-            ? "。浏览器仍检测到占用保存权限的页面，可能位于后台。"
-            : "。当前修改仍保留。");
-        waitForSaving();
-      }
-      retryStorage.disabled = false;
-    };
-    lifecycle.defer(() => {
-      retryStorage.onclick = null;
+    workspace.mount();
+    storageStatus.bindRetry({
+      available: !!navigator.locks?.request,
+      corrupt: model.loadCorrupt,
+      retry: saveSession.retry,
     });
-    if (!access.ok) waitForSaving();
+    if (!access.ok) saveSession.wait();
     lifecycle.defer(
       clock.watch({
         document,
-        onChange(today) {
-          model.today = today;
-          renderOAStaleNotice();
-          renderStats();
-          renderCalendar(true);
-          updateNotificationEmptyState();
-        },
+        onChange: workspace.dateChanged,
       }),
     );
   },

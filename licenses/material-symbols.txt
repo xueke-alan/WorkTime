@@ -1,6 +1,7 @@
 Material Symbols Rounded by Google LLC
 Source: https://fonts.google.com/icons
 SVG assets: https://github.com/google/material-design-icons
+Pinned revision: 737e3324305806514d7909874fa1818ae1808232
 
 Apache License
                            Version 2.0, January 2004

@@ -1,12 +1,12 @@
 [
-  { "id": "101281601", "weatherKey": "dongguan", "name": "东莞", "province": "广东省", "districtId": "441900", "district": "东莞市", "office": "松山湖基地／溪流背坡村" },
+  { "id": "101281601", "weatherKey": "dongguan", "name": "东莞", "province": "广东省", "districtId": "441900", "district": "东莞市", "office": "松山湖基地" },
   { "id": "101020100", "weatherKey": "shanghai", "name": "上海", "province": "上海市", "districtId": "310118", "district": "青浦区", "office": "练秋湖研发中心" },
   { "id": "101280601", "weatherKey": "shenzhen", "name": "深圳", "province": "广东省", "districtId": "440307", "district": "龙岗区", "office": "坂田基地" },
   { "id": "101270101", "weatherKey": "chengdu", "name": "成都", "province": "四川省", "districtId": "510117", "district": "郫都区", "office": "成都研究所" },
-  { "id": "101110101", "weatherKey": "xian", "name": "西安", "province": "陕西省", "districtId": "610113", "district": "雁塔区", "office": "西安研究所（锦业路园区）" },
+  { "id": "101110101", "weatherKey": "xian", "name": "西安", "province": "陕西省", "districtId": "610113", "district": "雁塔区", "office": "西安研究所" },
   { "id": "101190101", "weatherKey": "nanjing", "name": "南京", "province": "江苏省", "districtId": "320114", "district": "雨花台区", "office": "南京研究所" },
   { "id": "101210101", "weatherKey": "hangzhou", "name": "杭州", "province": "浙江省", "districtId": "330108", "district": "滨江区", "office": "杭州研究所" },
-  { "id": "101010100", "weatherKey": "beijing", "name": "北京", "province": "北京市", "districtId": "110108", "district": "海淀区", "office": "北京研究所（环保园基地）" },
-  { "id": "101200101", "weatherKey": "wuhan", "name": "武汉", "province": "湖北省", "districtId": "420115", "district": "江夏区", "office": "武汉研究所（九峰三路园区）" },
-  { "id": "101190401", "weatherKey": "suzhou", "name": "苏州", "province": "江苏省", "districtId": "320571", "district": "苏州工业园区", "office": "苏州研究所（桑田岛基地）" }
+  { "id": "101010100", "weatherKey": "beijing", "name": "北京", "province": "北京市", "districtId": "110108", "district": "海淀区", "office": "北京研究所" },
+  { "id": "101200101", "weatherKey": "wuhan", "name": "武汉", "province": "湖北省", "districtId": "420115", "district": "江夏区", "office": "武汉研究所" },
+  { "id": "101190401", "weatherKey": "suzhou", "name": "苏州", "province": "江苏省", "districtId": "320571", "district": "苏州工业园区", "office": "苏州研究所" }
 ]

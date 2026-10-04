@@ -1,5 +1,5 @@
-window.DateInfoData=window.DateInfoData||{history:{},festivals:[]};
-Object.assign(DateInfoData.history,{
+
+Object.assign(WorkTimeApp.data.dateInfo.history,{
   "10-01": [
     {
       "year": 1942,

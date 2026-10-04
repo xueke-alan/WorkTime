@@ -1,13 +1,14 @@
 "use strict";
-const WorkValidation = (() => {
-  const { validDate, timeMin } = WorkTimeValues,
-    { DEFAULT_START, SCHEMA, defaultState } = WorkState,
-    { complete, duration, inferWorkEnd } = WorkRecords;
+WorkTimeApp.domain.validation = (() => {
+  const { validDate, timeMin } = WorkTimeApp.domain.time,
+    { SCHEMA, defaultState } = WorkTimeApp.domain.state,
+    { complete } = WorkTimeApp.domain.records;
   const object = (value) =>
     value !== null && typeof value === "object" && !Array.isArray(value);
   function fail(path, message) {
     const error = Error(message + " [" + path + "]");
     error.name = "BackupValidationError";
+    error.code = "INVALID_BACKUP";
     error.path = path;
     error.userMessage = message;
     throw error;
@@ -135,8 +136,8 @@ const WorkValidation = (() => {
     for (const name of ["oa", "actual", "estimate", "draft"]) {
       const record = day[name],
         field = path + "." + name;
-      // Null represents an absent record in legacy backups; false/0/string are malformed.
-      if (record === undefined || record === null) continue;
+      // Missing properties mean absent records; present values must be objects.
+      if (record === undefined) continue;
       if (!object(record)) fail(field, key + " 的打卡记录无效。");
       clock(record.start, field + ".start", true);
       clock(record.end, field + ".end", true);
@@ -193,102 +194,66 @@ const WorkValidation = (() => {
   /** @param {*} input Untrusted decoded backup. @returns {WorkStateData} New normalized state; errors contain path and userMessage. */
   function validateBackup(input) {
     if (!object(input)) fail("$", "不是支持的工作记录备份文件。");
-    if (input.schemaVersion !== SCHEMA)
-      fail("schemaVersion", "不是支持的工作记录备份文件。");
-    if (!object(input.settings)) fail("settings", "备份中的计算设置无效。");
+    if (input.schemaVersion !== SCHEMA) {
+      try {
+        fail(
+          "schemaVersion",
+          "此版本不能直接恢复，请先使用 tools/convert-backup.html 转换备份。",
+        );
+      } catch (error) {
+        error.code = "UNSUPPORTED_VERSION";
+        throw error;
+      }
+    }
+    if (!object(input.settings)) fail("settings", "备份中的工作时间设置无效。");
     if (!object(input.days)) fail("days", "备份中的日期记录无效。");
     if (!Array.isArray(input.imports))
       fail("imports", "备份中的导入历史无效。");
-    const settings = input.settings;
-    if (typeof settings.configured !== "boolean")
-      fail("settings.configured", "备份中的计算设置无效。");
-    if (
-      !Number.isInteger(settings.standardMinutes) ||
-      settings.standardMinutes <= 0 ||
-      settings.standardMinutes > 1440
-    )
-      fail("settings.standardMinutes", "备份中的计算设置无效。");
-    if (!Array.isArray(settings.breaks))
-      fail("settings.breaks", "备份中的休息时段无效。");
-    const breaks = Array.from(settings.breaks, (rest, index) => {
-      const path = "settings.breaks[" + index + "]";
-      if (!object(rest)) fail(path, "备份中的休息时段无效。");
-      if (!Number.isInteger(rest.start) || rest.start < 0 || rest.start >= 1440)
-        fail(path + ".start", "备份中的休息时段无效。");
-      if (
-        !Number.isInteger(rest.end) ||
-        rest.end > 1440 ||
-        rest.end <= rest.start
-      )
-        fail(path + ".end", "备份中的休息时段无效。");
-      return { start: rest.start, end: rest.end };
-    });
-    for (const key of ["workStart", "workEnd"])
-      if (settings[key] !== undefined && settings[key] !== "")
-        clock(settings[key], "settings." + key);
-    const workStart = settings.workStart || DEFAULT_START,
-      workEnd =
-        settings.workEnd ||
-        inferWorkEnd(workStart, settings.standardMinutes, breaks);
-    if (!workEnd || timeMin(workEnd) <= timeMin(workStart))
-      fail("settings.workEnd", "备份中的标准上下班时间无效。");
-    const standard = duration(
-      {
-        start: workStart,
-        end: workEnd,
-        nextDay: false,
-        effectiveMinutes: null,
-      },
-      { breaks },
+    if (typeof input.settings.configured !== "boolean")
+      fail("settings.configured", "备份中的工作时间设置无效。");
+    if (!Number.isInteger(input.settings.standardMinutes))
+      fail("settings.standardMinutes", "备份中的标准工时无效。");
+    const schedule = WorkTimeApp.domain.schedule.validateSchedule(
+      input.settings,
+      "settings",
     );
-    if (!Number.isInteger(standard) || standard <= 0)
-      fail("settings.standardMinutes", "备份中的标准工时区间无效。");
+    if (!object(input.personal)) fail("personal", "备份中的个人信息无效。");
+    const { employmentDate, workCity } = input.personal;
     if (
-      settings.employmentDate !== undefined &&
-      (typeof settings.employmentDate !== "string" ||
-        (settings.employmentDate && !validDate(settings.employmentDate)))
+      typeof employmentDate !== "string" ||
+      (employmentDate && !validDate(employmentDate))
     )
-      fail("settings.employmentDate", "备份中的入职日期无效。");
+      fail("personal.employmentDate", "备份中的入职日期无效。");
+    if (typeof workCity !== "string" || workCity.length > 64)
+      fail("personal.workCity", "备份中的工作城市须为不超过64字的文本。");
     if (
-      settings.workCity !== undefined &&
-      (typeof settings.workCity !== "string" || settings.workCity.length > 64)
+      !object(input.preferences) ||
+      !WorkTimeApp.domain.preferences.isTheme(input.preferences.pageTheme)
     )
-      fail("settings.workCity", "备份中的工作城市须为不超过64字的文本。");
+      fail("preferences.pageTheme", "备份中的页面主题无效。");
+    if (
+      typeof input.oaUrl !== "string" ||
+      (input.oaUrl &&
+        !/^https?:\/\/[^\s/]+(?:[/?#][^\s]*)?$/i.test(input.oaUrl))
+    )
+      fail("oaUrl", "备份中的 OA 链接无效。");
     const clean = defaultState();
-    clean.scheduleDefaultsVersion = input.scheduleDefaultsVersion === 1 ? 1 : 0;
-    clean.settings = {
-      configured: settings.configured,
-      workStart,
-      workEnd,
-      standardMinutes: standard,
-      breaks,
-      employmentDate: settings.employmentDate || "",
-      workCity: settings.workCity || "",
-    };
-    if (input.oaUrl !== undefined) {
-      if (
-        typeof input.oaUrl !== "string" ||
-        (input.oaUrl &&
-          !/^https?:\/\/[^\s/]+(?:[/?#][^\s]*)?$/i.test(input.oaUrl))
-      )
-        fail("oaUrl", "备份中的 OA 链接无效。");
-      clean.oaUrl = input.oaUrl;
-    }
-    if (input.targetAverageMinutes !== undefined) {
-      if (
-        !Number.isFinite(input.targetAverageMinutes) ||
-        input.targetAverageMinutes < 0 ||
-        input.targetAverageMinutes > 1440
-      )
-        fail("targetAverageMinutes", "备份中的月均加班目标无效。");
-      clean.targetAverageMinutes = input.targetAverageMinutes;
-    }
-    clean.overtimeRequirements =
-      input.overtimeRequirements === undefined
-        ? [clean.targetAverageMinutes, null, null, null, null]
-        : validateOvertimeRequirements(input.overtimeRequirements);
+    clean.settings = { configured: input.settings.configured, ...schedule };
+    clean.personal = { employmentDate, workCity };
+    clean.preferences = { pageTheme: input.preferences.pageTheme };
+    clean.scheduleRanges = WorkTimeApp.domain.schedule.validateScheduleRanges(
+      input.scheduleRanges,
+    );
+    clean.oaUrl = input.oaUrl;
+    clean.overtimeRequirements = validateOvertimeRequirements(
+      input.overtimeRequirements,
+    );
     for (const [key, day] of Object.entries(input.days))
-      clean.days[key] = validateDay(key, day, standard);
+      clean.days[key] = validateDay(
+        key,
+        day,
+        WorkTimeApp.domain.schedule.scheduleForDate(clean, key).standardMinutes,
+      );
     const importIds = new Set();
     clean.imports = Array.from(input.imports, (log, index) => {
       const path = "imports[" + index + "]";
@@ -309,19 +274,12 @@ const WorkValidation = (() => {
           raw: text(source.raw, field + ".raw"),
         };
       });
-      if (log.count != null && !["number", "string"].includes(typeof log.count))
-        fail(path + ".count", "备份中的导入数量无效。");
-      const count = log.count == null ? 0 : Number(log.count);
-      if (
-        log.count != null &&
-        (!["number", "string"].includes(typeof log.count) ||
-          !Number.isInteger(count) ||
-          count < 0)
-      )
+      const count = log.count;
+      if (!Number.isInteger(count) || count < 0)
         fail(path + ".count", "备份中的导入数量无效。");
       importIds.add(log.id);
       const result = { id: log.id, at: log.at, year: log.year, sources, count };
-      if (log.records !== undefined) {
+      {
         if (!Array.isArray(log.records))
           fail(path + ".records", "备份中的导入打卡记录无效。");
         result.records = Array.from(log.records, (record, recordIndex) =>
@@ -334,23 +292,17 @@ const WorkValidation = (() => {
       }
       return result;
     });
-    if (
-      input.timeTemplates !== undefined &&
-      !Array.isArray(input.timeTemplates)
-    )
+    if (!Array.isArray(input.timeTemplates))
       fail("timeTemplates", "备份中的时间模板无效。");
     const templateIds = new Set();
-    clean.timeTemplates = Array.from(
-      input.timeTemplates || [],
-      (template, index) => {
-        const path = "timeTemplates[" + index + "]",
-          result = validateTimeTemplate(template, path);
-        if (templateIds.has(result.id))
-          fail(path + ".id", "备份中有重复的模板标识。");
-        templateIds.add(result.id);
-        return result;
-      },
-    );
+    clean.timeTemplates = Array.from(input.timeTemplates, (template, index) => {
+      const path = "timeTemplates[" + index + "]",
+        result = validateTimeTemplate(template, path);
+      if (templateIds.has(result.id))
+        fail(path + ".id", "备份中有重复的模板标识。");
+      templateIds.add(result.id);
+      return result;
+    });
     return clean;
   }
   return {

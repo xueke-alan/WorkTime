@@ -1,6 +1,6 @@
 "use strict";
 /** Notifications and transient feedback. Owns display only; save decisions remain in the app. */
-WorkUI.createNotifications = function (options) {
+WorkTimeApp.ui.createNotifications = function (options) {
   const {
     core: C,
     element: $,
@@ -12,6 +12,27 @@ WorkUI.createNotifications = function (options) {
     timeAnomaly,
     document,
   } = options;
+  const timers = new Set(),
+    feedback = new Set();
+  let mounted = true;
+  function later(action, delay) {
+    const timer = setTimeout(() => {
+      timers.delete(timer);
+      if (mounted) action();
+    }, delay);
+    timers.add(timer);
+  }
+  function mount() {
+    mounted = true;
+  }
+  function dispose() {
+    mounted = false;
+    for (const timer of timers) clearTimeout(timer);
+    timers.clear();
+    for (const item of feedback) item.remove();
+    feedback.clear();
+    updateNotificationEmptyState();
+  }
   function notificationIcon(type) {
     const graphic =
       type === "countdown"
@@ -33,6 +54,7 @@ WorkUI.createNotifications = function (options) {
     ]) {
       const item = $(id),
         body = document.createElement("div");
+      if (item.querySelector(".notification-body")) continue;
       body.className = "notification-body";
       while (item.firstChild) body.append(item.firstChild);
       item.classList.add("info-notification", "tone-" + type);
@@ -52,6 +74,7 @@ WorkUI.createNotifications = function (options) {
     $("notificationEmpty").classList.toggle("hidden", hasFeedback || hasStatic);
   }
   function toast(message, tone = "countdown") {
+    if (!mounted) return;
     const item = document.createElement("div");
     item.className =
       "info-notification tone-countdown feedback-notice" +
@@ -60,18 +83,20 @@ WorkUI.createNotifications = function (options) {
       notificationIcon("countdown") + '<div class="notification-body"></div>';
     item.querySelector(".notification-body").textContent = message;
     $("feedbackList").prepend(item);
+    feedback.add(item);
     const count = item.querySelector(".ring-count");
-    setTimeout(() => {
+    later(() => {
       if (item.isConnected) count.textContent = "2";
     }, 1000);
-    setTimeout(() => {
+    later(() => {
       if (item.isConnected) count.textContent = "1";
     }, 2000);
-    setTimeout(() => {
+    later(() => {
       if (item.isConnected) item.classList.add("motion-leaving");
     }, 2820);
-    setTimeout(() => {
+    later(() => {
       item.remove();
+      feedback.delete(item);
       updateNotificationEmptyState();
     }, 3000);
     updateNotificationEmptyState();
@@ -128,6 +153,8 @@ WorkUI.createNotifications = function (options) {
         : "";
   }
   return {
+    mount,
+    dispose,
     decorateStaticNotices,
     updateNotificationEmptyState,
     toast,

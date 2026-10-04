@@ -1,6 +1,6 @@
 "use strict";
 /** Backup transport independent of DOM, storage and confirmation dialogs. */
-const WorkBackup = (() => {
+WorkTimeApp.services.backup = (() => {
   const PREFIX = "WORKTIME:GZIP:1:";
   const MAX_BYTES = 30 * 1024 * 1024;
   async function encode(raw) {

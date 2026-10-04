@@ -1,5 +1,5 @@
 "use strict";
-const WorkClipboard = (() => {
+WorkTimeApp.services.clipboard = (() => {
   function create(getClipboard) {
     return {
       async readText() {
