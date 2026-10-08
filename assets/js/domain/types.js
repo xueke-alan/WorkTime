@@ -5,7 +5,7 @@
  * @typedef {{start:number,end:number}} WorkBreak
  * @typedef {{configured:boolean,workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[]}} WorkSettings
  * @typedef {{employmentDate:string,workCity:string}} WorkPersonal
- * @typedef {{pageTheme:'green'|'blue'|'purple'|'orange'|'rose'|'slate'}} WorkPreferences
+ * @typedef {{pageTheme:'green'|'blue'|'purple'|'orange'|'rose'|'slate'|'cyan'|'mint'|'olive'|'gold'|'red'|'brown'}} WorkPreferences
  * @typedef {{start:string,end:string,nextDay:boolean,effectiveMinutes:number|null}} WorkManualRecord
  * @typedef {{start:string,end:string,nextDay:boolean}} WorkDraft
  * @typedef {{date:string,start:string,end:string,nextDay:boolean,status:'complete'|'pending'|'off',source:string,raw:string,importId?:string}} WorkOAObservation

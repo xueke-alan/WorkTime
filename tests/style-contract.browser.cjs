@@ -8,7 +8,7 @@ const reference = require("./helpers/style-reference.cjs").create(
   "page",
   process.argv.includes("--original")
     ? "tests/fixtures/styles-stage01-contract.json.gz"
-    : "tests/fixtures/styles-page-2026-10-09.json.gz",
+    : "tests/fixtures/styles-page-v120.json.gz",
 );
 const baseline = reference.baseline;
 const zlib = require("node:zlib");

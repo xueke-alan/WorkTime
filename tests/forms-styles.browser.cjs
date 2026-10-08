@@ -7,7 +7,7 @@ const fs = require("node:fs"),
 const root = path.resolve(__dirname, ".."),
   reference = require("./helpers/style-reference.cjs").create(
     "forms",
-    "tests/fixtures/styles-forms-2026-10-09.json.gz",
+    "tests/fixtures/styles-forms-v120.json.gz",
   ),
   baseline = reference.baseline,
   record = process.argv.includes("--record") || reference.capture,

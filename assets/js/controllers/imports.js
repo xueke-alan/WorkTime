@@ -232,7 +232,7 @@ WorkTimeApp.ui.createImportController = function (options) {
         parseImport(sources);
         actions.open("importDialog");
         $("importDetails").classList.remove("hidden");
-        actions.toast("剪贴板记录存在冲突或提示，请核查后确认导入");
+        actions.toast("导入记录需核查，请确认后导入");
         return;
       }
       const saved = commitOARecords(
@@ -372,7 +372,7 @@ WorkTimeApp.ui.createImportController = function (options) {
           ) ||
         logs.at(-1);
     if (!log) {
-      actions.toast("没有对应的导入记录，可在导入历史中查看其他记录。");
+      actions.toast("未找到对应记录，请查看导入历史");
       return;
     }
     showImportDetail(log.id);

@@ -49,7 +49,10 @@ const view = realm.create({
       ? { open: settingsOpen }
       : id === "importDialog"
         ? { dispatchEvent: (event) => calls.push(event.type) }
-        : { showModal: () => calls.push("modal:" + id) },
+        : {
+            showModal: () => calls.push("modal:" + id),
+            classList: { add() {}, remove() {} },
+          },
   sidebarPanels: { open: (id) => id === "importDialog" },
   notifications: {
     renderOAStaleNotice: () => calls.push("stale"),

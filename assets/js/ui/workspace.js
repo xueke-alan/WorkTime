@@ -52,12 +52,22 @@ WorkTimeApp.ui.createWorkspace = function ({
       renderEditor();
     },
     open(id) {
-      if (!disposed && !sidebarPanels.open(id)) $(id).showModal();
+      if (disposed || sidebarPanels.open(id)) return;
+      const dialog = $(id);
+      // Let native dialog focusing run while visible. No frame is painted between
+      // showModal and preparation; alignment completes before the opening fade.
+      dialog.showModal();
+      dialog.classList.add("motion-dialog-preparing");
+      try {
+        WorkTimeApp.ui.alignment?.refresh([dialog]);
+      } finally {
+        dialog.classList.remove("motion-dialog-preparing");
+      }
     },
     saveFeedback(saved, message) {
       if (disposed) return;
       notifications.toast(
-        saved ? message : "更改保留在当前页面，但未能保存，请查看提醒并备份",
+        saved ? message : "未能保存，请备份；修改暂留本页",
         saved ? "countdown" : "error",
       );
     },

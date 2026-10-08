@@ -114,6 +114,35 @@ let browser;
       "Weather refresh preserves the focused forecast tab or panel",
     );
   }
+  for (const mode of ["daily", "hourly"]) {
+    await page.locator("#weather-forecast-tab-" + mode).click();
+    await page.locator("#date-tab-notifications").click();
+    await page.locator("#date-tab-weather").click();
+    assert.equal(
+      await page
+        .locator("#weather-forecast-tab-" + mode)
+        .getAttribute("aria-selected"),
+      "true",
+      "Reopening weather preserves the selected forecast",
+    );
+    await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+    await page.evaluate(() => WorkTimeApp.services.weather.setCity("苏州"));
+    await page.waitForFunction(
+      () =>
+        !!WorkTimeApp.services.weather.snapshot().record &&
+        !WorkTimeApp.services.weather.snapshot().loading,
+    );
+    assert.equal(
+      await page
+        .locator("#weather-forecast-tab-" + mode)
+        .getAttribute("aria-selected"),
+      "true",
+      "Reloading the page restores the selected forecast",
+    );
+  }
   hourly = false;
   await page.evaluate(() => WorkTimeApp.services.weather.refresh(true));
   assert.equal(await page.locator(".weather-hour").count(), 12);

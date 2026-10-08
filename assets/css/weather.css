@@ -1,11 +1,12 @@
 body .editor #dateInfoPanel.weather-panel { position: relative; padding: 1rem 1.1rem 0.65rem; display: flex; flex-direction: column; gap: 0.35rem; overflow: hidden; margin-bottom: 0; }
 .weather-panel > * { flex-shrink: 0; }
-.weather-heading { display: flex; align-items: center; gap: 0.6rem; min-height: 0; height: auto; padding-inline-end: 5rem; font-size: 1.65rem; line-height: 1.3; color: var(--theme-text-strong, #374746); }
+.weather-heading { display: flex; align-items: baseline; gap: 1rem; min-height: 0; height: auto; padding-inline-end: 5rem; font-size: 1.65rem; line-height: 1.3; color: var(--theme-text-strong, #374746); }
 .weather-heading strong { font-size: inherit; font-weight: 700; }
 .weather-heading > strong { color: var(--theme-text-strong, #202727); }
 .weather-current { display: flex; gap: 0.4rem; align-items: flex-end; font-size: inherit; }
 .weather-panel > .weather-condition { position: absolute; top: 1rem; right: 1.1rem; width: 5rem; height: 5rem; margin: 0; font-size: 1rem; line-height: 1.4; padding: 0; }
-.weather-temperature { font-variant-numeric: tabular-nums; }
+/* Compensate for the Latin digits' shallower descent beside Chinese city names. */
+.weather-temperature { font-variant-numeric: tabular-nums; translate: 0 calc(0.15em - 1.5px); }
 .weather-temperature[data-tone="comfortable"] { color: #168269; }
 .weather-temperature[data-tone="warm"] { color: #b96a16; }
 .weather-temperature[data-tone="hot"] { color: #c04438; }

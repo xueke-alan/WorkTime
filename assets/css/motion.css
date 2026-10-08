@@ -89,10 +89,10 @@ body button:disabled {
   animation: motion-fade var(--motion-normal) var(--motion-ease);
 }
 body .motion-sidebar-forward {
-  animation: motion-sidebar-forward 280ms var(--motion-ease);
+  animation: motion-sidebar-forward 200ms var(--motion-ease);
 }
 body .motion-sidebar-back {
-  animation: motion-sidebar-back 280ms var(--motion-ease);
+  animation: motion-sidebar-back 200ms var(--motion-ease);
 }
 @keyframes motion-sidebar-forward {
   from { opacity: 0; transform: translateX(8px); }
@@ -132,15 +132,16 @@ body .calendar.is-batch-editing > button.day[data-date]:nth-child(3n + 1) {
   body .calendar.is-batch-editing > button.day[data-date] { animation: none !important; }
 }
 body dialog[open] {
-  animation: motion-dialog 220ms var(--motion-ease);
-}
-/* Keep editable dialog inputs stationary throughout the opening fade. */
-body #settingsDialog[open],
-body #timeTemplateDialog[open] {
-  animation-name: motion-fade;
+  animation: motion-fade 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 body dialog[open]::backdrop {
-  animation: motion-fade 220ms ease-out;
+  animation: motion-fade 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+/* Measure before the first painted frame, without moving or resizing controls. */
+body dialog.motion-dialog-preparing,
+body dialog.motion-dialog-preparing::backdrop {
+  visibility: hidden;
+  animation: none;
 }
 body .feedback-notice {
   animation: motion-notice 220ms var(--motion-ease);
@@ -188,16 +189,6 @@ body .leave-popover:not(.hidden) {
   to {
     outline: 2px solid transparent;
     outline-offset: -2px;
-  }
-}
-@keyframes motion-dialog {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 @keyframes motion-notice {

@@ -73,7 +73,7 @@ let browser;
     }
     assert.equal(await button.getAttribute("aria-pressed"), "true");
     assert.equal(await page.locator("#dayForm").isVisible(), false);
-    assert.equal(await pane.locator('input[type="radio"]').count(), 6);
+    assert.equal(await pane.locator('input[type="radio"]').count(), 12);
     const green = pane.locator('input[value="green"]');
     await button.press("Tab");
     await green.focus();

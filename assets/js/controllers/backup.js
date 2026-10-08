@@ -53,7 +53,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
         "记录已恢复，主题未保存：" + result.error.message;
       $("retryRestoreTheme").hidden = false;
       $("confirmRestore").disabled = true;
-      actions.toast("记录已恢复，主题未保存，请重试保存主题", "error");
+      actions.toast("记录已恢复，主题未保存，请重试", "error");
       return;
     }
     pendingTheme = null;
@@ -150,10 +150,10 @@ WorkTimeApp.ui.createBackupController = function (options) {
       const decoded = await readBackupText(text);
       if (disposed || lifetime !== generation) return;
       previewRestore(decoded, "剪贴板");
-      actions.toast("剪贴板备份解析成功，请确认恢复");
+      actions.toast("备份已解析，请确认恢复");
     } catch (error) {
       if (disposed || lifetime !== generation) return;
-      actions.toast("剪贴板读取或解析失败，请选择备份文件", "error");
+      actions.toast("剪贴板备份读取失败，请选择文件", "error");
       $("backupFile").click();
     } finally {
       if (lifetime === generation) button.disabled = false;
@@ -214,7 +214,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
         const decoded = await readBackupText(await f.text());
         if (disposed || lifetime !== generation) return;
         previewRestore(decoded, "文件");
-        actions.toast("备份文件解析成功，请确认恢复");
+        actions.toast("备份已解析，请确认恢复");
       } catch (err) {
         if (disposed || lifetime !== generation) return;
         actions.toast("恢复失败：" + err.message, "error");

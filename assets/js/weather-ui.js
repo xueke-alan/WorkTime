@@ -32,6 +32,16 @@
     });
   }
   const forecastState = new WeakMap();
+  const forecastModeKey = "worktime.weather.forecastMode";
+  function readForecastMode() {
+    try {
+      return g.localStorage.getItem(forecastModeKey) === "daily"
+        ? "daily"
+        : "hourly";
+    } catch {
+      return "hourly";
+    }
+  }
   let resumeFrame = 0;
   let resumeCount = 0;
   let mountedRoot = null;
@@ -127,14 +137,19 @@
     viewEvents = new AbortController();
     const signal = viewEvents.signal;
     const saved = forecastState.get(panel) || {
-      mode: "hourly",
+      mode: readForecastMode(),
       hourly: 0,
       daily: 0,
     };
     forecastState.set(panel, saved);
     panel.replaceChildren();
     const head = node("div", undefined, "weather-heading");
-    head.append(node("strong", value.city?.name || "天气"));
+    head.append(
+      node(
+        "strong",
+        value.city ? value.city.name.replace(/市$/, "") + "市" : "天气",
+      ),
+    );
     panel.append(head);
     if (value.message)
       panel.append(node("p", value.message, "date-info-empty"));
@@ -288,6 +303,11 @@
           WorkTimeApp.ui.motion?.stop(view);
       }
       saved.mode = mode;
+      if (animate) {
+        try {
+          g.localStorage.setItem(forecastModeKey, mode);
+        } catch {}
+      }
       for (const [key, view] of Object.entries(views)) {
         view.hidden = key !== mode;
         buttons[key].setAttribute("aria-selected", String(key === mode));

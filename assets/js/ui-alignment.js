@@ -327,9 +327,15 @@
         attributeFilter: ["class", "style"],
       });
   }
-  // Startup opacity/translation and its delay do not change font or line boxes.
-  // Their cleanup can run after the first usable screen; do not remeasure the page.
-  function isStartupMotionMetadata(record) {
+  // Surface motion does not change font or line boxes. Ignore its bookkeeping,
+  // including cleanup, while still observing mixed motion/layout class changes.
+  const motionClasses = new Set([
+    "motion-startup",
+    "motion-sidebar-forward",
+    "motion-sidebar-back",
+    "motion-dialog-preparing",
+  ]);
+  function isMotionMetadata(record) {
     if (record.type !== "attributes") return false;
     const element = record.target;
     if (record.attributeName === "class") {
@@ -341,8 +347,7 @@
         (token) => before.has(token) !== after.has(token),
       );
       return (
-        changed.length > 0 &&
-        changed.every((token) => token === "motion-startup")
+        changed.length > 0 && changed.every((token) => motionClasses.has(token))
       );
     }
     if (record.attributeName !== "style") return false;
@@ -361,7 +366,7 @@
   }
   function mutationsChanged(records) {
     for (const record of records) {
-      if (isStartupMotionMetadata(record)) continue;
+      if (isMotionMetadata(record)) continue;
       const element =
         record.target instanceof Element
           ? record.target

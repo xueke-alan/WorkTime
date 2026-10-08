@@ -31,6 +31,53 @@ WorkTimeApp.ui.createCalendar = function (options) {
   let calendarMarkup = "";
   const calendarNodes = new Map();
   const markup = new WeakMap();
+  function dateMarkers(date, payday, paydayHint) {
+    const start = getState().personal.employmentDate,
+      markers = [];
+    const monthDay = start.slice(5),
+      anniversary =
+        monthDay === "02-29" && !C.validDate(date.slice(0, 4) + "-02-29")
+          ? "03-01"
+          : monthDay;
+    if (C.validDate(start) && date >= start && date.slice(5) === anniversary) {
+      const years = Number(date.slice(0, 4)) - Number(start.slice(0, 4)),
+        label = years ? "入职 " + years + " 周年纪念日" : "入职日";
+      markers.push({
+        label,
+        hint: label + "；入职日期：" + start,
+        className: " employment-icon",
+        icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2.5c0-3.6 3.1-6 7-6s7 2.4 7 6V21Z"/></svg>',
+      });
+    }
+    if (date === payday.date)
+      markers.push({
+        label: "发薪日",
+        hint: paydayHint,
+        className: "",
+        icon: '<svg class="ui-icon" aria-hidden="true"><use href="#ms-currency-yen"/></svg>',
+      });
+    return {
+      label: markers.map((marker) => " " + marker.label).join(""),
+      html: markers.length
+        ? '<span class="date-markers" role="img" aria-label="' +
+          esc(markers.map((marker) => marker.label).join("、")) +
+          '" title="' +
+          esc(markers.map((marker) => marker.hint).join("\n")) +
+          '">' +
+          markers
+            .map(
+              (marker) =>
+                '<span class="payday-icon' +
+                marker.className +
+                '" aria-hidden="true">' +
+                marker.icon +
+                "</span>",
+            )
+            .join("") +
+          "</span>"
+        : "",
+    };
+  }
   function updateHTML(element, html) {
     if (markup.get(element) === html) return;
     element.innerHTML = html;
@@ -116,7 +163,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
     candidates.forEach((candidate, index) => {
       const key = nodeKey(candidate, index),
         previous = calendarNodes.get(key),
-        source = candidate.outerHTML;
+        source = candidate.outerHTML,
+        candidateContent = candidate.innerHTML;
       let element = candidate;
       if (previous && previous.element.parentElement === container) {
         element = previous.element;
@@ -129,12 +177,20 @@ WorkTimeApp.ui.createCalendar = function (options) {
             if (element.getAttribute(attribute.name) !== attribute.value)
               element.setAttribute(attribute.name, attribute.value);
           if (
-            previous.content !== candidate.innerHTML &&
+            previous.content !== candidateContent &&
             !(
               element.matches(".year-month") &&
               updateYearMonth(element, candidate)
             )
           ) {
+            const markers = element.querySelector(".date-markers"),
+              nextMarkers = candidate.querySelector(".date-markers");
+            if (
+              markers &&
+              nextMarkers &&
+              markers.outerHTML === nextMarkers.outerHTML
+            )
+              nextMarkers.replaceWith(markers);
             // Weather owns these persistent layers. Keep them attached so editing
             // attendance neither reloads the SVG nor replays the weather fade.
             for (const child of [...element.childNodes])
@@ -146,9 +202,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
               )
                 child.remove();
             const content = document.createDocumentFragment();
-            content.append(
-              ...[...candidate.childNodes].map((node) => node.cloneNode(true)),
-            );
+            content.append(...candidate.childNodes);
             element.insertBefore(content, element.firstChild);
           }
           if (element.querySelector(".calendar-weather-icon"))
@@ -158,7 +212,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
       next.set(key, {
         element,
         source,
-        content: candidate.innerHTML,
+        content: candidateContent,
         attributes: [...candidate.attributes].map(
           (attribute) => attribute.name,
         ),
@@ -344,6 +398,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         scheduleChanged = hasScheduleChange(state, k, schedule),
         calc = C.calculate(k, day, schedule, true),
         label = stateLabel(day, r, k),
+        markers = dateMarkers(k, payday, paydayHint),
         kindLabel =
           info.label.replace(" · 手动", "") +
           (info.work ? " " + ++workdayNumber : "");
@@ -444,23 +499,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
           : day.leaveMinutes
             ? " 请假 " + C.hours(day.leaveMinutes) + "h"
             : "") +
-        (k === state.personal.employmentDate
-          ? " 入职日"
-          : k === payday.date
-            ? " 发薪日"
-            : "") +
+        markers.label +
         '"><div class="daytop"><span class="day-date"><span class="daynum"><span class="daynum-text">' +
         i +
         "</span></span>" +
-        (k === state.personal.employmentDate
-          ? '<span class="payday-icon employment-icon" role="img" aria-label="入职日" title="入职日：' +
-            esc(k) +
-            '"><svg class="ui-icon" aria-hidden="true"><use href="#ms-person-add"/></svg></span>'
-          : k === payday.date
-            ? '<span class="payday-icon" role="img" aria-label="发薪日" title="' +
-              esc(paydayHint) +
-              '"><svg class="ui-icon" aria-hidden="true"><use href="#ms-currency-yen"/></svg></span>'
-            : "") +
+        markers.html +
         '</span><span class="daykind">' +
         esc(kindLabel) +
         '</span></div><div class="daytime">' +

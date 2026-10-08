@@ -8,7 +8,20 @@ const assert = require("node:assert/strict"),
 const root = path.resolve(__dirname, ".."),
   url = pathToFileURL(path.join(root, "index.html")).href,
   key = "worktime.pageTheme",
-  themes = ["green", "blue", "purple", "orange", "rose", "slate"];
+  themes = [
+    "green",
+    "blue",
+    "purple",
+    "orange",
+    "rose",
+    "slate",
+    "cyan",
+    "mint",
+    "olive",
+    "gold",
+    "red",
+    "brown",
+  ];
 let browser;
 async function ready(page) {
   await page.goto(url);
@@ -48,7 +61,6 @@ async function appearance(page, theme) {
         y = luminance(b);
       return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
     };
-    const selected = style(".theme-card:has(input:checked)");
     const swatch = style(".theme-card:has(input:checked) .theme-swatch");
     const button = style("#pageSettingsOpen");
     const pane = document.querySelector("#pageSettingsPane");
@@ -61,7 +73,7 @@ async function appearance(page, theme) {
       favicon: document.querySelector('link[rel="icon"]').getAttribute("href"),
       background: style("body").backgroundImage,
       border: style("#dayStart").borderColor,
-      selectedContrast: ratio(swatch.backgroundColor, selected.backgroundColor),
+      selectedContrast: ratio(swatch.backgroundColor, "rgb(255, 255, 255)"),
       buttonContrast: ratio(button.color, button.backgroundColor),
       helpRemoved: !pane.querySelector(".theme-help"),
       buttonSize: [...pane.querySelectorAll(".theme-card")].every((card) => {
@@ -76,8 +88,15 @@ async function appearance(page, theme) {
         );
       }),
       overflow: pane.scrollWidth - pane.clientWidth,
-      squares: cardRects.every((r) => Math.abs(r.width - r.height) < 1),
-      columns: cardRects.every((r) => Math.abs(r.top - cardRects[0].top) < 1),
+      singleRow:
+        cardRects.length === 12 &&
+        cardRects.every(
+          (r, index) =>
+            Math.abs(r.top - cardRects[0].top) < 1 &&
+            Math.abs(r.width - cardRects[0].width) < 1 &&
+            (index === 0 ||
+              Math.abs(r.left - cardRects[index - 1].right - 2) < 1),
+        ),
       swatches: [...pane.querySelectorAll(".theme-card")].every((card) => {
         const outer = card.getBoundingClientRect(),
           inner = card.querySelector(".theme-swatch").getBoundingClientRect(),
@@ -86,16 +105,32 @@ async function appearance(page, theme) {
           checked = card.querySelector("input").checked;
         return (
           Math.abs(inner.width - inner.height) < 1 &&
-          inner.width > outer.width * 0.45 &&
-          inner.width < outer.width * 0.65 &&
-          parseFloat(innerStyle.borderRadius) > 0 &&
+          inner.width > 0 &&
+          inner.width <= 16.01 &&
+          inner.width + 8 <= outer.width + 0.1 &&
+          innerStyle.borderRadius === "50%" &&
+          cardStyle.backgroundColor === "rgba(0, 0, 0, 0)" &&
+          cardStyle.borderTopWidth === "0px" &&
+          innerStyle.backgroundColor ===
+            (() => {
+              const probe = document.createElement("span");
+              probe.style.color = cardStyle.getPropertyValue(
+                "--theme-option-color",
+              );
+              card.append(probe);
+              const color = getComputedStyle(probe).color;
+              probe.remove();
+              return color;
+            })() &&
           Math.abs(inner.x + inner.width / 2 - outer.x - outer.width / 2) < 1 &&
           Math.abs(inner.y + inner.height / 2 - outer.y - outer.height / 2) <
             1 &&
           (checked
-            ? innerStyle.backgroundColor === cardStyle.borderTopColor
-            : cardStyle.backgroundColor === "rgb(255, 255, 255)" &&
-              innerStyle.backgroundColor !== cardStyle.borderTopColor)
+            ? innerStyle.outlineStyle === "solid" &&
+              Math.abs(parseFloat(innerStyle.outlineWidth) - 2) <= 0.5 &&
+              Math.abs(parseFloat(innerStyle.outlineOffset) - 2) <= 0.5 &&
+              innerStyle.outlineColor === innerStyle.backgroundColor
+            : innerStyle.outlineStyle === "none")
         );
       }),
     };
@@ -107,14 +142,14 @@ async function appearance(page, theme) {
     JSON.stringify({ theme, styles }),
   );
   assert.ok(
-    styles.overflow <= 1 && styles.squares && styles.columns && styles.swatches,
+    styles.overflow <= 1 && styles.singleRow && styles.swatches,
     JSON.stringify({ theme, styles }),
   );
   return styles;
 }
 (async () => {
   browser = await require("./helpers/browser.cjs").launchBrowser();
-  for (const width of [390, 1600]) {
+  for (const width of [320, 390, 1600]) {
     const context = await browser.newContext({
       viewport: { width, height: 1000 },
       reducedMotion: "reduce",
@@ -133,6 +168,31 @@ async function appearance(page, theme) {
       localStorage.getItem(WorkTimeApp.domain.state.KEY),
     );
     await page.locator("#pageSettingsOpen").click();
+    await page.getByRole("radio", { name: "清新绿", exact: true }).focus();
+    await page.keyboard.press("ArrowRight");
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "blue");
+    assert.ok(
+      await page
+        .locator('.theme-card:has(input[value="blue"])')
+        .evaluate((card) => {
+          const style = getComputedStyle(card);
+          return (
+            card.querySelector("input") === document.activeElement &&
+            style.outlineStyle === "solid" &&
+            style.outlineWidth === "2px" &&
+            style.outlineOffset === "-2px" &&
+            card.title === "天空蓝"
+          );
+        }),
+    );
+    // The full column remains clickable outside the small visible dot.
+    const brownCard = page.locator('.theme-card:has(input[value="brown"])');
+    const brownBounds = await brownCard.boundingBox();
+    await brownCard.click({ position: { x: 1, y: brownBounds.height / 2 } });
+    assert.equal(
+      await page.locator("html").getAttribute("data-theme"),
+      "brown",
+    );
     const samples = [];
     for (const theme of [
       "blue",
@@ -140,6 +200,12 @@ async function appearance(page, theme) {
       "orange",
       "rose",
       "slate",
+      "cyan",
+      "mint",
+      "olive",
+      "gold",
+      "red",
+      "brown",
       "green",
     ]) {
       await choose(page, theme);
@@ -158,10 +224,10 @@ async function appearance(page, theme) {
         path: path.join(root, `test-results/theme-${theme}-${width}.png`),
       });
     }
-    assert.equal(new Set(samples.map((s) => s.background)).size, 6);
-    assert.equal(new Set(samples.map((s) => s.border)).size, 6);
-    assert.equal(new Set(samples.map((s) => s.icon)).size, 6);
-    assert.equal(new Set(samples.map((s) => s.favicon)).size, 6);
+    assert.equal(new Set(samples.map((s) => s.background)).size, themes.length);
+    assert.equal(new Set(samples.map((s) => s.border)).size, themes.length);
+    assert.equal(new Set(samples.map((s) => s.icon)).size, themes.length);
+    assert.equal(new Set(samples.map((s) => s.favicon)).size, themes.length);
     const second = await context.newPage();
     await ready(second);
     await second.locator("#pageSettingsOpen").click();
@@ -357,7 +423,7 @@ async function appearance(page, theme) {
     }
   }
   console.log(
-    "Themes: six palettes, contrast, keyboard companion coverage, responsive layout, native zoom, persistence, explicit preference restore, storage errors and synchronization passed.",
+    "Themes: twelve palettes, contrast, keyboard companion coverage, responsive layout, native zoom, persistence, explicit preference restore, storage errors and synchronization passed.",
   );
 })()
   .catch((error) => {

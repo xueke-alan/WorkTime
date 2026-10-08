@@ -486,7 +486,7 @@
   height: 95px;
   max-width: 88%;
   max-height: 85%;
-  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2096%2096%22%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23bdcec4%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M72%2055h5q8%200%207%207t-13%207%22%2F%3E%0A%20%20%20%20%3Cpath%20d%3D%22M45%2053h28l-2%2016q-1%208-12%208t-12-8Z%22%20fill%3D%22%23dce7de%22%2F%3E%0A%20%20%20%20%3Cellipse%20cx%3D%2259%22%20cy%3D%2253%22%20rx%3D%2214%22%20ry%3D%223%22%20fill%3D%22%23edf2eb%22%2F%3E%0A%20%20%20%20%3Cpath%20d%3D%22M54%2044q-4-5%200-10M65%2043q-4-5%200-10%22%20stroke%3D%22%23c9d8ce%22%2F%3E%0A%20%20%20%20%3Cpath%20d%3D%22M26%2085q26-7%2061-2%22%20stroke%3D%22%23d0dcd2%22%2F%3E%0A%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A") bottom right/contain no-repeat;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2096%2096%22%20fill%3D%22none%22%3E%0D%0A%20%20%3C%21--%20Simple%20flat%20shapes%3A%20a%20book%2C%20coffee%20and%20a%20two-leaf%20plant.%20--%3E%0D%0A%20%20%3Cpath%20d%3D%22M12%2061q14-4%2028%203%2014-7%2029-3v20q-15-4-29%203-14-7-28-3Z%22%20fill%3D%22%23dfd5bd%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M40%2065v17%22%20stroke%3D%22%23b9a68a%22%20stroke-width%3D%221.2%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M43%2036h5q9%200%209%208t-14%209v-5q9%200%209-4t-9-3Z%22%20fill%3D%22%23acc7b7%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M14%2034h30l-2%2017q-1%207-13%207T16%2051Z%22%20fill%3D%22%23acc7b7%22%2F%3E%0D%0A%20%20%3Cellipse%20cx%3D%2229%22%20cy%3D%2234%22%20rx%3D%2215%22%20ry%3D%223.5%22%20fill%3D%22%23dfd5bd%22%2F%3E%0D%0A%20%20%3Cellipse%20cx%3D%2229%22%20cy%3D%2234%22%20rx%3D%2211%22%20ry%3D%221.8%22%20fill%3D%22%23b9a68a%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M29%2025q-4-5%200-10%22%20stroke%3D%22%23acc7b7%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M67%2046V26%22%20stroke%3D%22%23acc7b7%22%20stroke-width%3D%221.5%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M67%2035Q53%2034%2054%2023q13%200%2013%2012M67%2029q0-13%2014-12-1%2011-14%2012%22%20fill%3D%22%23acc7b7%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M58%2044h19l-3%2014H61Z%22%20fill%3D%22%23dfd5bd%22%2F%3E%0D%0A%3C%2Fsvg%3E%0D%0A") bottom right/contain no-repeat;
   pointer-events: none;
   z-index: -1;
 }
@@ -1459,6 +1459,16 @@ body .calendar .day-date .daynum-text {
   z-index: 0;
 }
 :is(.calendar-weather-icon, .calendar-weather-outgoing) img { display: block; width: 100%; height: 100%; }
+/* Weekend scenery stays subtle beneath the weather icon. */
+.calendar .day.weekend:not([data-holiday]):not(.full-leave)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../images/weekend-scenery.svg") bottom center / 100% 100% no-repeat;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: -1;
+}
 /* Quiet scenery may extend beneath weather; detailed motifs stay clear of it. */
 .calendar .day[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::after {
   content: "";
@@ -1470,21 +1480,20 @@ body .calendar .day-date .daynum-text {
   z-index: -1;
 }
 /* Permanently reserve the weather area; National Day keeps its full-cell scenery. */
+.calendar .day.weekend:not([data-holiday]):not(.full-leave)::before,
 .calendar .day[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::before {
   right: calc(clamp(32px, 3.5vw, 56px) + 1rem);
   bottom: 0.5rem;
   max-width: calc(100% - clamp(32px, 3.5vw, 56px) - 1.5rem);
 }
 @media (max-width: 1799px) {
+  .calendar .day.weekend:not([data-holiday]):not(.full-leave)::before,
   .calendar .day[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::before {
     right: 0.5rem;
     bottom: calc(clamp(32px, 3.5vw, 56px) + 1rem);
     max-width: 88%;
     max-height: calc(100% - clamp(32px, 3.5vw, 56px) - 1.5rem);
   }
-}
-.calendar .day.has-weather.weekend:not([data-holiday]):not(.full-leave)::before {
-  opacity: 0.06;
 }
 #calendar .day.has-weather.full-leave::before {
   right: 32%;
@@ -1603,8 +1612,8 @@ body .calendar .day-date .daynum-text {
   }
 }
 body .calendar .employment-icon {
-  background: var(--theme-surface-soft, #d8e9e3);
-  color: var(--theme-text-strong, #28735e);
+  background: #d3decf;
+  color: #49624c;
 }
 #backup.is-resetting .hold-progress {
   opacity: 1;
@@ -1685,4 +1694,45 @@ body .panel-head #backup .backup-icon-slot {
 body .calendar .day[data-festival] .daykind {
   color: #aa624c;
   font-weight: 700;
+}
+
+/* Shared date marker slot: overlap icons while the carousel changes. */
+body .calendar .date-markers {
+  position: relative;
+  display: inline-flex;
+  width: calc(var(--date-ink-height, 1em) + 8px);
+  height: calc(var(--date-ink-height, 1em) + 8px);
+  flex: none;
+  overflow: hidden;
+  border-radius: 50%;
+}
+body .calendar .date-markers > .payday-icon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+body .calendar .date-markers > .payday-icon:not(:first-child) {
+  opacity: 0;
+}
+/* The two marker types share a six-second cycle, holding each for three seconds.
+   CSS keeps API failures harmless and follows preference changes while open. */
+body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon {
+  --marker-shift: 35%;
+  animation: date-marker-cycle 6s ease-in-out -6s infinite;
+}
+body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
+  animation-delay: -3s;
+}
+@keyframes date-marker-cycle {
+  0%, 44% { opacity: 1; transform: translateY(0); }
+  50% { opacity: 0; transform: translateY(calc(-1 * var(--marker-shift))); }
+  94% { opacity: 0; transform: translateY(var(--marker-shift)); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon {
+    --marker-shift: 0%;
+    animation-timing-function: steps(1, end);
+  }
 }

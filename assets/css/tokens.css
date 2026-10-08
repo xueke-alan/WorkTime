@@ -55,7 +55,13 @@
 :root[data-theme="purple"],
 :root[data-theme="orange"],
 :root[data-theme="rose"],
-:root[data-theme="slate"] {
+:root[data-theme="slate"],
+:root[data-theme="cyan"],
+:root[data-theme="mint"],
+:root[data-theme="olive"],
+:root[data-theme="gold"],
+:root[data-theme="red"],
+:root[data-theme="brown"] {
   --theme-icon-color: var(--accent);
   --accent-light: color-mix(in srgb, var(--accent) 9%, white);
   --bg: color-mix(in srgb, var(--accent) 5%, white);
@@ -119,4 +125,46 @@
 :root[data-theme="slate"] {
   --accent: #526979;
   --theme-rgb: 82, 105, 121;
+}
+
+:root[data-theme="cyan"] {
+  --accent: #087481;
+  --theme-rgb: 8, 116, 129;
+  --ink: #244247;
+  --muted: #55757b;
+}
+
+:root[data-theme="mint"] {
+  --accent: #397a59;
+  --theme-rgb: 57, 122, 89;
+  --ink: #2d4034;
+  --muted: #617869;
+}
+
+:root[data-theme="olive"] {
+  --accent: #6b742b;
+  --theme-rgb: 107, 116, 43;
+  --ink: #3b4029;
+  --muted: #707654;
+}
+
+:root[data-theme="gold"] {
+  --accent: #846312;
+  --theme-rgb: 132, 99, 18;
+  --ink: #453b25;
+  --muted: #7b6d4e;
+}
+
+:root[data-theme="red"] {
+  --accent: #ad3e3e;
+  --theme-rgb: 173, 62, 62;
+  --ink: #4d2e2e;
+  --muted: #855e5e;
+}
+
+:root[data-theme="brown"] {
+  --accent: #805b43;
+  --theme-rgb: 128, 91, 67;
+  --ink: #40352e;
+  --muted: #78695e;
 }

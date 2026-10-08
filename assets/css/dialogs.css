@@ -83,7 +83,6 @@ dialog {
 }
 dialog::backdrop {
   background: rgba(64, 64, 64, 0.3);
-  backdrop-filter: blur(5px);
 }
 .dialog-head {
   background: var(--theme-surface-paper, #f8fbf9);

@@ -143,13 +143,10 @@ WorkTimeApp.ui.createNotifications = function (options) {
     const status = C.oaStaleness(state),
       notice = $("oaStaleNotice");
     notice.classList.toggle("hidden", !status || !status.stale);
+    notice.title = status && status.stale ? "最新 OA 工时：" + status.date : "";
     notice.querySelector(".notification-body").textContent =
       status && status.stale
-        ? "最新 OA 工时记录为 " +
-          status.date +
-          "，距今 " +
-          status.days +
-          " 天。请前往 OA 获取并导入最新工时。"
+        ? "OA 工时已 " + status.days + " 天未更新，请导入"
         : "";
   }
   return {

@@ -15,9 +15,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     const full = model.state.timeTemplates.length >= templateLimit;
     for (const id of ["addTimeTemplate", "batchAddTimeTemplate"]) {
       $(id).disabled = full;
-      $(id).title = full
-        ? "最多保存 4 个模板，请先删除一个模板"
-        : "新增时间模板";
+      $(id).title = full ? "模板已满（4 个），请先删除" : "新增时间模板";
     }
   }
 
@@ -77,7 +75,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
   }
   function openTimeTemplate(template = null, defaults = null) {
     if (!template && model.state.timeTemplates.length >= templateLimit) {
-      actions.toast("最多保存 4 个模板，请先删除一个模板");
+      actions.toast("模板已满（4 个），请先删除");
       return;
     }
     templateEditingId = template ? template.id : null;
@@ -102,7 +100,6 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     $("deleteTimeTemplate").classList.toggle("hidden", !template);
     $("timeTemplateError").textContent = "";
     actions.open("timeTemplateDialog");
-    WorkTimeApp.ui.alignment?.refresh([$("timeTemplateDialog")]);
     $("timeTemplateName").focus({ preventScroll: true });
   }
   function updateTimeTemplateNextToggle() {
@@ -191,7 +188,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
           !templateEditingId &&
           model.state.timeTemplates.length >= templateLimit
         )
-          throw Error("最多保存 4 个模板，请先删除一个模板。");
+          throw Error("模板已满（4 个），请先删除。");
         const template = C.validateTimeTemplate({
           id:
             templateEditingId ||

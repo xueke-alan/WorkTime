@@ -125,7 +125,8 @@ WorkTimeApp.ui.createDayController = function (options) {
         if (
           !input.matches("input.clock-input") ||
           input.id === "dayStart" ||
-          input.id === "dayEnd"
+          input.id === "dayEnd" ||
+          input.id === "employmentDate"
         )
           return;
         if (input.classList.contains("date-entry")) {
@@ -151,7 +152,8 @@ WorkTimeApp.ui.createDayController = function (options) {
       if (
         !input.matches("input.clock-input") ||
         input.id === "dayStart" ||
-        input.id === "dayEnd"
+        input.id === "dayEnd" ||
+        input.id === "employmentDate"
       )
         return;
       if (event.key === "Enter" || event.key === "Escape") {
