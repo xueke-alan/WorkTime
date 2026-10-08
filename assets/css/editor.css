@@ -196,6 +196,9 @@ body .notification-empty {
   flex: 1;
 }
 .storage-recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
   margin-top: 0.571429rem;
 }
 .storage-recovery-actions button {

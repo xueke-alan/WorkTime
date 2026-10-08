@@ -9,6 +9,8 @@ WorkTimeApp.ui.createHoldAction = function ({
   cancelShortAfterFeedback = false,
 }) {
   const events = WorkTimeApp.ui.createEventScope();
+  const compat = WorkTimeApp.ui.animationCompat;
+  const reduced = compat.preference();
   let holding = false,
     completing = false,
     held = false,
@@ -25,12 +27,11 @@ WorkTimeApp.ui.createHoldAction = function ({
     const offset = getComputedStyle(ring).strokeDashoffset;
     button.classList.remove("is-holding");
     button.classList.add("is-resetting");
-    resetAnimation = ring.animate(
+    resetAnimation = compat.animate(
+      ring,
       [{ strokeDashoffset: offset }, { strokeDashoffset: "100" }],
       {
-        duration: matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? 0
-          : 300,
+        duration: reduced.matches ? 0 : 300,
         easing: "ease-out",
         fill: "forwards",
       },
@@ -77,6 +78,9 @@ WorkTimeApp.ui.createHoldAction = function ({
     held = holding || held;
     end();
   }
+  const unlisten = compat.listen(reduced, () => {
+    if (reduced.matches) resetAnimation?.cancel();
+  });
   events.listen(button, "pointerdown", (event) => {
     if (event.button !== 0) return;
     button.setPointerCapture(event.pointerId);
@@ -124,6 +128,7 @@ WorkTimeApp.ui.createHoldAction = function ({
     if (disposed) return;
     disposed = true;
     events.dispose();
+    unlisten();
     clearTimeout(holdTimer);
     clearTimeout(ringTimer);
     clearTimeout(finishTimer);

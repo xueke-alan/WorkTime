@@ -134,7 +134,47 @@ function pruneShadowed(root, isSupported) {
   }
   return { removed, cleaned: clean(root) };
 }
-module.exports = { clean, pruneShadowed };
+/** Merge only adjacent equal selectors/conditions, without moving declarations
+ * across any other rule. Keyframes and order-establishing layers stay untouched. */
+function consolidateAdjacent(root) {
+  const result = { rules: 0, conditions: 0 };
+  function visit(container) {
+    if (!container.nodes) return;
+    if (container.type === "atrule" && /keyframes$/i.test(container.name))
+      return;
+    for (const child of [...container.nodes]) visit(child);
+    for (let index = 1; index < container.nodes.length;) {
+      const previous = container.nodes[index - 1],
+        current = container.nodes[index];
+      const sameRule =
+        previous.type === "rule" &&
+        current.type === "rule" &&
+        previous.selector === current.selector;
+      const sameCondition =
+        previous.type === "atrule" &&
+        current.type === "atrule" &&
+        ["media", "supports", "container"].includes(previous.name) &&
+        previous.name === current.name &&
+        previous.params === current.params &&
+        previous.nodes &&
+        current.nodes;
+      if (!sameRule && !sameCondition) {
+        index++;
+        continue;
+      }
+      previous.append([...current.nodes]);
+      current.remove();
+      if (sameRule) result.rules++;
+      else {
+        result.conditions++;
+        visit(previous);
+      }
+    }
+  }
+  visit(root);
+  return result;
+}
+module.exports = { clean, pruneShadowed, consolidateAdjacent };
 if (require.main === module)
   main().catch((error) => {
     console.error(error);

@@ -300,6 +300,20 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/view_timeline/materialsymbolsrounded/view_timeline_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "ec080849651c1e24efec5d00c7b49fdd531fa426e1082d7ff341324673663ffb"
+    },
+    {
+      "id": "ms-expand-content",
+      "name": "expand_content",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/expand_content/materialsymbolsrounded/expand_content_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "b218276989894223e3cedc38b67dcbfdae2d9a8cc077175fce34ea95647d7469"
+    },
+    {
+      "id": "ms-hide",
+      "name": "hide",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/hide/materialsymbolsrounded/hide_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "a7c56d28af1afdc4403bea9aba78735b635f656585122c0897ca55b779a14ee6"
     }
   ]
 }

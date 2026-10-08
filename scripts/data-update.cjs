@@ -165,7 +165,7 @@ function create({ kind, root = project, now = new Date() }) {
   }
   function commit({ dryRun = false } = {}) {
     const stagedContext = vm.createContext({
-      DateInfoData: { history: {}, festivals: [] },
+      WorkTimeApp: { data: { dateInfo: { history: {}, festivals: [] } } },
     });
     stagedContext.window = stagedContext;
     for (const entry of manifest.files)
@@ -176,18 +176,22 @@ function create({ kind, root = project, now = new Date() }) {
       );
     validateDates(
       kind === "history"
-        ? stagedContext.DateInfoData.history
-        : stagedContext.DateInfoData.internationalByDate,
+        ? stagedContext.WorkTimeApp.data.dateInfo.history
+        : stagedContext.WorkTimeApp.data.dateInfo.internationalByDate,
       kind,
     );
-    const context = vm.createContext({});
+    const context = vm.createContext({
+      WorkTimeApp: { data: { dateInfo: { history: {}, festivals: [] } } },
+    });
     context.window = context;
     vm.runInContext(
       originals.get("assets/data/sources.js").toString(),
       context,
       { timeout: 1000 },
     );
-    const sources = JSON.parse(JSON.stringify(context.DateInfoData.sources));
+    const sources = JSON.parse(
+      JSON.stringify(context.WorkTimeApp.data.dateInfo.sources),
+    );
     sources.updated = date;
     sources[kind] = {
       ...(sources[kind] || {
@@ -207,9 +211,7 @@ function create({ kind, root = project, now = new Date() }) {
     };
     write(
       "assets/data/sources.js",
-      "window.DateInfoData=window.DateInfoData||{history:{},festivals:[]};\nDateInfoData.sources=" +
-        JSON.stringify(sources) +
-        ";\n",
+      "WorkTimeApp.data.dateInfo.sources=" + JSON.stringify(sources) + ";\n",
     );
     if (manifest.files.length !== targets.length)
       throw Error("Incomplete update files");

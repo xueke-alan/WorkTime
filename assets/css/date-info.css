@@ -292,6 +292,88 @@ body .editor > .notification-tabs .notification-tab svg {
   padding: 1rem 0;
   text-align: center;
 }
+body #countdownFocusToggle {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--control-height, 2.285714rem);
+  height: var(--control-height, 2.285714rem);
+  padding: 0;
+  appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent);
+  opacity: 0.35;
+  transition: opacity 180ms ease;
+}
+body #countdownFocusToggle:hover,
+body #countdownFocusToggle:focus-visible {
+  border: 0;
+  background: transparent;
+  opacity: 1;
+}
+body #countdownFocusToggle:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+body #countdownFocusToggle:focus-visible .ui-icon {
+  transform: scale(1.12);
+}
+@media (prefers-reduced-motion: reduce) {
+  body #countdownFocusToggle {
+    transition: none;
+  }
+}
+body.is-countdown-focused {
+  overflow: hidden;
+}
+body.is-countdown-focused .countdown-focus-hidden {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+body.is-countdown-focused .countdown-focus-ancestor {
+  visibility: hidden;
+  overflow: visible !important;
+  transform: none !important;
+  filter: none !important;
+  perspective: none !important;
+  contain: none !important;
+  container-type: normal !important;
+  animation: none !important;
+  opacity: 1 !important;
+}
+body.is-countdown-focused .editor #dateInfoPanel.countdown-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  visibility: visible;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  padding: 4rem 1.5rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+  overflow: auto;
+  animation: none;
+  transform: none;
+}
+body.is-countdown-focused .editor .countdown-time {
+  font-size: clamp(3rem, 16vw, 12rem);
+}
+body.is-countdown-focused .countdown-message {
+  font-size: clamp(1.5rem, 4vw, 3rem);
+}
+body.is-countdown-focused .countdown-end {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+}
 .countdown-rest-icon {
   display: none;
 }
@@ -376,6 +458,7 @@ body .editor > .notification-tabs .notification-badge[data-tone="error"] {
 }
 
 body .editor #dateInfoPanel.countdown-panel {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;

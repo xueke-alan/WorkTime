@@ -2,14 +2,17 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
-const { chromium } = require("playwright");
+
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const page = await browser.newPage();
   await page.setContent(`<style>.ui-aligned-text{display:inline-block;line-height:1.3;transform:translateY(var(--ui-ink-offset,0px))}</style>
     <div class="workspace"><section class="calendar"><div class="day-date"><span class="daynum-text">12</span></div></section>
-    <section class="summary-sidebar"><div class="metric">123</div><div class="target-value">456</div></section></div>`);
+    <section class="summary-sidebar"><div class="metric"><span data-number-ink>123</span></div><div class="target-value"><span data-number-ink>456</span></div></section></div>`);
+  await page.addScriptTag({
+    path: path.resolve(__dirname, "../assets/js/namespace.js"),
+  });
   await page.addScriptTag({
     path: path.resolve(__dirname, "../assets/js/ui-alignment.js"),
   });
@@ -36,14 +39,14 @@ let browser;
         events.push("read");
       return rect.call(this);
     };
-    UIAlignment.refresh();
+    WorkTimeApp.ui.alignment.refresh();
     Element.prototype.appendChild = append;
     Element.prototype.remove = remove;
     Element.prototype.getBoundingClientRect = rect;
     const probes = document.querySelectorAll(
       '.ui-aligned-text > i[aria-hidden="true"]',
     ).length;
-    UIAlignment.dispose();
+    WorkTimeApp.ui.alignment.dispose();
     return { events, probes };
   });
   assert(
@@ -87,7 +90,7 @@ let browser;
   await focusedPage.evaluate(() => document.fonts.ready);
   const scroll = await focusedPage.evaluate(() => {
     const before = [scrollX, scrollY];
-    UIAlignment.refresh();
+    WorkTimeApp.ui.alignment.refresh();
     return { before, after: [scrollX, scrollY] };
   });
   assert.deepEqual(

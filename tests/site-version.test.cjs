@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
 const crypto = require("node:crypto");
-const { versionHtml } = require("../scripts/version-site.cjs");
+const { versionHtml, versionSite } = require("../scripts/version-site.cjs");
 const root = path.resolve(__dirname, "..");
 const original = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const output = versionHtml(original, root);
@@ -29,6 +29,39 @@ assert.equal(
 );
 assert(count > 50);
 assert(output.includes('href="data:image/svg+xml,'));
+const converterHtml = fs.readFileSync(
+  path.join(root, "tools/convert-backup.html"),
+  "utf8",
+);
+const converterVersion = versionHtml(converterHtml, root, {
+  entryPath: "tools/convert-backup.html",
+});
+assert.equal(
+  versionHtml(converterVersion, root, {
+    entryPath: "tools/convert-backup.html",
+  }),
+  converterVersion,
+);
+let converterCount = 0;
+for (const [, asset, hash] of converterVersion.matchAll(
+  /(?:src|href)="([^"?]+)\?v=([a-f0-9]{16})"/g,
+)) {
+  assert.equal(
+    hash,
+    crypto
+      .createHash("sha256")
+      .update(fs.readFileSync(path.resolve(root, "tools", asset)))
+      .digest("hex")
+      .slice(0, 16),
+  );
+  converterCount++;
+}
+assert.equal(
+  converterCount,
+  [...converterHtml.matchAll(/(?:src|href)="[^"?]+\.(?:js|css)"/g)].length,
+);
+assert(converterCount > 15);
+assert(converterVersion.includes('href="../index.html"'));
 const temporary = fs.mkdtempSync(
   path.join(os.tmpdir(), "worktime-site-version-"),
 );
@@ -43,6 +76,37 @@ try {
   assert.throws(() =>
     versionHtml('<script src="assets/missing.js"></script>', temporary),
   );
+  fs.mkdirSync(path.join(temporary, "tools"));
+  const main = path.join(temporary, "index.html"),
+    converter = path.join(temporary, "tools", "convert-backup.html");
+  fs.writeFileSync(main, html);
+  fs.writeFileSync(converter, '<script src="../assets/missing.js"></script>');
+  assert.throws(() => versionSite(temporary));
+  assert.equal(
+    fs.readFileSync(main, "utf8"),
+    html,
+    "Both pages preflight before any write",
+  );
+  fs.writeFileSync(
+    converter,
+    '<script src="../assets/example.js#preserved"></script>',
+  );
+  versionSite(temporary);
+  assert.match(
+    fs.readFileSync(converter, "utf8"),
+    /\?v=[a-f0-9]{16}#preserved/,
+  );
+  assert.match(fs.readFileSync(main, "utf8"), /\?v=[a-f0-9]{16}/);
+  assert.throws(
+    () =>
+      versionHtml('<script src="../../escape.js"></script>', temporary, {
+        entryPath: "tools/convert-backup.html",
+      }),
+    /escapes/,
+  );
+  const remote =
+    '<script src="https://example.test/script.js"></script><link href="data:text/css,a" rel="stylesheet">';
+  assert.equal(versionHtml(remote, temporary), remote);
 } finally {
   fs.rmSync(temporary, { recursive: true, force: true });
 }

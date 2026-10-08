@@ -15,7 +15,7 @@ WorkTimeApp.domain.state = (() => {
   function defaultState() {
     return {
       schemaVersion: SCHEMA,
-      overtimeRequirements: [120, null, null, null, null],
+      overtimeRequirements: [60, 90, 90, 120, 120],
       oaUrl: "",
       personal: { employmentDate: "", workCity: "" },
       preferences: { pageTheme: "green" },

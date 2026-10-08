@@ -1,6 +1,5 @@
 "use strict";
-const { chromium } = require("playwright"),
-  assert = require("node:assert/strict"),
+const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   path = require("node:path");
 const root = path.resolve(__dirname, ".."),
@@ -9,7 +8,7 @@ for (const [, file] of html.matchAll(/(?:src|href)="(assets\/[^"?#]+)"/g))
   assert(fs.existsSync(path.join(root, file)), "Missing local asset: " + file);
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const context = await browser.newContext({
     timezoneId: "Asia/Shanghai",
     reducedMotion: "reduce",
@@ -28,6 +27,41 @@ let browser;
     require("node:url").pathToFileURL(path.join(root, "index.html")).href,
   );
   await page.locator("#dayStart").waitFor({ state: "visible" });
+  assert.deepEqual(
+    await page.evaluate(() => ({
+      facade: typeof WorkTime,
+      testAssembly: typeof DomainTest,
+      modules: Object.keys(WorkTimeApp.domain).sort(),
+    })),
+    {
+      facade: "undefined",
+      testAssembly: "undefined",
+      modules: [
+        "calendar",
+        "observations",
+        "payday",
+        "preferences",
+        "records",
+        "schedule",
+        "state",
+        "statistics",
+        "time",
+        "validation",
+      ],
+    },
+    "Offline production entry exports domain modules without the old facade or test assembly",
+  );
+  assert.equal(
+    await page.evaluate(() => typeof WorkTimeApp.ui.theme.save),
+    "undefined",
+    "Theme view must not export storage operations",
+  );
+  assert(
+    await page.evaluate(() =>
+      Object.isFrozen(WorkTimeApp.services.preferences.page.state),
+    ),
+    "Preference snapshots are immutable",
+  );
   await page.locator("#monthTitle").click();
   assert.equal(await page.locator(".year-month").count(), 12);
   await page.locator("[data-year-date]").first().click();

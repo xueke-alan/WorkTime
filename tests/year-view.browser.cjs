@@ -50,7 +50,31 @@ let runningBrowser;
         Math.abs(size.height - 30) < 0.1,
     ),
   );
-  assert.equal(await page.locator(".year-month h3").first().innerText(), "1月");
+  assert.equal(
+    await page.locator(".year-month-number").first().innerText(),
+    "1",
+  );
+  assert.equal(await page.locator(".year-month-stats").count(), 12);
+  assert.equal(
+    await page.locator(".year-month-stats").first().innerText(),
+    "0h\n—h/d",
+  );
+  const monthStats = await page.evaluate(() => {
+    const state = WorkTimeApp.domain.state.defaultState();
+    state.days["2026-01-12"] = {
+      actual: { start: "08:00", end: "19:30", nextDay: false },
+    };
+    state.days["2026-01-11"] = {
+      actual: { start: "08:00", end: "10:00", nextDay: false },
+    };
+    const stats = WorkTimeApp.ui.year.months(state, 2026, "2026-10-02")[0]
+      .summary;
+    return {
+      total: stats.workOvertime + stats.restOvertime,
+      average: stats.average,
+    };
+  });
+  assert.deepEqual(monthStats, { total: 210, average: 90 });
   const firstRow = await page.locator(".year-month").nth(0).boundingBox(),
     secondRow = await page.locator(".year-month").nth(4).boundingBox();
   assert(secondRow.y > firstRow.y + firstRow.height);
@@ -60,13 +84,20 @@ let runningBrowser;
       .locator(".year-month h3")
       .first()
       .evaluate((el) => getComputedStyle(el).fontSize),
-    "16px",
+    "18px",
   );
   await page.locator(".month-title-month").waitFor({ state: "hidden" });
-  const entered = await page.locator("#monthTitle").innerText();
+  const entered = await page
+    .locator("#monthTitleYear .summary-number-accessible")
+    .innerText();
   await page.locator("#prevMonth").click();
   await page.locator(".month-title-month").waitFor({ state: "hidden" });
-  assert.equal(await page.locator("#monthTitle").innerText(), "2025");
+  assert.equal(
+    await page
+      .locator("#monthTitleYear .summary-number-accessible")
+      .innerText(),
+    "2025",
+  );
   assert.equal(
     await page
       .locator("#calendar")
@@ -100,7 +131,12 @@ let runningBrowser;
   await page.locator("#todayButton").click();
   await page.locator("#monthTitle").click();
   await page.locator(".month-title-month").waitFor({ state: "hidden" });
-  assert.equal(await page.locator("#monthTitle").innerText(), entered);
+  assert.equal(
+    await page
+      .locator("#monthTitleYear .summary-number-accessible")
+      .innerText(),
+    entered,
+  );
   await page.keyboard.press("Tab");
   await page.locator('[data-year-date="2026-01-01"]').focus();
   assert.equal(await page.locator(".year-tooltip").count(), 0);
@@ -111,12 +147,12 @@ let runningBrowser;
   );
   await page.locator("#monthTitle").click();
   await page.evaluate(() => {
-    const saved = WorkTime.defaultState();
+    const saved = WorkTimeApp.domain.state.defaultState();
     saved.days["2026-09-28"] = {
       actual: { start: "08:00", end: "20:30", nextDay: false },
       leaveMinutes: 60,
     };
-    localStorage.setItem(WorkTime.KEY, JSON.stringify(saved));
+    localStorage.setItem(WorkTimeApp.domain.state.KEY, JSON.stringify(saved));
   });
   await page.reload();
   await page.clock.runFor(1000);
@@ -149,7 +185,7 @@ let runningBrowser;
   );
   await page.screenshot({
     path: require("node:path").join(
-      require("node:os").tmpdir(),
+      require("./helpers/browser.cjs").results,
       "worktime-year-desktop.png",
     ),
   });
@@ -183,7 +219,7 @@ let runningBrowser;
   );
   await page.screenshot({
     path: require("node:path").join(
-      require("node:os").tmpdir(),
+      require("./helpers/browser.cjs").results,
       "worktime-year-mobile.png",
     ),
     fullPage: true,

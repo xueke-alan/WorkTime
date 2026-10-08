@@ -1,6 +1,5 @@
 "use strict";
-const { chromium } = require("playwright"),
-  assert = require("node:assert/strict"),
+const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   crypto = require("node:crypto"),
   path = require("node:path");
@@ -14,7 +13,7 @@ const root = path.resolve(__dirname, ".."),
   );
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   for (const width of [2265, 1500, 390]) {
     const context = await browser.newContext({
       viewport: { width, height: 1244 },
@@ -65,13 +64,41 @@ let browser;
           .filter(
             (element) =>
               !element.querySelector("use") &&
-              !element.matches(".month-title-divider,.countdown-icon"),
+              !element.matches(
+                ".month-title-divider,.countdown-icon,.schedule-range-chevron,.target-divider svg",
+              ),
           )
           .map((element) => element.outerHTML);
         return { missing, custom };
       });
       assert.deepEqual(result, { missing: [], custom: [] });
+      assert.deepEqual(
+        await page.locator(".schedule-range-chevron").evaluate((svg) => ({
+          box: svg.getAttribute("viewBox"),
+          path: svg.querySelector("path").getAttribute("d"),
+        })),
+        { box: "0 0 24 24", path: "m7 10 5 5 5-5" },
+        "The local schedule chevron has an explicit audited path",
+      );
     }
+    assert.equal(await page.locator(".target-divider svg").count(), 1);
+    assert.deepEqual(
+      await page.locator(".target-divider svg").evaluate((svg) => ({
+        hidden: svg.closest(".target-divider").getAttribute("aria-hidden"),
+        box: svg.getAttribute("viewBox"),
+        ratio: svg.getAttribute("preserveAspectRatio"),
+        paths: [...svg.querySelectorAll("path")].map((path) =>
+          path.getAttribute("d"),
+        ),
+      })),
+      {
+        hidden: "true",
+        box: "0 0 100 100",
+        ratio: "none",
+        paths: ["M0 100 H85 C94 100 91 0 100 0"],
+      },
+      "The decorative target divider has an explicit audited local path",
+    );
     async function equalSizes(selectors) {
       const sizes = await Promise.all(
         selectors.map((selector) =>
@@ -126,7 +153,7 @@ let browser;
     await equalSizes([
       ".notification-tab[data-tab=notifications] svg",
       ".notification-tab[data-tab=history] svg",
-      ".notification-tab[data-tab=almanac] svg",
+      ".notification-tab[data-tab=weather] svg",
     ]);
     const timeIcon = await page
       .locator("#dayNextToggle svg")

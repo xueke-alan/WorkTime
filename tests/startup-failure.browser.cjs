@@ -1,16 +1,14 @@
 "use strict";
-const { chromium } = require("playwright"),
-  assert = require("node:assert/strict"),
+const assert = require("node:assert/strict"),
   path = require("node:path"),
   vm = require("node:vm");
 const context = vm.createContext({});
 vm.runInContext(
   require("./helpers/core-source.cjs").readCoreSource() +
-    ";globalThis.C=WorkTime",
+    ";globalThis.C=DomainTest",
   context,
 );
 const state = JSON.parse(JSON.stringify(context.C.defaultState()));
-delete state.scheduleDefaultsVersion;
 state.days["2026-09-28"] = {
   actual: {
     start: "08:00",
@@ -22,7 +20,7 @@ state.days["2026-09-28"] = {
 const original = JSON.stringify(state);
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const ctx = await browser.newContext({
     timezoneId: "Asia/Shanghai",
     reducedMotion: "reduce",
@@ -31,6 +29,20 @@ let browser;
     (text) => localStorage.setItem("worktime-local-v1", text),
     original,
   );
+  await ctx.addInitScript(() => {
+    const listeners = new Set(),
+      add = window.addEventListener,
+      remove = window.removeEventListener;
+    window.addEventListener = function (type, listener, options) {
+      if (type === "pageshow") listeners.add(listener);
+      return add.call(this, type, listener, options);
+    };
+    window.removeEventListener = function (type, listener, options) {
+      if (type === "pageshow") listeners.delete(listener);
+      return remove.call(this, type, listener, options);
+    };
+    window.testPageShowListeners = listeners;
+  });
   const page = await ctx.newPage(),
     errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -62,6 +74,11 @@ let browser;
     [],
     "Startup exception is handled rather than an unhandled promise",
   );
+  assert.equal(
+    await page.evaluate(() => window.testPageShowListeners.size),
+    0,
+    "Failed startup releases page restore listeners",
+  );
   const healthy = await ctx.newPage();
   await healthy.goto(url);
   await healthy.waitForFunction(
@@ -80,6 +97,46 @@ let browser;
       )
     ).days["2026-09-28"].actual.start,
     "08:00",
+  );
+  assert.equal(
+    await healthy.evaluate(() => window.testPageShowListeners.size),
+    1,
+    "Only mounted alignment owns a restore listener",
+  );
+  await healthy.evaluate(() => dispatchEvent(new Event("pagehide")));
+  assert.equal(
+    await healthy.evaluate(() => window.testPageShowListeners.size),
+    0,
+    "Healthy exit releases page restore listeners",
+  );
+  const cached = await ctx.newPage();
+  await cached.goto(url);
+  await cached.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  await cached.evaluate(() =>
+    dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true })),
+  );
+  assert.equal(
+    await cached.evaluate(() => window.testPageShowListeners.size),
+    1,
+    "Cached exit retains only a one-shot reload action",
+  );
+  await Promise.all([
+    cached.waitForEvent("framenavigated", {
+      predicate: (frame) => frame === cached.mainFrame(),
+    }),
+    cached.evaluate(() =>
+      dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true })),
+    ),
+  ]);
+  await cached.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  assert.equal(
+    await cached.evaluate(() => window.testPageShowListeners.size),
+    1,
+    "Restored page starts a fresh application",
   );
   console.log(
     "Startup failure passed: missing controller handled, controls disabled, original data intact and writer lock released for a healthy page.",

@@ -15,9 +15,9 @@ for (const file of ["derived", "import-index"])
     ),
     context,
   );
-const core = vm.runInContext("WorkTime", context),
-  derivedService = vm.runInContext("WorkDerived", context),
-  indexService = vm.runInContext("WorkImportIndex", context),
+const core = vm.runInContext("DomainTest", context),
+  derivedService = vm.runInContext("WorkTimeApp.services.derived", context),
+  indexService = vm.runInContext("WorkTimeApp.services.importIndex", context),
   plain = (value) => JSON.parse(JSON.stringify(value));
 let state = buildPerformanceFixture(10).state,
   revision = 0,
@@ -36,7 +36,7 @@ const derived = derivedService.create({
     getRevision: () => revision,
     now: () => now,
   }),
-  C = derived.core;
+  C = derived.queries;
 function compare(name, ...args) {
   assert.deepEqual(
     plain(C[name](state, ...args)),
@@ -100,6 +100,33 @@ revision++;
 compare("pendingWorkdays", "2026-09-01", "2026-09-30", "2026-09-30", now);
 now = new Date("2026-09-30T09:00:00+08:00");
 compare("pendingWorkdays", "2026-09-01", "2026-09-30", "2026-09-30", now);
+let midnightSamples = 0;
+const midnight = derivedService.create({
+  core,
+  getState: () => state,
+  getRevision: () => revision,
+  now: () => {
+    midnightSamples++;
+    return new Date(
+      midnightSamples === 1
+        ? "2026-09-30T23:59:59.999+08:00"
+        : "2026-10-01T00:00:00.000+08:00",
+    );
+  },
+});
+assert.equal(
+  midnight.queries.pendingWorkdays(state, "2026-09-30", "2026-09-30"),
+  core.pendingWorkdays(
+    state,
+    "2026-09-30",
+    "2026-09-30",
+    "2026-09-30",
+    new Date("2026-09-30T23:59:59.999+08:00"),
+  ),
+  "default business date and time use the same instant at midnight",
+);
+assert.equal(midnightSamples, 1, "one clock sample per pending query");
+midnight.dispose();
 const index = indexService.create({
     core: {
       ...core,

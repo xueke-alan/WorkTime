@@ -1821,6 +1821,99 @@ body .summary-sidebar #sourceDialog.import-detail-view #sourceBody > :is(.import
 body .summary-sidebar #sourceDialog.import-detail-view > .dialog-foot {
   padding-top: calc(1rem + 1px);
 }
+/* Three figures share a right edge; the divider steps up between columns. */
+body .summary-sidebar .cards > .target-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-rows: repeat(3, auto);
+  gap: 0.142857rem 0.714286rem;
+  align-items: center;
+}
+body .summary-sidebar .target-copy,
+body .summary-sidebar .target-metrics,
+body .summary-sidebar .target-metric-values {
+  display: contents;
+  border-top: 0;
+  padding-top: 0;
+}
+body .summary-sidebar .target-copy h3 {
+  margin: 0 0 0.714286rem;
+  white-space: normal;
+}
+body .summary-sidebar .target-copy .target-value {
+  margin-bottom: 0.714286rem;
+}
+body .summary-sidebar .target-copy .target-counts {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+}
+body .summary-sidebar .target-metric-values #targetMetric {
+  grid-column: 2;
+  grid-row: 2;
+}
+body .summary-sidebar .target-metric-values #targetDailyMetric {
+  grid-column: 2;
+  grid-row: 3;
+}
+body .summary-sidebar .target-metric-values .target-metric {
+  width: auto;
+  justify-self: end;
+}
+body .summary-sidebar .target-total-label {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: start;
+  margin-top: -0.285714rem;
+  color: var(--muted);
+  width: auto;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+body .summary-sidebar .target-metrics .target-result {
+  grid-column: 1 / -1;
+  grid-row: 4;
+  margin: 0;
+}
+body .summary-sidebar .target-result:empty {
+  display: none;
+}
+body .summary-sidebar .target-divider {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  align-self: stretch;
+  position: relative;
+  pointer-events: none;
+}
+body .summary-sidebar .target-divider > span {
+  grid-column: 1;
+  position: relative;
+  min-width: 0;
+}
+body .summary-sidebar .target-divider svg {
+  position: absolute;
+  top: -0.428571rem;
+  left: 0;
+  width: calc(100% + 0.714286rem);
+  /* End halfway between the planned-day line and the raised explanation. */
+  height: calc(50% + var(--text-small) * 0.75 + 0.357143rem);
+  overflow: visible;
+}
+body .summary-sidebar .target-divider::after {
+  content: "";
+  grid-column: 2;
+  align-self: start;
+  border-top: 1px solid var(--theme-border-soft, #dbe9e1);
+  transform: translateY(-0.428571rem);
+}
+body .summary-sidebar .target-divider path {
+  fill: none;
+  stroke: var(--theme-border-soft, #dbe9e1);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
 @media (max-width: 1150px) {
   body .summary-sidebar #sourceDialog.import-detail-view > .dialog-foot {
     padding-top: 13px;

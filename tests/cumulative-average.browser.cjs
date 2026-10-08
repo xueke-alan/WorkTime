@@ -2,11 +2,10 @@
 const assert = require("node:assert/strict"),
   path = require("node:path"),
   { pathToFileURL } = require("node:url"),
-  { chromium } = require("playwright"),
   { buildPerformanceFixture } = require("../scripts/performance-fixtures.cjs");
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const state = buildPerformanceFixture(1).state;
   state.settings.standardMinutes = 480;
   state.settings.workEnd = "17:00";
@@ -24,7 +23,7 @@ let browser;
     require("./helpers/core-source.cjs").readCoreSource(),
     coreContext,
   );
-  const C = require("node:vm").runInContext("WorkTime", coreContext);
+  const C = require("node:vm").runInContext("DomainTest", coreContext);
   for (let i = 1; i < 30; i++) {
     const key = "2026-09-" + String(i).padStart(2, "0");
     if (C.calendarInfo(key, {}).work)
@@ -65,10 +64,15 @@ let browser;
   await card.click();
   assert.equal(await card.locator(".day-average").innerText(), "—");
   assert.equal(await card.locator(".trend-icon").count(), 0);
-  assert.equal(await review.locator("#previewAverage").innerText(), "—");
+  assert.equal(
+    await review
+      .locator("#previewAverage .summary-number-accessible")
+      .textContent(),
+    "0.00 h",
+  );
   assert(
     (await review.locator("#dayPreview").innerText()).includes(
-      "打卡未完成，暂不显示平均加班",
+      "打卡未完成，暂不计入平均加班",
     ),
   );
   assert(
@@ -106,9 +110,19 @@ let browser;
   );
   await review.locator("#dayEnd").fill("07:00");
   assert.equal(await card.locator(".day-average").innerText(), "—");
-  assert.equal(await review.locator("#previewAverage").innerText(), "—");
+  assert.equal(
+    await review
+      .locator("#previewAverage .summary-number-accessible")
+      .textContent(),
+    "0.00 h",
+  );
   await review.locator("#dayEnd").fill("");
-  assert.equal(await review.locator("#previewAverage").innerText(), "—");
+  assert.equal(
+    await review
+      .locator("#previewAverage .summary-number-accessible")
+      .textContent(),
+    "0.00 h",
+  );
   const rest = review.locator('[data-date="2026-09-26"]');
   assert.equal(await rest.locator(".day-average").innerText(), "");
   assert.equal(await rest.locator(".trend-icon").count(), 0);

@@ -2,31 +2,7 @@
 const globals = require("globals");
 // Runtime namespaces are classic-script contracts declared by the ordered entry point.
 const runtime = Object.fromEntries(
-  [
-    "WorkTimeValues",
-    "WorkState",
-    "WorkMigrations",
-    "WorkCalendar",
-    "WorkRecords",
-    "WorkStatistics",
-    "WorkObservations",
-    "WorkValidation",
-    "WorkTime",
-    "WorkStorage",
-    "WorkImports",
-    "WorkBackup",
-    "WorkUI",
-    "WorkApplication",
-    "WorkDerived",
-    "WorkImportIndex",
-    "WorkBootstrap",
-    "WorkClock",
-    "WorkCalendarData",
-    "WorkClipboard",
-    "WorkDownloads",
-    "WorkYear",
-    "UIAlignment",
-  ].map((name) => [name, "readonly"]),
+  ["WorkTimeApp"].map((name) => [name, "readonly"]),
 );
 const rules = {
   "no-undef": "error",
@@ -56,12 +32,25 @@ module.exports = [
     ],
   },
   {
-    files: ["assets/js/**/*.js"],
+    files: ["assets/js/**/*.js", "tools/**/*.js"],
     languageOptions: {
       sourceType: "script",
-      globals: { ...globals.browser, ...runtime },
+      globals: {
+        ...globals.browser,
+        ...runtime,
+      },
     },
     rules,
+  },
+  {
+    // Historical namespaces belong only to the standalone conversion page.
+    files: ["tools/**/*.js"],
+    languageOptions: {
+      globals: {
+        WorkLegacyV2: "readonly",
+        WorkBackupConversion: "readonly",
+      },
+    },
   },
   {
     files: ["scripts/**/*.cjs", "tests/**/*.cjs", "eslint.config.cjs"],

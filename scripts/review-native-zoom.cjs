@@ -6,6 +6,15 @@ const fs = require("node:fs"),
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 const root = path.resolve(__dirname, "..");
+const crypto = require("node:crypto");
+function sourceFiles(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const file = path.join(directory, entry.name);
+    return entry.isDirectory() ? sourceFiles(file) : [file];
+  });
+}
+const sha256 = (file) =>
+  crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 let context;
 const tag = process.argv[2] || "";
 assert(!tag || /^[a-z0-9-]+$/.test(tag), "Safe output tag");
@@ -25,8 +34,22 @@ async function settle(page) {
   });
 }
 (async () => {
-  const output = path.join(root, `docs/native-zoom-review${suffix}.json`);
-  assert(!fs.existsSync(output), "Refusing to replace existing review");
+  const runnerIdentity = {
+    path: "scripts/review-native-zoom.cjs",
+    sha256: sha256(__filename),
+  };
+  const fingerprints = [
+    path.join(root, "index.html"),
+    ...sourceFiles(path.join(root, "assets")),
+  ].map((file) => ({
+    path: path.relative(root, file).replaceAll(path.sep, "/"),
+    sha256: sha256(file),
+  }));
+  const directory = path.join(root, "test-results", `native-zoom${suffix}`);
+  assert(!fs.existsSync(directory), "Refusing to replace existing review");
+  fs.mkdirSync(directory, { recursive: true });
+  fs.mkdirSync(path.join(root, ".refactor-backups"), { recursive: true });
+  const output = path.join(directory, `native-zoom-review${suffix}.json`);
   const rows = [];
   for (const width of [1600, 1920]) {
     let physicalContent;
@@ -77,7 +100,7 @@ async function settle(page) {
         if (mode === "import" || mode === "history")
           await page.locator("#importOpen").click();
         if (mode === "history")
-          await page.locator("#importHistoryOpen").click();
+          await page.locator("#importHistoryList").scrollIntoViewIfNeeded();
         await settle(page);
         const values = await page.evaluate(() => {
           const modal = document.querySelector("dialog[open]");
@@ -166,7 +189,7 @@ async function settle(page) {
           Math.abs(png.readUInt32BE(16) - values.width * factor) <= 2,
           "Capture covers native physical viewport",
         );
-        fs.writeFileSync(path.join(root, "docs", screenshot), png);
+        fs.writeFileSync(path.join(directory, screenshot), png, { flag: "wx" });
         rows.push({ windowWidth: width, factor, mode, values, screenshot });
         if (mode === "history") await page.keyboard.press("Escape");
         if (["settings", "template", "import", "history"].includes(mode))
@@ -177,6 +200,26 @@ async function settle(page) {
       context = null;
     }
   }
+  for (const file of fingerprints)
+    assert.equal(
+      sha256(path.join(root, file.path)),
+      file.sha256,
+      "Source changed during capture: " + file.path,
+    );
+  const finalPaths = [
+    path.join(root, "index.html"),
+    ...sourceFiles(path.join(root, "assets")),
+  ].map((file) => path.relative(root, file).replaceAll(path.sep, "/"));
+  assert.deepEqual(
+    finalPaths,
+    fingerprints.map((file) => file.path),
+    "Source inventory changed during capture",
+  );
+  assert.equal(
+    sha256(__filename),
+    runnerIdentity.sha256,
+    "Capture runner changed",
+  );
   fs.writeFileSync(
     output,
     JSON.stringify(
@@ -184,12 +227,15 @@ async function settle(page) {
         browser: "msedge",
         osScale: "User reports Windows 100%; not changed by automation",
         motion: "normal",
+        fingerprints,
+        runnerIdentity,
         complete: true,
         rows,
       },
       null,
       2,
     ),
+    { flag: "wx" },
   );
 })().catch(async (error) => {
   console.error(error);

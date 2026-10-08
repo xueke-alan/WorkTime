@@ -21,7 +21,9 @@ for (const file of [
     path.join(project, "assets/data", file),
     path.join(root, "assets/data", file),
   );
-const context = vm.createContext({});
+const context = vm.createContext({
+  WorkTimeApp: { data: { dateInfo: { history: {}, festivals: [] } } },
+});
 context.window = context;
 vm.runInContext(
   fs.readFileSync(path.join(root, "assets/data/sources.js"), "utf8"),
@@ -40,9 +42,9 @@ for (let month = 1; month <= 12; month++)
     ),
     context,
   );
-validateDates(context.DateInfoData.history, "history");
+validateDates(context.WorkTimeApp.data.dateInfo.history, "history");
 validateDates(
-  context.DateInfoData.internationalByDate,
+  context.WorkTimeApp.data.dateInfo.internationalByDate,
   "internationalFestivals",
 );
 assert.throws(() => validateDates({}, "history"), /366/);
@@ -89,20 +91,22 @@ const success = create({
 });
 success.write(relative, next);
 assert.equal(success.commit().committed, true);
-const after = vm.createContext({});
+const after = vm.createContext({
+  WorkTimeApp: { data: { dateInfo: { history: {}, festivals: [] } } },
+});
 after.window = after;
 vm.runInContext(
   fs.readFileSync(path.join(root, "assets/data/sources.js"), "utf8"),
   after,
 );
-assert.equal(after.DateInfoData.sources.updated, "2026-10-02");
+assert.equal(after.WorkTimeApp.data.dateInfo.sources.updated, "2026-10-02");
 assert.equal(
-  after.DateInfoData.sources.internationalFestivals.updated,
+  after.WorkTimeApp.data.dateInfo.sources.internationalFestivals.updated,
   "2026-10-02",
 );
 assert.equal(
-  after.DateInfoData.sources.history.license,
-  context.DateInfoData.sources.history.license,
+  after.WorkTimeApp.data.dateInfo.sources.history.license,
+  context.WorkTimeApp.data.dateInfo.sources.history.license,
 );
 const interrupted = create({ kind: "internationalFestivals", root });
 interrupted.write(relative, original);

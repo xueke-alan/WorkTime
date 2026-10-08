@@ -1,15 +1,15 @@
 "use strict";
-const { chromium } = require("playwright"),
-  fs = require("node:fs"),
+const fs = require("node:fs"),
   path = require("node:path"),
   zlib = require("node:zlib"),
   assert = require("node:assert/strict");
 const root = path.resolve(__dirname, ".."),
-  baseline = path.join(
-    root,
-    "tests/fixtures/styles-date-info-contract.json.gz",
+  reference = require("./helpers/style-reference.cjs").create(
+    "date-info",
+    "tests/fixtures/styles-date-info-2026-10-08.json.gz",
   ),
-  record = process.argv.includes("--record");
+  baseline = reference.baseline,
+  record = process.argv.includes("--record") || reference.capture;
 const properties = [
   "display",
   "fontFamily",
@@ -44,7 +44,7 @@ let browser;
 (async () => {
   if (record && fs.existsSync(baseline))
     throw Error("Refusing to replace existing component baseline");
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const samples = [];
   for (const width of [
     390, 540, 699, 850, 1150, 1151, 1300, 1301, 1600, 1800, 1920,
@@ -58,16 +58,19 @@ let browser;
       errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.clock.install({ time: new Date("2026-10-02T12:00:00+08:00") });
-    await page.goto(
-      require("node:url").pathToFileURL(path.join(root, "index.html")).href,
-    );
+    await reference.visit(page);
     await page.locator("#date-tab-history").waitFor({ state: "visible" });
     for (const height of [700, 1000]) {
       await page.setViewportSize({ width, height });
       for (const mode of ["history", "festivals", "almanac", "countdown"]) {
-        await page.locator("#date-tab-" + mode).click();
+        if (mode === "countdown")
+          await page.locator("#date-tab-countdown").click();
+        else {
+          await page.locator("#date-tab-history").click();
+          await page.locator("#date-context-" + mode).click();
+        }
         await page.evaluate(() => document.fonts.ready);
-        await page.evaluate(() => window.UIAlignment.refresh());
+        await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
         await page.clock.fastForward(2000);
         await page.mouse.move(0, 0);
         const values = await page.evaluate((properties) => {
@@ -106,18 +109,33 @@ let browser;
       }
     }
     await page.locator("#date-tab-history").click();
-    await page.locator("#date-tab-history").press("ArrowRight");
+    await page.locator("#date-context-history").click();
+    await page.locator("#date-context-history").press("ArrowRight");
     assert.equal(
-      await page.locator("#date-tab-festivals").getAttribute("aria-selected"),
+      await page
+        .locator("#date-context-festivals")
+        .getAttribute("aria-selected"),
       "true",
     );
-    const focus = await page.locator("#date-tab-festivals").evaluate((e) => ({
-      active: e === document.activeElement,
-      outline: getComputedStyle(e).outlineStyle,
-      width: getComputedStyle(e).outlineWidth,
-    }));
-    assert.deepEqual(focus, { active: true, outline: "none", width: "0px" });
-    await page.locator("#date-tab-festivals").press("Home");
+    const focus = await page
+      .locator("#date-context-festivals")
+      .evaluate((e) => ({
+        active: e === document.activeElement,
+        outline: getComputedStyle(e).outlineStyle,
+        width: getComputedStyle(e).outlineWidth,
+      }));
+    assert.deepEqual(
+      focus,
+      reference.frozen
+        ? { active: true, outline: "none", width: "0px" }
+        : { active: true, outline: "solid", width: "2px" },
+    );
+    await page.locator("#date-context-festivals").press("Home");
+    assert.equal(
+      await page.locator("#date-context-history").getAttribute("aria-selected"),
+      "true",
+    );
+    await page.locator("#date-tab-history").press("Home");
     assert.equal(
       await page
         .locator("#dateInfoPanel")
@@ -125,7 +143,7 @@ let browser;
       true,
     );
     await page.evaluate(() => {
-      window.DateInfo.register({
+      WorkTimeApp.services.dateInfo.register({
         id: "long-layout",
         label: "长文本",
         getContent: () => ({
@@ -142,7 +160,7 @@ let browser;
           ],
         }),
       });
-      window.DateInfoUI.refreshTabs();
+      WorkTimeApp.ui.dateInfo.refreshTabs();
     });
     await page.locator("#date-tab-long-layout").click();
     const overflow = await page
@@ -159,7 +177,7 @@ let browser;
           e.getBoundingClientRect().top;
       });
       await page.locator("#dateInfoPanel").screenshot({
-        path: path.join(root, "docs/refactor-date-info-long-label.png"),
+        path: path.join(root, "test-results/refactor-date-info-long-label.png"),
       });
     }
     assert.deepEqual(errors, []);
@@ -181,33 +199,10 @@ let browser;
         current.values.every(
           (group, j) =>
             group.length === old[i].values[j].length &&
-            group.every((value, k) => {
-              const previous = old[i].values[j][k];
-              if (JSON.stringify(value) === JSON.stringify(previous))
-                return true;
-              // Keep the old fixture; only the explicitly requested focus outline
-              // removal on these four tabs is an intentional visual change.
-              if (
-                value.key !== previous.key ||
-                ![
-                  "date-tab-history",
-                  "date-tab-festivals",
-                  "date-tab-almanac",
-                  "date-tab-countdown",
-                ].includes(value.key) ||
-                !(
-                  (previous.styles.outlineStyle === "solid" &&
-                    previous.styles.outlineWidth === "2px") ||
-                  (previous.styles.outlineStyle === "none" &&
-                    previous.styles.outlineWidth === "3px")
-                )
-              )
-                return false;
-              const expected = structuredClone(previous);
-              expected.styles.outlineStyle = "none";
-              expected.styles.outlineWidth = "0px";
-              return JSON.stringify(value) === JSON.stringify(expected);
-            }),
+            group.every(
+              (value, k) =>
+                JSON.stringify(value) === JSON.stringify(old[i].values[j][k]),
+            ),
         );
       if (!same)
         differences.push({
@@ -219,7 +214,7 @@ let browser;
         });
     });
     fs.writeFileSync(
-      path.join(root, "docs/date-info-style-differences.json"),
+      path.join(root, "test-results/date-info-style-differences.json"),
       JSON.stringify(differences, null, 2) + "\n",
     );
     assert.equal(

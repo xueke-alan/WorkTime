@@ -7,6 +7,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
     element: $,
     application,
     originalStorageText,
+    getOriginalStorageText = () => originalStorageText,
     model,
     actions,
     clipboard,
@@ -15,6 +16,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
     preferences,
   } = options;
   let restoreData = null;
+  let pendingTheme = null;
   let disposed = false;
   let generation = 0;
   const download = downloads.download;
@@ -24,6 +26,40 @@ WorkTimeApp.ui.createBackupController = function (options) {
   const compressBackupText = WorkTimeApp.services.backup.encode;
   const readBackupText = (text) =>
     WorkTimeApp.services.backup.decode(text, C.validateBackup);
+  function updateRecovery() {
+    const issue = model.loadIssue;
+    $("exportCorruptStorage").hidden =
+      !model.loadCorrupt || getOriginalStorageText() === null;
+    $("restoreStorage").hidden = !model.loadCorrupt;
+    $("initializeStorage").hidden = issue !== "corrupt";
+    $("convertStorage").hidden = issue !== "unsupported";
+    $("backupBeforeRestore").querySelector(".button-label").textContent =
+      model.loadCorrupt ? "下载当前页面备份" : "下载当前备份";
+    $("backupScopeNote").hidden = !model.loadCorrupt;
+  }
+  function exportOriginal() {
+    const text = getOriginalStorageText();
+    if (text !== null && text !== undefined)
+      download(
+        "工作记录原始数据-" + model.today + ".txt",
+        text,
+        "text/plain;charset=utf-8",
+      );
+  }
+  function finishThemeRestore() {
+    const result = preferences.saveTheme(pendingTheme);
+    if (!result.persisted) {
+      $("restoreError").textContent =
+        "记录已恢复，主题未保存：" + result.error.message;
+      $("retryRestoreTheme").hidden = false;
+      $("confirmRestore").disabled = true;
+      actions.toast("记录已恢复，主题未保存，请重试保存主题", "error");
+      return;
+    }
+    pendingTheme = null;
+    $("restoreDialog").close();
+    actions.toast("备份已恢复", "countdown");
+  }
   function exportedState() {
     return {
       ...model.state,
@@ -75,6 +111,10 @@ WorkTimeApp.ui.createBackupController = function (options) {
   function previewRestore(data, source) {
     if (disposed) return;
     restoreData = data;
+    pendingTheme = null;
+    $("restoreError").textContent = "";
+    $("confirmRestore").disabled = false;
+    $("retryRestoreTheme").hidden = true;
     $("restoreSummary").textContent =
       "来自" +
       source +
@@ -125,25 +165,37 @@ WorkTimeApp.ui.createBackupController = function (options) {
     bound = true;
     disposed = false;
     generation++;
-    if (model.loadCorrupt && originalStorageText !== null) {
-      const body = $("storageNotice").querySelector(".notification-body"),
-        exportOriginal =
-          body.querySelector("#exportCorruptStorage") ||
-          document.createElement("button");
-      exportOriginal.className = "ui-button";
-      exportOriginal.id = "exportCorruptStorage";
-      exportOriginal.type = "button";
-      exportOriginal.innerHTML =
-        '<span class="button-label">导出无法读取的原始数据</span>';
-      events.handler(exportOriginal, "onclick", () =>
-        download(
-          "工作记录原始数据-" + model.today + ".txt",
-          originalStorageText,
-          "text/plain;charset=utf-8",
-        ),
-      );
-      if (!exportOriginal.parentElement) body.append(exportOriginal);
-    }
+    updateRecovery();
+    events.handler($("exportCorruptStorage"), "onclick", exportOriginal);
+    events.handler($("exportBeforeInitialize"), "onclick", exportOriginal);
+    events.handler($("restoreStorage"), "onclick", restoreFromClipboard);
+    events.handler($("initializeStorage"), "onclick", () => {
+      if (model.loadIssue !== "corrupt") return;
+      $("initializeError").textContent = "";
+      actions.open("initializeDialog");
+    });
+    events.handler($("confirmInitialize"), "onclick", () => {
+      try {
+        const result = application.initialize(preferences.state.pageTheme);
+        if (!result.persisted) {
+          $("initializeError").textContent =
+            "初始化未保存：" + result.error.message;
+          return;
+        }
+        // A fresh page clears every editor/controller draft and batch selection.
+        actions.refreshSettings();
+        window.location.reload();
+      } catch (error) {
+        $("initializeError").textContent = error.message;
+      }
+    });
+    events.listen($("restoreDialog"), "close", () => {
+      restoreData = null;
+      pendingTheme = null;
+    });
+    events.handler($("retryRestoreTheme"), "onclick", () => {
+      if (pendingTheme !== null) finishThemeRestore();
+    });
     holdAction = WorkTimeApp.ui.createHoldAction({
       button: $("backup"),
       onShort: copyBackup,
@@ -171,19 +223,15 @@ WorkTimeApp.ui.createBackupController = function (options) {
     });
     events.handler($("confirmRestore"), "onclick", () => {
       if (!restoreData) return;
-      const saved = application.restore(restoreData).persisted;
+      const result = application.restore(restoreData);
+      if (!result.persisted) {
+        $("restoreError").textContent = "恢复未保存：" + result.error.message;
+        return;
+      }
+      pendingTheme = restoreData.preferences.pageTheme;
       restoreData = null;
-      const themeSaved = preferences.saveTheme(
-        model.state.preferences.pageTheme,
-      ).persisted;
-      $("restoreDialog").close();
       actions.render();
-      actions.toast(
-        saved && themeSaved
-          ? "备份已恢复"
-          : "备份已读取，但未能完整保存，请查看信息与提醒",
-        saved && themeSaved ? "countdown" : "error",
-      );
+      finishThemeRestore();
     });
   }
   function dispose() {
@@ -194,9 +242,11 @@ WorkTimeApp.ui.createBackupController = function (options) {
     bound = false;
     disposed = true;
     restoreData = null;
+    pendingTheme = null;
     holdAction?.dispose();
     clearTimeout(copyResetTimer);
   }
-  const hasDraft = () => restoreData !== null;
-  return { bind, dispose, hasDraft };
+  const hasDraft = () =>
+    restoreData !== null || pendingTheme !== null || $("initializeDialog").open;
+  return { bind, dispose, hasDraft, updateRecovery };
 };

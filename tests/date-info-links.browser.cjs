@@ -1,10 +1,9 @@
 "use strict";
-const { chromium } = require("playwright"),
-  assert = require("node:assert/strict"),
+const assert = require("node:assert/strict"),
   path = require("node:path");
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const context = await browser.newContext({
     viewport: { width: 1600, height: 1000 },
     reducedMotion: "reduce",
@@ -16,39 +15,11 @@ let browser;
       .href,
   );
   await page.locator("#date-tab-history").click();
-  const links = await page.locator(".history-event-link").evaluateAll((items) =>
-    items.map((item) => ({
-      tag: item.tagName,
-      href: item.href,
-      target: item.target,
-      rel: item.rel,
-      text: item.textContent,
-    })),
-  );
-  assert(links.length > 0);
-  for (const item of links) {
-    assert.equal(item.tag, "A");
-    assert.equal(new URL(item.href).protocol, "https:");
-    assert(
-      new URL(item.href).searchParams.get("oldid"),
-      "retain specific revision",
-    );
-    assert.equal(new URL(item.href).searchParams.get("variant"), "zh-cn");
-    assert.equal(item.target, "_blank");
-    assert(item.rel.includes("noreferrer"));
-    assert(item.text.length > 5);
-  }
-  await page.locator(".history-event-link").first().focus();
-  await page.locator("#dateInfoPanel").screenshot({
-    path: path.resolve(__dirname, "../docs/refactor-history-links.png"),
-  });
-  assert.equal(
-    await page
-      .locator(".history-event-link")
-      .first()
-      .evaluate((e) => e === document.activeElement),
-    true,
-  );
+  const events = await page.locator(".history-event-content").allTextContents();
+  assert(events.length > 0);
+  assert(events.every((text) => text.length > 5));
+  assert.equal(await page.locator(".history-event a").count(), 0);
+  assert.equal(await page.locator(".history-event [tabindex]").count(), 0);
   await page.reload();
   assert.equal(
     await page.locator("#date-tab-history").getAttribute("aria-selected"),
@@ -56,7 +27,7 @@ let browser;
     "last selected tab restored",
   );
   await page.evaluate(() => {
-    window.DateInfo.register({
+    WorkTimeApp.services.dateInfo.register({
       id: "link-test",
       label: "测试资料",
       getContent: () => ({
@@ -75,7 +46,7 @@ let browser;
         ],
       }),
     });
-    window.DateInfoUI.refreshTabs();
+    WorkTimeApp.ui.dateInfo.refreshTabs();
   });
   await page.locator("#date-tab-link-test").click();
   assert.equal(
@@ -84,8 +55,8 @@ let browser;
     "only valid HTTPS section source and more-history source are links",
   );
   assert.equal(
-    await page.locator(".history-event-link").evaluate((e) => e.tagName),
-    "SPAN",
+    await page.locator(".history-event-content").evaluate((e) => e.tagName),
+    "DIV",
   );
   assert.equal(
     await page.locator(".festival-links a").getAttribute("href"),
@@ -97,7 +68,7 @@ let browser;
   );
   await browser.close();
   console.log(
-    "Date info links passed: event revision/variant, keyboard focus, remembered tab and valid HTTPS-only section links.",
+    "Date info passed: plain event cards, remembered tab and valid HTTPS-only section links.",
   );
 })().catch(async (error) => {
   console.error(error);

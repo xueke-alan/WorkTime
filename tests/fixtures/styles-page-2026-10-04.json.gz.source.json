@@ -1,0 +1,703 @@
+{
+  "original": {
+    "group": "page",
+    "frozen": true,
+    "sourceRoot": "F:\\Tools\\WorkTime\\.refactor-backups\\workspace-2026-10-04T03-32-53-659Z\\files",
+    "files": [
+      {
+        "path": "index.html",
+        "sha256": "fccc934ee3c08fbdf4d0692db2f8acc6c1c36b87db36d111a80c571d38ef28e0"
+      },
+      {
+        "path": "assets/css/tokens.css",
+        "sha256": "a2eefa7f8d744dda0de34e202b968cedc4527351dfc709d2c4b2d89aac619743"
+      },
+      {
+        "path": "assets/js/theme.js",
+        "sha256": "0eee10eddc79551f11c23742fbc456f4f2f96a7b763130aeb8615d1abc53c14e"
+      },
+      {
+        "path": "assets/css/base.css",
+        "sha256": "465d6d7ce3572e3c0e7358a4493f97077310e09ae1b9df97c7c1befa72191026"
+      },
+      {
+        "path": "assets/css/layout.css",
+        "sha256": "7386d1f70c0f3d3d8f349418c6704a1c3a0a5996bb1fb7f99b9dd6b97c6631f0"
+      },
+      {
+        "path": "assets/css/editor.css",
+        "sha256": "48b04863a99bb9181f8169a460663740f74dab83f52226d2fca455f0ce1dd5c5"
+      },
+      {
+        "path": "assets/css/dialogs.css",
+        "sha256": "e9591fb18e7ad9a185ee3204d69506c629a8afd4ec4d0116e2c687b5410508d0"
+      },
+      {
+        "path": "assets/css/date-info.css",
+        "sha256": "76cf451309c7ad454c2a8075d9b42510e9ccc58cfe2e11ec880eb3f9eec646b2"
+      },
+      {
+        "path": "assets/css/weather.css",
+        "sha256": "e5129a88e7aa938cbbfbaac39190f3162ebe8e8ced596d9a3b60ac10ae613e20"
+      },
+      {
+        "path": "assets/css/summary.css",
+        "sha256": "53cae942acb4ce6ca061c3dcd95856572be08b6ff52d66cf782a916c4a5257a5"
+      },
+      {
+        "path": "assets/css/calendar.css",
+        "sha256": "0ee666940aade6dd1b4b015fb2264fafbcc506e4d30762f8cd27c6a3bb630f09"
+      },
+      {
+        "path": "assets/css/controls.css",
+        "sha256": "201ed27b4cee72f03838e47701c29d637d89cb6fc813890bc07aa839b57d4fed"
+      },
+      {
+        "path": "assets/css/icons.css",
+        "sha256": "04c39eeb910970d8892cfa64774599e9f5ed9945b68fc6142361a5ea8aa58191"
+      },
+      {
+        "path": "assets/css/motion.css",
+        "sha256": "bf93fce304049a281baedd3e46ba1b45a2a57589c80c5d66e6f1c2888343f01d"
+      },
+      {
+        "path": "assets/data/calendars.js",
+        "sha256": "e5595467d6f21d7c6ff045062454bf234c6f30b926c3e5ec637312c6f679cf04"
+      },
+      {
+        "path": "assets/data/struggle-days.js",
+        "sha256": "dfd7c25beed8dab845e470d1d0a25a1847bd94f6750ad929cd5e37a2513027a5"
+      },
+      {
+        "path": "assets/js/domain/time.js",
+        "sha256": "bd76a42586974d55ee4240fcaf64ba81f60d78e257079a4fa0da5f42b98785d5"
+      },
+      {
+        "path": "assets/js/domain/state.js",
+        "sha256": "022f13d81d284b01c3a2bd47f0a26ed80385814231dc5278805a96a0b0bee815"
+      },
+      {
+        "path": "assets/js/domain/migrations.js",
+        "sha256": "b26238da0603f40ee6347b3aacfce8117174e69439c4cede700a31de74dd278a"
+      },
+      {
+        "path": "assets/js/domain/calendar.js",
+        "sha256": "84bab6ca5feb3b91e165947bdf13c6b281b88d4b74092a8ffbe7cd124228f41e"
+      },
+      {
+        "path": "assets/js/domain/records.js",
+        "sha256": "14416e917f34056f197414bd7271827801fffd16e004620020c0e15da7133083"
+      },
+      {
+        "path": "assets/js/domain/schedule.js",
+        "sha256": "a24d40f0408c92db39fc1fd943b14370d65f963bf34029e9142fb74eba43505c"
+      },
+      {
+        "path": "assets/js/domain/statistics.js",
+        "sha256": "b460abf55542645869b8d1dfd9459b2968390b527c7e09e26d40061c57c81f45"
+      },
+      {
+        "path": "assets/js/domain/observations.js",
+        "sha256": "2eac7da13868f0e8fe6fa0d9df5d66c928072439c540c37c85edda4ca6338173"
+      },
+      {
+        "path": "assets/js/domain/validation.js",
+        "sha256": "659a543ee28095881ab385843a1d492fde079268daefec3fcc3471bb894b63be"
+      },
+      {
+        "path": "assets/js/core.js",
+        "sha256": "f2a033b2732badf6fa2ebb75dbb6495c2e79edda1eaf4cb8a1c49fb9e2f6a95f"
+      },
+      {
+        "path": "assets/js/services/application.js",
+        "sha256": "f2935f4ecba0d361bcdfc6c277a207ecbd3a50cf30c9607c7a3470500159fa4a"
+      },
+      {
+        "path": "assets/js/services/derived.js",
+        "sha256": "90a143cac6caa81a31c17a64218a5627b3bfd4236a4233ca1991dbe0570166df"
+      },
+      {
+        "path": "assets/js/services/import-index.js",
+        "sha256": "00a0e731d8ef01ad632cb23f75a9996066a2669138b7493dcc46a662373cabf0"
+      },
+      {
+        "path": "assets/js/services/bootstrap.js",
+        "sha256": "b3d79830df4eb06204d88c78b93541a72680ce6567571e514a5f8ac045eee302"
+      },
+      {
+        "path": "assets/js/services/clock.js",
+        "sha256": "7fc83bf057cd03c7e521e915e3d00a485a3499fba3ddd74b21a4c5683f6f9ade"
+      },
+      {
+        "path": "assets/js/services/clipboard.js",
+        "sha256": "301ffdf9eb77857545b7b8ce1949a0630d28c64686de9f81abdc5183bfb52d60"
+      },
+      {
+        "path": "assets/js/services/downloads.js",
+        "sha256": "86af7c88014bf0bc6f45f42f4f255300042db48c5f333c7f6a86bfc4268c9be0"
+      },
+      {
+        "path": "assets/js/storage.js",
+        "sha256": "56e914c514b40d1c44e19d44789ac9b151cb8c86cd8800c4390c02bdd89113f8"
+      },
+      {
+        "path": "assets/js/imports.js",
+        "sha256": "f65e0c2b29940360b7655081c1271f60b9faa6c63b392e3446e0c1e1761cd1e5"
+      },
+      {
+        "path": "assets/js/backup.js",
+        "sha256": "4645252b65597c731844e497aace6e9f26881744feacd466e06bb1218ce6f86a"
+      },
+      {
+        "path": "assets/vendor/lunar.js",
+        "sha256": "9750324bfe1aa63c146f8c72b1143df924466c11c8a5277d7d9225c541a18aaa"
+      },
+      {
+        "path": "assets/data/sources.js",
+        "sha256": "57736159d437298c877e72c733703cc435064a558b91b400174027fe84c2a7de"
+      },
+      {
+        "path": "assets/data/festivals.js",
+        "sha256": "bb659810d3ee08563fd40f2b293e02f936d15a5d93aed3c387bca41f7dfdcb87"
+      },
+      {
+        "path": "assets/data/international-festivals.js",
+        "sha256": "86fc4b261da5ec0a38b2552e20a61bfe9a6e75d9d586c43511452383ee7a940c"
+      },
+      {
+        "path": "assets/data/history/01.js",
+        "sha256": "6cb811663c90a2223137ff25c0c535ace8592d85d801fa3b4b612705f92b9e0b"
+      },
+      {
+        "path": "assets/data/history/02.js",
+        "sha256": "b95ed73c001875a2be51478616b87f59e2d2d17073d30a061af78d694c483acd"
+      },
+      {
+        "path": "assets/data/history/03.js",
+        "sha256": "9d525ed7864b6e497dbb498f8369566627c18d93fca00efb8ba51223fc385f7e"
+      },
+      {
+        "path": "assets/data/history/04.js",
+        "sha256": "02fb5210df84939b9599611436a4a6414c1768dcd736d73b74a81184f6dc9290"
+      },
+      {
+        "path": "assets/data/history/05.js",
+        "sha256": "fe638ef8b181b4f707a84e86337f8270eba9b01fe196e78b2ae7a9c4f71d9e3c"
+      },
+      {
+        "path": "assets/data/history/06.js",
+        "sha256": "49d86ff63749f343e2002c8a8b07c7421cddce9e391c4b93d7fa548bd052d66e"
+      },
+      {
+        "path": "assets/data/history/07.js",
+        "sha256": "ea0ec9fa13dc5beeea9d4093e18e4dc896a819385b2d29b564aadaeb31c8cbaf"
+      },
+      {
+        "path": "assets/data/history/08.js",
+        "sha256": "411e0ac7ab066e917c1ded36be1ed9a60beec3c60cca303cae032e115db5d2a4"
+      },
+      {
+        "path": "assets/data/history/09.js",
+        "sha256": "a1dfa7c3a9d09e4b179211ae4490b6d810696bc75b5ed8db6c274020ac3bdb6a"
+      },
+      {
+        "path": "assets/data/history/10.js",
+        "sha256": "dead6c1b156871c70ddd57648e3ab4efde22dbec22395faf8156787e935c80f6"
+      },
+      {
+        "path": "assets/data/history/11.js",
+        "sha256": "10d733e6218e555356e8840de25d5ee07f4af5d2ad882fa71133f0e79136f165"
+      },
+      {
+        "path": "assets/data/history/12.js",
+        "sha256": "0183c7efa23435c3e38a59321412dc39267c2db950c739547725b2b6e702f9cb"
+      },
+      {
+        "path": "assets/js/date-info.js",
+        "sha256": "5acdb407a2197f49bcb5da6ac17e8d3daa815adab1a0ae1d7bb19da6329d44aa"
+      },
+      {
+        "path": "assets/data/weather-cities.js",
+        "sha256": "b5082729ca53d4e98b6aad2f5d98c0b515d33b7968841ccea57845931e316b5c"
+      },
+      {
+        "path": "assets/js/weather-config.js",
+        "sha256": "6946528be48d719434d21719c3b78191a049b594a577b8b1ba443402c65d3559"
+      },
+      {
+        "path": "assets/js/weather.js",
+        "sha256": "cf067ed149e77b0d9caafeda247b774d2446f0730325306fc4ab44843e840b43"
+      },
+      {
+        "path": "assets/js/weather-ui.js",
+        "sha256": "ff38df087d724fdda76dc7db45977881aa345d856242417f0f32eb09feba58b4"
+      },
+      {
+        "path": "assets/js/work-countdown.js",
+        "sha256": "ecec5f541202ce720f38957775c2dd4fe2a766952e7b409a82d016401a8f3bf6"
+      },
+      {
+        "path": "assets/js/payday.js",
+        "sha256": "bbc17e7b473d59eb5063b61adc49805630d99e85ec8448e8f7420f36d6c65ddf"
+      },
+      {
+        "path": "assets/js/motion.js",
+        "sha256": "4ff8c63e787f0433a7c08a769db3eb8776052fe5c1d88d8bd95ca33c1139520e"
+      },
+      {
+        "path": "assets/js/date-info-ui.js",
+        "sha256": "fe13f930f516e053e978aaf555f8ea1fd97ec26bfd609efca1a23a3adff6407d"
+      },
+      {
+        "path": "assets/js/year-view.js",
+        "sha256": "e9e800647bc000da27f521de9199a493f3d26fd0dc21cf36868bcfddc144e025"
+      },
+      {
+        "path": "assets/js/summary-numbers.js",
+        "sha256": "7566dfc57efdde2ffc523909a02d427d8108a9c2f77b4ad57d79c742cdac7006"
+      },
+      {
+        "path": "assets/js/ui/presentation.js",
+        "sha256": "0588e6f4e2c93bdceb01ea964676c1ef955c85a804247c67a9011022a50948ea"
+      },
+      {
+        "path": "assets/js/ui/elements.js",
+        "sha256": "5706c3345230ef5f9ab9b9caf22c092dec099147247b9c89e501b864c48013b1"
+      },
+      {
+        "path": "assets/js/ui/notifications.js",
+        "sha256": "cc2fbfef61d35917a232a5158653c647b9fd9e553821f9646165375ab77f4006"
+      },
+      {
+        "path": "assets/js/ui/summary.js",
+        "sha256": "2ef42d1bd9a54621b606cfca7cffb6a6f4fff010926896d444071d8dbee99d5c"
+      },
+      {
+        "path": "assets/js/ui/calendar.js",
+        "sha256": "f7a2d687e94eee5f34a9c12e0321263e85137fa38b02015295c7fc7f5b39ca71"
+      },
+      {
+        "path": "assets/js/ui/editor.js",
+        "sha256": "0a7ddc7db0aeca7b206f4dd272a1e7128e93d7d4cc1621cfb088b3a8cf3f559b"
+      },
+      {
+        "path": "assets/js/ui/sidebar-panels.js",
+        "sha256": "b0c96e5de6bda6ebe8a0c978949e1ace469231dc2a2a66dda78c776d83c38612"
+      },
+      {
+        "path": "assets/js/controllers/templates.js",
+        "sha256": "9499caeffa9290ee76bca425187e72707f713ef109cc410b0c091a0b839124db"
+      },
+      {
+        "path": "assets/js/controllers/settings.js",
+        "sha256": "efb2e40f3c7e36b57c4e34cede245d1e6b3f1620f30c014544cb59066fac4275"
+      },
+      {
+        "path": "assets/js/controllers/backup.js",
+        "sha256": "b5156333613d72d933f69a89916bf11dabc8e8ec4b381ea8d1c0b6daa3fe103e"
+      },
+      {
+        "path": "assets/js/controllers/imports.js",
+        "sha256": "8c521b0e9000db0325242043763ab77bdf2b27a08d3152d0e4267fb95ccaa11d"
+      },
+      {
+        "path": "assets/js/controllers/day-editor.js",
+        "sha256": "c1bd02a0cf76b2a042da603da8e4346cdf9aac0b78ebaa64360988a6488e56eb"
+      },
+      {
+        "path": "assets/js/controllers/navigation.js",
+        "sha256": "4d23d8f760509331f077af5630a2dd9b78966216516f5adc773c02a750c0ba5f"
+      },
+      {
+        "path": "assets/js/controllers/dialogs.js",
+        "sha256": "95326f54feecdba74898185e5619a01566dea5cb7abfa7a4e38da38d1f3b936f"
+      },
+      {
+        "path": "assets/js/app.js",
+        "sha256": "7a456689a11119fe4af1e53c768c6918a485d33750f77cd8321493b9de979ab9"
+      },
+      {
+        "path": "assets/js/calendar-weather.js",
+        "sha256": "2bf930c0a6f4efef2c9da053d59064100df60c347185f68244153b20e7fc54a2"
+      },
+      {
+        "path": "assets/js/background.js",
+        "sha256": "1e89b1de02a13c4e38d82527ee28bf076d204aa89323c165f24c8307ae50e960"
+      },
+      {
+        "path": "assets/js/ui-alignment.js",
+        "sha256": "5bf84e3dabf982faf19ad796108bb4a6172061d9d6e5ac2d1ddd3880b89c4850"
+      },
+      {
+        "path": "assets/js/notification-motion.js",
+        "sha256": "bf10f6963bb5c68ad0d47480393a3e3aefd11e18e5edef833b4834a1ed17037f"
+      },
+      {
+        "path": "assets/js/startup.js",
+        "sha256": "d890aca28c5b1dfc8e2ffae87309cfc232411e8b5548464c61a5a8979a2a5349"
+      }
+    ]
+  },
+  "acceptedCurrent": {
+    "group": "page",
+    "frozen": false,
+    "sourceRoot": "F:\\Tools\\WorkTime",
+    "files": [
+      {
+        "path": "index.html",
+        "sha256": "11c990134aac3739155775765196fddb0545a4fd44eb7112aab0d53b362cc68d"
+      },
+      {
+        "path": "assets/css/tokens.css",
+        "sha256": "5122626822fc05d83c068c4e5c70a00f303e98f3b4c9f8142009d1a6df04932d"
+      },
+      {
+        "path": "assets/js/namespace.js",
+        "sha256": "eff9bb55b6911f9db222e547360139ed87adb89620e6826daa610a5df838b269"
+      },
+      {
+        "path": "assets/js/domain/preferences.js",
+        "sha256": "24e37dbe4b0d3c320fdf850cb76149d4b9056a44d901ba24e62e0446cb17b42f"
+      },
+      {
+        "path": "assets/js/services/preferences.js",
+        "sha256": "ede2ece4a751f7febba261fc1d13ba66ddf29269d3b4874e360fc22109468f78"
+      },
+      {
+        "path": "assets/js/theme.js",
+        "sha256": "b4c37bc0e2366b0564f8043c8840d729730f30390182d3ff21a17364e855097d"
+      },
+      {
+        "path": "assets/css/base.css",
+        "sha256": "465d6d7ce3572e3c0e7358a4493f97077310e09ae1b9df97c7c1befa72191026"
+      },
+      {
+        "path": "assets/css/layout.css",
+        "sha256": "7386d1f70c0f3d3d8f349418c6704a1c3a0a5996bb1fb7f99b9dd6b97c6631f0"
+      },
+      {
+        "path": "assets/css/editor.css",
+        "sha256": "48b04863a99bb9181f8169a460663740f74dab83f52226d2fca455f0ce1dd5c5"
+      },
+      {
+        "path": "assets/css/dialogs.css",
+        "sha256": "e9591fb18e7ad9a185ee3204d69506c629a8afd4ec4d0116e2c687b5410508d0"
+      },
+      {
+        "path": "assets/css/date-info.css",
+        "sha256": "972d75f00909ffdb3f75e08c93942e789e0995b1e635120b95c9db023fffb199"
+      },
+      {
+        "path": "assets/css/weather.css",
+        "sha256": "e5129a88e7aa938cbbfbaac39190f3162ebe8e8ced596d9a3b60ac10ae613e20"
+      },
+      {
+        "path": "assets/css/summary.css",
+        "sha256": "0423c4af416c0c76a8d704b13d8f1bebf5acec8e9aa7e95c2292ca2d85ca8938"
+      },
+      {
+        "path": "assets/css/calendar.css",
+        "sha256": "0ee666940aade6dd1b4b015fb2264fafbcc506e4d30762f8cd27c6a3bb630f09"
+      },
+      {
+        "path": "assets/css/controls.css",
+        "sha256": "201ed27b4cee72f03838e47701c29d637d89cb6fc813890bc07aa839b57d4fed"
+      },
+      {
+        "path": "assets/css/icons.css",
+        "sha256": "04c39eeb910970d8892cfa64774599e9f5ed9945b68fc6142361a5ea8aa58191"
+      },
+      {
+        "path": "assets/css/motion.css",
+        "sha256": "bf93fce304049a281baedd3e46ba1b45a2a57589c80c5d66e6f1c2888343f01d"
+      },
+      {
+        "path": "assets/data/calendars.js",
+        "sha256": "1477a2e760000a582c2c6fbff24587b7194a7d05845b344361a93c9a9433e7af"
+      },
+      {
+        "path": "assets/data/struggle-days.js",
+        "sha256": "f02d81cca0f463f17a3ab8fb7816cb44ec31e210ed8c106ce24a6850178c387f"
+      },
+      {
+        "path": "assets/js/domain/time.js",
+        "sha256": "73164ceb45a7c3ebb085f5feeba3bee25ef9bf5519de622aadfb21b6e80380d9"
+      },
+      {
+        "path": "assets/js/domain/state.js",
+        "sha256": "2b14a46ca3c576ca6da0adf23fd81ca0750a07c5ff010e0e944f6fb69b34d8a5"
+      },
+      {
+        "path": "assets/js/domain/calendar.js",
+        "sha256": "3e8737e4e9220cd20bad030bb9db9650da63e1206bf63d96bd555d0a48160116"
+      },
+      {
+        "path": "assets/js/domain/records.js",
+        "sha256": "6eec6a78f121d12d3a61124935d3c0b6dc14983cf0baf3560ced1c7b39e9ed90"
+      },
+      {
+        "path": "assets/js/domain/schedule.js",
+        "sha256": "9c1254f5c3f385eb935f272c1e9681807155bc8c6cda7d8b892ef569d51f0b15"
+      },
+      {
+        "path": "assets/js/domain/statistics.js",
+        "sha256": "b20549f41ec4fb9c2177c61757b478c9b316009943dd7f6344f0ebfe41ddcf46"
+      },
+      {
+        "path": "assets/js/domain/observations.js",
+        "sha256": "b9a2e1aa90f3b6a872a2d3ea4ab22df512041bd1712fa7488bd0dc860e3de6c2"
+      },
+      {
+        "path": "assets/js/domain/validation.js",
+        "sha256": "8ef0f27824aead9122ced02d15f64d1d00ca4c9c9e1f028f7aaf4eddc2c0d2b6"
+      },
+      {
+        "path": "assets/js/ui/presentation.js",
+        "sha256": "08919e4513e9d1a46352b3b9368928a878c01afd6ec780634208ea860e22d2d9"
+      },
+      {
+        "path": "assets/js/ui/elements.js",
+        "sha256": "765ccf6b99bafd2cc7b6e0c4471241a8b3ead5f9efc0add9c14b0f476cd3d655"
+      },
+      {
+        "path": "assets/js/services/application.js",
+        "sha256": "b5c2ae69acd99a8f824a1e6f22eaf4ab07e7cb2d42858ca990f79a8b21191377"
+      },
+      {
+        "path": "assets/js/services/derived.js",
+        "sha256": "b4abb1ab140648c9dca20c3a5db65aea7dfbfc6eedcd41f9941e99fb08e6d871"
+      },
+      {
+        "path": "assets/js/services/import-index.js",
+        "sha256": "d18d2c53cf0b4560733698e72794dcd90d64b12eccbc42d4b28660322cb47e5b"
+      },
+      {
+        "path": "assets/js/services/bootstrap.js",
+        "sha256": "2ccdfe19d35d27016c11082fd1d99a8081c29694acec78849c75c62fc1f8f8c8"
+      },
+      {
+        "path": "assets/js/services/clock.js",
+        "sha256": "dffbd159d804fc9a7f6da68ba090416849591212ed9f230a50d9031d57ac5aeb"
+      },
+      {
+        "path": "assets/js/services/clipboard.js",
+        "sha256": "42e4eb1a0bfcbd988b7293bbc40c2fa08911c3bad2474d28ca44da582c836ad7"
+      },
+      {
+        "path": "assets/js/services/downloads.js",
+        "sha256": "cb1acf0cfd25c4794909c437ae1fe6da51343d6978b347002dc5de27264e4061"
+      },
+      {
+        "path": "assets/js/storage.js",
+        "sha256": "3ebe95965da974c79e515debaac18db0c37f2ccfea37f9e32ce6489ec71d0e3b"
+      },
+      {
+        "path": "assets/js/imports.js",
+        "sha256": "61442dc2a233f1c09e6d1ecae267acda9b8ad540d7770dc1be5ba7c709e414eb"
+      },
+      {
+        "path": "assets/js/backup.js",
+        "sha256": "958e47106401ad39542d31ac5d202c0172d2eaaa01743fdac6f1573ba14ade5b"
+      },
+      {
+        "path": "assets/vendor/lunar.js",
+        "sha256": "9750324bfe1aa63c146f8c72b1143df924466c11c8a5277d7d9225c541a18aaa"
+      },
+      {
+        "path": "assets/data/sources.js",
+        "sha256": "fb920a4a6d9ca16649f3114d1810b2c10205ed7c1338b8fbcee7a56cde6280d5"
+      },
+      {
+        "path": "assets/data/festivals.js",
+        "sha256": "d4ddf57425ad689a6c27b8d924f161a4b41f7f9d369fc6d4154ffe4230762ba1"
+      },
+      {
+        "path": "assets/data/international-festivals.js",
+        "sha256": "f4057140311c41eadade1cb253aff599a0f97f2af7910865cad005360594a8dd"
+      },
+      {
+        "path": "assets/data/history/01.js",
+        "sha256": "21d682d78f907e3f1772f8dcb7650dbee62638c4f736f101476b14464606017d"
+      },
+      {
+        "path": "assets/data/history/02.js",
+        "sha256": "3fa6eacb47dd9bd488a6d118faf525c64de021f6234ddb703819d530ba1e10e5"
+      },
+      {
+        "path": "assets/data/history/03.js",
+        "sha256": "11227532cedbadb08e0cfda7ca9b6f17f2f7d4a7cfa0cfc3fdc7ff153008f368"
+      },
+      {
+        "path": "assets/data/history/04.js",
+        "sha256": "252b7f40b1f546d4f996de391df195af47ba3cd6b77b73b94f6aa68120a69338"
+      },
+      {
+        "path": "assets/data/history/05.js",
+        "sha256": "fe0ffc651213a01df0c3093a2a49264575fc55ae978dd1d6aa2459e0a97e9308"
+      },
+      {
+        "path": "assets/data/history/06.js",
+        "sha256": "83cdc8a2008d8d36a67de37689eb0ad2d3c86d2582e1a243d81074aaeed7c1cd"
+      },
+      {
+        "path": "assets/data/history/07.js",
+        "sha256": "a9c17c2fc29cd591f72bbeacd151b4f18919ca055458c60c2de514ad756d9e54"
+      },
+      {
+        "path": "assets/data/history/08.js",
+        "sha256": "d005d49816b0152032a50038be92ed904bf05c084b8039de0e9f25c49bf64496"
+      },
+      {
+        "path": "assets/data/history/09.js",
+        "sha256": "e54997cba949e4df855e970ab6aa9c770ec74e7c961c3a7359bff16737da2ef0"
+      },
+      {
+        "path": "assets/data/history/10.js",
+        "sha256": "40646d8818bfd5c6ec741bff3d596dabf91c50cb1bf4c0cc1db29926cc16e919"
+      },
+      {
+        "path": "assets/data/history/11.js",
+        "sha256": "4aa3e4f96171ea5042bfc913fe0630c8abb1737be89e15931cda38c0b3377d43"
+      },
+      {
+        "path": "assets/data/history/12.js",
+        "sha256": "ea4e6e081147905c9e3b2cb9aa8a431f052592e0890c5e81e370a243a55a623b"
+      },
+      {
+        "path": "assets/js/date-info.js",
+        "sha256": "62b5a04fe836fe2b1f313ddb28b7e6058c4ff7a69ce9e11744b5eaf42881ea6e"
+      },
+      {
+        "path": "assets/data/weather-cities.js",
+        "sha256": "7720236aa8d92203a34c30a1fd4658e837b5fc0a22f2614a7dfcc57e43f4167f"
+      },
+      {
+        "path": "assets/js/weather-config.js",
+        "sha256": "25ad5aa4512ee35f0119df4af9507515f6b8763d361a546fc70e039d1882f5f4"
+      },
+      {
+        "path": "assets/js/weather.js",
+        "sha256": "742c75bfe35aa0050f234f647ccdc4c7d918defb54a720f78617c63772ecb3b9"
+      },
+      {
+        "path": "assets/js/weather-ui.js",
+        "sha256": "9f14285beab612437a9d46441e755cf598b346b1283dcec338b3a7163f86ae32"
+      },
+      {
+        "path": "assets/js/work-countdown.js",
+        "sha256": "30a38698930056730b49b82541770237bf04ba9200bfe7e3f5e376cef1364780"
+      },
+      {
+        "path": "assets/js/payday.js",
+        "sha256": "2b70b7b48e6de9f6ffb81f6d4e0ea3e6dc19c9a8b08135b30b31ebdb9377d0b6"
+      },
+      {
+        "path": "assets/js/motion.js",
+        "sha256": "f5daf37c5a3dcf4fe8dbb2f5194aa67e6380dc188d2b6708c10f1c0f21066f83"
+      },
+      {
+        "path": "assets/js/date-info-ui.js",
+        "sha256": "baf9af659279e0aa31313a6244300435e50c1fefd8317395e42a025ddb664314"
+      },
+      {
+        "path": "assets/js/year-view.js",
+        "sha256": "1720a8b12f503f528c98291f787439a52ca21559aef779f1ca3cb716131cea10"
+      },
+      {
+        "path": "assets/js/summary-numbers.js",
+        "sha256": "6bdab15979fdbd86bcdbee7d35f530681e597d92519dc0e325e951bea3a83248"
+      },
+      {
+        "path": "assets/js/ui/hold-action.js",
+        "sha256": "4157a7f47d54ca302437de2f6d4c2ae5e7851b288ac6dcd4584d428fae860697"
+      },
+      {
+        "path": "assets/js/ui/notifications.js",
+        "sha256": "972b26344c364607f56be7be0687101eebae84da9141dc52e9a9bf1868e016b2"
+      },
+      {
+        "path": "assets/js/ui/summary.js",
+        "sha256": "4d33092533fb5f2b4786010160fb32292e3cb790a7b2e94641b28f49d4a74737"
+      },
+      {
+        "path": "assets/js/ui/calendar.js",
+        "sha256": "e561ab7d35f8685dc04ddfe02f0662cb451e56a991fdb2aa04cc585fde12d110"
+      },
+      {
+        "path": "assets/js/ui/editor.js",
+        "sha256": "6a624378b65930548391303f9240051d48fcaa96592a53bf2093637408dcf50d"
+      },
+      {
+        "path": "assets/js/ui/sidebar-panels.js",
+        "sha256": "5dff0f849fc2e3f2741d6b130769b30a481e0acc5eb753e39ef81d1250057cab"
+      },
+      {
+        "path": "assets/js/controllers/templates.js",
+        "sha256": "d6d7664371ec54631e7c51436150d4889cfab424ff35ae9316eafac0c55edbdb"
+      },
+      {
+        "path": "assets/js/controllers/schedule-range.js",
+        "sha256": "52c58660677e8f868655afba653c3e75c064b5c4a0031649e168adb6606916e2"
+      },
+      {
+        "path": "assets/js/controllers/settings.js",
+        "sha256": "6284f673a9b8c53803caf500794e432be9deb873e4460fa0e37c1409994700b3"
+      },
+      {
+        "path": "assets/js/controllers/personal-settings.js",
+        "sha256": "a74e43de9be585de175a7af0ebbecd70a055f4ff4904617365bd6eeba961a21d"
+      },
+      {
+        "path": "assets/js/controllers/backup.js",
+        "sha256": "9c90d215222123b741745429bfa6a8f9347babf20965cba8f3c825504589e986"
+      },
+      {
+        "path": "assets/js/controllers/imports.js",
+        "sha256": "c3567ee4bf1d4f1216684e755657362085dd87951922c283757e79ef1718857d"
+      },
+      {
+        "path": "assets/js/controllers/day-editor.js",
+        "sha256": "083ec29f4ad78240eb915abcdb1e3a3f57fb757ae2263db309836a718aeaace1"
+      },
+      {
+        "path": "assets/js/controllers/navigation.js",
+        "sha256": "ed9463f0d0509d06014cf3dff066eb0dddb20509962cb52c95cec7ffb7e467a7"
+      },
+      {
+        "path": "assets/js/controllers/dialogs.js",
+        "sha256": "2a4d623e6ba4b9e73a7508d03be505b523eac18f0dd6069a2dc7c27a66fb562c"
+      },
+      {
+        "path": "assets/js/calendar-weather.js",
+        "sha256": "f3b7e5c254f464ce31934038aa9adf16d06a497f300b47eb8086d093987e08a6"
+      },
+      {
+        "path": "assets/js/app.js",
+        "sha256": "364cef41e719e33f63e2914bf3802aafdf72d9c6baa6c4149ca2814e58e89bf5"
+      },
+      {
+        "path": "assets/js/background.js",
+        "sha256": "24981fcb3d68303d908f26b33ffa0a806381e8295c9756fa2a72dec263ef5424"
+      },
+      {
+        "path": "assets/js/ui-alignment.js",
+        "sha256": "93392cef3f9c48b2bffe58c68758da9ac75d9cc9aafe7d9dab05c9d3e285495f"
+      },
+      {
+        "path": "assets/js/notification-motion.js",
+        "sha256": "4fd5747f12343d1cf78873245269165ad306f87b9ce18532bd797e8656a1bece"
+      },
+      {
+        "path": "assets/js/startup.js",
+        "sha256": "937cfc3e3ed317f4118b44b084a1213b2d1b00bd9427cd7eb85ffea9937d370d"
+      }
+    ]
+  },
+  "acceptance": {
+    "samples": 66,
+    "unchanged": 39,
+    "averageWidths": 27,
+    "reason": "User-authorized fixed 0.000 h average increases intrinsic numeric width in 27 desktop scenes. All other control styles and rectangles match frozen source; class order normalized for comparison.",
+    "baselineSha256": "059396697d2aa2fbbf52ae0c4cbe4b8cda8e2c9efb4b43d8bd3a14f75c5d22d4"
+  }
+}

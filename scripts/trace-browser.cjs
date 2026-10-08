@@ -7,8 +7,11 @@ const fs = require("node:fs"),
   { pathToFileURL } = require("node:url"),
   { chromium } = require("playwright"),
   { buildPerformanceFixture } = require("./performance-fixtures.cjs");
+const { fixBusinessDate } = require("./lib/fixed-business-date.cjs");
 const root = path.resolve(__dirname, ".."),
-  output = path.resolve(process.argv[2] || "docs/performance-trace.json.gz"),
+  output = path.resolve(
+    process.argv[2] || "test-results/performance-trace.json.gz",
+  ),
   reportPath = output + ".summary.json",
   url = pathToFileURL(path.join(root, "index.html")).href,
   fixture = buildPerformanceFixture(10);
@@ -16,6 +19,26 @@ assert(
   !fs.existsSync(output) && !fs.existsSync(reportPath),
   "Refusing to overwrite historical trace",
 );
+function sourceFiles(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const file = path.join(directory, entry.name);
+    return entry.isDirectory() ? sourceFiles(file) : [file];
+  });
+}
+const sha256 = (file) =>
+  crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+const fingerprints = [
+  path.join(root, "index.html"),
+  ...sourceFiles(path.join(root, "assets")),
+  ...[
+    "trace-browser.cjs",
+    "performance-fixtures.cjs",
+    "lib/fixed-business-date.cjs",
+  ].map((file) => path.join(root, "scripts", file)),
+].map((file) => ({
+  path: path.relative(root, file).replaceAll(path.sep, "/"),
+  sha256: sha256(file),
+}));
 const original = fs.readFileSync(
     path.join(root, "assets/js/ui-alignment.js"),
     "utf8",
@@ -73,20 +96,33 @@ let browser;
     fixture.state,
   );
   await seed.close();
-  await context.route("**/ui-alignment.js", (route) =>
-    route.fulfill({
+  let instrumentedLoads = 0;
+  await context.route(/\/ui-alignment\.js(?:\?.*)?$/, (route) => {
+    instrumentedLoads++;
+    return route.fulfill({
       contentType: "application/javascript",
       body: instrumented,
-    }),
-  );
+    });
+  });
   const page = await context.newPage(),
     errors = [];
+  await page.addInitScript(() => {
+    window.traceLongTasks = [];
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries())
+        window.traceLongTasks.push({
+          startTime: entry.startTime,
+          duration: entry.duration,
+        });
+    }).observe({ type: "longtask", buffered: true });
+  });
+  await fixBusinessDate(page);
   page.on("pageerror", (error) => errors.push(error.message));
   const session = await context.newCDPSession(page),
     operations = [];
   await session.send("Tracing.start", {
     categories:
-      "devtools.timeline,blink.user_timing,v8,disabled-by-default-v8.cpu_profiler",
+      "devtools.timeline,disabled-by-default-devtools.timeline,blink.user_timing,v8,disabled-by-default-v8.cpu_profiler",
     transferMode: "ReturnAsStream",
   });
   async function capture(name, action) {
@@ -116,6 +152,10 @@ let browser;
               0,
               ...refreshes.map((entry) => entry.duration),
             ),
+            longTasks: window.traceLongTasks.filter(
+              (task) =>
+                task.startTime < end && task.startTime + task.duration > start,
+            ),
           };
         },
         { name, start },
@@ -142,11 +182,12 @@ let browser;
     }),
   );
   assert(
-    await page.evaluate(() =>
-      Object.values(JSON.parse(localStorage.getItem(WorkTime.KEY)).days).some(
-        (day) => day.actual?.end === "20:00" || day.estimate?.end === "20:00",
-      ),
-    ),
+    await page.evaluate(() => {
+      const day = JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY))
+        .days["2026-10-02"];
+      return day?.actual?.end === "20:00" || day?.estimate?.end === "20:00";
+    }),
+    "Selected fixed-date record must persist",
   );
   await capture("year", () =>
     page.locator("#monthTitle").evaluate((element) => element.click()),
@@ -160,7 +201,7 @@ let browser;
     await page.evaluate(() => {
       document.querySelector("#importOpen").click();
       const text = document.querySelector("#pasteText"),
-        month = WorkTime.businessDate().slice(5, 7);
+        month = WorkTimeApp.domain.time.businessDate(new Date()).slice(5, 7);
       text.value = Array.from(
         { length: 28 },
         (_, i) => `${month}/${String(i + 1).padStart(2, "0")}\n08:00\n19:30`,
@@ -175,8 +216,9 @@ let browser;
   assert.equal(
     await page.evaluate(
       () =>
-        JSON.parse(localStorage.getItem(WorkTime.KEY)).imports.at(-1).records
-          .length,
+        JSON.parse(
+          localStorage.getItem(WorkTimeApp.domain.state.KEY),
+        ).imports.at(-1).records.length,
     ),
     28,
   );
@@ -194,7 +236,9 @@ let browser;
       .evaluate((element) => element.click());
   });
   assert.deepEqual(
-    await page.evaluate(() => JSON.parse(localStorage.getItem(WorkTime.KEY))),
+    await page.evaluate(() =>
+      JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)),
+    ),
     fixture.state,
   );
   assert.deepEqual(errors, []);
@@ -221,7 +265,8 @@ let browser;
   assert(layout.length > 0, "Trace lacks raw layout events");
   assert(
     operations.every((operation) => operation.refreshCount > 0),
-    "Alignment instrumentation did not execute",
+    "Alignment instrumentation did not execute: " +
+      JSON.stringify({ instrumentedLoads, operations }),
   );
   const totals = {};
   for (const event of events.filter(
@@ -250,7 +295,13 @@ let browser;
     totals[key].totalMs += duration;
     totals[key].maxMs = Math.max(totals[key].maxMs, duration);
   }
-  fs.writeFileSync(output, zlib.gzipSync(raw));
+  for (const file of fingerprints)
+    assert.equal(
+      sha256(path.join(root, file.path)),
+      file.sha256,
+      "Trace source changed: " + file.path,
+    );
+  fs.writeFileSync(output, zlib.gzipSync(raw), { flag: "wx" });
   fs.writeFileSync(
     reportPath,
     JSON.stringify(
@@ -259,8 +310,9 @@ let browser;
         createdAt: new Date().toISOString(),
         browser: await browser.version(),
         fixture: fixture.metadata,
+        fingerprints,
         method:
-          "Diagnostic single ten-year run; route-instrumented alignment, normal animation, real clock; tracing overhead excludes this from performance budget comparison",
+          "Diagnostic single ten-year run; route-instrumented alignment, normal animation, Date fixed at 2026-10-02T12:00:00+08:00 with real timers; tracing overhead excludes this from performance budget comparison",
         alignmentOriginalSHA256: crypto
           .createHash("sha256")
           .update(original)
@@ -271,12 +323,14 @@ let browser;
           .digest("hex"),
         rawSHA256: crypto.createHash("sha256").update(raw).digest("hex"),
         eventCount: events.length,
+        instrumentedLoads,
         operations,
         threadTotals: Object.values(totals),
       },
       null,
       2,
     ),
+    { flag: "wx" },
   );
   console.log(
     JSON.stringify({ raw: output, events: events.length, operations }),

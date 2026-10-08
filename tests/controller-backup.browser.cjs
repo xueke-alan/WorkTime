@@ -1,11 +1,10 @@
 "use strict";
-const { chromium } = require("playwright"),
-  assert = require("node:assert/strict"),
+const assert = require("node:assert/strict"),
   fs = require("node:fs/promises"),
   path = require("node:path");
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const context = await browser.newContext({
     timezoneId: "Asia/Shanghai",
     reducedMotion: "reduce",
@@ -41,15 +40,24 @@ let browser;
       .href,
   );
   await page.locator("#backup").waitFor({ state: "visible" });
+  await page.evaluate(() =>
+    WorkTimeApp.services.preferences.page.saveTheme("rose"),
+  );
+  await page.evaluate(() => WorkTimeApp.ui.theme.apply("blue"));
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "blue");
   await page.locator("#backup").focus();
   await page.keyboard.down("Space");
   await page.clock.fastForward(100);
   await page.keyboard.up("Space");
   await page.waitForFunction(() => window.clipboardWrites === 1);
   const copied = await page.evaluate(async () =>
-    WorkBackup.decode(window.clipboardValue, WorkTime.validateBackup),
+    WorkTimeApp.services.backup.decode(
+      window.clipboardValue,
+      WorkTimeApp.domain.validation.validateBackup,
+    ),
   );
-  assert.equal(copied.schemaVersion, 1);
+  assert.equal(copied.schemaVersion, 3);
+  assert.equal(copied.preferences.pageTheme, "rose");
   const downloadPromise = page.waitForEvent("download");
   await page.keyboard.down("Space");
   await page.clock.fastForward(2600);
@@ -57,7 +65,8 @@ let browser;
   await page.keyboard.up("Space");
   const raw = await fs.readFile(await download.path(), "utf8"),
     file = JSON.parse(raw);
-  assert.equal(file.schemaVersion, 1);
+  assert.equal(file.schemaVersion, 3);
+  assert.equal(file.preferences.pageTheme, "rose");
   assert.equal(
     await page.evaluate(() => window.clipboardWrites),
     1,
@@ -78,7 +87,17 @@ let browser;
     mimeType: "application/json",
     buffer: Buffer.from(raw),
   });
+  await page.evaluate(() =>
+    WorkTimeApp.services.preferences.page.saveTheme("blue"),
+  );
   await page.locator("#confirmRestore").click();
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "rose");
+  assert.equal(
+    await page.evaluate(() =>
+      localStorage.getItem(WorkTimeApp.services.preferences.key),
+    ),
+    "rose",
+  );
   assert.equal(
     await page.locator("#restoreDialog").evaluate((e) => e.open),
     false,
@@ -87,6 +106,25 @@ let browser;
     JSON.parse(localStorage.getItem("worktime-local-v1")),
   );
   assert.deepEqual(restored.settings, file.settings);
+  await page.evaluate(() => {
+    window.clipboardDenied = false;
+    WorkTimeApp.services.preferences.page.saveTheme("blue");
+  });
+  await page.locator("#restore").click();
+  await page.locator("#restoreDialog").waitFor({ state: "visible" });
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "blue");
+  assert.match(await page.locator("#restoreSummary").textContent(), /玫瑰红/);
+  await page.locator("#confirmRestore").click();
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "rose");
+  await page.reload();
+  await page.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  assert.equal(await page.locator("html").getAttribute("data-theme"), "rose");
+  assert.equal(
+    await page.locator('input[name="pageTheme"][value="rose"]').isChecked(),
+    true,
+  );
   const beforeExit = await page.evaluate(() =>
     localStorage.getItem("worktime-local-v1"),
   );
@@ -95,8 +133,8 @@ let browser;
     window.prepareCalls = 0;
     navigator.clipboard.readText = () =>
       new Promise((resolve) => window.pendingClipboard.push(resolve));
-    const original = WorkImports.prepare;
-    WorkImports.prepare = (...args) => {
+    const original = WorkTimeApp.services.imports.prepare;
+    WorkTimeApp.services.imports.prepare = (...args) => {
       window.prepareCalls++;
       return original(...args);
     };
@@ -123,6 +161,160 @@ let browser;
   assert.equal(
     await page.evaluate(() => localStorage.getItem("worktime-local-v1")),
     beforeExit,
+  );
+  const released = await page.evaluate(() => {
+    const ids = [
+      "backup",
+      "restore",
+      "confirmRestore",
+      "importOpen",
+      "oaShortcut",
+      "settingsOpen",
+      "setupButton",
+      "plannedOvertimeToggle",
+      "helpOpen",
+    ];
+    const attached = ids.filter(
+      (id) => document.getElementById(id).onclick !== null,
+    );
+    for (const id of ids) document.getElementById(id).click();
+    const button = document.getElementById("backup");
+    button.dispatchEvent(
+      new KeyboardEvent("keydown", { code: "Space", bubbles: true }),
+    );
+    return { attached, pending: window.pendingClipboard.length };
+  });
+  assert.deepEqual(
+    released,
+    { attached: [], pending: 2 },
+    "Released controllers accept no further clicks or clipboard work",
+  );
+  await page.clock.fastForward(3000);
+  assert.equal(
+    await page.locator("#backup.is-holding, #backup.is-completing").count(),
+    0,
+  );
+  const remount = await page.evaluate(async (raw) => {
+    const D = WorkTimeApp.domain;
+    const $ = (id) => document.getElementById(id);
+    const pending = [],
+      messages = [];
+    let commits = 0;
+    const model = {
+      state: D.state.defaultState(),
+      today: "2026-10-04",
+      selected: "2026-10-04",
+    };
+    const options = {
+      element: $,
+      model,
+      originalStorageText: null,
+      core: {
+        hours: D.time.hours,
+        validateBackup: D.validation.validateBackup,
+        timeMin: D.time.timeMin,
+        deleteImport: D.observations.deleteImport,
+        parseText: D.observations.parseText,
+        mergeObservation: D.observations.mergeObservation,
+      },
+      escape: String,
+      clock: {
+        now: () => new Date("2026-10-04T12:00:00+08:00"),
+        year: () => 2026,
+      },
+      clipboard: {
+        readText: () => new Promise((resolve) => pending.push(resolve)),
+      },
+      downloads: { download() {} },
+      preferences: WorkTimeApp.services.preferences.page,
+      application: {
+        importRecords() {
+          commits++;
+          return { persisted: true };
+        },
+      },
+      importIndex: WorkTimeApp.services.importIndex.create({
+        core: { parseText: D.observations.parseText },
+      }),
+      actions: {
+        toast: (message) => messages.push(message),
+        saveFeedback: () => {},
+        render() {},
+        open: (id) => $(id).showModal(),
+      },
+    };
+    const backup = WorkTimeApp.ui.createBackupController(options);
+    const imports = WorkTimeApp.ui.createImportController(options);
+    backup.bind();
+    imports.bind();
+    $("restore").click();
+    document.querySelector("[data-import-clipboard]").click();
+    backup.dispose();
+    imports.dispose();
+    backup.bind();
+    imports.bind();
+    $("restore").click();
+    pending[0]("invalid old backup");
+    pending[1]("09/27\n08:00\n17:30");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const stale = {
+      commits,
+      messages: messages.length,
+      newRestorePending: $("restore").disabled,
+      dialog: $("restoreDialog").open,
+    };
+    pending[2](raw);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const currentRestore = {
+      dialog: $("restoreDialog").open,
+      enabled: !$("restore").disabled,
+      messages: messages.length,
+    };
+    $("restoreDialog").close();
+    document.querySelector("[data-import-clipboard]").click();
+    pending[3]("09/27\n08:00\n17:30");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    backup.dispose();
+    imports.dispose();
+    options.importIndex.dispose();
+    const files = [],
+      corrupt = WorkTimeApp.ui.createBackupController({
+        ...options,
+        model: { ...model, loadCorrupt: true },
+        originalStorageText: "{unreadable original bytes}",
+        downloads: { download: (...args) => files.push(args) },
+      });
+    for (let cycle = 0; cycle < 3; cycle++) {
+      corrupt.bind();
+      corrupt.bind();
+      if (document.querySelectorAll("#exportCorruptStorage").length !== 1)
+        throw Error("Remounted corrupt export duplicates its control");
+      $("exportCorruptStorage").click();
+      corrupt.dispose();
+      corrupt.dispose();
+      $("exportCorruptStorage").click();
+    }
+    return {
+      stale,
+      currentRestore,
+      commits,
+      corruptExports: files.map((args) => args[1]),
+    };
+  }, raw);
+  assert.deepEqual(
+    remount,
+    {
+      stale: {
+        commits: 0,
+        messages: 0,
+        newRestorePending: true,
+        dialog: false,
+      },
+      currentRestore: { dialog: true, enabled: true, messages: 1 },
+      commits: 1,
+      corruptExports: Array(3).fill("{unreadable original bytes}"),
+    },
+    "Remount rejects previous lifetime results while new restore/import work normally",
   );
   assert.deepEqual(errors, []);
   console.log(

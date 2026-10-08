@@ -1,20 +1,18 @@
 "use strict";
-const { chromium } = require("playwright"),
-  fs = require("node:fs"),
+const fs = require("node:fs"),
   path = require("node:path"),
   zlib = require("node:zlib"),
   vm = require("node:vm"),
   assert = require("node:assert/strict");
 const root = path.resolve(__dirname, ".."),
-  baseline = path.join(root, "tests/fixtures/styles-summary-contract.json.gz"),
-  record = process.argv.includes("--record");
-const reviewedButtonChange = require("./helpers/button-style-change.cjs");
+  reference = require("./helpers/style-reference.cjs").create(
+    "summary",
+    "tests/fixtures/styles-summary-2026-10-08.json.gz",
+  ),
+  baseline = reference.baseline,
+  record = process.argv.includes("--record") || reference.capture;
 const realm = vm.createContext({});
-vm.runInContext(
-  require("./helpers/core-source.cjs").readCoreSource() +
-    ";globalThis.C=WorkTime",
-  realm,
-);
+vm.runInContext(reference.domainSource() + ";globalThis.C=DomainTest", realm);
 const C = realm.C;
 const properties = [
   "display",
@@ -49,7 +47,7 @@ let browser;
 (async () => {
   if (record && fs.existsSync(baseline))
     throw Error("Refusing to replace existing summary baseline");
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const samples = [];
   for (const width of [
     390, 540, 699, 850, 1150, 1151, 1300, 1301, 1600, 1800, 1920,
@@ -90,17 +88,31 @@ let browser;
           localStorage.setItem("worktime-local-v1", JSON.stringify(state)),
         JSON.parse(JSON.stringify(state)),
       );
-      await page.goto(
-        require("node:url").pathToFileURL(path.join(root, "index.html")).href,
-      );
+      await reference.visit(page);
       await page.locator("#settingsOpen").waitFor({ state: "visible" });
       if (mode === "historical") await page.locator("#prevMonth").click();
       for (const height of [700, 1000]) {
         await page.setViewportSize({ width, height });
         await page.evaluate(() => document.fonts.ready);
-        await page.evaluate(() => window.UIAlignment.refresh());
+        await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
         await page.clock.fastForward(3000);
         await page.mouse.move(0, 0);
+        if (!reference.frozen) {
+          const average = state.settings.configured
+            ? (C.summary(state, "2026-09-01", "2026-09-30").average ?? 0) / 60
+            : 0;
+          assert.equal(
+            await page
+              .locator(".average-card .summary-number-accessible")
+              .textContent(),
+            average.toFixed(3),
+            "Average uses three decimal places in every state and viewport",
+          );
+          assert.equal(
+            await page.locator(".average-card small").textContent(),
+            "h",
+          );
+        }
         const values = await page.evaluate((properties) => {
           if (
             document.querySelector(
@@ -132,10 +144,10 @@ let browser;
       }
       if (mode === "populated") {
         await page.evaluate(() => {
-          const state = WorkTime.defaultState();
+          const state = WorkTimeApp.domain.state.defaultState();
           state.overtimeRequirements = [120, 150, 180, 210, 240];
           for (let day = 1; day <= 30; day++)
-            state.days["2026-09-" + WorkTime.pad(day)] = {
+            state.days["2026-09-" + WorkTimeApp.domain.time.pad(day)] = {
               actual: {
                 start: "08:00",
                 end: "20:00",
@@ -149,8 +161,22 @@ let browser;
         // Avoid the ordinary page's seed script replacing the stress fixture on reload.
         await page.evaluate(() => {
           const state = JSON.parse(localStorage.getItem("worktime-local-v1"));
-          const view = WorkUI.createSummary({
-            core: WorkTime,
+          const view = WorkTimeApp.ui.createSummary({
+            core: {
+              validDate: WorkTimeApp.domain.time.validDate,
+              summary: WorkTimeApp.domain.statistics.summary,
+              pendingWorkdays: (input, start, end, asOf) =>
+                WorkTimeApp.domain.statistics.pendingWorkdays(
+                  input,
+                  start,
+                  end,
+                  asOf,
+                  new Date(),
+                ),
+              selectOvertimeRequirement:
+                WorkTimeApp.domain.statistics.selectOvertimeRequirement,
+              targetPace: WorkTimeApp.domain.statistics.targetPace,
+            },
             element: (id) => document.getElementById(id),
             escape: String,
             getState: () => state,
@@ -159,9 +185,10 @@ let browser;
             isStorageFailed: () => false,
             document,
             window,
+            numbers: WorkTimeApp.ui.numbers,
           });
           view.renderStats();
-          window.UIAlignment.refresh();
+          WorkTimeApp.ui.alignment.refresh();
         });
         await page.clock.fastForward(2000);
         const collisions = await page.evaluate(() =>
@@ -209,9 +236,7 @@ let browser;
       if (
         current.values.length !== previous[i].values.length ||
         !current.values.every(
-          (v, j) =>
-            JSON.stringify(v) === JSON.stringify(previous[i].values[j]) ||
-            reviewedButtonChange(v, previous[i].values[j], current, "summary"),
+          (v, j) => JSON.stringify(v) === JSON.stringify(previous[i].values[j]),
         )
       )
         differences.push({
@@ -223,7 +248,7 @@ let browser;
         });
     });
     fs.writeFileSync(
-      path.join(root, "docs/summary-style-differences.json"),
+      path.join(root, "test-results/summary-style-differences.json"),
       JSON.stringify(differences, null, 2) + "\n",
     );
     assert.equal(

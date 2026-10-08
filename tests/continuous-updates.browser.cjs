@@ -2,11 +2,10 @@
 const assert = require("node:assert/strict"),
   path = require("node:path"),
   { pathToFileURL } = require("node:url"),
-  { chromium } = require("playwright"),
   { buildPerformanceFixture } = require("../scripts/performance-fixtures.cjs");
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const page = await browser.newPage({
       viewport: { width: 1600, height: 1000 },
       timezoneId: "Asia/Shanghai",
@@ -53,12 +52,20 @@ let browser;
   );
   assert(
     await page.evaluate(() => {
-      const state = JSON.parse(localStorage.getItem(WorkTime.KEY)),
-        today = WorkTime.businessDate(),
+      const state = JSON.parse(
+          localStorage.getItem(WorkTimeApp.domain.state.KEY),
+        ),
+        today = WorkTimeApp.domain.time.businessDate(new Date()),
         month = today.slice(0, 7),
         parts = month.split("-").map(Number),
-        end = WorkTime.dateKey(new Date(parts[0], parts[1], 0, 12)),
-        summary = WorkTime.summary(state, month + "-01", end);
+        end = WorkTimeApp.domain.time.dateKey(
+          new Date(parts[0], parts[1], 0, 12),
+        ),
+        summary = WorkTimeApp.domain.statistics.summary(
+          state,
+          month + "-01",
+          end,
+        );
       const metric = document
         .querySelectorAll("#cards .metric")[4]
         .cloneNode(true);
@@ -67,13 +74,13 @@ let browser;
         .forEach((node) => node.remove());
       return (
         metric.textContent.replace(/\s/g, "") ===
-        WorkTime.formatMinutes(summary.total).replace(/\s/g, "")
+        WorkTimeApp.domain.time.formatMinutes(summary.total).replace(/\s/g, "")
       );
     }),
   );
   await page.evaluate(() => {
     window.countdownCalls = 0;
-    window.DateInfo.register({
+    WorkTimeApp.services.dateInfo.register({
       id: "countdown",
       label: "下班倒计时",
       getContent: () => ({
@@ -143,12 +150,12 @@ let browser;
   await page.waitForTimeout(200);
   assert.equal(await page.evaluate(() => window.backgroundDraws), still);
   const disposed = await page.evaluate(() => {
-    window.DateInfoUI.dispose();
-    window.DateInfoUI.dispose();
-    window.WorkBackground.dispose();
-    window.WorkBackground.dispose();
-    window.WorkMotion.dispose();
-    window.WorkMotion.dispose();
+    WorkTimeApp.ui.dateInfo.dispose();
+    WorkTimeApp.ui.dateInfo.dispose();
+    WorkTimeApp.ui.background.dispose();
+    WorkTimeApp.ui.background.dispose();
+    WorkTimeApp.ui.motion.dispose();
+    WorkTimeApp.ui.motion.dispose();
     return { draws: window.backgroundDraws, calls: window.countdownCalls };
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });

@@ -1,5 +1,5 @@
 "use strict";
-const { chromium } = require("playwright");
+
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -11,7 +11,7 @@ const tag = process.argv[2] || "";
 assert(!tag || /^[a-z0-9-]+$/.test(tag), "Safe output tag");
 const suffix = tag ? `-${tag}` : "";
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const evidence = [];
   for (const dpr of [1, 1.25, 1.5, 2]) {
     const context = await browser.newContext({
@@ -30,10 +30,10 @@ const suffix = tag ? `-${tag}` : "";
       for (const mode of ["toolbar", "import", "template"]) {
         if (mode === "import") await page.locator("#importOpen").click();
         if (mode === "template") await page.locator("#addTimeTemplate").click();
-        await page.evaluate(() => UIAlignment.refresh());
+        await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
         const selector =
           mode === "toolbar"
-            ? "#importOpen .import-main > span, #batchToggle .button-label, #settingsOpen .button-label"
+            ? "#importOpen .import-main > span"
             : mode === "import"
               ? "#importDialog .dialog-foot .button-label"
               : "#timeTemplateDialog .dialog-foot .button-label";
@@ -80,7 +80,10 @@ const suffix = tag ? `-${tag}` : "";
           beforeStyle.remove();
           return { before, after: measure() };
         }, selector);
-        assert(values.after.length >= 2, `${mode} labels found`);
+        assert(
+          values.after.length >= (mode === "import" ? 2 : 1),
+          `${mode} labels found`,
+        );
         values.after.forEach((value, i) => {
           assert(
             Math.abs(value.error) <= 0.85,
@@ -123,7 +126,7 @@ const suffix = tag ? `-${tag}` : "";
           await page.locator(screenshotSelector).screenshot({
             path: path.resolve(
               __dirname,
-              `../docs/button-font-profile${suffix}-${mode}-${width}.png`,
+              `../test-results/button-font-profile${suffix}-${mode}-${width}.png`,
             ),
           });
         }
@@ -133,7 +136,10 @@ const suffix = tag ? `-${tag}` : "";
     await context.close();
   }
   fs.writeFileSync(
-    path.resolve(__dirname, `../docs/button-font-profile${suffix}-review.json`),
+    path.resolve(
+      __dirname,
+      `../test-results/button-font-profile${suffix}-review.json`,
+    ),
     JSON.stringify(evidence, null, 2),
   );
   console.log(

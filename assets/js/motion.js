@@ -1,9 +1,10 @@
 /* Explicit animation triggers keep ordinary renders and ticking content still. */
 (() => {
   "use strict";
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const reduced = WorkTimeApp.ui.animationCompat.preference();
   const running = new Map();
-  let disposed = true;
+  let disposed = true,
+    unlisten;
   function stop(element) {
     const entry = running.get(element);
     if (!entry) return;
@@ -43,13 +44,14 @@
     if (disposed) return;
     disposed = true;
     [...running.keys()].forEach(stop);
-    reduced.removeEventListener("change", onPreference);
+    unlisten?.();
+    unlisten = null;
     document.removeEventListener("visibilitychange", onVisibility);
   }
   function mount() {
     if (!disposed) return;
     disposed = false;
-    reduced.addEventListener("change", onPreference);
+    unlisten = WorkTimeApp.ui.animationCompat.listen(reduced, onPreference);
     document.addEventListener("visibilitychange", onVisibility);
   }
   WorkTimeApp.ui.motion = { play, stop, initial, mount, dispose };

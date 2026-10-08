@@ -3,8 +3,10 @@ const assert = require("node:assert/strict");
 const vm = require("node:vm");
 const context = vm.createContext({});
 vm.runInContext(
-  require("./helpers/core-source.cjs").readCoreSource() +
-    ";globalThis.C=WorkTime",
+  require("./helpers/conversion-source.cjs").readConversionSource({
+    withOracle: true,
+  }) +
+    ";globalThis.C=DomainTest;globalThis.L=FrozenLegacyOracle;globalThis.convert=WorkBackupConversion.convert",
   context,
 );
 const C = context.C;
@@ -17,26 +19,23 @@ for (const breaks of [
     { start: 700, end: 760 },
   ],
 ]) {
-  const input = C.defaultState();
+  const input = context.L.core.defaultState();
   delete input.scheduleDefaultsVersion;
   input.settings.breaks = breaks;
   input.settings.workStart = "09:00";
   input.settings.workEnd = "18:00";
   input.settings.configured = false;
-  const state = C.validateBackup(input),
-    before = plain(state.settings);
-  assert.equal(C.applyScheduleDefaults(state), true);
+  const state = context.convert(input),
+    { employmentDate, workCity, ...before } = plain(
+      context.L.validate(input).settings,
+    );
   assert.deepEqual(
     plain(state.settings),
     before,
     "Legacy migration must preserve custom settings",
   );
-  assert.equal(state.scheduleDefaultsVersion, 1);
-  assert.equal(
-    C.applyScheduleDefaults(state),
-    false,
-    "Migration is idempotent",
-  );
+  assert.equal(state.schemaVersion, 3);
+  assert.deepEqual(plain(state.personal), { employmentDate, workCity });
   assert.deepEqual(plain(C.validateBackup(state).settings), before);
 }
 const first = C.defaultState(),

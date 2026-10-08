@@ -1,5 +1,5 @@
 "use strict";
-const { chromium } = require("playwright");
+
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const url = require("node:url").pathToFileURL(
@@ -7,7 +7,7 @@ const url = require("node:url").pathToFileURL(
 ).href;
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const context = await browser.newContext({
     timezoneId: "Asia/Shanghai",
     reducedMotion: "reduce",
@@ -29,21 +29,27 @@ let browser;
   await page.locator("#settingsOpen").click();
   await page.locator("#standardEnd").fill("18:30");
   assert(await page.locator("#settingsDialog").evaluate((e) => e.open));
-  assert.match(await page.locator("#settingsError").innerText(), /尚未保存/);
+  await page.locator("#scheduleApplyOpen").click();
+  await page.locator("#scheduleRangeChoice").selectOption("all");
+  await page.locator("#scheduleRangeForm button[type=submit]").click();
+  assert.match(await page.locator("#scheduleRangeError").innerText(), /未应用/);
   assert(
     !(await page.locator("#feedbackList").innerText()).includes(
       "计算设置已更新",
     ),
   );
   await page.evaluate(() => (window.failPersistence = false));
-  await page.locator("#standardEnd").dispatchEvent("change");
+  await page.locator("#scheduleRangeForm button[type=submit]").click();
+  await page.locator("#scheduleRangeDialog").waitFor({ state: "hidden" });
   assert.equal(
     await page.locator("#settingsDialog").evaluate((e) => e.open),
     true,
   );
   assert.equal(
     await page.evaluate(
-      () => JSON.parse(localStorage.getItem(WorkTime.KEY)).settings.workEnd,
+      () =>
+        JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).settings
+          .workEnd,
     ),
     "18:30",
   );
@@ -63,7 +69,9 @@ let browser;
   await page.locator("#timeTemplateForm button[type=submit]").click();
   assert.equal(
     await page.evaluate(
-      () => JSON.parse(localStorage.getItem(WorkTime.KEY)).timeTemplates.length,
+      () =>
+        JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY))
+          .timeTemplates.length,
     ),
     1,
   );
@@ -78,8 +86,10 @@ let browser;
   assert.equal(
     await page.evaluate(
       () =>
-        WorkTime.effectiveRecord(
-          JSON.parse(localStorage.getItem(WorkTime.KEY)).days["2026-10-08"],
+        WorkTimeApp.domain.records.effectiveRecord(
+          JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days[
+            "2026-10-08"
+          ],
           true,
         ).end,
     ),
@@ -97,7 +107,9 @@ let browser;
   assert(feedback.includes("未能保存"));
   assert.equal(
     await page.evaluate(
-      () => JSON.parse(localStorage.getItem(WorkTime.KEY)).imports.length,
+      () =>
+        JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).imports
+          .length,
     ),
     0,
   );

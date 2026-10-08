@@ -4,16 +4,25 @@
   let previous = new WeakMap();
   const history = new Map(),
     active = new Map();
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const reduced = WorkTimeApp.ui.animationCompat.preference();
+  let unlisten;
   let disposed = true;
   function finish(track) {
     const entry = active.get(track);
     if (!entry) return;
     track.removeEventListener("animationend", entry.end);
-    track.getAnimations().forEach((animation) => animation.cancel());
+    track.removeEventListener("animationcancel", entry.end);
+    clearTimeout(entry.timer);
+    track.style.removeProperty("animation-play-state");
     track.replaceChildren(entry.finalRow);
     track.classList.remove("number-roll-up", "number-roll-down");
     active.delete(track);
+  }
+  function start(track) {
+    const entry = active.get(track);
+    if (!entry || entry.timer !== null) return;
+    track.style.animationPlayState = "running";
+    entry.timer = setTimeout(() => finish(track), entry.duration + 100);
   }
   function set(
     element,
@@ -64,7 +73,8 @@
         : oldValue.length;
       const newDot = number.includes(".") ? number.indexOf(".") : number.length;
       const decreasing = Number(number) < Number(oldValue);
-      const animate = !reduced.matches && oldValue !== number;
+      const animate =
+        !reduced.matches && !document.hidden && oldValue !== number;
       const pending = [];
       for (const [index, digit] of [...number].entries()) {
         if (!/\d/.test(digit)) {
@@ -103,7 +113,14 @@
             if (event.target === track) finish(track);
           };
           track.addEventListener("animationend", end);
-          active.set(track, { end, finalRow });
+          track.addEventListener("animationcancel", end);
+          track.style.animationPlayState = "paused";
+          active.set(track, {
+            end,
+            finalRow,
+            timer: null,
+            duration: 400 + index * 18,
+          });
           pending.push(track);
         } else track.append(finalRow);
         column.append(track);
@@ -122,16 +139,8 @@
         const height = getComputedStyle(digitRow).height;
         if (parseFloat(height) > 0)
           visual.style.setProperty("--number-row-height", height);
-        if (document.documentElement.classList.contains("app-loading"))
-          pending.forEach((track) =>
-            track.getAnimations().forEach((animation) => animation.pause()),
-          );
-        for (const track of pending)
-          for (const animation of track.getAnimations())
-            animation.finished.then(
-              () => finish(track),
-              () => finish(track),
-            );
+        if (!document.documentElement.classList.contains("app-loading"))
+          pending.forEach(start);
       }
     }
     if (unit) {
@@ -142,27 +151,36 @@
     }
   }
   function reveal() {
-    for (const track of active.keys())
-      track.getAnimations().forEach((animation) => {
-        animation.currentTime = 0;
-        animation.play();
-      });
+    if (document.hidden || reduced.matches) return settle();
+    for (const track of active.keys()) start(track);
+  }
+  function settle() {
+    for (const track of [...active.keys()]) finish(track);
+  }
+  function visibilityChanged() {
+    if (document.hidden) settle();
   }
   function preferenceChanged() {
-    if (reduced.matches) for (const track of [...active.keys()]) finish(track);
+    if (reduced.matches) settle();
   }
   function dispose() {
     if (disposed) return;
     disposed = true;
-    for (const track of [...active.keys()]) finish(track);
+    settle();
     history.clear();
     previous = new WeakMap();
-    reduced.removeEventListener("change", preferenceChanged);
+    unlisten?.();
+    unlisten = null;
+    document.removeEventListener("visibilitychange", visibilityChanged);
   }
   function mount() {
     if (!disposed) return;
     disposed = false;
-    reduced.addEventListener("change", preferenceChanged);
+    unlisten = WorkTimeApp.ui.animationCompat.listen(
+      reduced,
+      preferenceChanged,
+    );
+    document.addEventListener("visibilitychange", visibilityChanged);
   }
   WorkTimeApp.ui.numbers = { set, reveal, mount, dispose };
   mount();

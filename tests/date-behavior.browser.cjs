@@ -1,13 +1,12 @@
 "use strict";
-const { chromium } = require("playwright"),
-  assert = require("node:assert/strict"),
+const assert = require("node:assert/strict"),
   path = require("node:path");
 const url = require("node:url").pathToFileURL(
   path.resolve(__dirname, "../index.html"),
 ).href;
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   for (const timezoneId of [
     "Asia/Shanghai",
     "America/Los_Angeles",
@@ -62,10 +61,15 @@ let browser;
       "2026 has calendar data",
     );
     const expected = await page.evaluate(() => {
-      const s = WorkTime.defaultState();
+      const s = WorkTimeApp.domain.state.defaultState();
       return (
-        WorkTime.targetPace(s, "2026-12-01", "2026-12-31", "2027-01-01", 120)
-          .difference / 60
+        WorkTimeApp.domain.statistics.targetPace(
+          s,
+          "2026-12-01",
+          "2026-12-31",
+          "2027-01-01",
+          s.overtimeRequirements[0],
+        ).difference / 60
       );
     });
     assert.equal(
@@ -82,14 +86,18 @@ let browser;
     );
     assert.equal(await page.locator("#targetResult").textContent(), "");
     assert.equal(
-      (await page.locator("#targetDailyMetric").textContent()).trim(),
-      "-h/d",
+      (
+        await page
+          .locator("#targetDailyMetric .summary-number-accessible")
+          .textContent()
+      ).trim(),
+      "0.0",
     );
     if (timezoneId === "Asia/Shanghai") {
       await page.locator(".target-panel").screenshot({
         path: path.resolve(
           __dirname,
-          "../docs/refactor-historical-target-missing-data.png",
+          "../test-results/refactor-historical-target-missing-data.png",
         ),
       });
       await page.locator("#monthTitle").click();

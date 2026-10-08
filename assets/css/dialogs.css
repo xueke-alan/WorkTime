@@ -748,6 +748,7 @@ body #importDialog {
   box-shadow: 0 8px 24px rgba(var(--theme-rgb, 32, 59, 54), 0.14);
 }
 #scheduleRangeOptions[hidden] { display: none; }
+body #storageNotice [hidden], body #restoreDialog [hidden] { display: none; }
 #scheduleRangeDialog #scheduleRangeOptions > button {
   display: flex;
   align-items: center;

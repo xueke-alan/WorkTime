@@ -3,8 +3,8 @@ const assert = require("node:assert/strict");
 const vm = require("node:vm");
 const context = vm.createContext({});
 vm.runInContext(
-  require("./helpers/core-source.cjs").readCoreSource() +
-    ";globalThis.C=WorkTime",
+  require("./helpers/conversion-source.cjs").readConversionSource() +
+    ";globalThis.C=DomainTest;globalThis.convert=WorkBackupConversion.convert",
   context,
 );
 const C = context.C;
@@ -29,6 +29,8 @@ inconsistent.settings = {
   breaks: [],
 };
 inconsistent.days["2026-09-28"] = { leaveMinutes: 480 };
+assert.throws(() => C.validateBackup(inconsistent), /standardMinutes/);
+inconsistent.settings.standardMinutes = 240;
 assert.throws(() => C.validateBackup(inconsistent), /leaveMinutes/);
 inconsistent.days["2026-09-28"].leaveMinutes = 240;
 assert.equal(roundTrip(inconsistent).settings.standardMinutes, 240);
@@ -54,11 +56,12 @@ for (const name of ["actual", "estimate"]) {
   assert.equal(roundTrip(state).days[date][name].effectiveMinutes, 480);
 }
 const old = C.defaultState();
+old.schemaVersion = 2;
 delete old.overtimeRequirements;
 delete old.timeTemplates;
 delete old.settings.workStart;
 delete old.settings.workEnd;
-assert.equal(roundTrip(old).settings.standardMinutes, 480);
+assert.equal(roundTrip(context.convert(old)).settings.standardMinutes, 480);
 const overlapping = C.defaultState();
 overlapping.settings.breaks = [
   { start: 720, end: 780 },

@@ -1,17 +1,17 @@
 "use strict";
-const { chromium } = require("playwright");
+
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const { versionHtml } = require("../scripts/version-site.cjs");
 const root = path.resolve(__dirname, "..");
 const original = fs.readFileSync(path.join(root, "index.html"), "utf8");
-const oldController = `WorkUI.createImportController = function () {
+const oldController = `WorkTimeApp.ui.createImportController = function () {
   return { bind() { document.getElementById("previewImport").onclick = () => {}; }, dispose() {} };
 };`;
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   for (const versioned of [false, true]) {
     const context = await browser.newContext();
     let staleUsed = false;
@@ -71,11 +71,11 @@ let browser;
       );
     else {
       assert.equal(await page.locator("#startupFailure").count(), 0);
-      await page.locator("#settingsOpen").click();
+      await page.locator("#pageSettingsOpen").click();
       await page.locator("#workCity").focus();
       assert.equal(
         await page.locator("#workCityOptions [data-city]").count(),
-        6,
+        require("../assets/data/weather-locations.json").length,
       );
     }
     assert.equal(

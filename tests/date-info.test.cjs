@@ -12,6 +12,7 @@ function load(p) {
     filename: p,
   });
 }
+load("assets/js/namespace.js");
 load("assets/vendor/lunar.js");
 load("assets/data/sources.js");
 load("assets/data/festivals.js");
@@ -19,12 +20,13 @@ load("assets/data/international-festivals.js");
 for (let m = 1; m <= 12; m++)
   load("assets/data/history/" + String(m).padStart(2, "0") + ".js");
 load("assets/js/date-info.js");
+const dateInfoData = vm.runInContext("WorkTimeApp.data.dateInfo", ctx);
 const ids = new Set();
 let count = 0;
 for (let m = 1; m <= 12; m++)
   for (let d = 1; d <= new Date(2024, m, 0).getDate(); d++) {
     const key = String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"),
-      events = ctx.DateInfoData.history[key];
+      events = dateInfoData.history[key];
     assert(events && events.length >= 3 && events.length <= 5, key);
     const duplicates = new Set();
     for (const e of events) {
@@ -37,7 +39,7 @@ for (let m = 1; m <= 12; m++)
       count++;
     }
   }
-const api = ctx.DateInfo,
+const api = vm.runInContext("WorkTimeApp.services.dateInfo", ctx),
   rows = (date, id = "festivals") => api.getContent(id, date).rows;
 assert(rows("2026-02-17").some((x) => x[1].includes("春节")));
 assert(rows("2026-02-16").some((x) => x[1].includes("除夕")));
@@ -55,7 +57,7 @@ assert(!api.getContent("history", "2026-02-29").ok);
 assert(
   api.getContent("history", "1900-01-01").events.every((e) => e.year <= 1900),
 );
-ctx.DateInfoData.festivals.push({
+dateInfoData.festivals.push({
   id: "mother",
   kind: "weekday",
   month: 5,
@@ -73,23 +75,18 @@ api.register({
 });
 assert(!api.getContent("broken", "2026-01-01").ok);
 assert(api.getContent("almanac", "2026-01-01").ok);
-const saved = ctx.DateInfoData.history["01-01"];
-delete ctx.DateInfoData.history["01-01"];
+const saved = dateInfoData.history["01-01"];
+delete dateInfoData.history["01-01"];
 assert(!api.getContent("history", "2026-01-01").ok);
-ctx.DateInfoData.history["01-01"] = saved;
+dateInfoData.history["01-01"] = saved;
 console.log(
   "Date info checks passed: 366 dates, " + count + " attributed events",
 );
 
-assert.strictEqual(
-  Object.keys(ctx.DateInfoData.internationalByDate).length,
-  366,
-);
+assert.strictEqual(Object.keys(dateInfoData.internationalByDate).length, 366);
 const observanceIds = new Set();
-for (const [date, items] of Object.entries(
-  ctx.DateInfoData.internationalByDate,
-)) {
-  assert(ctx.DateInfoData.history[date]);
+for (const [date, items] of Object.entries(dateInfoData.internationalByDate)) {
+  assert(dateInfoData.history[date]);
   const names = new Set();
   for (const item of items) {
     assert(item.id && item.name && item.sourceName);

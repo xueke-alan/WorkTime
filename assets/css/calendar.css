@@ -1016,25 +1016,29 @@ body .month-controls .month-title {
 body .month-controls .month-title {
   overflow: hidden;
 }
-.month-title-year,
-.month-title-divider,
-.month-title-month {
-  translate: 0;
-  transition: translate 360ms var(--motion-ease);
+body .month-controls .month-title > :is(.month-title-year, .month-title-divider, .month-title-month) {
+  transform: translate(0, var(--ui-ink-offset, 0px));
+  transition: transform 360ms var(--motion-ease);
 }
-.month-title-divider,
-.month-title-month {
+/* The slash is an SVG, so it has no text-ink correction. */
+body .month-controls .month-title > .month-title-divider {
+  transform: none;
+}
+body .month-controls .month-title > :is(.month-title-divider, .month-title-month) {
   opacity: 1;
   visibility: visible;
   transition:
-    translate 360ms var(--motion-ease),
+    transform 360ms var(--motion-ease),
     opacity 360ms var(--motion-ease),
     visibility 0s;
 }
-.is-year-title > :is(.month-title-year, .month-title-divider, .month-title-month) {
-  translate: calc(1ch + 0.25em + var(--month-item-gap)) 0;
+body .month-controls .month-title.is-year-title > :is(.month-title-year, .month-title-divider, .month-title-month) {
+  transform: translate(calc(1ch + 0.25em + var(--month-item-gap)), var(--ui-ink-offset, 0px));
 }
-.is-year-title > :is(.month-title-divider, .month-title-month) {
+body .month-controls .month-title.is-year-title > .month-title-divider {
+  transform: translateX(calc(1ch + 0.25em + var(--month-item-gap)));
+}
+body .month-controls .month-title.is-year-title > :is(.month-title-divider, .month-title-month) {
   opacity: 0;
   visibility: hidden;
   transition-delay: 0s, 0s, 360ms;
@@ -1638,4 +1642,8 @@ body .panel-head #todayButton.icon-only .ui-icon {
 body .panel-head #backup .backup-icon-slot {
   width: 1.285714rem;
   height: 1.285714rem;
+}
+/* Festival names share one text color, independently of days-off status and theme. */
+body .calendar .day:is([data-festival], [data-holiday]) .daykind {
+  color: #aa624c;
 }

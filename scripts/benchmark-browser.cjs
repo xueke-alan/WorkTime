@@ -7,7 +7,16 @@ const assert = require("node:assert/strict");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 const { buildPerformanceFixture } = require("./performance-fixtures.cjs");
+const { fixBusinessDate } = require("./lib/fixed-business-date.cjs");
 const args = process.argv.slice(2);
+const root = path.resolve(__dirname, ".."),
+  snapshot = args.includes("--snapshot"),
+  sourceRoot = snapshot
+    ? path.join(
+        root,
+        ".refactor-backups/workspace-2026-10-04T03-32-53-659Z/files",
+      )
+    : root;
 function option(name, fallback) {
   const index = args.indexOf(name);
   return index < 0 ? fallback : args[index + 1];
@@ -15,20 +24,22 @@ function option(name, fallback) {
 const repetitions = Number(option("--samples", "20"));
 assert(Number.isInteger(repetitions) && repetitions >= 2 && repetitions <= 100);
 const output = path.resolve(
-  option("--output", "docs/performance-baseline.json"),
+  option("--output", "test-results/performance-current.json"),
 );
 assert(!fs.existsSync(output), "Refusing to overwrite a historical benchmark");
-const html = fs.readFileSync(path.resolve(__dirname, "../index.html"), "utf8");
+function filesIn(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const file = path.join(directory, entry.name);
+    return entry.isDirectory() ? filesIn(file) : [file];
+  });
+}
 const assets = [
   "index.html",
   "package-lock.json",
-  "scripts/benchmark-browser.cjs",
   "scripts/performance-fixtures.cjs",
-  "tests/helpers/core-source.cjs",
-  ...new Set(
-    [...html.matchAll(/(?:src|href)="(assets\/[^"#]+)"/g)].map(
-      (match) => match[1],
-    ),
+  snapshot ? "tests/helpers/core-source.cjs" : "scripts/lib/domain-source.cjs",
+  ...filesIn(path.join(sourceRoot, "assets")).map((file) =>
+    path.relative(sourceRoot, file).replaceAll(path.sep, "/"),
   ),
 ];
 const identity = Object.fromEntries(
@@ -36,11 +47,57 @@ const identity = Object.fromEntries(
     file,
     crypto
       .createHash("sha256")
-      .update(fs.readFileSync(path.resolve(__dirname, "..", file)))
+      .update(fs.readFileSync(path.join(sourceRoot, file)))
       .digest("hex"),
   ]),
 );
-const fixtures = [1, 5, 10].map((years) => buildPerformanceFixture(years));
+const runnerIdentity = Object.fromEntries(
+  [
+    "scripts/benchmark-browser.cjs",
+    "scripts/performance-fixtures.cjs",
+    "scripts/lib/domain-source.cjs",
+    "scripts/lib/fixed-business-date.cjs",
+  ].map((file) => [
+    file,
+    crypto
+      .createHash("sha256")
+      .update(fs.readFileSync(path.join(root, file)))
+      .digest("hex"),
+  ]),
+);
+if (snapshot) {
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(sourceRoot, "../manifest.json"), "utf8"),
+  );
+  const expected = new Map(
+    manifest.files.map((file) => [file.path, file.sha256]),
+  );
+  for (const [file, digest] of Object.entries(identity))
+    assert.equal(
+      digest,
+      expected.get(file),
+      "Protected source changed: " + file,
+    );
+}
+const makeFixture = snapshot
+  ? require(path.join(sourceRoot, "scripts/performance-fixtures.cjs"))
+      .buildPerformanceFixture
+  : buildPerformanceFixture;
+const fixtures = [1, 5, 10].map((years) => makeFixture(years));
+if (snapshot)
+  for (const fixture of fixtures) {
+    const current = buildPerformanceFixture(fixture.metadata.years);
+    assert.deepEqual(fixture.state.days, current.state.days);
+    assert.deepEqual(fixture.state.imports, current.state.imports);
+    const { employmentDate, workCity, ...settings } = fixture.state.settings;
+    assert.deepEqual(settings, current.state.settings);
+    assert.deepEqual({ employmentDate, workCity }, current.state.personal);
+    assert.deepEqual(
+      fixture.state.scheduleRanges,
+      current.state.scheduleRanges,
+    );
+    assert.deepEqual(fixture.state.timeTemplates, current.state.timeTemplates);
+  }
 async function settle(page) {
   await page.evaluate(async () => {
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -99,8 +156,12 @@ let browser;
     viewport: { width: 1600, height: 1000 },
     dpr: 1,
     motion: "no-preference",
-    clock: "real; no fake timers",
+    clock:
+      "Date fixed at 2026-10-02T12:00:00+08:00; timers and performance.now run normally",
     identity,
+    runnerIdentity,
+    sourceRoot,
+    snapshot,
     boundary:
       "Navigation to ready/fonts/two frames and finite animations settled; operations include automation dispatch/async readiness waits. CDP CPU/layout counters are separate from elapsed UI time. Infinite background animations continue. No human think time; JSON restore uses in-memory File.",
     datasets: fixtures.map((fixture) => fixture.metadata),
@@ -108,7 +169,7 @@ let browser;
     summaries: [],
     complete: false,
   };
-  const url = pathToFileURL(path.resolve(__dirname, "../index.html")).href;
+  const url = pathToFileURL(path.join(sourceRoot, "index.html")).href;
   for (const fixture of fixtures) {
     for (let repetition = 0; repetition < repetitions; repetition++) {
       const context = await browser.newContext({
@@ -166,6 +227,7 @@ let browser;
         });
         const page = await context.newPage(),
           errors = [];
+        await fixBusinessDate(page);
         page.on("pageerror", (error) => errors.push(error.message));
         const session = await context.newCDPSession(page);
         await session.send("Performance.enable");
@@ -254,12 +316,13 @@ let browser;
         );
         assert(
           await page.evaluate(() =>
-            Object.values(
-              JSON.parse(localStorage.getItem("worktime-local-v1")).days,
-            ).some(
-              (day) =>
-                day.actual?.end === "20:00" || day.estimate?.end === "20:00",
-            ),
+            (() => {
+              const day = JSON.parse(localStorage.getItem("worktime-local-v1"))
+                .days["2026-10-02"];
+              return (
+                day?.actual?.end === "20:00" || day?.estimate?.end === "20:00"
+              );
+            })(),
           ),
           "Save did not persist",
         );
@@ -274,7 +337,7 @@ let browser;
         await operation("import", async () => {
           await page.evaluate(() => {
             document.querySelector("#importOpen").click();
-            const month = WorkTime.businessDate().slice(5, 7);
+            const month = String(new Date().getMonth() + 1).padStart(2, "0");
             const text = document.querySelector("#pasteText");
             text.value = Array.from(
               { length: 28 },
@@ -373,10 +436,19 @@ let browser;
     assert.equal(
       crypto
         .createHash("sha256")
-        .update(fs.readFileSync(path.resolve(__dirname, "..", file)))
+        .update(fs.readFileSync(path.join(sourceRoot, file)))
         .digest("hex"),
       digest,
       "Source changed during benchmark: " + file,
+    );
+  for (const [file, digest] of Object.entries(runnerIdentity))
+    assert.equal(
+      crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(path.join(root, file)))
+        .digest("hex"),
+      digest,
+      "Runner changed during benchmark: " + file,
     );
   fs.writeFileSync(output, JSON.stringify(report, null, 2));
   fs.writeFileSync(output + ".partial.json", JSON.stringify(report, null, 2));

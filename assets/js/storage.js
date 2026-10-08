@@ -6,7 +6,8 @@ WorkTimeApp.services.storage = (() => {
   }
   function create({ key, validate, defaultState, getStorage }) {
     let dirty = false;
-    let corrupt = false;
+    let loadIssue = null;
+    let readSucceeded = false;
     let originalText = null;
     let expectedText = null;
     let writeAccess = true;
@@ -28,6 +29,41 @@ WorkTimeApp.services.storage = (() => {
       dirty = true;
       lastResult = { ok: false, persisted: false, dirty, error };
       return lastResult;
+    }
+    function write(state, replacement = false) {
+      dirty = true;
+      try {
+        if (!writeAccess)
+          throw (
+            accessError || storageError("LOCK_REQUIRED", "未取得安全写入权")
+          );
+        if (!readSucceeded)
+          throw storageError(
+            "STORAGE_UNAVAILABLE",
+            "尚未成功读取存档，请先重新检查",
+          );
+        if (loadIssue && !replacement)
+          throw storageError(
+            "CORRUPT_STORAGE",
+            "存档尚未恢复，请先恢复有效备份或处理读取异常",
+          );
+        const candidate = replacement ? validate(state) : state;
+        const storage = getStorage();
+        if (storage.getItem(key) !== expectedText)
+          throw storageError(
+            "EXTERNAL_UPDATE",
+            "浏览器数据已被外部更新，请先备份当前改动并刷新，避免覆盖其他记录",
+          );
+        const text = JSON.stringify(candidate);
+        storage.setItem(key, text);
+        expectedText = text;
+        if (replacement) loadIssue = null;
+        dirty = false;
+        lastResult = { ok: true, persisted: true, dirty, error: null };
+        return lastResult;
+      } catch (error) {
+        return failure(error);
+      }
     }
     return {
       /** Hold one native origin-scoped writer lock for this page's lifetime. */
@@ -108,51 +144,51 @@ WorkTimeApp.services.storage = (() => {
         releaseLock = null;
       },
       load() {
+        readSucceeded = false;
         try {
           originalText = getStorage().getItem(key);
           expectedText = originalText;
-          const state = originalText
-            ? validate(JSON.parse(originalText))
-            : defaultState();
-          corrupt = false;
-          return { state, error: null, corrupt: false };
+          readSucceeded = true;
+          const state =
+            originalText === null
+              ? defaultState()
+              : validate(JSON.parse(originalText));
+          loadIssue = null;
+          return {
+            state,
+            error: null,
+            corrupt: false,
+            loadIssue,
+            readSucceeded,
+          };
         } catch (error) {
-          corrupt = true;
+          loadIssue = !readSucceeded
+            ? "unavailable"
+            : error.code === "UNSUPPORTED_VERSION"
+              ? "unsupported"
+              : "corrupt";
           failure(error);
-          return { state: defaultState(), error, corrupt: true };
+          return {
+            state: defaultState(),
+            error,
+            corrupt: true,
+            loadIssue,
+            readSucceeded,
+          };
         }
       },
       save(state) {
-        dirty = true;
-        try {
-          if (!writeAccess)
-            throw (
-              accessError || storageError("LOCK_REQUIRED", "未取得安全写入权")
-            );
-          if (corrupt)
-            throw storageError(
-              "CORRUPT_STORAGE",
-              "存储数据无法读取，请先恢复有效备份",
-            );
-          const storage = getStorage();
-          if (storage.getItem(key) !== expectedText)
-            throw storageError(
-              "EXTERNAL_UPDATE",
-              "浏览器数据已被外部更新，请先备份当前改动并刷新，避免覆盖其他记录",
-            );
-          const text = JSON.stringify(state);
-          storage.setItem(key, text);
-          expectedText = text;
-          dirty = false;
-          lastResult = { ok: true, persisted: true, dirty, error: null };
-          return lastResult;
-        } catch (error) {
-          return failure(error);
-        }
+        return write(state);
       },
-      /** Used only after a backup has been decoded, validated and confirmed. */
-      allowValidatedRestore() {
-        corrupt = false;
+      /** Validate and replace without lifting read protection until the write succeeds. */
+      replace(state) {
+        return write(state, true);
+      },
+      get loadIssue() {
+        return loadIssue;
+      },
+      get readSucceeded() {
+        return readSucceeded;
       },
       get status() {
         return { ...lastResult };

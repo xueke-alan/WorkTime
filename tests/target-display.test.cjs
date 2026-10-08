@@ -5,9 +5,9 @@ const assert = require("node:assert/strict"),
 const context = vm.createContext({});
 vm.runInContext(
   require("./helpers/core-source.cjs").readCoreSource() +
-    ";const WorkUI={};" +
+    ";" +
     fs.readFileSync("assets/js/ui/summary.js", "utf8") +
-    ";globalThis.C=WorkTime;globalThis.UI=WorkUI",
+    ";globalThis.C=DomainTest;globalThis.UI=WorkTimeApp.ui",
   context,
 );
 const C = context.C,
@@ -19,21 +19,40 @@ const element = (id) => {
 };
 let today = "2026-10-02";
 const ui = context.UI.createSummary({
-  core: C,
+  core: {
+    ...C,
+    pendingWorkdays: (state, start, end, asOf) =>
+      C.pendingWorkdays(
+        state,
+        start,
+        end,
+        asOf,
+        new Date(asOf + "T12:00:00+08:00"),
+      ),
+  },
   element,
   escape: String,
   getState: () => state,
   getView: () => ({ today }),
   getRange: () => ["2026-09-01", "2026-09-30"],
   document: {},
-  window: {},
+  numbers: {
+    set(element, value, format) {
+      element.value = value;
+      element.format = format;
+    },
+  },
 });
 function expect(label, hours) {
   ui.renderTarget();
   assert.equal(element("targetTotalLabel").textContent, label);
-  assert.equal(element("targetMetric").innerHTML, hours + "<small>h</small>");
-  assert.equal(element("targetDailyMetric").innerHTML, "-<small>h/d</small>");
+  assert.equal(element("targetMetric").value, hours);
+  assert.equal(element("targetMetric").format.unit, "h");
+  assert.equal(element("targetDailyMetric").value, 0);
+  assert.equal(element("targetDailyMetric").format.unit, "h/d");
+  assert.equal(element("targetDailyMetric").format.decimals, 1);
 }
+state.overtimeRequirements[0] = 120;
 const pace = C.targetPace(state, "2026-09-01", "2026-09-30", today, 120);
 expect("记录内差额", pace.difference / 60);
 assert.equal(element("targetResult").textContent, "");

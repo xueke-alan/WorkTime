@@ -1,25 +1,20 @@
 "use strict";
-const { chromium } = require("playwright"),
-  fs = require("node:fs"),
+const fs = require("node:fs"),
   path = require("node:path"),
   zlib = require("node:zlib"),
   vm = require("node:vm"),
   assert = require("node:assert/strict");
 const root = path.resolve(__dirname, ".."),
-  baseline = path.join(
-    root,
+  reference = require("./helpers/style-reference.cjs").create(
+    "calendar",
     process.argv.includes("--original")
       ? "tests/fixtures/styles-calendar-contract.json.gz"
-      : "tests/fixtures/styles-calendar-responsive-contract.json.gz",
+      : "tests/fixtures/styles-calendar-2026-10-08.json.gz",
   ),
-  record = process.argv.includes("--record");
-const reviewedButtonChange = require("./helpers/button-style-change.cjs");
+  baseline = reference.baseline,
+  record = process.argv.includes("--record") || reference.capture;
 const realm = vm.createContext({});
-vm.runInContext(
-  require("./helpers/core-source.cjs").readCoreSource() +
-    ";globalThis.C=WorkTime",
-  realm,
-);
+vm.runInContext(reference.domainSource() + ";globalThis.C=DomainTest", realm);
 const state = realm.C.defaultState();
 state.days["2026-09-14"] = {
   actual: {
@@ -85,7 +80,7 @@ let browser;
 (async () => {
   if (record && fs.existsSync(baseline))
     throw Error("Refusing to replace existing calendar baseline");
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const samples = [];
   for (const width of [
     390, 540, 699, 850, 1150, 1151, 1300, 1301, 1600, 1800, 1920,
@@ -108,9 +103,7 @@ let browser;
       },
       JSON.parse(JSON.stringify(state)),
     );
-    await page.goto(
-      require("node:url").pathToFileURL(path.join(root, "index.html")).href,
-    );
+    await reference.visit(page);
     await page.locator("#monthTitle").waitFor({ state: "visible" });
     async function navigate(date) {
       if (
@@ -126,7 +119,9 @@ let browser;
       const year = Number(date.slice(0, 4));
       for (
         let current = Number(
-          await page.locator(".month-title-year").textContent(),
+          await page
+            .locator(".month-title-year .summary-number-accessible")
+            .textContent(),
         );
         current !== year;
         current += current < year ? 1 : -1
@@ -169,7 +164,7 @@ let browser;
       for (const height of [700, 1000]) {
         await page.setViewportSize({ width, height });
         await page.evaluate(() => document.fonts.ready);
-        await page.evaluate(() => window.UIAlignment.refresh());
+        await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
         await page.clock.fastForward(2000);
         await page.mouse.move(0, 0);
         const values = await page.evaluate((properties) => {
@@ -217,6 +212,29 @@ let browser;
                     ? e.className
                     : e.className.baseVal;
               const pseudo = {};
+              const styles = Object.fromEntries(
+                properties.map((p) => [p, s[p]]),
+              );
+              // The frozen baseline stores the title's X movement in the separate
+              // translate property. Verify the composed replacement, then compare
+              // its remaining transform and the unchanged rectangle to that baseline.
+              if (
+                e.id === "monthTitleYear" &&
+                e.closest(".is-year-title") &&
+                s.translate === "none"
+              ) {
+                const probe = document.createElement("span");
+                probe.style.cssText =
+                  "position:absolute;visibility:hidden;width:calc(1ch + 0.25em + var(--month-item-gap));font:inherit";
+                e.append(probe);
+                const expectedX = probe.getBoundingClientRect().width;
+                probe.remove();
+                const matrix = new DOMMatrix(s.transform);
+                if (Math.abs(matrix.m41 - expectedX) > 0.02)
+                  throw Error("Year title horizontal movement changed");
+                matrix.m41 = 0;
+                styles.transform = matrix.toString();
+              }
               if (e.matches(".day,.daynum,.payday-icon,.year-day"))
                 for (const type of ["::before", "::after"]) {
                   const p = getComputedStyle(e, type);
@@ -234,7 +252,7 @@ let browser;
                 }
               return {
                 key: e.id || `${e.tagName}:${classes}:${i}`,
-                styles: Object.fromEntries(properties.map((p) => [p, s[p]])),
+                styles,
                 pseudo,
                 rect: [r.width, r.height, r.x - origin.x, r.y - origin.y].map(
                   (n) => Math.round(n * 1000) / 1000,
@@ -279,9 +297,7 @@ let browser;
       if (
         current.values.length !== old[i].values.length ||
         !current.values.every(
-          (v, j) =>
-            JSON.stringify(v) === JSON.stringify(old[i].values[j]) ||
-            reviewedButtonChange(v, old[i].values[j], current, "calendar"),
+          (v, j) => JSON.stringify(v) === JSON.stringify(old[i].values[j]),
         )
       )
         differences.push({
@@ -293,7 +309,7 @@ let browser;
         });
     });
     fs.writeFileSync(
-      path.join(root, "docs/calendar-style-differences.json"),
+      path.join(root, "test-results/calendar-style-differences.json"),
       JSON.stringify(differences, null, 2) + "\n",
     );
     assert.equal(

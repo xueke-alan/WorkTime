@@ -21,6 +21,12 @@ module.exports = async function checkStartupLifetime(context) {
     await page.setContent(
       '<div class="workspace"><div class="panel"></div></div><div class="summary-sidebar"></div>',
     );
+    await page.addScriptTag({
+      content: fs.readFileSync(
+        path.resolve(__dirname, "../../assets/js/namespace.js"),
+        "utf8",
+      ),
+    });
     const result = await page.evaluate(
       async ({ source, phase }) => {
         const calls = { alignment: 0, motion: 0, numbers: 0, notifications: 0 };
@@ -45,10 +51,12 @@ module.exports = async function checkStartupLifetime(context) {
         });
         document.documentElement.dataset.appState =
           phase === "initializing" ? "initializing" : "ready";
-        window.UIAlignment = { refresh: () => calls.alignment++ };
-        window.WorkMotion = { play: () => calls.motion++ };
-        window.SummaryNumbers = { reveal: () => calls.numbers++ };
-        window.NotificationMotion = { reveal: () => calls.notifications++ };
+        WorkTimeApp.ui.alignment = { refresh: () => calls.alignment++ };
+        WorkTimeApp.ui.motion = { play: () => calls.motion++ };
+        WorkTimeApp.ui.numbers = { reveal: () => calls.numbers++ };
+        WorkTimeApp.ui.notificationMotion = {
+          reveal: () => calls.notifications++,
+        };
         const script = document.createElement("script");
         script.textContent = source;
         document.body.append(script);

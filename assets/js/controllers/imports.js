@@ -336,10 +336,11 @@ WorkTimeApp.ui.createImportController = function (options) {
         .join("") +
       (records.length
         ? ""
-        : '<p class="muted">没有已接受的解析记录，可查看原文。</p>') +
+        : '<p class="muted">没有已接受的解析记录，可查看核心打卡文本。</p>') +
       "</div>" +
-      '<label class="import-detail-raw-label" for="importDetailRawText">原始数据</label>' +
-      '<div class="import-detail-raw-field"><textarea id="importDetailRawText" class="import-detail-raw-text" readonly aria-label="导入原始文本" spellcheck="false">' +
+      '<label class="import-detail-raw-label" for="importDetailRawText">核心打卡文本</label>' +
+      '<p class="muted">仅保留日期、星期、打卡时间和无出勤标记，页面杂项已移除。</p>' +
+      '<div class="import-detail-raw-field"><textarea id="importDetailRawText" class="import-detail-raw-text" readonly aria-label="核心打卡文本" placeholder="没有可识别的核心打卡文本" spellcheck="false">' +
       esc(log.sources.map((source) => source.raw).join("\n\n")) +
       "</textarea></div>";
     pane.querySelector(".dialog-foot").innerHTML =

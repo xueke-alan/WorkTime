@@ -1,21 +1,23 @@
 "use strict";
-const { chromium } = require("playwright"),
-  fs = require("node:fs"),
+const fs = require("node:fs"),
   path = require("node:path"),
   zlib = require("node:zlib"),
   vm = require("node:vm"),
   assert = require("node:assert/strict");
 const root = path.resolve(__dirname, ".."),
-  baseline = path.join(root, "tests/fixtures/styles-forms-contract.json.gz"),
-  record = process.argv.includes("--record"),
+  reference = require("./helpers/style-reference.cjs").create(
+    "forms",
+    "tests/fixtures/styles-forms-2026-10-08.json.gz",
+  ),
+  baseline = reference.baseline,
+  record = process.argv.includes("--record") || reference.capture,
+  settingsOnly = process.argv.includes("--settings-only"),
   realm = vm.createContext({});
-vm.runInContext(
-  require("./helpers/core-source.cjs").readCoreSource() +
-    ";globalThis.C=WorkTime",
-  realm,
-);
+vm.runInContext(reference.domainSource() + ";globalThis.C=DomainTest", realm);
 const state = realm.C.defaultState(),
   date = "2026-09-28";
+// Old exports carried the selected theme; the fixture must include that preference.
+if (reference.frozen) state.pageTheme = "green";
 const oa = {
   date,
   start: "08:00",
@@ -108,12 +110,12 @@ let browser;
 (async () => {
   if (record && fs.existsSync(baseline))
     throw Error("Refusing to replace forms baseline");
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const samples = [];
   for (const width of [
     390, 540, 699, 850, 1150, 1151, 1300, 1301, 1600, 1800, 1920,
   ]) {
-    for (const mode of modes) {
+    for (const mode of settingsOnly ? ["settings"] : modes) {
       const context = await browser.newContext({
           viewport: { width, height: 1000 },
           timezoneId: "Asia/Shanghai",
@@ -136,10 +138,16 @@ let browser;
         },
         JSON.parse(JSON.stringify(state)),
       );
-      await page.goto(
-        require("node:url").pathToFileURL(path.join(root, "index.html")).href,
-      );
+      await reference.visit(page);
       await page.locator("#monthTitle").waitFor({ state: "visible" });
+      if (mode === "day-empty" && !reference.frozen)
+        assert.equal(
+          await page
+            .locator("#previewAverage .summary-number-accessible")
+            .textContent(),
+          "0.00 h",
+          "Empty average preserves two decimal places at every width and height",
+        );
       if (mode !== "day-empty") {
         await page.locator("#prevMonth").click();
         await page.locator(`[data-date="${date}"]`).click();
@@ -225,7 +233,7 @@ let browser;
       for (const height of [700, 1000]) {
         await page.setViewportSize({ width, height });
         await page.evaluate(() => document.fonts.ready);
-        await page.evaluate(() => UIAlignment.refresh());
+        await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
         await page.clock.fastForward(2000);
         await page.mouse.move(0, 0);
         const values = await page.evaluate(
@@ -274,7 +282,25 @@ let browser;
         );
         samples.push({ width, height, mode, values });
       }
-      if (selector !== ".editor") {
+      if (mode === "settings") {
+        assert.equal(
+          await page.evaluate(() => document.activeElement.id),
+          "settingsOpen",
+          "Settings sidebar retains trigger focus",
+        );
+        const before = await page.evaluate(() =>
+          localStorage.getItem("worktime-local-v1"),
+        );
+        await page.locator("#standardStart").fill("11:00");
+        await page.keyboard.press("Escape");
+        await page.locator("#scheduleDraftDiscard").click();
+        await page.locator(selector).waitFor({ state: "hidden" });
+        assert.equal(
+          await page.evaluate(() => localStorage.getItem("worktime-local-v1")),
+          before,
+          "Discarded schedule draft does not save",
+        );
+      } else if (selector !== ".editor") {
         assert(
           await page
             .locator(selector)
@@ -285,8 +311,13 @@ let browser;
         assert(
           await page
             .locator(selector)
-            .evaluate((e) => e.contains(document.activeElement)),
-          "Modal traps Tab: " + mode,
+            .evaluate((e) =>
+              e.matches(":modal")
+                ? e.contains(document.activeElement)
+                : document.activeElement.getClientRects().length > 0,
+            ),
+          "Tab remains trapped in modals or reaches a visible sidebar control: " +
+            mode,
         );
         const storageBeforeCancel = await page.evaluate(() =>
           localStorage.getItem("worktime-local-v1"),
@@ -314,7 +345,10 @@ let browser;
   if (record)
     fs.writeFileSync(baseline, zlib.gzipSync(JSON.stringify(samples)));
   else {
-    const old = JSON.parse(zlib.gunzipSync(fs.readFileSync(baseline))),
+    const oldAll = JSON.parse(zlib.gunzipSync(fs.readFileSync(baseline))),
+      old = settingsOnly
+        ? oldAll.filter((sample) => sample.mode === "settings")
+        : oldAll,
       differences = [];
     assert.equal(samples.length, old.length);
     samples.forEach((s, i) => {
@@ -323,29 +357,10 @@ let browser;
       assert.equal(s.mode, old[i].mode);
       const same =
         s.values.length === old[i].values.length &&
-        s.values.every((value, j) => {
-          const previous = old[i].values[j];
-          if (
-            JSON.stringify(value) === JSON.stringify(previous) ||
-            require("./helpers/button-style-change.cjs")(
-              value,
-              previous,
-              s,
-              "forms",
-            )
-          )
-            return true;
-          // SVG <use> bounds inherit subpixel transforms. Keep the outer icon
-          // and all styles exact; tolerate only the observed rounding boundary.
-          return (
-            value.key.startsWith("use:") &&
-            value.key === previous.key &&
-            JSON.stringify(value.styles) === JSON.stringify(previous.styles) &&
-            JSON.stringify(value.backdrop) ===
-              JSON.stringify(previous.backdrop) &&
-            value.rect.every((n, k) => Math.abs(n - previous.rect[k]) <= 0.002)
-          );
-        });
+        s.values.every(
+          (value, j) =>
+            JSON.stringify(value) === JSON.stringify(old[i].values[j]),
+        );
       if (!same)
         differences.push({
           width: s.width,
@@ -356,7 +371,7 @@ let browser;
         });
     });
     fs.writeFileSync(
-      path.join(root, "docs/forms-style-differences.json"),
+      path.join(root, "test-results/forms-style-differences.json"),
       JSON.stringify(differences, null, 2),
     );
     assert.equal(differences.length, 0, "Forms changed; inspect differences");

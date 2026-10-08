@@ -1,19 +1,13 @@
 "use strict";
-const fs = require("node:fs");
-const path = require("node:path");
-const root = path.resolve(__dirname, "../..");
-/** Match the browser entry point rather than maintaining a second module list. */
-function coreFiles() {
-  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-  return [
-    ...html.matchAll(
-      /<script defer src="(assets\/(?:js\/(?:domain\/[^" ]+|core)|data\/calendars)\.js)"><\/script>/g,
-    ),
-  ].map((match) => match[1]);
-}
+const {
+  domainFiles,
+  readDomainSource,
+} = require("../../scripts/lib/domain-source.cjs");
+/** Convenience assembly for isolated assertions, never loaded by production. */
 function readCoreSource() {
-  return coreFiles()
-    .map((file) => fs.readFileSync(path.join(root, file), "utf8"))
-    .join("\n");
+  return (
+    readDomainSource() +
+    "\nconst DomainTest = Object.assign({}, ...Object.values(WorkTimeApp.domain));"
+  );
 }
-module.exports = { coreFiles, readCoreSource };
+module.exports = { coreFiles: domainFiles, readCoreSource };

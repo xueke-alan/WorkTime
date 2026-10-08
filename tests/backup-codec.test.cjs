@@ -14,8 +14,12 @@ const context = vm.createContext({
   atob,
 });
 vm.runInContext(
+  fs.readFileSync(path.join(__dirname, "../assets/js/namespace.js"), "utf8"),
+  context,
+);
+vm.runInContext(
   fs.readFileSync(path.join(__dirname, "../assets/js/backup.js"), "utf8") +
-    ";globalThis.B=WorkBackup",
+    ";globalThis.B=WorkTimeApp.services.backup",
   context,
 );
 const B = context.B;

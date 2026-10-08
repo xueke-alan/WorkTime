@@ -23,6 +23,16 @@ WorkTimeApp.services.createSaveSession = function ({
   function recover(result) {
     if (disposed || !result.ok) return;
     try {
+      if (persistence.loadIssue === "unavailable") {
+        if (hasDraft() || JSON.stringify(owner.state) !== savedSnapshot)
+          throw Error(
+            "读取失败后已有临时修改，请先下载当前页面备份并刷新，再读取原存档",
+          );
+        const latest = persistence.load();
+        if (latest.error) throw latest.error;
+        owner.reload(latest.state);
+        onReload();
+      }
       // Adopt newer data only when both formal state and every draft are untouched.
       if (
         !owner.loadCorrupt &&
@@ -38,6 +48,7 @@ WorkTimeApp.services.createSaveSession = function ({
       if (commit(owner.retry()).persisted) onRecovered();
     } catch (error) {
       owner.markUnsaved();
+      commit({ persisted: false, error });
       onRecoveryError(error);
     }
     onRecoveryDone();

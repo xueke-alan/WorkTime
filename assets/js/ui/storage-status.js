@@ -8,7 +8,17 @@ WorkTimeApp.ui.createStorageStatus = function ({
 }) {
   let mounted = false,
     generation = 0,
-    retryButton = null;
+    retryButton = null,
+    recoveryOptions = null;
+  function updateRecovery() {
+    if (!retryButton || !recoveryOptions) return;
+    const issue = recoveryOptions.getLoadIssue?.();
+    retryButton.hidden =
+      !recoveryOptions.available ||
+      (recoveryOptions.getLoadIssue
+        ? issue === "corrupt" || issue === "unsupported"
+        : recoveryOptions.corrupt);
+  }
   function updateUsage() {
     try {
       const text = getStorage().getItem(key),
@@ -27,7 +37,11 @@ WorkTimeApp.ui.createStorageStatus = function ({
   function storageChanged(event) {
     if (event.key === key || event.key === null) updateUsage();
   }
-  function mount({ readError = null, accessError = null } = {}) {
+  function mount({
+    readError = null,
+    accessError = null,
+    loadIssue = null,
+  } = {}) {
     if (mounted) return;
     mounted = true;
     updateUsage();
@@ -35,7 +49,11 @@ WorkTimeApp.ui.createStorageStatus = function ({
       $("storageNoticeText").textContent =
         "浏览器数据无法读取：" +
         readError.message +
-        "。当前数据尚未保存，请先下载备份或恢复有效备份。";
+        (loadIssue === "unavailable"
+          ? "。请允许浏览器存储访问后重新检查；当前页面显示临时默认数据。"
+          : loadIssue === "unsupported"
+            ? "。请使用 tools/convert-backup.html 转换原始备份后恢复。"
+            : "。当前页面显示临时默认数据；可导出原始数据、恢复有效备份或初始化存档。");
     else if (accessError)
       $("storageNoticeText").textContent =
         "当前页面无法保存：" + accessError.message + "。";
@@ -43,9 +61,12 @@ WorkTimeApp.ui.createStorageStatus = function ({
   }
   return {
     mount,
-    bindRetry({ available, corrupt, retry }) {
+    updateRecovery,
+    bindRetry(options) {
+      recoveryOptions = options;
+      const { retry } = options;
       retryButton = $("retryStorage");
-      retryButton.hidden = corrupt || !available;
+      updateRecovery();
       retryButton.onclick = async () => {
         const lifetime = generation,
           button = retryButton;

@@ -3,15 +3,10 @@ const assert = require("node:assert/strict"),
   fs = require("node:fs");
 const context = {};
 vm.createContext(context);
-for (const file of ["assets/js/core.js", "assets/js/year-view.js"])
-  vm.runInContext(
-    file === "assets/js/core.js"
-      ? require("./helpers/core-source.cjs").readCoreSource()
-      : fs.readFileSync(file, "utf8"),
-    context,
-  );
-const C = vm.runInContext("WorkTime", context),
-  Y = vm.runInContext("WorkYear", context),
+vm.runInContext(require("./helpers/core-source.cjs").readCoreSource(), context);
+vm.runInContext(fs.readFileSync("assets/js/year-view.js", "utf8"), context);
+const C = vm.runInContext("DomainTest", context),
+  Y = vm.runInContext("WorkTimeApp.ui.year", context),
   state = C.defaultState();
 assert.equal(Y.heatColor(0, 480).background, "rgba(231,238,233,0.8500)");
 assert.equal(Y.heatColor(480, 480).background, "rgba(74,145,106,1.0000)");

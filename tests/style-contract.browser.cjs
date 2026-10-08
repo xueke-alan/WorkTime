@@ -1,21 +1,19 @@
 "use strict";
-const { chromium } = require("playwright");
+
 const fs = require("node:fs");
 const path = require("node:path");
 const assert = require("node:assert/strict");
-const reviewedButtonChange = require("./helpers/button-style-change.cjs");
 const root = path.resolve(__dirname, "..");
-const url = require("node:url").pathToFileURL(
-  path.join(root, "index.html"),
-).href;
-const baseline = path.join(
-  root,
+const reference = require("./helpers/style-reference.cjs").create(
+  "page",
   process.argv.includes("--original")
     ? "tests/fixtures/styles-stage01-contract.json.gz"
-    : "tests/fixtures/styles-responsive-contract.json.gz",
+    : "tests/fixtures/styles-page-2026-10-08.json.gz",
 );
+const baseline = reference.baseline;
 const zlib = require("node:zlib");
-const record = process.argv.includes("--record");
+const record = process.argv.includes("--record") || reference.capture;
+const settingsOnly = process.argv.includes("--settings-only");
 const recordMissing = process.argv.includes("--record-missing-data");
 const missingBaseline = path.join(
   root,
@@ -64,10 +62,14 @@ const modes = [
 const widths = [390, 850, 1150, 1151, 1600, 1920];
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const samples = [];
   for (const width of widths) {
-    for (const mode of recordMissing ? ["six-weeks"] : modes) {
+    for (const mode of settingsOnly
+      ? ["settings"]
+      : recordMissing
+        ? ["six-weeks"]
+        : modes) {
       const context = await browser.newContext({
         viewport: { width, height: 900 },
         timezoneId: "Asia/Shanghai",
@@ -80,7 +82,7 @@ let browser;
         Math.random = () =>
           ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
       });
-      await page.goto(url);
+      await reference.visit(page);
       await page.locator("#batchToggle").waitFor({ state: "visible" });
       if (mode === "year") await page.locator("#monthTitle").click();
       if (mode === "six-weeks") {
@@ -104,11 +106,35 @@ let browser;
         await page.locator("#importOpen").click();
         await page.locator("#importHistoryList").waitFor({ state: "visible" });
       }
-      if (["festivals", "almanac", "countdown"].includes(mode))
-        await page.locator("#date-tab-" + mode).click();
+      if (["festivals", "almanac"].includes(mode)) {
+        await page.locator("#date-tab-history").click();
+        await page.locator("#date-context-" + mode).click();
+      }
+      if (mode === "countdown")
+        await page.locator("#date-tab-countdown").click();
       await page.evaluate(() => document.fonts.ready);
-      await page.evaluate(() => UIAlignment.refresh());
+      await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
       await page.clock.fastForward(5000);
+      // ResizeObserver delivers the footer-to-tab height after layout. A clock
+      // jump advances timers, but does not guarantee that observer delivery.
+      await page.waitForFunction(() => {
+        const footer = document.querySelector(".calendar-footer"),
+          tabs = document.querySelector(".editor>.notification-tabs");
+        return (
+          Math.abs(
+            footer.getBoundingClientRect().height -
+              tabs.getBoundingClientRect().height,
+          ) < 0.01
+        );
+      });
+      if (!reference.frozen)
+        assert.equal(
+          await page
+            .locator(".average-card .summary-number-accessible")
+            .textContent(),
+          "0.000",
+          "Empty average retains three decimal places in every page state",
+        );
       const values = await page.evaluate((properties) => {
         if (
           document.querySelector(
@@ -141,14 +167,24 @@ let browser;
       samples.push({ width, mode, values });
       if (mode === "six-weeks") {
         const message = await page.locator("#targetResult").textContent();
-        assert.match(message, /记录不完整.*已录入数据/);
+        assert.equal(message, "");
+        assert.equal(
+          await page
+            .locator("#targetDailyMetric .summary-number-accessible")
+            .textContent(),
+          "0.0",
+          "Historical months keep zero daily allocation",
+        );
         assert.equal(
           await page.locator("#targetTotalLabel").textContent(),
           "记录内差额",
         );
         if (recordMissing)
           await page.locator(".target-panel").screenshot({
-            path: path.join(root, `docs/missing-data-six-weeks-${width}.png`),
+            path: path.join(
+              root,
+              `test-results/missing-data-six-weeks-${width}.png`,
+            ),
           });
       }
       await context.close();
@@ -164,34 +200,17 @@ let browser;
       flag: "wx",
     });
   } else {
-    const previous = JSON.parse(
+    const previousAll = JSON.parse(
         zlib.gunzipSync(fs.readFileSync(baseline)).toString("utf8"),
       ),
+      previous = settingsOnly
+        ? previousAll.filter((sample) => sample.mode === "settings")
+        : previousAll,
       differences = [];
-    const missingSamples = fs.existsSync(missingBaseline)
-      ? JSON.parse(
-          zlib.gunzipSync(fs.readFileSync(missingBaseline)).toString("utf8"),
-        )
-      : [];
-    const expectedMissing = new Map(
-      missingSamples.map((sample) => [
-        sample.width + ":" + sample.mode,
-        sample,
-      ]),
-    );
-    if (missingSamples.length) {
-      assert.equal(missingSamples.length, widths.length);
-      assert.equal(expectedMissing.size, widths.length);
-      for (const sample of missingSamples) {
-        assert.equal(sample.mode, "six-weeks");
-        assert(widths.includes(sample.width));
-      }
-    }
+    assert.equal(samples.length, previous.length);
     for (let i = 0; i < samples.length; i++) {
       const current = samples[i],
-        old =
-          expectedMissing.get(current.width + ":" + current.mode) ||
-          previous[i];
+        old = previous[i];
       assert.equal(current.width, old.width);
       assert.equal(current.mode, old.mode);
       if (current.values.length !== old.values.length) {
@@ -205,18 +224,7 @@ let browser;
         continue;
       }
       for (let j = 0; j < current.values.length; j++)
-        if (
-          JSON.stringify(current.values[j]) !== JSON.stringify(old.values[j]) &&
-          !(
-            !expectedMissing.has(current.width + ":" + current.mode) &&
-            reviewedButtonChange(
-              current.values[j],
-              old.values[j],
-              current,
-              "page",
-            )
-          )
-        )
+        if (JSON.stringify(current.values[j]) !== JSON.stringify(old.values[j]))
           differences.push({
             width: current.width,
             mode: current.mode,
@@ -225,13 +233,13 @@ let browser;
           });
     }
     fs.writeFileSync(
-      path.join(root, "docs/style-contract-differences.json"),
+      path.join(root, "test-results/style-contract-differences.json"),
       JSON.stringify(differences, null, 2) + "\n",
     );
     assert.equal(
       differences.length,
       0,
-      "Unexpected styles/geometry changed; inspect docs/style-contract-differences.json",
+      "Unexpected styles/geometry changed; inspect test-results/style-contract-differences.json",
     );
   }
   console.log(

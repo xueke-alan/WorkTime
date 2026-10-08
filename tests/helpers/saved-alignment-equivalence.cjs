@@ -64,7 +64,7 @@ module.exports = async function compareSavedAlignment(browser) {
         });
       const local = capture();
       const beforeScroll = [scrollX, scrollY];
-      UIAlignment.refresh();
+      WorkTimeApp.ui.alignment.refresh();
       const full = capture();
       return {
         local,

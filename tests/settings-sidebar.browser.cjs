@@ -1,10 +1,9 @@
 const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   path = require("node:path"),
-  { pathToFileURL } = require("node:url"),
-  { chromium } = require("playwright");
+  { pathToFileURL } = require("node:url");
 (async () => {
-  const b = await chromium.launch({ channel: "msedge", headless: true });
+  const b = await require("./helpers/browser.cjs").launchBrowser();
   try {
     const results = [];
     for (const width of [2250, 390]) {
@@ -25,6 +24,26 @@ const assert = require("node:assert/strict"),
           return { left: r.left, right: r.right };
         });
       await p.locator("#settingsOpen").click();
+      for (let round = 0; round < 3; round++) {
+        await p.evaluate(() => {
+          window.previousBreakButtons = [
+            ...document.querySelectorAll("#breaksList button"),
+          ];
+        });
+        await p.locator("#settingsOpen").click();
+        await p.locator("#settingsOpen").click();
+        assert(
+          await p.evaluate(() =>
+            window.previousBreakButtons.every(
+              (button) => !button.isConnected && button.onclick === null,
+            ),
+          ),
+          "Reloading a schedule releases handlers on replaced break rows",
+        );
+      }
+      await p.evaluate(() => {
+        delete window.previousBreakButtons;
+      });
       assert.equal(
         await p.evaluate(() => document.activeElement.id),
         "settingsOpen",
@@ -38,25 +57,19 @@ const assert = require("node:assert/strict"),
             fields = [...form.querySelectorAll(".settings-requirement")].map(
               (e) => e.getBoundingClientRect(),
             ),
-            goal = form.querySelector(".settings-goal").getBoundingClientRect(),
-            employment = form
-              .querySelector(".settings-employment")
-              .getBoundingClientRect();
+            personalAbsent = !form.querySelector(".settings-employment");
           return {
             left: time.left,
             right: time.right,
-            paired:
-              fields[0].top === fields[1].top &&
-              fields[1].top === fields[2].top &&
-              fields[3].top === fields[4].top,
-            employmentAfterGoal: employment.top >= goal.bottom,
+            paired: fields.every((field) => field.top === fields[0].top),
+            personalAbsent,
           };
         });
       assert(
         Math.abs(settingsLayout.left - editorEdges.left) < 1 &&
           Math.abs(settingsLayout.right - editorEdges.right) < 1,
       );
-      assert(settingsLayout.paired && settingsLayout.employmentAfterGoal);
+      assert(settingsLayout.paired && settingsLayout.personalAbsent);
       const geometry = await p.locator("#settingsDialog").evaluate((e) => {
         const r = e.getBoundingClientRect(),
           parent = e.closest(".editor").getBoundingClientRect();
@@ -103,7 +116,7 @@ const assert = require("node:assert/strict"),
       assert(await p.locator("#settingsDialog").isVisible());
       assert.equal(await p.locator(".settings-standard-summary").count(), 0);
       await p.screenshot({
-        path: `docs/settings-sidebar-${width}.png`,
+        path: `test-results/settings-sidebar-${width}.png`,
         fullPage: true,
       });
       await p.locator("#overtimeRequirement0").fill("1.2");
@@ -112,11 +125,13 @@ const assert = require("node:assert/strict"),
         await p.evaluate(
           () =>
             JSON.parse(localStorage.getItem("worktime-local-v1"))
-              .targetAverageMinutes,
+              .overtimeRequirements[0],
         ),
         72,
       );
       await p.locator("#calendar button.day[data-date]").first().click();
+      assert(await p.locator("#settingsDialog").isVisible());
+      await p.locator("#settingsOpen").click();
       assert(await p.locator("#dayEditor").isVisible());
       assert(await p.locator("#settingsDialog").isHidden());
       await p.locator("#settingsOpen").click();
@@ -131,16 +146,18 @@ const assert = require("node:assert/strict"),
         p.evaluate(
           () => JSON.parse(localStorage.getItem("worktime-local-v1")).settings,
         );
+      assert.equal((await savedSettings()).workStart, "08:00");
+      await require("./helpers/apply-schedule.cjs")(p);
       assert.equal((await savedSettings()).workStart, "09:00");
       await p.locator("#standardStart").fill("23:00");
       assert.equal((await savedSettings()).workStart, "09:00");
       assert.match(await p.locator("#settingsError").textContent(), /晚于/);
       await p.locator("#standardStart").fill("09:00");
       assert.equal(await p.locator("#settingsError").textContent(), "");
-      await p.locator("#employmentDate").fill("20241014");
-      assert.equal((await savedSettings()).employmentDate, "2024-10-14");
       const breaksBefore = (await savedSettings()).breaks.length;
       await p.locator("#breaksList button").first().click();
+      assert.equal((await savedSettings()).breaks.length, breaksBefore);
+      await require("./helpers/apply-schedule.cjs")(p);
       assert.equal((await savedSettings()).breaks.length, breaksBefore - 1);
       await p.keyboard.press("Escape");
       await p.locator("#settingsOpen").click();
@@ -178,10 +195,21 @@ const assert = require("node:assert/strict"),
       );
       await p.locator("#settingsOpen").click();
       assert.equal(await p.locator("#standardStart").inputValue(), "09:00");
+      await p.locator("#pageSettingsOpen").click();
+      await p.locator("#employmentDate").fill("20241014");
+      assert.equal(
+        await p.evaluate(
+          () =>
+            JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY))
+              .personal.employmentDate,
+        ),
+        "2024-10-14",
+      );
       assert.equal(
         await p.locator("#employmentDate").inputValue(),
         "2024-10-14",
       );
+      await p.locator("#settingsOpen").click();
       assert.equal(
         await p.locator("#overtimeRequirement0").inputValue(),
         "2.4",
@@ -191,7 +219,7 @@ const assert = require("node:assert/strict"),
       await p.close();
     }
     fs.writeFileSync(
-      "docs/settings-sidebar-results.json",
+      "test-results/settings-sidebar-results.json",
       JSON.stringify({ complete: true, results }, null, 2),
     );
   } finally {

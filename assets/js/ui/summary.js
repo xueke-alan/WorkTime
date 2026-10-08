@@ -111,6 +111,7 @@ WorkTimeApp.ui.createSummary = function (options) {
       target: null,
       counts: "",
       remaining: null,
+      remainingPrefix: "后续",
     };
     buildTarget(display, state, today);
     for (const [id, value] of [
@@ -122,7 +123,8 @@ WorkTimeApp.ui.createSummary = function (options) {
     const label =
       display.remaining === null
         ? esc(display.totalLabel)
-        : '后续<span class="fixed-remaining-count">' +
+        : esc(display.remainingPrefix) +
+          '<span class="fixed-remaining-count">' +
           display.remaining +
           "</span>天" +
           esc(display.totalLabel);
@@ -191,6 +193,10 @@ WorkTimeApp.ui.createSummary = function (options) {
         Math.abs(pace.difference) < 0.005 ? 0 : formatHours(pace.difference);
       return;
     }
+    if (start <= today && today <= end)
+      display.remainingPrefix = pace.startsTomorrow
+        ? "明日起后续"
+        : "含今日后续";
     if (Math.abs(pace.difference) < 0.005) {
       display.totalLabel = "合计差额";
       display.dailyLabel = "日均差额";
@@ -201,7 +207,10 @@ WorkTimeApp.ui.createSummary = function (options) {
       display.total = formatHours(pace.difference);
       display.daily = formatHours(pace.requiredPerDay);
     } else {
-      display.totalLabel = "需加班";
+      display.totalLabel =
+        pace.startsTomorrow && start <= today && today <= end
+          ? "需要加班"
+          : "需加班";
       display.dailyLabel = "平均仍需加班";
       display.total = formatHours(pace.difference);
       display.daily = formatHours(pace.requiredPerDay);

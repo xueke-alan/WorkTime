@@ -226,6 +226,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
       k +
       '"' +
       (info.holiday ? ' data-holiday="' + esc(info.holiday) + '"' : "") +
+      (info.festival ? ' data-festival="' + esc(info.festival) + '"' : "") +
       ' aria-label="' +
       k +
       " " +
@@ -330,6 +331,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         day = state.days[k] || {},
         info = C.calendarInfo(k, day),
         r = C.effectiveRecord(day, true),
+        sourceRecord = r || day.oa,
         punch = C.actualRecord(day) || day.draft || day.oa,
         hasPunch =
           !!punch &&
@@ -406,8 +408,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
                 ? day.oa.start + " – 待更新"
                 : "",
         sourceDot =
-          r && C.complete(r)
-            ? r.manual
+          sourceRecord &&
+          (C.complete(sourceRecord) || sourceRecord.start || sourceRecord.end)
+            ? sourceRecord.manual
               ? '<span class="record-source-dot manual" title="手动填写" aria-hidden="true"></span>' +
                 (day.oa
                   ? '<span class="record-source-dot oa secondary" title="同时保留 OA 导入数据" aria-hidden="true"></span>'
@@ -421,6 +424,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         k +
         '"' +
         (info.holiday ? ' data-holiday="' + esc(info.holiday) + '"' : "") +
+        (info.festival ? ' data-festival="' + esc(info.festival) + '"' : "") +
         ' aria-pressed="' +
         (batchMode ? batchDays.has(k) : selected === k) +
         '" aria-label="' +
@@ -481,7 +485,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
               label === "异常"
                 ? "red"
                 : label === "待录入"
-                  ? "gray"
+                  ? "amber"
                   : r && r.manual
                     ? "blue"
                     : label === "无出勤记录"

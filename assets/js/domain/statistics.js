@@ -185,6 +185,17 @@ WorkTimeApp.domain.statistics = (() => {
     )
       return null;
     const earned = (derivedSummary || summary(state, start, end)).workOvertime;
+    const today = state.days[asOf] || {},
+      startsTomorrow =
+        start <= asOf &&
+        asOf <= end &&
+        [today.oa, today.draft, today.actual, today.estimate].some(
+          (record) =>
+            record &&
+            (record.start ||
+              record.end ||
+              Number.isFinite(record.effectiveMinutes)),
+        );
     let plannedDays = 0,
       remainingDays = 0;
     const cursor = localDate(start);
@@ -199,7 +210,10 @@ WorkTimeApp.domain.statistics = (() => {
             standard - Math.min(standard, Math.max(0, day.leaveMinutes || 0)),
           ) / standard;
         plannedDays += portion;
-        if (k >= asOf && !complete(effectiveRecord(day, true)))
+        if (
+          (k > asOf || (k === asOf && !startsTomorrow)) &&
+          !complete(effectiveRecord(day, true))
+        )
           remainingDays += portion;
       }
       cursor.setDate(cursor.getDate() + 1);
@@ -208,6 +222,7 @@ WorkTimeApp.domain.statistics = (() => {
       shortfall = Math.max(0, difference),
       rawRequiredPerDay = remainingDays ? difference / remainingDays : null;
     return {
+      startsTomorrow,
       plannedDays,
       remainingDays,
       earned,

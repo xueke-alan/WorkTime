@@ -1,9 +1,13 @@
 "use strict";
 const vm = require("node:vm");
 const assert = require("node:assert/strict");
-const { readCoreSource } = require("../tests/helpers/core-source.cjs");
+const { readDomainSource } = require("./lib/domain-source.cjs");
 const realm = vm.createContext({});
-vm.runInContext(readCoreSource() + ";globalThis.C = WorkTime", realm);
+vm.runInContext(
+  readDomainSource() +
+    ";globalThis.C = Object.assign({}, ...Object.values(WorkTimeApp.domain))",
+  realm,
+);
 const C = realm.C;
 /** Generated data only; never reads a user's browser storage. */
 function buildPerformanceFixture(years, end = "2026-09-30") {
@@ -22,7 +26,7 @@ function buildPerformanceFixture(years, end = "2026-09-30") {
     Date.UTC(nextMonth.getUTCFullYear() - years, nextMonth.getUTCMonth(), 1),
   );
   const state = C.defaultState();
-  state.settings.employmentDate = start.toISOString().slice(0, 10);
+  state.personal.employmentDate = start.toISOString().slice(0, 10);
   state.timeTemplates = [
     {
       id: "perf-standard",

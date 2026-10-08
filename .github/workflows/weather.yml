@@ -1,7 +1,10 @@
 name: Baidu weather
+
+# The single concurrency block below permissions preserves serialized writes.
+# Removed only the duplicate block; group and cancellation policy are unchanged.
 on:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
@@ -29,10 +32,12 @@ jobs:
       - name: Test collector
         run: python -m unittest discover -s tests -p 'test_fetch_weather.py'
       - name: Fetch office weather
+        id: weather
         env:
           BAIDU_MAP_AK: ${{ secrets.BAIDU_MAP_AK }}
         run: python scripts/fetch_weather.py
       - name: Commit weather snapshot
+        if: steps.weather.outputs.changed == 'true'
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |

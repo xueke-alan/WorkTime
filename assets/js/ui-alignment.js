@@ -31,6 +31,24 @@
   const textMetrics = new Map();
   let dateRaster = null;
   let dateRasterContext = null;
+  // Computed CSS can serialize keywords as percentages; Canvas only accepts keywords.
+  const stretchKeywords = {
+    "50%": "ultra-condensed",
+    "62.5%": "extra-condensed",
+    "75%": "condensed",
+    "87.5%": "semi-condensed",
+    "100%": "normal",
+    "112.5%": "semi-expanded",
+    "125%": "expanded",
+    "150%": "extra-expanded",
+    "200%": "ultra-expanded",
+  };
+  const validStretches = new Set(Object.values(stretchKeywords));
+  function canvasFontStretch(value) {
+    return (
+      stretchKeywords[value] || (validStretches.has(value) ? value : "normal")
+    );
+  }
   // Font-size changes and historical labels must not grow these caches forever.
   function remember(cache, key, value, limit) {
     cache.delete(key);
@@ -70,7 +88,8 @@
     ink.clearRect(0, 0, width, rasterHeight);
     ink.setTransform(scale, 0, 0, scale, 0, 0);
     ink.font = context.font;
-    if ("fontStretch" in ink) ink.fontStretch = style.fontStretch;
+    if ("fontStretch" in ink)
+      ink.fontStretch = canvasFontStretch(style.fontStretch);
     ink.fillText(text, 4, size * 2);
     const pixels = ink.getImageData(0, 0, raster.width, raster.height).data;
     let first = raster.height,
@@ -142,6 +161,8 @@
         if (range.getClientRects().length > 1) continue;
       }
       context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      if ("fontStretch" in context)
+        context.fontStretch = canvasFontStretch(style.fontStretch);
       const text = element.textContent.trim();
       measurements.push({
         element,

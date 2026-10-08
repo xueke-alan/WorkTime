@@ -1,14 +1,17 @@
 "use strict";
 const assert = require("node:assert/strict");
 const path = require("node:path");
-const { chromium } = require("playwright");
+
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const page = await browser.newPage();
   await page.setContent(`<style>.ui-aligned-text{display:inline-block;line-height:1.3;transform:translateY(var(--ui-ink-offset,0px))}</style>
     <div class="workspace"><section class="calendar"><button class="day" id="day-one"><div class="day-date"><span class="daynum-text">12</span></div></button><button class="day" id="day-two"><div class="day-date"><span class="daynum-text">13</span></div></button></section>
-    <div class="calendar-footer"><span id="calendarFoot">本月0天记录</span></div><section class="summary-sidebar"><article class="card" id="card-one"><div class="metric">12</div></article><article class="card" id="card-two"><div class="metric">25</div></article></section><section class="editor"></section></div><div id="unrelated">背景</div>`);
+    <div class="calendar-footer"><span id="calendarFoot">本月0天记录</span></div><section class="summary-sidebar"><article class="card" id="card-one"><div class="metric"><span data-number-ink>12</span></div></article><article class="card" id="card-two"><div class="metric"><span data-number-ink>25</span></div></article><article class="card"><div id="undeclared-number" class="metric">未声明数字层</div></article></section><section class="editor"></section></div><div id="unrelated">背景</div>`);
+  await page.addScriptTag({
+    path: path.resolve(__dirname, "../assets/js/namespace.js"),
+  });
   await page.addScriptTag({
     path: path.resolve(__dirname, "../assets/js/ui-alignment.js"),
   });
@@ -34,12 +37,12 @@ let browser;
       if (this.closest(".calendar-footer")) reads.footer++;
       return original.apply(this, args);
     };
-    document.querySelector(".metric").textContent = "123";
+    document.querySelector(".metric [data-number-ink]").textContent = "123";
     await tick();
     const local = { ...reads };
     const label = document.querySelector(".metric .ui-aligned-text");
     const offset = label.style.getPropertyValue("--ui-ink-offset");
-    UIAlignment.refresh();
+    WorkTimeApp.ui.alignment.refresh();
     const sameOffset =
       offset === label.style.getPropertyValue("--ui-ink-offset");
     for (const key of Object.keys(reads)) reads[key] = 0;
@@ -55,14 +58,21 @@ let browser;
     const dayLocal = { ...reads };
     const dayLabel = document.querySelector("#day-one .daynum-text");
     const dayOffset = dayLabel.style.getPropertyValue("--ui-ink-offset");
-    UIAlignment.refresh();
+    WorkTimeApp.ui.alignment.refresh();
     const sameDayOffset =
       dayOffset === dayLabel.style.getPropertyValue("--ui-ink-offset");
-    document.querySelector(".editor").innerHTML = "<button>新增按钮</button>";
+    document.querySelector(".editor").innerHTML =
+      '<button class="ui-button"><span class="button-label">新增按钮</span></button><button id="unclassified">未分类按钮</button><button id="unwrapped" class="ui-button">未声明文字层</button>';
     await tick();
     const wrapped = Boolean(
       document.querySelector(".editor button.ui-button .button-label"),
     );
+    if (document.getElementById("unclassified").classList.contains("ui-button"))
+      throw Error("Alignment must not assign control types");
+    if (document.getElementById("unwrapped").querySelector(".button-label"))
+      throw Error("Alignment must not create component label structure");
+    if (document.getElementById("undeclared-number").children.length)
+      throw Error("Alignment must not wrap undeclared numeric text");
     for (const key of Object.keys(reads)) reads[key] = 0;
     const workspace = document.querySelector(".workspace");
     workspace.classList.add("motion-startup");
@@ -74,7 +84,7 @@ let browser;
         element.style.getPropertyValue("--ui-ink-offset"),
       );
     const beforeMotionFull = offsets();
-    UIAlignment.refresh();
+    WorkTimeApp.ui.alignment.refresh();
     const motionEquivalent =
       JSON.stringify(beforeMotionFull) === JSON.stringify(offsets());
     for (const key of Object.keys(reads)) reads[key] = 0;
@@ -91,7 +101,7 @@ let browser;
     document.documentElement.style.fontSize = "20px";
     await tick();
     const global = { ...reads };
-    UIAlignment.dispose();
+    WorkTimeApp.ui.alignment.dispose();
     Element.prototype.getBoundingClientRect = original;
     return {
       local,

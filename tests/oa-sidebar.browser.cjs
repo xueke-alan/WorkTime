@@ -3,11 +3,10 @@ const assert = require("node:assert/strict"),
   fs = require("node:fs"),
   path = require("node:path"),
   { pathToFileURL } = require("node:url"),
-  { chromium } = require("playwright"),
   { buildPerformanceFixture } = require("../scripts/performance-fixtures.cjs");
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const results = [];
   for (const width of [2250, 390]) {
     const page = await browser.newPage({
@@ -65,7 +64,11 @@ let browser;
       });
     const labelBefore = await importLabelGeometry();
     await page.locator("#importOpen").click();
-    assert.deepEqual(await importLabelGeometry(), labelBefore);
+    assert.deepEqual(
+      (await importLabelGeometry()).map((item) => item.width),
+      labelBefore.map((item) => item.width),
+      "Return label retains its icon and text widths while centering in the full button",
+    );
     assert.deepEqual(await persistentGeometry(), headerBefore);
     assert.equal(await page.locator("#previewImport").count(), 0);
     assert.equal(await page.locator("#importDialog .dialog-head").count(), 0);
@@ -174,14 +177,13 @@ let browser;
       await page.locator("#sourceDialog h2").textContent(),
       firstTitle,
     );
-    await page.locator("[data-detail-toggle]").click();
-    assert(await page.locator("#sourceBody pre").first().isVisible());
+    assert(await page.locator("#importDetailRawText").isVisible());
     assert.equal(
       await page.locator("#sourceBody .import-source-heading").count(),
       0,
     );
     const rawScroll = await page.locator("#sourceBody").evaluate((body) => {
-      const pre = body.querySelector("pre"),
+      const pre = body.querySelector("textarea"),
         toolbar = body.querySelector(".import-detail-toolbar"),
         before = toolbar.getBoundingClientRect().top;
       pre.scrollTop = pre.scrollHeight;
@@ -196,10 +198,12 @@ let browser;
         rawScroll.outerScroll === 0 &&
         rawScroll.toolbarStable,
     );
-    await page.locator("[data-detail-toggle]").click();
     assert(await page.locator("#sourceBody .import-parsed-list").isVisible());
     await page.screenshot({
-      path: path.resolve(__dirname, `../docs/oa-sidebar-detail-${width}.png`),
+      path: path.resolve(
+        __dirname,
+        `../test-results/oa-sidebar-detail-${width}.png`,
+      ),
       fullPage: true,
     });
     await page.keyboard.press("Escape");
@@ -214,7 +218,7 @@ let browser;
     );
     assert.equal(
       await page.locator("#importHistoryCount").textContent(),
-      "共 1 条记录 · 0 条异常记录",
+      "1 条记录 · 0 条异常",
     );
     assert(await page.locator("#importHistoryList").isHidden());
     assert.equal(await page.locator("#importRows > article").count(), 1);
@@ -283,7 +287,10 @@ let browser;
       );
     }
     await page.screenshot({
-      path: path.resolve(__dirname, `../docs/oa-sidebar-import-${width}.png`),
+      path: path.resolve(
+        __dirname,
+        `../test-results/oa-sidebar-import-${width}.png`,
+      ),
       fullPage: true,
     });
     await page.locator("#commitImport").click();
@@ -343,7 +350,7 @@ let browser;
     await page.close();
   }
   fs.writeFileSync(
-    path.resolve(__dirname, "../docs/oa-sidebar-results.json"),
+    path.resolve(__dirname, "../test-results/oa-sidebar-results.json"),
     JSON.stringify({ complete: true, results }, null, 2),
   );
   console.log(

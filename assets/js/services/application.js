@@ -36,9 +36,11 @@ WorkTimeApp.services.application = (() => {
       }
       return value;
     }
-    let state = freeze(clone(initial)),
+    const compactInitial = C.compactOAState(clone(initial));
+    let state = freeze(compactInitial),
       revision = 0,
-      dirty = unsaved,
+      dirty =
+        unsaved || JSON.stringify(initial) !== JSON.stringify(compactInitial),
       saveFailed = failed,
       loadCorrupt = corrupt;
     function commit(candidate, { atomic = false, restore = false } = {}) {
@@ -53,15 +55,14 @@ WorkTimeApp.services.application = (() => {
           code: null,
           message: "",
         };
-      if (restore) {
-        persistence.allowValidatedRestore();
-        loadCorrupt = false;
-      }
       if (changed && !atomic) {
         state = freeze(candidate);
         revision++;
       }
-      const saved = persistence.save(candidate);
+      const saved = restore
+        ? persistence.replace(candidate)
+        : persistence.save(candidate);
+      if (restore && saved.persisted) loadCorrupt = false;
       if (saved.persisted && changed && atomic) {
         state = freeze(candidate);
         revision++;
@@ -92,7 +93,9 @@ WorkTimeApp.services.application = (() => {
         return saveFailed;
       },
       get loadCorrupt() {
-        return loadCorrupt;
+        return persistence.loadIssue === undefined
+          ? loadCorrupt
+          : persistence.loadIssue !== null;
       },
       markUnsaved() {
         dirty = true;
@@ -160,7 +163,7 @@ WorkTimeApp.services.application = (() => {
         for (const record of log.records)
           C.applyObservation(candidate, record, log.id);
         candidate.imports.push(clone(log));
-        return commit(candidate);
+        return commit(C.compactOAState(candidate));
       },
       removeImport(id) {
         const candidate = clone(state),
@@ -184,15 +187,26 @@ WorkTimeApp.services.application = (() => {
         return commit({ ...state, personal: clone(personal) });
       },
       restore(candidate) {
-        return commit(clone(candidate), { restore: true });
+        return commit(C.compactOAState(C.validateBackup(clone(candidate))), {
+          restore: true,
+          atomic: true,
+        });
+      },
+      initialize(pageTheme) {
+        if (persistence.loadIssue !== "corrupt")
+          throw Error("仅损坏的存档可以初始化。");
+        const candidate = C.defaultState();
+        candidate.preferences.pageTheme = pageTheme;
+        return commit(candidate, { restore: true, atomic: true });
       },
       reload(candidate) {
-        const changed = JSON.stringify(candidate) !== JSON.stringify(state);
+        const compact = C.compactOAState(clone(candidate));
+        const changed = JSON.stringify(compact) !== JSON.stringify(state);
         if (changed) {
-          state = freeze(clone(candidate));
+          state = freeze(compact);
           revision++;
         }
-        dirty = false;
+        dirty = JSON.stringify(candidate) !== JSON.stringify(compact);
         saveFailed = false;
         loadCorrupt = false;
       },

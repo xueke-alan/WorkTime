@@ -1,5 +1,5 @@
 "use strict";
-const { chromium } = require("playwright");
+
 const assert = require("node:assert/strict"),
   path = require("node:path"),
   fs = require("node:fs");
@@ -8,7 +8,7 @@ const url = require("node:url").pathToFileURL(
 ).href;
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   for (const dpr of [1, 1.25, 1.5, 2]) {
     const context = await browser.newContext({
       viewport: { width: 1600, height: 1000 },
@@ -23,11 +23,11 @@ let browser;
       390, 540, 699, 850, 1150, 1151, 1300, 1301, 1600, 1800, 1920,
     ]) {
       await page.setViewportSize({ width, height: 1000 });
-      await page.evaluate(() => UIAlignment.refresh());
+      await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
       const measurements = await page.evaluate(() =>
         ["batchToggle", "settingsOpen"].map((id) => {
           const button = document.getElementById(id),
-            label = button.querySelector(".button-label"),
+            label = button.querySelector(".ui-icon"),
             rect = label.getBoundingClientRect(),
             b = button.getBoundingClientRect(),
             s = getComputedStyle(label);
@@ -37,6 +37,9 @@ let browser;
             transform: s.transform,
             font: s.font,
             fontSize: s.fontSize,
+            centered:
+              Math.abs(rect.y + rect.height / 2 - b.y - b.height / 2) <= 0.5,
+            inside: rect.height <= b.height && rect.width <= b.width,
           };
         }),
       );
@@ -47,14 +50,19 @@ let browser;
       assert.equal(measurements[0].transform, "none");
       assert.equal(measurements[1].transform, "none");
       assert.equal(measurements[0].font, measurements[1].font);
-      assert(Math.abs(measurements[0].height - measurements[1].height) < 0.1);
+      assert(
+        measurements.every(
+          (item) => item.height >= 24 && item.centered && item.inside,
+        ),
+        "Each toolbar icon is centered inside its existing hit area",
+      );
     }
     await page.setViewportSize({ width: 1600, height: 1000 });
     await page.locator("#batchToggle").click();
-    await page.evaluate(() => UIAlignment.refresh());
+    await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
     assert.equal(
       await page
-        .locator("#batchToggle>.button-label")
+        .locator("#batchToggle>.ui-icon")
         .evaluate((e) => getComputedStyle(e).transform),
       "none",
     );
@@ -81,7 +89,7 @@ let browser;
       await closeButton.screenshot({
         path: path.resolve(
           __dirname,
-          "../docs/focus-outline-close-removed.png",
+          "../test-results/focus-outline-close-removed.png",
         ),
       });
     }
@@ -93,9 +101,11 @@ let browser;
       "settingsOpen",
     );
     if (dpr === 1) {
-      fs.mkdirSync(path.resolve(__dirname, "../docs"), { recursive: true });
+      fs.mkdirSync(path.resolve(__dirname, "../test-results"), {
+        recursive: true,
+      });
       await page.screenshot({
-        path: path.resolve(__dirname, "../docs/refactor-toolbar.png"),
+        path: path.resolve(__dirname, "../test-results/refactor-toolbar.png"),
         clip: await page.locator(".calendar-toolbar-actions").boundingBox(),
       });
     }

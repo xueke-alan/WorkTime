@@ -41,6 +41,7 @@ WorkTimeApp.services.bootstrap.run(
     lifecycle.defer(() => storageStatus.dispose());
     storageStatus.mount({
       readError: loaded.error,
+      loadIssue: loaded.loadIssue,
       accessError: access.ok ? null : access.error,
     });
     const clock = WorkTimeApp.services.clock.create({
@@ -58,7 +59,10 @@ WorkTimeApp.services.bootstrap.run(
       state: model.state,
       persistence,
       core: {
+        defaultState: D.state.defaultState,
+        validateBackup: D.validation.validateBackup,
         applyObservation: D.observations.applyObservation,
+        compactOAState: D.observations.compactOAState,
         calendarInfo: D.calendar.calendarInfo,
         deleteImport: D.observations.deleteImport,
         validateTimeTemplate: D.validation.validateTimeTemplate,
@@ -72,6 +76,7 @@ WorkTimeApp.services.bootstrap.run(
       revision: { get: () => stateOwner.revision },
       storageFailed: { get: () => stateOwner.failed },
       loadCorrupt: { get: () => stateOwner.loadCorrupt },
+      loadIssue: { get: () => persistence.loadIssue },
     });
     const derived = WorkTimeApp.services.derived.create({
       core: {
@@ -260,6 +265,8 @@ WorkTimeApp.services.bootstrap.run(
         if (result.applied)
           WorkTimeApp.services.countdown.setState(model.state);
         storageStatus.commit(result, stateOwner.failed);
+        storageStatus.updateRecovery();
+        for (const controller of controllers) controller.updateRecovery?.();
       },
       onReload: workspace.reload,
       onRecovered() {
@@ -284,6 +291,7 @@ WorkTimeApp.services.bootstrap.run(
         "saveSettings",
         "savePersonal",
         "restore",
+        "initialize",
         "applySchedule",
       ].map((name) => [
         name,
@@ -312,7 +320,7 @@ WorkTimeApp.services.bootstrap.run(
       escape: esc,
       model,
       application,
-      originalStorageText: persistence.originalText,
+      getOriginalStorageText: () => persistence.originalText,
       actions,
       clock,
       preferences: {
@@ -360,7 +368,7 @@ WorkTimeApp.services.bootstrap.run(
       ],
       [
         WorkTimeApp.ui.createBackupController,
-        ["restore"],
+        ["restore", "initialize"],
         { hours: D.time.hours, validateBackup: D.validation.validateBackup },
       ],
       [
@@ -421,8 +429,13 @@ WorkTimeApp.services.bootstrap.run(
     storageStatus.bindRetry({
       available: !!navigator.locks?.request,
       corrupt: model.loadCorrupt,
+      getLoadIssue: () => model.loadIssue,
       retry: saveSession.retry,
     });
+    if (stateOwner.dirty && !loaded.error && access.ok) {
+      saveSession.commit(stateOwner.retry());
+      workspace.recoveryDone();
+    }
     if (!access.ok) saveSession.wait();
     lifecycle.defer(
       clock.watch({

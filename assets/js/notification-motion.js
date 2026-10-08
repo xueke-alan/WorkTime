@@ -1,18 +1,21 @@
 /* Animate newly visible notices and opening the notification panel, not routine text updates. */
 (() => {
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)"),
+  const reduced = WorkTimeApp.ui.animationCompat.preference(),
     panel = document.getElementById("editorInfo");
+  let unlisten;
   let visible = new WeakMap(),
     observer = null;
   const animations = new Set();
   function enter(element) {
     if (
       !observer ||
+      document.hidden ||
       reduced.matches ||
       document.documentElement.classList.contains("app-loading")
     )
       return;
-    const animation = element.animate(
+    const animation = WorkTimeApp.ui.animationCompat.animate(
+      element,
       [
         { opacity: 0, transform: "translateY(6px)" },
         { opacity: 1, transform: "translateY(0)" },
@@ -20,9 +23,7 @@
       { duration: 260, easing: "cubic-bezier(.22,1,.36,1)" },
     );
     animations.add(animation);
-    animation.finished
-      .catch(() => {})
-      .finally(() => animations.delete(animation));
+    animation.finished.then(() => animations.delete(animation));
   }
   function sync() {
     panel
@@ -43,6 +44,9 @@
   function motionPreference() {
     if (reduced.matches) cancelAnimations();
   }
+  function visibilityChanged() {
+    if (document.hidden) cancelAnimations();
+  }
   function mount() {
     if (observer) return;
     visible = new WeakMap();
@@ -53,13 +57,16 @@
       attributes: true,
       attributeFilter: ["class"],
     });
-    reduced.addEventListener("change", motionPreference);
+    unlisten = WorkTimeApp.ui.animationCompat.listen(reduced, motionPreference);
+    document.addEventListener("visibilitychange", visibilityChanged);
     sync();
   }
   function dispose() {
     observer?.disconnect();
     observer = null;
-    reduced.removeEventListener("change", motionPreference);
+    unlisten?.();
+    unlisten = null;
+    document.removeEventListener("visibilitychange", visibilityChanged);
     cancelAnimations();
   }
   WorkTimeApp.ui.notificationMotion = {

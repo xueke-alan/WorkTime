@@ -29,6 +29,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install development dependencies
+        run: npm ci
+      - name: Code and data quality gate
+        run: node scripts/test.cjs --syntax --quality --unit --python
+      - name: Install offline browser
+        run: npx playwright install --with-deps chromium
+      - name: Verify offline entry
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node tests/offline-entry.browser.cjs
       - name: Prepare site
         run: |
           mkdir _site

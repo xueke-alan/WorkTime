@@ -2,11 +2,10 @@
 const assert = require("node:assert/strict"),
   path = require("node:path"),
   { pathToFileURL } = require("node:url"),
-  { chromium } = require("playwright"),
   { buildPerformanceFixture } = require("../scripts/performance-fixtures.cjs");
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   for (const width of [2250, 390]) {
     const page = await browser.newPage({
       viewport: { width, height: 1244 },
@@ -23,7 +22,7 @@ let browser;
       at: "2026-10-03T00:50:00+08:00",
       count: 0,
     });
-    // Legacy association fallback must choose accepted history before a newer raw-only occurrence.
+    // A current record without an explicit association chooses accepted history before raw-only occurrences.
     if (width === 390) delete state.days["2026-09-24"].oa.importId;
     await page.addInitScript(
       (state) =>
@@ -69,7 +68,7 @@ let browser;
       fromDay.raw,
       log.sources.map((source) => source.raw).join("\n\n"),
     );
-    assert(fromDay.dates.includes("2026-09-24"));
+    assert(fromDay.dates.includes("2026/09/24"));
     await page.locator("#importOpen").click();
     await page.locator("#importOpen").click();
     await page.locator('[data-view-import="perf-2026-09"]').click();

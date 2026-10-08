@@ -1,13 +1,59 @@
-# Local and editor files
+# Only project source, required resources and reproducible tooling at repository root.
+/*
+!/.github/
+!/assets/
+!/data/
+!/docs/
+!/licenses/
+!/scripts/
+!/tests/
+!/tools/
+!/.gitignore
+!/.gitattributes
+!/.prettierignore
+!/eslint.config.cjs
+!/index.html
+!/package.json
+!/package-lock.json
+!/README.md
+
+# Dependencies and generated site
+/node_modules/
+/_site/
+/dist/
+/coverage/
+
+# Local test, review, performance and snapshot artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/.refactor-backups/
+/.refactor-data-updates/
+*.log
+*.partial.json
+*.tmp
+*.temp
+__pycache__/
+*.py[cod]
+
+# Keep only maintained documentation; historical reports/screenshots stay local.
+/docs/*
+!/docs/ARCHITECTURE.md
+!/docs/CSS_CONTRACT.md
+!/docs/PERFORMANCE_CONTRACT.md
+!/docs/WEATHER.md
+!/docs/BACKUP_CONVERSION.md
+!/docs/ANIMATION_COMPATIBILITY.md
+
+# Local configuration, credentials and editor files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
 .DS_Store
 Thumbs.db
 *.swp
 *.swo
 .vscode/
 .idea/
-.refactor-backups/
-.refactor-data-updates/
-node_modules/
-test-results/
-__pycache__/
-*.pyc

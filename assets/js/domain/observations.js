@@ -2,16 +2,66 @@
 /** observations domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
 WorkTimeApp.domain.observations = (() => {
   const { pad, localDate, validDate, timeMin } = WorkTimeApp.domain.time;
+  const dateHeader = /^(\d{1,2})[\/-](\d{1,2})$/,
+    weekdayLine = /^(周|星期)[一二三四五六日天]$/,
+    offLine = /^[-—–]{2,}$/,
+    timeLikeLine = /^\d{1,3}\s*[:：]\s*\d{1,3}(?:\s*[:：]\s*\d{1,3})?$/;
+  function textLines(raw) {
+    return raw
+      .replace(/^\uFEFF/, "")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+  /** Preserve recognizable evidence, including rejected date blocks, without page noise. */
+  function compactOAText(raw) {
+    const lines = [];
+    let inBlock = false;
+    for (const line of textLines(raw)) {
+      if (dateHeader.test(line)) {
+        inBlock = true;
+        lines.push(line);
+      } else if (
+        inBlock &&
+        (weekdayLine.test(line) ||
+          timeMin(line) !== null ||
+          offLine.test(line) ||
+          timeLikeLine.test(line))
+      )
+        lines.push(line);
+    }
+    return lines.join("\n");
+  }
+  /** Only raw text changes; accepted observations remain authoritative. Input is untouched. */
+  function compactOAState(state) {
+    const compactRecord = (record) => ({
+      ...record,
+      raw: compactOAText(record.raw),
+    });
+    return {
+      ...state,
+      days: Object.fromEntries(
+        Object.entries(state.days).map(([date, day]) => [
+          date,
+          day.oa ? { ...day, oa: compactRecord(day.oa) } : day,
+        ]),
+      ),
+      imports: state.imports.map((log) => ({
+        ...log,
+        sources: log.sources.map((source) => ({
+          ...source,
+          raw: compactOAText(source.raw),
+        })),
+        records: log.records.map(compactRecord),
+      })),
+    };
+  }
   function parseText(raw, year, source = "粘贴文本") {
     const warnings = [],
       records = [];
     if (!Number.isInteger(year) || year < 1900 || year > 9999)
       return { records, warnings: ["年份必须为 1900–9999 的整数。"] };
-    const lines = raw
-      .replace(/^\uFEFF/, "")
-      .split(/\r?\n/)
-      .map((x) => x.trim())
-      .filter(Boolean);
+    const lines = textLines(raw);
     let block = null;
     function finish() {
       if (!block) return;
@@ -20,9 +70,7 @@ WorkTimeApp.domain.observations = (() => {
         warnings.push(source + "：无效日期 " + block.month + "/" + block.day);
         return;
       }
-      const weekday = block.lines.find((x) =>
-        /^(周|星期)[一二三四五六日天]$/.test(x),
-      );
+      const weekday = block.lines.find((x) => weekdayLine.test(x));
       if (weekday) {
         const w = "日一二三四五六"[localDate(k).getDay()];
         if (!weekday.endsWith(w) && !(w === "日" && weekday.endsWith("天")))
@@ -31,7 +79,7 @@ WorkTimeApp.domain.observations = (() => {
           );
       }
       const times = block.lines.filter((x) => timeMin(x) !== null),
-        off = block.lines.some((x) => /^[-—–]{2,}$/.test(x));
+        off = block.lines.some((x) => offLine.test(x));
       if (times.length > 2) {
         warnings.push(
           source + "：" + k + " 有超过两次打卡，需手动核查；该日未导入。",
@@ -63,7 +111,7 @@ WorkTimeApp.domain.observations = (() => {
       records.push(record);
     }
     for (const line of lines) {
-      const m = /^(\d{1,2})[\/-](\d{1,2})$/.exec(line);
+      const m = dateHeader.exec(line);
       if (m) {
         finish();
         block = {
@@ -144,6 +192,8 @@ WorkTimeApp.domain.observations = (() => {
     return result;
   }
   return {
+    compactOAText,
+    compactOAState,
     parseText,
     mergeObservation,
     applyObservation,

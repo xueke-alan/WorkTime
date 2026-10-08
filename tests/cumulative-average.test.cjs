@@ -9,8 +9,8 @@ vm.runInContext(
   fs.readFileSync("assets/js/services/derived.js", "utf8"),
   context,
 );
-const C = vm.runInContext("WorkTime", context),
-  Derived = vm.runInContext("WorkDerived", context),
+const C = vm.runInContext("DomainTest", context),
+  Derived = vm.runInContext("WorkTimeApp.services.derived", context),
   state = C.defaultState();
 state.settings.configured = true;
 state.settings.standardMinutes = 480;
@@ -37,7 +37,7 @@ const cached = Derived.create({
   core: C,
   getState: () => state,
   getRevision: () => revision,
-}).core;
+}).queries;
 const plain = (value) => JSON.parse(JSON.stringify(value));
 function verify(end = "2026-09-30", preview) {
   const direct = C.cumulativeAverageOvertime(state, "2026-09-01", end, preview);

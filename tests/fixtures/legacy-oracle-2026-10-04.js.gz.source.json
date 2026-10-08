@@ -1,0 +1,9 @@
+{
+  "source": "tools/legacy-v2.js",
+  "sourceSha256": "b4626def795b816283928d9a7d2638c5b7aec67dd40fb8ab66f2a6f991678d18",
+  "sourceBytes": 51078,
+  "fixtureSha256": "d77e84eafb4d47ec17e663449497e0a69a26895dc00af68eba95884b90e7fe46",
+  "capturedAt": "2026-10-04",
+  "purpose": "Frozen schema1/2 oracle for test-only independent summary/replay comparison. Raw original bytes; runtime/tool pages never load this fixture. Test VM renames the single outer binding only.",
+  "priorGate": "edited-day-year-local-all-2026-10-04.log:319 zero failures, exit0"
+}

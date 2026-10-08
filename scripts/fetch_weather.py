@@ -17,6 +17,7 @@ LOCATIONS = json.loads((Path(__file__).resolve().parents[1] / "assets/data/weath
 CITIES = tuple((city["weatherKey"], city["name"], city["districtId"]) for city in LOCATIONS)
 OUTPUT = Path(__file__).resolve().parents[1] / "data" / "weather.json"
 MAX_ATTEMPTS = 3
+FRESH_SECONDS = 60 * 60
 
 
 class WeatherError(Exception):
@@ -123,7 +124,45 @@ def write_snapshot(snapshot, output=OUTPUT):
     return True
 
 
+def has_recent_snapshot(output, now=None):
+    """Only a complete, valid snapshot from the preceding hour suppresses requests."""
+    try:
+        snapshot = json.loads(Path(output).read_text(encoding="utf-8"))
+        if not isinstance(snapshot, dict) or snapshot.get("schemaVersion") != 1:
+            return False
+        updated = datetime.fromisoformat(snapshot["updatedAt"].replace("Z", "+00:00"))
+        if updated.tzinfo is None:
+            return False
+        age = ((now or datetime.now(timezone.utc)) - updated).total_seconds()
+        if not 0 <= age < FRESH_SECONDS:
+            return False
+        cities = snapshot["cities"]
+        if not isinstance(cities, dict):
+            return False
+        for key, _, district_id in CITIES:
+            city = cities[key]
+            if str(city["districtId"]) != district_id:
+                return False
+            validate_result(city["result"], district_id)
+        return True
+    except (OSError, ValueError, UnicodeError, KeyError, TypeError, AttributeError, WeatherError):
+        return False
+
+
+def report_success(changed, message):
+    print(message)
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as file:
+            file.write(f"changed={'true' if changed else 'false'}\n")
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as file:
+            file.write(message + "\n")
+    return 0
+
+
 def main():
+    if has_recent_snapshot(OUTPUT):
+        return report_success(False, "一小时内已有完整有效天气数据，跳过本次采集")
     ak = os.environ.get("BAIDU_MAP_AK", "").strip()
     if not ak:
         print("天气采集失败：请配置 Secret BAIDU_MAP_AK", file=sys.stderr)
@@ -136,8 +175,7 @@ def main():
     except (OSError, ValueError):
         print("天气采集失败：无法保存有效快照；旧文件保持不变", file=sys.stderr)
         return 1
-    print(f"{len(CITIES)}城市天气已更新" if changed else "天气数据未变化，保留上次快照")
-    return 0
+    return report_success(changed, f"{len(CITIES)}城市天气已更新" if changed else "天气数据未变化，保留上次快照")
 
 
 if __name__ == "__main__":

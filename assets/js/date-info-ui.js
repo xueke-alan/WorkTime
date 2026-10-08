@@ -274,6 +274,96 @@
     timer = null,
     disposed = true,
     unsubscribeWeather = null;
+  let countdownFocus = null,
+    focusAnimation = null;
+  const focusMotion = WorkTimeApp.ui.animationCompat?.preference();
+  function stopFocusAnimation() {
+    focusAnimation?.cancel();
+    focusAnimation = null;
+  }
+  function animateFocusChange(entering) {
+    stopFocusAnimation();
+    if (focusMotion?.matches || disposed || document.hidden) return;
+    const target = entering
+      ? countdownNodes?.box
+      : document.querySelector(".wrap") || panel;
+    if (!target) return;
+    focusAnimation = WorkTimeApp.ui.animationCompat?.animate(
+      target,
+      [
+        { opacity: 0, transform: "translateY(8px) scale(0.97)" },
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+      ],
+      { duration: 300, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+    );
+  }
+  const focusButton = node("button", undefined, "countdown-focus-toggle");
+  focusButton.type = "button";
+  focusButton.id = "countdownFocusToggle";
+  function updateFocusButton() {
+    const label = countdownFocus ? "退出倒计时专注模式" : "专注显示倒计时";
+    focusButton.title = label;
+    focusButton.setAttribute("aria-label", label);
+    focusButton.setAttribute("aria-pressed", String(!!countdownFocus));
+    focusButton.innerHTML = WorkTimeApp.ui
+      .createElements(document)
+      .icon(countdownFocus ? "hide" : "expand-content");
+  }
+  updateFocusButton();
+  function exitCountdownFocus(restoreFocus = true) {
+    if (!countdownFocus) return;
+    stopFocusAnimation();
+    const { branches, ancestors, x, y } = countdownFocus;
+    countdownFocus = null;
+    document.body.classList.remove("is-countdown-focused");
+    for (const [element, inert] of branches) {
+      element.inert = inert;
+      element.classList.remove("countdown-focus-hidden");
+    }
+    for (const element of ancestors)
+      element.classList.remove("countdown-focus-ancestor");
+    updateFocusButton();
+    g.scrollTo(x, y);
+    if (restoreFocus && focusButton.isConnected)
+      focusButton.focus({ preventScroll: true });
+    if (restoreFocus) animateFocusChange(false);
+  }
+  function toggleCountdownFocus() {
+    if (countdownFocus) return exitCountdownFocus();
+    if (disposed || active !== "countdown") return;
+    const branches = [],
+      ancestors = [];
+    let current = panel;
+    while (current.parentElement) {
+      const parent = current.parentElement;
+      for (const sibling of parent.children) {
+        if (sibling === current) continue;
+        branches.push([sibling, sibling.inert]);
+        sibling.inert = true;
+        sibling.classList.add("countdown-focus-hidden");
+      }
+      if (parent === document.body) break;
+      ancestors.push(parent);
+      parent.classList.add("countdown-focus-ancestor");
+      current = parent;
+    }
+    countdownFocus = { branches, ancestors, x: g.scrollX, y: g.scrollY };
+    document.body.classList.add("is-countdown-focused");
+    updateFocusButton();
+    focusButton.focus({ preventScroll: true });
+    animateFocusChange(true);
+  }
+  function onFocusKeydown(event) {
+    if (!countdownFocus) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      exitCountdownFocus();
+    } else if (event.key === "Tab") {
+      event.preventDefault();
+      focusButton.focus({ preventScroll: true });
+    }
+  }
   function synchronizeTimer() {
     clearTimeout(timer);
     timer = null;
@@ -309,7 +399,7 @@
         '<g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M70 44h7a11 11 0 0 1 0 22H67"/><path d="M22 43h48l-3 23a18 18 0 0 1-18 16h-6a18 18 0 0 1-18-16Z" fill="currentColor" fill-opacity=".2"/><ellipse cx="46" cy="43" rx="24" ry="5"/><path d="M15 86h63"/><g class="countdown-rest-steam"><path d="M34 30c-10-10 10-13 0-24M48 28c-10-10 10-13 0-24M62 30c-10-10 10-13 0-24"/></g></g>';
       box.append(restIcon);
       box.append(message, time, end);
-      panel.replaceChildren(box);
+      panel.replaceChildren(focusButton, box);
       countdownNodes = { box, message, time, end };
     }
     const { box, message, time, end } = countdownNodes;
@@ -329,6 +419,7 @@
   }
   function render() {
     if (disposed) return;
+    if (active !== "countdown") exitCountdownFocus(false);
     synchronizeTimer();
     const view = active;
     if (renderedView !== null && renderedView !== view)
@@ -599,6 +690,8 @@
   }
   function dispose() {
     if (disposed) return;
+    stopFocusAnimation();
+    exitCountdownFocus(false);
     disposed = true;
     events.dispose();
     tabEvents.dispose();
@@ -660,6 +753,8 @@
     });
     almanacResize.observe(panel);
     events.listen(document, "visibilitychange", onVisibility);
+    events.listen(focusButton, "click", toggleCountdownFocus);
+    events.listen(document, "keydown", onFocusKeydown, true);
     events.listen(document, "worktime:failed", dispose);
     events.listen(g, "pagehide", dispose);
     unsubscribeWeather = WorkTimeApp.services.weather.subscribe(onWeather);

@@ -2,13 +2,13 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
-const { chromium } = require("playwright");
+
 const {
   buildPerformanceFixture,
 } = require("../scripts/performance-fixtures.cjs");
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const page = await browser.newPage({
     viewport: { width: 1600, height: 1000 },
     timezoneId: "Asia/Shanghai",
@@ -93,8 +93,10 @@ let browser;
   assert.equal(
     await page.evaluate(
       () =>
-        WorkTime.effectiveRecord(
-          JSON.parse(localStorage.getItem(WorkTime.KEY)).days["2026-09-30"],
+        WorkTimeApp.domain.records.effectiveRecord(
+          JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days[
+            "2026-09-30"
+          ],
           true,
         ).end,
     ),
@@ -113,8 +115,14 @@ let browser;
   await page.clock.fastForward(3000);
   assert(
     await page.evaluate(() => {
-      const state = JSON.parse(localStorage.getItem(WorkTime.KEY)),
-        expected = WorkTime.summary(state, "2026-09-01", "2026-09-30");
+      const state = JSON.parse(
+          localStorage.getItem(WorkTimeApp.domain.state.KEY),
+        ),
+        expected = WorkTimeApp.domain.statistics.summary(
+          state,
+          "2026-09-01",
+          "2026-09-30",
+        );
       const metric = document
         .querySelectorAll("#cards .metric")[4]
         .cloneNode(true);
@@ -123,7 +131,7 @@ let browser;
         .forEach((node) => node.remove());
       return (
         metric.textContent.replace(/\s/g, "") ===
-        WorkTime.formatMinutes(expected.total).replace(/\s/g, "")
+        WorkTimeApp.domain.time.formatMinutes(expected.total).replace(/\s/g, "")
       );
     }),
     "Displayed total equals reference domain after retry",
@@ -133,6 +141,7 @@ let browser;
     document
       .getElementById("dayLeave")
       .dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("dayLeaveDone").click();
   });
   assert.match(await page.locator("#dayPreview").textContent(), /请假时长/);
   assert.match(await page.locator("#dayError").textContent(), /请假时长/);
@@ -146,6 +155,7 @@ let browser;
     document
       .getElementById("dayLeave")
       .dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("dayLeaveDone").click();
   });
   assert.equal(await page.locator("#dayError").textContent(), "");
   assert.equal(

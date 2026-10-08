@@ -1,5 +1,5 @@
 "use strict";
-const { chromium } = require("playwright");
+
 const assert = require("node:assert/strict"),
   path = require("node:path");
 const url = require("node:url").pathToFileURL(
@@ -7,7 +7,7 @@ const url = require("node:url").pathToFileURL(
 ).href;
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const context = await browser.newContext({
     timezoneId: "Asia/Shanghai",
     reducedMotion: "reduce",
@@ -25,6 +25,9 @@ let browser;
     /另一页面正在编辑/,
   );
   await b.locator("#retryStorage").click();
+  await b.waitForFunction(
+    () => !document.getElementById("retryStorage").disabled,
+  );
   assert.match(
     await b.locator("#storageNoticeText").innerText(),
     /可能位于后台/,
@@ -39,7 +42,9 @@ let browser;
   await b.locator("#dayStart").fill("08:00");
   await b.locator("#dayEnd").fill("19:00");
   const dates = await b.evaluate(() =>
-    Object.keys(JSON.parse(localStorage.getItem(WorkTime.KEY)).days),
+    Object.keys(
+      JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days,
+    ),
   );
   assert(dates.includes("2026-10-08"));
   assert(!dates.includes("2026-10-09"));
@@ -59,7 +64,8 @@ let browser;
   assert(
     !(
       await b.evaluate(
-        () => JSON.parse(localStorage.getItem(WorkTime.KEY)).days,
+        () =>
+          JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days,
       )
     )["2026-10-09"],
     "Automatic handover must not overwrite records written since this page loaded",
@@ -69,22 +75,24 @@ let browser;
   await b.locator("#dayStart").fill("08:00");
   await b.locator("#dayEnd").fill("19:00");
   const saved = await b.evaluate(
-    () => JSON.parse(localStorage.getItem(WorkTime.KEY)).days,
+    () => JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days,
   );
   assert(saved["2026-10-08"]);
   assert(saved["2026-10-09"]);
   // Even a non-cooperating external update must not be overwritten by this page's old snapshot.
   await b.evaluate(() => {
-    const s = JSON.parse(localStorage.getItem(WorkTime.KEY));
+    const s = JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY));
     s.days["2026-10-12"] = { note: "external" };
-    localStorage.setItem(WorkTime.KEY, JSON.stringify(s));
+    localStorage.setItem(WorkTimeApp.domain.state.KEY, JSON.stringify(s));
   });
   await b.locator("#dayEnd").fill("19:01");
   assert.match(await b.locator("#storageNoticeText").innerText(), /外部更新/);
   assert.equal(
     await b.evaluate(
       () =>
-        JSON.parse(localStorage.getItem(WorkTime.KEY)).days["2026-10-12"].note,
+        JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days[
+          "2026-10-12"
+        ].note,
     ),
     "external",
   );
@@ -106,8 +114,9 @@ let browser;
   assert.equal(
     await waiting.evaluate(
       () =>
-        JSON.parse(localStorage.getItem(WorkTime.KEY)).days["2026-10-13"]
-          .estimate.end,
+        JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days[
+          "2026-10-13"
+        ].estimate.end,
     ),
     "18:00",
     "Unchanged storage allows automatic saving of retained edits without reloading",
@@ -139,14 +148,18 @@ let browser;
   await clean.locator("#retryStorage").click();
   await latestOwner.locator("#settingsOpen").click();
   await latestOwner.locator("#standardStart").fill("08:15");
+  await require("./helpers/apply-schedule.cjs")(latestOwner);
   await latestOwner.close();
   await clean.locator("#storageNotice").waitFor({ state: "hidden" });
   assert.equal(await clean.locator("#standardStart").inputValue(), "08:15");
   // A writable page can refresh externally changed data if no fields were edited.
   await clean.evaluate(() => {
-    const state = JSON.parse(localStorage.getItem(WorkTime.KEY));
+    const state = JSON.parse(
+      localStorage.getItem(WorkTimeApp.domain.state.KEY),
+    );
     state.settings.workStart = "08:30";
-    localStorage.setItem(WorkTime.KEY, JSON.stringify(state));
+    state.settings.standardMinutes = 450;
+    localStorage.setItem(WorkTimeApp.domain.state.KEY, JSON.stringify(state));
   });
   await clean.locator("#retryStorage").evaluate((e) => e.click());
   await clean.waitForFunction(
@@ -168,6 +181,7 @@ let browser;
   await partial.locator("#standardStart").fill("");
   await fieldOwner.locator("#settingsOpen").click();
   await fieldOwner.locator("#standardStart").fill("08:45");
+  await require("./helpers/apply-schedule.cjs")(fieldOwner);
   await fieldOwner.close();
   await partial.waitForFunction(() =>
     document

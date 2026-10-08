@@ -2,7 +2,8 @@
   "use strict";
   const canvas = document.getElementById("particleBg"),
     ctx = canvas.getContext("2d"),
-    reduced = matchMedia("(prefers-reduced-motion:reduce)");
+    reduced = WorkTimeApp.ui.animationCompat.preference();
+  let unlisten;
   let w,
     h,
     points = [],
@@ -79,7 +80,8 @@
     document.removeEventListener("visibilitychange", synchronize);
     document.removeEventListener("worktime:themechange", updateTheme);
     document.removeEventListener("worktime:failed", dispose);
-    reduced.removeEventListener("change", synchronize);
+    unlisten?.();
+    unlisten = null;
     points = [];
   }
   function mount() {
@@ -89,7 +91,7 @@
     addEventListener("pagehide", dispose);
     document.addEventListener("visibilitychange", synchronize);
     document.addEventListener("worktime:failed", dispose);
-    reduced.addEventListener("change", synchronize);
+    unlisten = WorkTimeApp.ui.animationCompat.listen(reduced, synchronize);
     document.addEventListener("worktime:themechange", updateTheme);
     themeRGB =
       getComputedStyle(document.documentElement)

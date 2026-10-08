@@ -1,5 +1,5 @@
 "use strict";
-const { chromium } = require("playwright");
+
 const assert = require("node:assert/strict"),
   path = require("node:path");
 const url = require("node:url").pathToFileURL(
@@ -7,7 +7,7 @@ const url = require("node:url").pathToFileURL(
 ).href;
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const context = await browser.newContext({
     timezoneId: "Asia/Shanghai",
     reducedMotion: "reduce",
@@ -18,7 +18,7 @@ let browser;
   await page.clock.install({ time: new Date("2026-10-02T12:00:00+08:00") });
   await page.goto(url);
   await page.evaluate(() => {
-    const s = WorkTime.defaultState(),
+    const s = WorkTimeApp.domain.state.defaultState(),
       date = "2026-09-28";
     s.days[date] = {
       oa: {
@@ -32,7 +32,7 @@ let browser;
         importId: "",
       },
     };
-    localStorage.setItem(WorkTime.KEY, JSON.stringify(s));
+    localStorage.setItem(WorkTimeApp.domain.state.KEY, JSON.stringify(s));
   });
   await page.reload();
   await page.evaluate(() =>
@@ -46,8 +46,9 @@ let browser;
   assert.equal(
     await page.evaluate(
       () =>
-        JSON.parse(localStorage.getItem(WorkTime.KEY)).days["2026-09-28"].oa
-          .end,
+        JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days[
+          "2026-09-28"
+        ].oa.end,
     ),
     "17:30",
   );
@@ -56,8 +57,8 @@ let browser;
   assert.equal(
     await page.evaluate(
       () =>
-        JSON.parse(localStorage.getItem(WorkTime.KEY)).imports[0].records
-          .length,
+        JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY))
+          .imports[0].records.length,
     ),
     0,
   );
@@ -68,8 +69,9 @@ let browser;
   assert.equal(
     await page.evaluate(
       () =>
-        JSON.parse(localStorage.getItem(WorkTime.KEY)).days["2026-09-28"].oa
-          .end,
+        JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days[
+          "2026-09-28"
+        ].oa.end,
     ),
     "20:00",
   );
@@ -81,7 +83,10 @@ let browser;
   );
   await page.locator("[data-import-clipboard]").click();
   await page.waitForFunction(
-    () => JSON.parse(localStorage.getItem(WorkTime.KEY)).days["2026-09-29"]?.oa,
+    () =>
+      JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days[
+        "2026-09-29"
+      ]?.oa,
   );
   assert.equal(
     await page.locator("#importDialog").evaluate((e) => e.open),

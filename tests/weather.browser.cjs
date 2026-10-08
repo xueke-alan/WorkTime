@@ -1,5 +1,5 @@
 "use strict";
-const { chromium } = require("playwright");
+
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -7,7 +7,7 @@ const { snapshot } = require("./helpers/baidu-weather.cjs");
 const locations = require("../assets/data/weather-locations.json");
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const context = await browser.newContext({
     viewport: { width: 1600, height: 1000 },
     reducedMotion: "reduce",
@@ -46,19 +46,23 @@ let browser;
   await page.waitForFunction(
     () => document.documentElement.dataset.appState === "ready",
   );
-  await page.locator("#settingsOpen").click();
+  await page.locator("#pageSettingsOpen").click();
   await page.locator("#workCity").focus();
   assert.deepEqual(
-    await page.locator("#workCityOptions [data-city]").allTextContents(),
-    locations.map((city) => city.name),
+    await page.locator("#workCityOptions .work-city-name").allTextContents(),
+    locations.map((city) => city.name + "市"),
   );
+  await page.locator("#workCity").press("Escape");
   await page.locator("#date-tab-weather").click();
   for (const { name, id } of locations) {
-    await page.evaluate((name) => window.WorkWeather.setCity(name), name);
+    await page.evaluate(
+      (name) => WorkTimeApp.services.weather.setCity(name),
+      name,
+    );
     await page.waitForFunction(
       (id) =>
-        window.WorkWeather.snapshot().record?.cityId === id &&
-        !window.WorkWeather.snapshot().loading,
+        WorkTimeApp.services.weather.snapshot().record?.cityId === id &&
+        !WorkTimeApp.services.weather.snapshot().loading,
       id,
     );
     const text = await page.locator("#dateInfoPanel").textContent();
@@ -71,11 +75,29 @@ let browser;
     );
   }
   assert.equal(await page.locator(".weather-day").count(), 5);
+  for (const id of [
+    "weather-forecast-tab-daily",
+    "weather-forecast-daily",
+    "weather-forecast-tab-hourly",
+    "weather-forecast-hourly",
+  ]) {
+    const mode = id.endsWith("daily") ? "daily" : "hourly";
+    await page.locator("#weather-forecast-tab-" + mode).click();
+    await page.locator("#" + id).focus();
+    await page.evaluate(() => WorkTimeApp.services.weather.refresh(true));
+    assert.equal(
+      await page.evaluate(() => document.activeElement.id),
+      id,
+      "Weather refresh preserves the focused forecast tab or panel",
+    );
+  }
   hourly = false;
-  await page.evaluate(() => window.WorkWeather.refresh(true));
-  assert.equal(await page.locator(".weather-hour").count(), 0);
+  await page.evaluate(() => WorkTimeApp.services.weather.refresh(true));
+  assert.equal(await page.locator(".weather-hour").count(), 12);
   assert(
-    (await page.locator("#dateInfoPanel").textContent()).includes("暂无逐小时"),
+    (await page.locator(".weather-hour").first().textContent()).includes(
+      "暂无",
+    ),
   );
   assert(
     (
@@ -91,21 +113,31 @@ let browser;
     ).includes("百度"),
   );
   hold = true;
-  await page.evaluate(() => window.WorkWeather.setCity("上海"));
+  await page.evaluate(() => WorkTimeApp.services.weather.setCity("上海"));
   for (let i = 0; i < 30 && !release; i++)
     await new Promise((resolve) => setTimeout(resolve, 25));
   assert(release);
-  await page.evaluate(() => window.WorkWeather.setCity("北京"));
+  await page.evaluate(() => WorkTimeApp.services.weather.setCity("北京"));
   release();
-  await page.waitForFunction(() => !window.WorkWeather.snapshot().loading);
+  await page.waitForFunction(
+    () => !WorkTimeApp.services.weather.snapshot().loading,
+  );
   assert.equal(
-    await page.evaluate(() => window.WorkWeather.snapshot().record.cityId),
+    await page.evaluate(
+      () => WorkTimeApp.services.weather.snapshot().record.cityId,
+    ),
     "101010100",
   );
   for (const mode of ["offline", "invalid"]) {
     offline = mode === "offline";
     invalid = mode === "invalid";
-    await page.evaluate(() => window.WorkWeather.refresh(true));
+    await page.locator("#weather-forecast-tab-daily").click();
+    await page.evaluate(() => WorkTimeApp.services.weather.refresh(true));
+    assert.equal(
+      await page.evaluate(() => document.activeElement.id),
+      "weather-forecast-tab-daily",
+      "Failed refresh keeps focus on the selected forecast tab",
+    );
     assert(
       (await page.locator("#dateInfoPanel").textContent()).includes("最近缓存"),
     );
@@ -122,7 +154,7 @@ let browser;
     ),
     false,
   );
-  await page.evaluate(() => window.WorkWeather.setCity("未知城市"));
+  await page.evaluate(() => WorkTimeApp.services.weather.setCity("未知城市"));
   assert.equal(await page.locator(".weather-temperature").count(), 0);
   assert(requests.length >= 10);
   assert.deepEqual(errors, []);
@@ -134,8 +166,10 @@ let browser;
     pathToFileURL(path.resolve(__dirname, "../index.html")).href,
   );
   await empty.locator("#date-tab-weather").click();
-  await empty.evaluate(() => window.WorkWeather.setCity("上海"));
-  await empty.waitForFunction(() => !window.WorkWeather.snapshot().loading);
+  await empty.evaluate(() => WorkTimeApp.services.weather.setCity("上海"));
+  await empty.waitForFunction(
+    () => !WorkTimeApp.services.weather.snapshot().loading,
+  );
   assert.equal(await empty.locator(".weather-temperature").count(), 0);
   await emptyContext.close();
   console.log(

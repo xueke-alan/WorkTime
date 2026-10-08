@@ -4,19 +4,11 @@ const assert = require("node:assert/strict"),
 const c = {};
 c.window = c;
 vm.createContext(c);
-for (const file of [
-  "assets/js/core.js",
-  "assets/js/date-info.js",
-  "assets/js/payday.js",
-])
-  vm.runInContext(
-    file === "assets/js/core.js"
-      ? require("./helpers/core-source.cjs").readCoreSource()
-      : fs.readFileSync(file, "utf8"),
-    c,
-  );
-const C = vm.runInContext("WorkTime", c),
-  calculate = c.Payday.calculate;
+vm.runInContext(require("./helpers/core-source.cjs").readCoreSource(), c);
+for (const file of ["assets/js/date-info.js", "assets/js/payday.js"])
+  vm.runInContext(fs.readFileSync(file, "utf8"), c);
+const C = vm.runInContext("DomainTest", c),
+  calculate = vm.runInContext("WorkTimeApp.domain.payday", c).calculate;
 assert.equal(calculate("2026-10-02").date, "2026-10-15");
 assert.equal(calculate("2026-02-01").date, "2026-02-14"); // Spring Festival; Saturday is a makeup workday.
 assert.equal(calculate("2026-03-01").date, "2026-03-13"); // Sunday -> Friday.
@@ -34,21 +26,29 @@ for (let month = 1; month <= 12; month++) {
     next.setDate(next.getDate() + 1);
   }
 }
-const original = C.calendarInfo;
+const calendar = vm.runInContext("WorkTimeApp.domain.calendar", c),
+  original = calendar.calendarInfo;
 try {
-  C.calendarInfo = (date) => ({
+  calendar.calendarInfo = (date) => ({
     work:
       !["2026-01-15", "2026-01-14", "2026-01-13"].includes(date) &&
       original(date).work,
   });
-  assert.equal(calculate("2026-01-01").date, "2026-01-12");
+  vm.runInContext(fs.readFileSync("assets/js/payday.js", "utf8"), c);
+  assert.equal(
+    vm.runInContext("WorkTimeApp.domain.payday", c).calculate("2026-01-01")
+      .date,
+    "2026-01-12",
+  );
 } finally {
-  C.calendarInfo = original;
+  calendar.calendarInfo = original;
+  vm.runInContext(fs.readFileSync("assets/js/payday.js", "utf8"), c);
 }
 assert.equal(calculate("2027-01-01").calendarKnown, false);
 assert.equal(calculate("2026-02-01").shiftedDays, 1);
-assert(!c.DateInfo.list().some((provider) => provider.id === "payday"));
-assert.equal(c.DateInfo.getContent("payday", "2026-02-01").ok, false);
+const dateInfo = vm.runInContext("WorkTimeApp.services.dateInfo", c);
+assert(!dateInfo.list().some((provider) => provider.id === "payday"));
+assert.equal(dateInfo.getContent("payday", "2026-02-01").ok, false);
 assert.throws(() => calculate("2026-02-30"));
 console.log(
   "Payday rules passed: weekdays, weekends, holiday, makeup workday, consecutive holidays, all 2026 months and no standalone provider.",

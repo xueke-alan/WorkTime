@@ -2,7 +2,7 @@ const assert = require("node:assert/strict"),
   vm = require("node:vm");
 const source = require("./helpers/core-source.cjs").readCoreSource();
 const context = vm.createContext({});
-vm.runInContext(source + ";globalThis.C=WorkTime", context);
+vm.runInContext(source + ";globalThis.C=DomainTest", context);
 const C = context.C,
   make = () => C.defaultState(),
   count = (s) => C.selectOvertimeRequirement(s, "2026-09-01", "2026-09-30"),
@@ -22,6 +22,7 @@ for (let n = 0; n <= 5; n++) {
   assert.equal(count(s).targetMinutes, s.overtimeRequirements[Math.min(n, 4)]);
 }
 const s = make();
+s.overtimeRequirements = [120, null, null, null, null];
 s.days["2026-09-05"] = { actual: { ...record }, plannedOvertime: true };
 s.days["2026-09-06"] = { plannedOvertime: true };
 s.days["2026-09-20"] = { plannedOvertime: true };
@@ -43,11 +44,7 @@ assert.equal(count(s).totalDays, 1);
 const old = make();
 delete old.overtimeRequirements;
 old.targetAverageMinutes = 95;
-const restored = C.validateBackup(old);
-assert.equal(
-  JSON.stringify(restored.overtimeRequirements),
-  "[95,null,null,null,null]",
-);
+assert.throws(() => C.validateBackup(old), /overtimeRequirements/);
 s.overtimeRequirements = [120, 90.6, 0, null, 20];
 assert.equal(C.validateBackup(s).days["2026-09-05"].plannedOvertime, true);
 assert.equal(

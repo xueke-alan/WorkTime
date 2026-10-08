@@ -1,17 +1,16 @@
 "use strict";
-const { chromium } = require("playwright");
+
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const vm = require("node:vm");
 const context = vm.createContext({});
 vm.runInContext(
   require("./helpers/core-source.cjs").readCoreSource() +
-    ";globalThis.C=WorkTime",
+    ";globalThis.C=DomainTest",
   context,
 );
 const C = context.C,
   initial = C.defaultState();
-delete initial.scheduleDefaultsVersion;
 initial.settings.workStart = "09:00";
 initial.settings.workEnd = "18:00";
 initial.settings.breaks = [{ start: 720, end: 780 }];
@@ -38,7 +37,7 @@ initial.imports = [
 ];
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const browserContext = await browser.newContext({
     viewport: { width: 1600, height: 1000 },
     timezoneId: "Asia/Shanghai",
@@ -94,8 +93,8 @@ let browser;
   await page.locator("#timeTemplateList [data-template-fill]").click();
   assert.equal((await saved()).days["2026-09-28"].actual.start, "08:00");
   await page.locator("#sourceOpen").click();
-  assert.match(await page.locator("#sourceBody").innerText(), /original/);
-  await page.locator("#sourceDialog [data-close]").first().click();
+  assert.equal(await page.locator("#importDetailRawText").inputValue(), oa.raw);
+  await page.locator("#importOpen").click();
   await page.locator("#clearManual").click();
   const reset = (await saved()).days["2026-09-28"];
   assert.deepEqual(reset, { oa });
@@ -167,7 +166,7 @@ let browser;
   assert.equal(batch.days["2026-09-30"].estimate.end, "19:00");
   assert.deepEqual(errors, []);
   console.log(
-    "Editor flows passed: legacy startup, normalized autosave, template CRUD/fill, sources/reset, replacement-state views and shift batch range.",
+    "Editor flows passed: custom schedule startup, normalized autosave, template CRUD/fill, sources/reset, replacement-state views and shift batch range.",
   );
   await browser.close();
 })().catch(async (error) => {

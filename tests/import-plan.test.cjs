@@ -4,15 +4,13 @@ const fs = require("node:fs"),
   vm = require("node:vm"),
   assert = require("node:assert/strict");
 const ctx = vm.createContext({});
-for (const file of ["core.js", "imports.js"])
-  vm.runInContext(
-    file === "core.js"
-      ? require("./helpers/core-source.cjs").readCoreSource()
-      : fs.readFileSync(path.join(__dirname, "../assets/js", file), "utf8"),
-    ctx,
-  );
-const C = vm.runInContext("WorkTime", ctx),
-  I = vm.runInContext("WorkImports", ctx);
+vm.runInContext(require("./helpers/core-source.cjs").readCoreSource(), ctx);
+vm.runInContext(
+  fs.readFileSync(path.join(__dirname, "../assets/js/imports.js"), "utf8"),
+  ctx,
+);
+const C = vm.runInContext("DomainTest", ctx),
+  I = vm.runInContext("WorkTimeApp.services.imports", ctx);
 const state = C.defaultState(),
   date = "2026-09-28";
 state.days[date] = {

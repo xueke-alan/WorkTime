@@ -6,10 +6,22 @@ const context = vm.createContext({});
 vm.runInContext(
   require("./helpers/core-source.cjs").readCoreSource() +
     fs.readFileSync("assets/js/services/clock.js", "utf8") +
-    ";globalThis.C=WorkTime;globalThis.Clock=WorkClock",
+    ";globalThis.C=DomainTest;globalThis.Clock=WorkTimeApp.services.clock",
   context,
 );
 const C = context.C;
+for (const [month, last] of [
+  ["2024-02", "2024-02-29"],
+  ["2026-02", "2026-02-28"],
+  ["2026-12", "2026-12-31"],
+])
+  assert.deepEqual(Array.from(C.monthBounds(month)), [month + "-01", last]);
+const detachedSource = C.defaultState(),
+  detached = C.cloneState(detachedSource);
+detached.personal.workCity = "上海";
+detached.settings.breaks[0].end = 811;
+assert.equal(detachedSource.personal.workCity, "");
+assert.equal(detachedSource.settings.breaks[0].end, 810);
 for (const [timestamp, expected, minutes] of [
   ["2026-09-30T15:59:59Z", "2026-09-30", 1439],
   ["2026-09-30T16:00:00Z", "2026-10-01", 0],

@@ -1,14 +1,11 @@
 "use strict";
 const crypto = require("crypto");
 const { create, validateDates } = require("./data-update.cjs");
+const { dates, stripReferences, fetchPages } = require("./lib/wiki-source.cjs");
 const convert = require("./vendor/opencc-t2cn.cjs").Converter({
   from: "tw",
   to: "cn",
 });
-const dates = [];
-for (let m = 1; m <= 12; m++)
-  for (let d = 1; d <= new Date(2024, m, 0).getDate(); d++)
-    dates.push(`${m}月${d}日`);
 function parse(page) {
   const raw = page.revisions?.[0]?.slots.main["*"] || "",
     section =
@@ -18,12 +15,7 @@ function parse(page) {
     items = [];
   for (const line of section.split("\n")) {
     if (!/^\*\s/.test(line)) continue;
-    let clean = convert(
-      line
-        .replace(/<ref\b[^>]*>[\s\S]*?<\/ref>/g, "")
-        .replace(/<ref[^>]*\/>/g, "")
-        .replace(/<!--[\s\S]*?-->/g, ""),
-    );
+    let clean = convert(stripReferences(line));
     if (/\{\{/.test(clean)) continue;
     const links = [...clean.matchAll(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g)];
     clean = clean
@@ -64,23 +56,7 @@ function parse(page) {
   const update = create({ kind: "internationalFestivals" });
   const days = {};
   for (let i = 0; i < dates.length; i += 20) {
-    let j;
-    for (let attempt = 0; attempt < 4; attempt++) {
-      try {
-        const r = await fetch(
-          "https://zh.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content%7Cids&rvslots=main&format=json&titles=" +
-            encodeURIComponent(dates.slice(i, i + 20).join("|")),
-          { signal: AbortSignal.timeout(40000) },
-        );
-        if (!r.ok) throw Error("HTTP " + r.status);
-        j = await r.json();
-        if (!j.query) throw Error("Missing query");
-        break;
-      } catch (e) {
-        if (attempt === 3) throw e;
-        await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
-      }
-    }
+    const j = await fetchPages(dates.slice(i, i + 20));
     update.capture("batch-" + i, j);
     for (const p of Object.values(j.query.pages)) {
       const [, m, d] = p.title.match(/(\d+)月(\d+)日/);
@@ -95,7 +71,7 @@ function parse(page) {
     "assets/data/international-festivals.js",
     "/* Wikipedia daily observances, CC BY-SA 4.0; retrieved " +
       update.date +
-      ". */\nDateInfoData.internationalByDate=" +
+      ". */\nWorkTimeApp.data.dateInfo.internationalByDate=" +
       JSON.stringify(sorted, null, 2) +
       ";\n",
   );

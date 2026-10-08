@@ -4,6 +4,10 @@ const assert = require("node:assert/strict"),
   path = require("node:path"),
   vm = require("node:vm");
 const context = vm.createContext({});
+vm.runInContext(
+  fs.readFileSync(path.join(__dirname, "../assets/js/namespace.js"), "utf8"),
+  context,
+);
 for (const name of ["clipboard", "downloads", "application", "clock"])
   vm.runInContext(
     fs.readFileSync(
@@ -12,10 +16,10 @@ for (const name of ["clipboard", "downloads", "application", "clock"])
     ),
     context,
   );
-const clipboard = vm.runInContext("WorkClipboard", context),
-  downloads = vm.runInContext("WorkDownloads", context),
-  application = vm.runInContext("WorkApplication", context);
-const clocks = vm.runInContext("WorkClock", context);
+const clipboard = vm.runInContext("WorkTimeApp.services.clipboard", context),
+  downloads = vm.runInContext("WorkTimeApp.services.downloads", context),
+  application = vm.runInContext("WorkTimeApp.services.application", context);
+const clocks = vm.runInContext("WorkTimeApp.services.clock", context);
 (async () => {
   let source = {
     text: "old",

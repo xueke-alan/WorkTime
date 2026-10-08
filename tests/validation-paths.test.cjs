@@ -3,8 +3,8 @@ const assert = require("node:assert/strict"),
   vm = require("node:vm");
 const context = vm.createContext({});
 vm.runInContext(
-  require("./helpers/core-source.cjs").readCoreSource() +
-    ";globalThis.C=WorkTime",
+  require("./helpers/conversion-source.cjs").readConversionSource() +
+    ";globalThis.C=DomainTest;globalThis.convert=WorkBackupConversion.convert",
   context,
 );
 const C = context.C;
@@ -166,9 +166,9 @@ const cases = [
     },
   ],
   [
-    "settings.employmentDate",
+    "personal.employmentDate",
     (s) => {
-      s.settings.employmentDate = "2026-02-30";
+      s.personal.employmentDate = "2026-02-30";
     },
   ],
   [
@@ -178,9 +178,9 @@ const cases = [
     },
   ],
   [
-    "targetAverageMinutes",
+    "overtimeRequirements[0]",
     (s) => {
-      s.targetAverageMinutes = -1;
+      s.overtimeRequirements[0] = -1;
     },
   ],
   [
@@ -348,6 +348,21 @@ for (const [expected, mutate] of cases) {
   );
 }
 const legacy = example();
+legacy.schemaVersion = 2;
+for (const theme of ["green", "blue", "purple", "orange", "rose", "slate"]) {
+  const themed = example();
+  themed.preferences.pageTheme = theme;
+  assert.equal(C.validateBackup(themed).preferences.pageTheme, theme);
+}
+for (const theme of ["invalid", null, 0, {}, "#a64165"]) {
+  const invalid = example();
+  invalid.preferences.pageTheme = theme;
+  assert.throws(
+    () => C.validateBackup(invalid),
+    (error) => error.path === "preferences.pageTheme",
+  );
+}
+assert.equal(Object.hasOwn(C.validateBackup(example()), "pageTheme"), false);
 delete legacy.settings.workStart;
 delete legacy.settings.workEnd;
 delete legacy.scheduleDefaultsVersion;
@@ -356,11 +371,11 @@ delete legacy.timeTemplates;
 delete legacy.imports[0].records;
 legacy.imports[0].count = "1";
 legacy.days["2026-09-28"].draft = null;
-const first = C.validateBackup(legacy),
+const first = context.convert(legacy),
   second = C.validateBackup(plain(first));
 assert.deepEqual(plain(first), plain(second));
 assert.equal(C.importRecords(first.imports[0]).length, 1);
-assert(!Object.hasOwn(first.imports[0], "records"));
+assert(Object.hasOwn(first.imports[0], "records"));
 console.log(
   `${cases.length} validation paths passed; legacy raw-only logs, optional fields and numeric count normalize round-trip.`,
 );

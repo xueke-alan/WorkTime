@@ -1,6 +1,7 @@
 "use strict";
 /**
  * Runtime data contracts. Minutes are the internal unit; missing and null do not mean zero.
+ * OA raw fields store compact date/weekday/punch/status evidence, not full page text.
  * @typedef {{start:number,end:number}} WorkBreak
  * @typedef {{configured:boolean,workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[]}} WorkSettings
  * @typedef {{employmentDate:string,workCity:string}} WorkPersonal
@@ -18,7 +19,8 @@
  * @typedef {{start:string,end:string|null,schedule:WorkScheduleData}} WorkScheduleRange
  * @typedef {{scheduleRanges:WorkScheduleRange[],schemaVersion:3,personal:WorkPersonal,preferences:WorkPreferences,overtimeRequirements:(number|null)[],oaUrl:string,settings:WorkSettings,timeTemplates:WorkTimeTemplate[],days:Object<string,WorkDay>,imports:WorkImportLog[]}} WorkStateData
  * @typedef {{today:string,month:string,selected:string,batchMode:boolean,batchDays:Set<string>,yearMode:boolean,viewYear:number}} WorkViewState
- * @typedef {WorkViewState & {state:WorkStateData,revision:number,storageFailed:boolean,loadCorrupt:boolean,batchAnchor:string|null,returnMonth:string}} WorkApplicationModel
+ * @typedef {'unavailable'|'unsupported'|'corrupt'|null} WorkStorageLoadIssue
+ * @typedef {WorkViewState & {state:WorkStateData,revision:number,storageFailed:boolean,loadCorrupt:boolean,loadIssue:WorkStorageLoadIssue,batchAnchor:string|null,returnMonth:string}} WorkApplicationModel
  * @typedef {{core:Object,element:function(string):HTMLElement,escape:function(*):string,getState:function():WorkStateData,getView:function():WorkViewState,document:Document,window:Window}} WorkViewDependencies
  * @typedef {{changed:boolean,applied:boolean,persisted:boolean,dirty:boolean,code:string|null,message:string,error:Error|null}} WorkOperationResult
  *

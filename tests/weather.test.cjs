@@ -10,6 +10,7 @@ const context = {
 };
 context.window = context;
 for (const file of [
+  "assets/js/namespace.js",
   "assets/data/weather-cities.js",
   "assets/js/weather-config.js",
   "assets/js/weather.js",
@@ -18,8 +19,8 @@ for (const file of [
     fs.readFileSync(path.resolve(__dirname, "..", file), "utf8"),
     context,
   );
-const weather = context.WorkWeather,
-  cities = context.WorkWeatherCities.cities;
+const weather = vm.runInNewContext("WorkTimeApp.services.weather", context),
+  cities = vm.runInNewContext("WorkTimeApp.data.weatherCities.cities", context);
 assert.equal(cities.length, 10);
 const districts = [
   "441900",
@@ -67,9 +68,26 @@ assert.throws(() => weather.normalize(invalid, cities[0]), /不完整/);
 const badTemperature = snapshot();
 badTemperature.cities.dongguan.result.now.temp = 999999;
 assert.throws(() => weather.normalize(badTemperature, cities[0]), /不完整/);
-assert.equal(context.WorkWeatherConfig.staleAfterMs, 7200000);
+assert.equal(
+  vm.runInNewContext(
+    "WorkTimeApp.services.weatherConfig.staleAfterMs",
+    context,
+  ),
+  7200000,
+);
 assert.equal(weather.resolveCity("上海市").name, "上海");
 assert.equal(weather.resolveCity("未知城市"), null);
+let publications = 0;
+const unsubscribe = weather.subscribe((value) => {
+  publications++;
+  assert.equal(value.city, null);
+  assert.equal(value.record, null);
+});
+weather.setCity("未知城市");
+assert.equal(publications, 1);
+unsubscribe();
+weather.setCity("另一个未知城市");
+assert.equal(publications, 1, "Released subscribers receive no further state");
 console.log(
   "Baidu weather: ten office districts, sentinel fields, optional forecasts, cache isolation passed",
 );

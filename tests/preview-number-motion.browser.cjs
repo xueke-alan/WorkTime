@@ -3,11 +3,10 @@ const assert = require("node:assert/strict"),
   path = require("node:path"),
   fs = require("node:fs"),
   { pathToFileURL } = require("node:url"),
-  { chromium } = require("playwright"),
   { buildPerformanceFixture } = require("../scripts/performance-fixtures.cjs");
 let browser;
 (async () => {
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await require("./helpers/browser.cjs").launchBrowser();
   const results = [];
   for (const width of [390, 1600])
     for (const reducedMotion of ["no-preference", "reduce"]) {
@@ -21,7 +20,7 @@ let browser;
       page.on("pageerror", (e) => errors.push(e.message));
       await page.clock.install({ time: new Date("2026-09-30T12:00:00+08:00") });
       const fixture = buildPerformanceFixture(1).state;
-      fixture.settings.employmentDate = "2024-10-14";
+      fixture.personal.employmentDate = "2024-10-14";
       await page.addInitScript(
         (state) =>
           localStorage.setItem("worktime-local-v1", JSON.stringify(state)),
@@ -54,7 +53,7 @@ let browser;
           }),
         ),
       );
-      assert.equal(initial.length, 6);
+      assert.equal(initial.length, 4);
       assert(
         initial.every((x) => !x.paused),
         "Initial preview animations revealed",
@@ -64,7 +63,8 @@ let browser;
         "Digits inherit original field font size",
       );
       assert.match(initial.find((x) => x.id === "workedHours").raw, / h$/);
-      assert.match(initial.find((x) => x.id === "workedDays").raw, /d$/);
+      assert.equal(await page.locator("#workedDays").count(), 0);
+      assert.equal(await page.locator("#expectedDays").count(), 0);
       const changed = await page.evaluate(() => {
         document.getElementById("dayStart").value = "08:00";
         document.getElementById("dayEnd").value = "20:00";
@@ -129,7 +129,10 @@ let browser;
         root.innerHTML =
           '<strong id="test-preview-null" data-number-motion>- h</strong>';
         document.body.append(root);
-        window.SummaryNumbers.update(root);
+        WorkTimeApp.ui.numbers.set(root.firstElementChild, null, {
+          placeholder: "-",
+          unit: " h",
+        });
         const text = root.textContent,
           unchanged = !root.querySelector(".summary-number");
         root.remove();
@@ -141,7 +144,7 @@ let browser;
       await page.screenshot({
         path: path.resolve(
           __dirname,
-          `../docs/preview-number-motion-${width}-${reducedMotion}.png`,
+          `../test-results/preview-number-motion-${width}-${reducedMotion}.png`,
         ),
         fullPage: true,
       });
@@ -159,7 +162,10 @@ let browser;
       await context.close();
     }
   fs.writeFileSync(
-    path.resolve(__dirname, "../docs/preview-number-motion-results.json"),
+    path.resolve(
+      __dirname,
+      "../test-results/preview-number-motion-results.json",
+    ),
     JSON.stringify(
       {
         complete: true,
