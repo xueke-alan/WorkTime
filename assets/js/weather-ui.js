@@ -10,6 +10,21 @@
     typeof v === "number" && Number.isFinite(v)
       ? Math.round(v * 10) / 10 + unit
       : "暂无";
+  // Global UV Index categories: <3, <6, <8, <11 and 11+.
+  function uvLevel(value) {
+    if (
+      typeof value !== "number" ||
+      !Number.isFinite(value) ||
+      value < 0 ||
+      value === 999999
+    )
+      return "暂无";
+    if (value < 3) return "弱";
+    if (value < 6) return "中等";
+    if (value < 8) return "强";
+    if (value < 11) return "很强";
+    return "极强";
+  }
   function time(value) {
     return new Date(value).toLocaleString("zh-CN", {
       timeZone: "Asia/Shanghai",
@@ -101,6 +116,7 @@
     still.srcset = "assets/icons/meteocons/svg-static/" + icon + ".svg";
     const image = node("img");
     image.alt = description;
+    image.draggable = false;
     image.src = "assets/icons/meteocons/svg/" + icon + ".svg";
     picture.append(still, image);
     return picture;
@@ -236,15 +252,25 @@
         );
         low.setAttribute("aria-label", "最低温度 " + number(row.low, "摄氏度"));
         temperatures.append(high, low);
+        const uv = node("span", "UV ", "weather-day-uv");
+        const uvValue = node(
+          "span",
+          uvLevel(row.uvIndex) === "暂无" ? "—" : number(row.uvIndex),
+          "weather-uv-value",
+        );
+        uvValue.dataset.level = uvLevel(row.uvIndex);
+        uv.append(uvValue);
+        uv.title =
+          "紫外线等级 " +
+          uvLevel(row.uvIndex) +
+          " · 指数 " +
+          number(row.uvIndex);
+        uv.setAttribute("aria-label", uv.title);
         line.append(
           node("time", row.date.slice(5)),
           weatherIcon(row.weatherCode),
           temperatures,
-          node("span", number(row.precipitationProbability, "%")),
-        );
-        line.lastElementChild.setAttribute(
-          "aria-label",
-          "降水概率 " + number(row.precipitationProbability, "%"),
+          uv,
         );
         daily.append(line);
       }

@@ -92,6 +92,41 @@ let browser;
     await page.locator("#importDialog").evaluate((e) => e.open),
     false,
   );
+  await page.clock.setFixedTime(new Date("2027-01-05T12:00:00+08:00"));
+  await page.evaluate(() =>
+    Object.defineProperty(navigator, "clipboard", {
+      value: {
+        readText: async () =>
+          ["12/30", "12/31", "01/01", "01/02", "01/03", "01/04", "01/05"]
+            .map((date) => date + "\n08:00\n17:30")
+            .join("\n"),
+      },
+      configurable: true,
+    }),
+  );
+  await page.locator("[data-import-clipboard]").click();
+  await page.locator("#importDialog").waitFor({ state: "visible" });
+  assert.match(
+    await page.locator("#importWarnings").textContent(),
+    /2026-12-30.*跨年/,
+  );
+  await page.locator("#commitImport").click();
+  const dates = await page.evaluate(() =>
+    Object.keys(
+      JSON.parse(localStorage.getItem(WorkTimeApp.domain.state.KEY)).days,
+    )
+      .filter((date) => date.startsWith("2026-12") || date.startsWith("2027-"))
+      .sort(),
+  );
+  assert.deepEqual(dates, [
+    "2026-12-30",
+    "2026-12-31",
+    "2027-01-01",
+    "2027-01-02",
+    "2027-01-03",
+    "2027-01-04",
+    "2027-01-05",
+  ]);
   assert.deepEqual(errors, []);
   console.log(
     "Import browser passed: clipboard conflict preview, explicit keep/replace, rejected history empty and conflict-free quick commit.",

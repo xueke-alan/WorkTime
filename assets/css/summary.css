@@ -1880,7 +1880,8 @@ body .summary-sidebar .target-result:empty {
 }
 body .summary-sidebar .target-divider {
   display: grid;
-  grid-template-columns: subgrid;
+  /* Reserve a stable space for figures such as 25.25 h. */
+  grid-template-columns: minmax(0, 1fr) 7rem;
   grid-column: 1 / -1;
   grid-row: 2;
   align-self: stretch;
@@ -1896,7 +1897,7 @@ body .summary-sidebar .target-divider svg {
   position: absolute;
   top: -0.428571rem;
   left: 0;
-  width: calc(100% + 0.714286rem);
+  width: 100%;
   /* End halfway between the planned-day line and the raised explanation. */
   height: calc(50% + var(--text-small) * 0.75 + 0.357143rem);
   overflow: visible;
@@ -1906,7 +1907,8 @@ body .summary-sidebar .target-divider::after {
   grid-column: 2;
   align-self: start;
   border-top: 1px solid var(--theme-border-soft, #dbe9e1);
-  transform: translateY(-0.428571rem);
+  /* Match the SVG stroke center without overlapping its curved endpoint. */
+  transform: translateY(calc(-0.428571rem - 0.5px));
 }
 body .summary-sidebar .target-divider path {
   fill: none;

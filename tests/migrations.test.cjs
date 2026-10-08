@@ -40,6 +40,15 @@ for (const breaks of [
 }
 const first = C.defaultState(),
   second = C.defaultState();
+assert.equal(
+  first.oaUrl,
+  "https://hr.huawei.com/apps/servicetimeflow/#/myServicetime",
+);
+assert.equal(C.validateBackup({ ...second, oaUrl: "" }).oaUrl, first.oaUrl);
+assert.equal(
+  C.validateBackup({ ...second, oaUrl: "https://example.com/oa" }).oaUrl,
+  "https://example.com/oa",
+);
 first.settings.breaks[0].start++;
 assert.notEqual(
   first.settings.breaks[0].start,

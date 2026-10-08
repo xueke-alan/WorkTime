@@ -1,6 +1,6 @@
 历史资料来源：中文维基百科各月日大事记页面。
 每条记录保留具体页面修订链接、来源名称和事件摘要。
-本地选择、去除维基标记及按月份重新组织：WorkTime，2026-10-01。
+本地去除维基标记、去重、按年份排序及按月份重新组织：WorkTime，2026-10-09。
 数据按 Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) 分发。
 许可证：https://creativecommons.org/licenses/by-sa/4.0/
 法律文本：https://creativecommons.org/licenses/by-sa/4.0/legalcode.zh-hans

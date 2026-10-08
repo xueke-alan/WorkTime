@@ -109,6 +109,7 @@ WorkTimeApp.ui.createImportController = function (options) {
           model.state,
           sources,
           year,
+          clock.today(),
         ),
         { records, warnings, rows } = plan;
       preview = rows.length ? plan : null;
@@ -222,6 +223,7 @@ WorkTimeApp.ui.createImportController = function (options) {
           model.state,
           sources,
           year,
+          clock.today(),
         );
       if (!plan.records.length)
         throw Error(plan.warnings[0] || "未识别到 OA 记录");
@@ -339,7 +341,6 @@ WorkTimeApp.ui.createImportController = function (options) {
         : '<p class="muted">没有已接受的解析记录，可查看核心打卡文本。</p>') +
       "</div>" +
       '<label class="import-detail-raw-label" for="importDetailRawText">核心打卡文本</label>' +
-      '<p class="muted">仅保留日期、星期、打卡时间和无出勤标记，页面杂项已移除。</p>' +
       '<div class="import-detail-raw-field"><textarea id="importDetailRawText" class="import-detail-raw-text" readonly aria-label="核心打卡文本" placeholder="没有可识别的核心打卡文本" spellcheck="false">' +
       esc(log.sources.map((source) => source.raw).join("\n\n")) +
       "</textarea></div>";
@@ -379,7 +380,8 @@ WorkTimeApp.ui.createImportController = function (options) {
   }
   function updateImportYearHint() {
     const year = clock.year();
-    $("importYearHint").textContent = "将按浏览器当前年份 " + year + " 导入";
+    $("importYearHint").textContent =
+      "默认按 " + year + " 年导入；近期跨年日期自动推断，提示后请核查";
     return year;
   }
   const oaShortcut = $("oaShortcut");

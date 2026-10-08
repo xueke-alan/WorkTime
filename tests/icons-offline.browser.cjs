@@ -65,7 +65,7 @@ let browser;
             (element) =>
               !element.querySelector("use") &&
               !element.matches(
-                ".month-title-divider,.countdown-icon,.schedule-range-chevron,.target-divider svg",
+                ".month-title-divider,.countdown-icon,.schedule-range-chevron,.target-divider svg,.copyright-mark",
               ),
           )
           .map((element) => element.outerHTML);
@@ -81,6 +81,28 @@ let browser;
         "The local schedule chevron has an explicit audited path",
       );
     }
+    assert.deepEqual(
+      await page.locator(".copyright-mark").evaluate((svg) => ({
+        box: svg.getAttribute("viewBox"),
+        label: svg.getAttribute("aria-label"),
+        circle: [...svg.querySelector("circle").attributes].map((a) => [
+          a.name,
+          a.value,
+        ]),
+        path: svg.querySelector("path").getAttribute("d"),
+      })),
+      {
+        box: "0 0 16 16",
+        label: "版权",
+        circle: [
+          ["cx", "8"],
+          ["cy", "8"],
+          ["r", "6.25"],
+        ],
+        path: "M10 5.5C9.4 4.9 8.7 4.6 8 4.6C3.5 4.6 3.5 11.4 8 11.4C8.7 11.4 9.4 11.1 10 10.5",
+      },
+      "The copyright mark has an explicit audited local path",
+    );
     assert.equal(await page.locator(".target-divider svg").count(), 1);
     assert.deepEqual(
       await page.locator(".target-divider svg").evaluate((svg) => ({

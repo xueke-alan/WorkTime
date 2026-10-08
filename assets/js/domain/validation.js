@@ -244,7 +244,7 @@ WorkTimeApp.domain.validation = (() => {
     clean.scheduleRanges = WorkTimeApp.domain.schedule.validateScheduleRanges(
       input.scheduleRanges,
     );
-    clean.oaUrl = input.oaUrl;
+    clean.oaUrl = input.oaUrl || clean.oaUrl;
     clean.overtimeRequirements = validateOvertimeRequirements(
       input.overtimeRequirements,
     );

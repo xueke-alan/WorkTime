@@ -75,6 +75,29 @@ let browser;
     );
   }
   assert.equal(await page.locator(".weather-day").count(), 5);
+  assert.deepEqual(await page.locator(".weather-day-uv").allTextContents(), [
+    "UV 2",
+    "UV 5",
+    "UV 7",
+    "UV 10",
+    "UV 11",
+  ]);
+  assert.deepEqual(
+    await page
+      .locator(".weather-uv-value")
+      .evaluateAll((values) => values.map((el) => getComputedStyle(el).color)),
+    [
+      "rgb(62, 167, 45)",
+      "rgb(255, 243, 0)",
+      "rgb(241, 139, 0)",
+      "rgb(229, 50, 16)",
+      "rgb(181, 103, 164)",
+    ],
+  );
+  assert.equal(
+    await page.locator(".weather-day-uv").nth(2).getAttribute("aria-label"),
+    "紫外线等级 强 · 指数 7",
+  );
   for (const id of [
     "weather-forecast-tab-daily",
     "weather-forecast-daily",

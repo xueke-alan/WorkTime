@@ -36,7 +36,7 @@ let browser;
       });
       const page = await context.newPage();
       page.on("pageerror", (error) => errors.push(error.message));
-      await page.clock.install({ time: new Date("2026-10-08T12:00:00+08:00") });
+      await page.clock.install({ time: new Date("2026-10-12T12:00:00+08:00") });
       await page.addInitScript(
         ({ original, fail }) => {
           localStorage.setItem("worktime-local-v1", original);

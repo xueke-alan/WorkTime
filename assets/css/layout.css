@@ -150,6 +150,34 @@ body footer {
 body .wrap > footer {
   padding-inline: 0.714286rem;
 }
+.footer-details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35em;
+  margin-inline-start: auto;
+  max-width: 100%;
+  text-align: right;
+}
+.site-meta,
+.site-copyright {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  white-space: nowrap;
+}
+.copyright-mark {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  /* Match the visible letter center rather than the line box center. */
+  transform: translateY(-0.08em);
+}
 /* Shared solid surface stays unchanged when sidebar content switches. */
 body .workspace > .summary-sidebar .sidebar-brand,
 body .workspace > section.panel > .panel-head,

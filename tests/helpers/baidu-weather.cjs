@@ -27,6 +27,7 @@ function snapshot(hourly = true) {
           high: 25,
           low: 18,
           text_day: "晴",
+          uvi: [2, 5, 7, 10, 11][i],
         })),
         ...(hourly
           ? {

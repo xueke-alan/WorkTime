@@ -244,7 +244,11 @@
       ([item, text]) => visibleNotifications.get(item) !== text,
     );
     visibleNotifications = currentNotifications;
-    if (hasNewNotification && active !== "notifications") {
+    // Startup notices establish the baseline without replacing the saved tab.
+    const firstScreenReady =
+      document.documentElement.dataset.appState === "ready" &&
+      !document.documentElement.classList.contains("app-loading");
+    if (firstScreenReady && hasNewNotification && active !== "notifications") {
       active = "notifications";
       render();
       notices.scrollTop = 0;

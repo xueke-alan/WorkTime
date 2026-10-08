@@ -297,7 +297,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     updateMonthTitle(Number(monthViewYear), Number(month.slice(5)), false);
     updateText(
       yearNotice.querySelector(".notification-body"),
-      monthViewYear + "年未内置节假日，按周一至周五统计。",
+      monthViewYear + "年放假安排未内置，暂按周末及节日当天休息统计。",
     );
     yearNotice.classList.toggle("hidden", C.calendarKnown(month + "-01"));
     const [first, last] = monthBounds(),
@@ -320,7 +320,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
             payday.shiftedDays +
             " 天"
           : "；每月15日发薪") +
-        (!payday.calendarKnown ? "；该年份未内置节假日，按周一至周五推算" : "");
+        (!payday.calendarKnown
+          ? "；该年份放假安排未内置，暂按周末及节日当天休息推算"
+          : "");
     for (let i = offset; i > 0; i--) {
       const preview = C.localDate(first);
       preview.setDate(preview.getDate() - i);
@@ -564,7 +566,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const notice = $("yearNotice");
     updateText(
       notice.querySelector(".notification-body"),
-      viewYear + "年未内置节假日，按周一至周五统计。",
+      viewYear + "年放假安排未内置，暂按周末及节日当天休息统计。",
     );
     notice.classList.toggle("hidden", C.calendarKnown(viewYear + "-01-01"));
     const months = WorkYear.months(state, viewYear, today);
@@ -594,7 +596,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
             m.days
               .map(
                 (d) =>
-                  '<button type="button" class="year-day" style="background:' +
+                  '<button type="button" class="year-day' +
+                  (d.date === selected ? " selected" : "") +
+                  '" aria-pressed="' +
+                  (d.date === selected) +
+                  '" style="background:' +
                   d.color.background +
                   ";color:" +
                   d.color.text +

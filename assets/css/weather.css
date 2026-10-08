@@ -40,6 +40,12 @@ body #dateInfoPanel .weather-forecast-tabs button .button-label { translate: non
 .weather-day-icon img { display: block; width: 100%; height: 100%; }
 .weather-day-low { color: var(--theme-text-strong, #526b66); }
 .weather-day time, .weather-day span:last-child { color: var(--theme-text-strong, #526b66); font-size: inherit; }
+.weather-day > .weather-day-uv:last-child { font-size: 0.8em; line-height: 1.3; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="弱"] { color: #3ea72d; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="中等"] { color: #fff300; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="强"] { color: #f18b00; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="很强"] { color: #e53210; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="极强"] { color: #b567a4; }
 body #dateInfoPanel.weather-panel .date-info-source { margin: 0; font-size: 0.75rem; line-height: 1.3; }
 .weather-panel .weather-stale { color: #95631b; }
 .weather-panel .weather-time { margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -16,7 +16,7 @@ WorkTimeApp.domain.state = (() => {
     return {
       schemaVersion: SCHEMA,
       overtimeRequirements: [60, 90, 90, 120, 120],
-      oaUrl: "",
+      oaUrl: "https://hr.huawei.com/apps/servicetimeflow/#/myServicetime",
       personal: { employmentDate: "", workCity: "" },
       preferences: { pageTheme: "green" },
       settings: {

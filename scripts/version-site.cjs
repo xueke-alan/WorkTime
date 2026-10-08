@@ -2,7 +2,14 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const { version: siteVersion } = require("../package.json");
 function versionHtml(html, root, { entryPath = "index.html" } = {}) {
+  if (entryPath === "index.html") {
+    html = html.replace(
+      /(<span id="siteVersion">)[^<]*(<\/span>)/,
+      (_, open, close) => open + "v" + siteVersion + close,
+    );
+  }
   return html.replace(
     /\b(src|href)="([^"?#]+)(?:\?[^"#]*)?(#[^"]*)?"/g,
     (original, attribute, asset, fragment = "") => {

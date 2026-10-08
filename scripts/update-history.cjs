@@ -31,16 +31,12 @@ function parse(page) {
     pool.push({ year, text: body });
   }
   if (pool.length < 3) throw Error("Insufficient events " + page.title);
-  const picks = [];
-  const chinese = pool.find((e) =>
-    /中国|中國|中华|中華|北京|上海|唐朝|宋朝|清朝|香港|台湾|臺灣/.test(e.text),
-  );
-  if (chinese) picks.push(chinese);
-  for (let i = 0; i < 4; i++) {
-    const e = pool[Math.round((i * (pool.length - 1)) / 3)];
-    if (!picks.includes(e)) picks.push(e);
-  }
-  if (picks.length > 5) picks.length = 5;
+  // Keep all usable events instead of sampling a handful from each date.
+  const picks = [
+    ...new Map(
+      pool.map((e) => [e.year + "|" + toSimplified(e.text), e]),
+    ).values(),
+  ].sort((a, b) => a.year - b.year);
   const dateUrl =
     "https://zh.wikipedia.org/wiki/" + encodeURIComponent(page.title);
   return picks.map((e) => ({

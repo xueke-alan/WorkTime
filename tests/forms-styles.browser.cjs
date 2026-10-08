@@ -7,7 +7,7 @@ const fs = require("node:fs"),
 const root = path.resolve(__dirname, ".."),
   reference = require("./helpers/style-reference.cjs").create(
     "forms",
-    "tests/fixtures/styles-forms-2026-10-08.json.gz",
+    "tests/fixtures/styles-forms-2026-10-09.json.gz",
   ),
   baseline = reference.baseline,
   record = process.argv.includes("--record") || reference.capture,
@@ -103,7 +103,6 @@ const modes = [
   "delete-import",
   "source",
   "restore",
-  "help",
   "oa-link",
 ];
 let browser;
@@ -213,7 +212,10 @@ let browser;
           selector = "#deleteImportDialog";
         }
         if (mode === "oa-link") {
-          await page.locator("#oaShortcut").click();
+          await page.locator("#oaShortcut").focus();
+          await page.keyboard.down("Space");
+          await page.clock.runFor(2500);
+          await page.keyboard.up("Space");
           selector = "#oaLinkDialog";
         }
       }
@@ -224,10 +226,6 @@ let browser;
       if (mode === "restore") {
         await page.locator("#restore").click();
         selector = "#restoreDialog";
-      }
-      if (mode === "help") {
-        await page.locator("#helpOpen").click();
-        selector = "#helpDialog";
       }
       await page.locator(selector).waitFor({ state: "visible" });
       for (const height of [700, 1000]) {
@@ -348,7 +346,7 @@ let browser;
     const oldAll = JSON.parse(zlib.gunzipSync(fs.readFileSync(baseline))),
       old = settingsOnly
         ? oldAll.filter((sample) => sample.mode === "settings")
-        : oldAll,
+        : oldAll.filter((sample) => modes.includes(sample.mode)),
       differences = [];
     assert.equal(samples.length, old.length);
     samples.forEach((s, i) => {

@@ -124,12 +124,6 @@ dialog::backdrop {
 #restoreDialog {
   width: 560px;
 }
-#helpDialog {
-  width: 650px;
-}
-#helpDialog .help p {
-  margin-bottom: 12px;
-}
 .import-input-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

@@ -15,12 +15,15 @@ WorkTimeApp.domain.calendar = (() => {
       names.push(festivalData.movableNames[index]);
       movableFestivals.set(key, names);
     });
-  function festivalName(date) {
+  function festivalNames(date) {
     return [
       festivalData.fixed[date.slice(5)],
       ...(movableFestivals.get(date) || []),
-    ]
-      .filter(Boolean)
+    ].filter(Boolean);
+  }
+  function festivalName(date) {
+    return festivalNames(date)
+      .map((name) => (name.endsWith("节") ? name : name + "节"))
       .join("、");
   }
   for (const [year, schedule] of Object.entries(calendarSchedules)) {
@@ -36,12 +39,14 @@ WorkTimeApp.domain.calendar = (() => {
   const calendarKnown = (date) =>
     Object.hasOwn(calendarSchedules, Number(date.slice(0, 4)));
   function calendarInfo(k, day = {}) {
-    const weekend = [0, 6].includes(localDate(k).getDay());
+    const weekend = [0, 6].includes(localDate(k).getDay()),
+      festival = festivalName(k),
+      holiday = holidays[k] || (!calendarKnown(k) ? festivalNames(k)[0] : "");
     let work = !weekend,
-      label = festivalName(k) || (weekend ? "周末" : "工作日");
-    if (holidays[k]) {
+      label = festival || (weekend ? "周末" : "工作日");
+    if (holiday) {
       work = false;
-      label = holidays[k];
+      label = festival || "休息日";
     }
     if (makeups.has(k)) {
       work = true;
@@ -58,10 +63,10 @@ WorkTimeApp.domain.calendar = (() => {
     }
     return {
       work,
-      festival: festivalName(k),
+      festival,
       makeup: makeups.has(k),
       label,
-      holiday: work ? "" : holidays[k] || "",
+      holiday: work ? "" : holiday || "",
       weekend: weekend && !work,
     };
   }

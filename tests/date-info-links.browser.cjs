@@ -16,8 +16,23 @@ let browser;
   );
   await page.locator("#date-tab-history").click();
   const events = await page.locator(".history-event-content").allTextContents();
-  assert(events.length > 0);
+  assert(events.length >= 10);
   assert(events.every((text) => text.length > 5));
+  const scrolling = await page.locator("#dateInfoPanel").evaluate((panel) => {
+    panel.scrollTop = panel.scrollHeight;
+    const last = panel.querySelector(".history-event:last-of-type");
+    return {
+      scrollable:
+        panel.scrollHeight > panel.clientHeight && panel.scrollTop > 0,
+      lastVisible:
+        last.getBoundingClientRect().bottom <=
+        panel.getBoundingClientRect().bottom + 1,
+    };
+  });
+  assert(
+    scrolling.scrollable && scrolling.lastVisible,
+    "expanded history scrolls to the final event",
+  );
   assert.equal(await page.locator(".history-event a").count(), 0);
   assert.equal(await page.locator(".history-event [tabindex]").count(), 0);
   await page.reload();

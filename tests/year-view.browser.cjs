@@ -29,6 +29,35 @@ let runningBrowser;
     "motion-calendar-view",
   );
   assert.equal(await page.locator("[data-year-date]").count(), 365);
+  const selectedDay = page.locator('.year-day[aria-pressed="true"]');
+  assert.equal(await selectedDay.count(), 1);
+  assert.equal(await selectedDay.getAttribute("data-year-date"), "2026-10-02");
+  await page.evaluate(() => {
+    document.documentElement.dataset.theme = "rose";
+  });
+  await page.clock.runFor(1000);
+  const { themeColor, textColor } = await page.evaluate(() => {
+    const probe = document.createElement("span");
+    probe.style.color = "var(--accent)";
+    document.body.append(probe);
+    const themeColor = getComputedStyle(probe).color;
+    probe.style.color = "var(--theme-text-strong)";
+    const textColor = getComputedStyle(probe).color;
+    probe.remove();
+    return { themeColor, textColor };
+  });
+  assert.deepEqual(
+    await selectedDay.evaluate((el) => ({
+      shadow: getComputedStyle(el).boxShadow,
+      color: getComputedStyle(el.querySelector("span")).color,
+      opacity: getComputedStyle(el.querySelector("span")).opacity,
+    })),
+    {
+      shadow: themeColor + " 0px 0px 0px 3px inset",
+      color: textColor,
+      opacity: "1",
+    },
+  );
   assert.equal(
     await page
       .locator("#calendar")

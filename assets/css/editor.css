@@ -1834,7 +1834,7 @@ body .editor .settings-pane-actions {
 body .editor .settings-pane-actions button {
   height: var(--control-height);
   min-height: var(--control-height);
-  padding: 0 0.857143rem;
+  padding: 0 1.428571rem 0 0.857143rem;
 }
 @media (min-width: 1151px) {
   body .editor .page-settings-body { padding-top: 0.928571rem; }

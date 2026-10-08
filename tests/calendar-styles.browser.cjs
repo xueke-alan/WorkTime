@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, ".."),
     "calendar",
     process.argv.includes("--original")
       ? "tests/fixtures/styles-calendar-contract.json.gz"
-      : "tests/fixtures/styles-calendar-2026-10-08.json.gz",
+      : "tests/fixtures/styles-calendar-2026-10-09.json.gz",
   ),
   baseline = reference.baseline,
   record = process.argv.includes("--record") || reference.capture;

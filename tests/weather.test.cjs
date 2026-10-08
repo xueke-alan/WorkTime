@@ -51,11 +51,22 @@ for (const city of cities) {
   assert.equal(record.hourly[0].time, "2026-10-03T12:00:00+08:00");
   assert.equal(record.daily.length, 5);
   assert.equal(record.daily[0].precipitationProbability, null);
+  assert.equal(record.daily[0].uvIndex, 2);
   assert(weather.validRecord(record, city.id));
   assert(!weather.validRecord({ ...record, source: "old-source" }, city.id));
   assert.equal(weather.normalize(snapshot(false), city).hourly.length, 0);
 }
 const invalid = snapshot();
+const missingUv = snapshot();
+delete missingUv.cities.dongguan.result.forecasts[0].uvi;
+missingUv.cities.dongguan.result.forecasts[1].uvi = 999999;
+assert.equal(weather.normalize(missingUv, cities[0]).daily[0].uvIndex, null);
+assert.equal(weather.normalize(missingUv, cities[0]).daily[1].uvIndex, null);
+for (const uvi of [-1, null, "5", Number.NaN, Number.POSITIVE_INFINITY]) {
+  const invalidUv = snapshot();
+  invalidUv.cities.dongguan.result.forecasts[0].uvi = uvi;
+  assert.equal(weather.normalize(invalidUv, cities[0]).daily[0].uvIndex, null);
+}
 const compactTime = snapshot();
 compactTime.cities.dongguan.result.forecast_hours[0].data_time =
   "20261003120000";

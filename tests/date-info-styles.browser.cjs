@@ -6,7 +6,7 @@ const fs = require("node:fs"),
 const root = path.resolve(__dirname, ".."),
   reference = require("./helpers/style-reference.cjs").create(
     "date-info",
-    "tests/fixtures/styles-date-info-2026-10-08.json.gz",
+    "tests/fixtures/styles-date-info-2026-10-09.json.gz",
   ),
   baseline = reference.baseline,
   record = process.argv.includes("--record") || reference.capture;

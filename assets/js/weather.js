@@ -126,6 +126,7 @@
         text: row.text_day,
         high: number(row.high),
         low: number(row.low),
+        uvIndex: number(row.uvi) !== null && row.uvi >= 0 ? row.uvi : null,
         precipitationProbability: null,
       })),
     };

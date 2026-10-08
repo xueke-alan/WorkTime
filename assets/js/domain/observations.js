@@ -56,7 +56,7 @@ WorkTimeApp.domain.observations = (() => {
       })),
     };
   }
-  function parseText(raw, year, source = "粘贴文本") {
+  function parseText(raw, year, source = "粘贴文本", referenceDate = null) {
     const warnings = [],
       records = [];
     if (!Number.isInteger(year) || year < 1900 || year > 9999)
@@ -65,7 +65,31 @@ WorkTimeApp.domain.observations = (() => {
     let block = null;
     function finish() {
       if (!block) return;
-      const k = year + "-" + pad(block.month) + "-" + pad(block.day);
+      const suffix = "-" + pad(block.month) + "-" + pad(block.day);
+      let k = year + suffix;
+      // Only infer recent past dates; historical parsing without an anchor stays stable.
+      if (
+        validDate(referenceDate) &&
+        referenceDate.startsWith(year + "-") &&
+        validDate(k) &&
+        k > referenceDate
+      ) {
+        const previous = year - 1 + suffix;
+        const age =
+          (Date.parse(referenceDate + "T12:00:00Z") -
+            Date.parse(previous + "T12:00:00Z")) /
+          86400000;
+        if (validDate(previous) && age >= 0 && age <= 31) {
+          k = previous;
+          warnings.push(
+            source + "：" + k + " 已按近期跨年记录推断，请确认年份。",
+          );
+        } else {
+          warnings.push(
+            source + "：" + k + " 晚于导入当天，年份无法可靠推断，请核查。",
+          );
+        }
+      }
       if (!validDate(k)) {
         warnings.push(source + "：无效日期 " + block.month + "/" + block.day);
         return;

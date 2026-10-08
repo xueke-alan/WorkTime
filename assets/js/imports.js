@@ -1,13 +1,18 @@
 "use strict";
 /** Pure import planning; both clipboard and pasted text use the same conflict policy. */
 WorkTimeApp.services.imports = (() => {
-  function prepare(core, state, sources, year) {
+  function prepare(core, state, sources, year, referenceDate = null) {
     const records = [],
       warnings = [],
       rows = [];
     const observations = new Map();
     for (const source of sources) {
-      const parsed = core.parseText(source.raw, year, source.name);
+      const parsed = core.parseText(
+        source.raw,
+        year,
+        source.name,
+        referenceDate,
+      );
       records.push(...parsed.records);
       warnings.push(...parsed.warnings);
     }

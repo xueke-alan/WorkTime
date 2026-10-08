@@ -27,7 +27,7 @@ for (let m = 1; m <= 12; m++)
   for (let d = 1; d <= new Date(2024, m, 0).getDate(); d++) {
     const key = String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"),
       events = dateInfoData.history[key];
-    assert(events && events.length >= 3 && events.length <= 5, key);
+    assert(events && events.length >= 10, key);
     const duplicates = new Set();
     for (const e of events) {
       assert(Number.isInteger(e.year) && e.text && e.sourceName && e.id);
@@ -41,6 +41,14 @@ for (let m = 1; m <= 12; m++)
   }
 const api = vm.runInContext("WorkTimeApp.services.dateInfo", ctx),
   rows = (date, id = "festivals") => api.getContent(id, date).rows;
+for (const key of Object.keys(dateInfoData.history)) {
+  if (key === "02-29") continue;
+  const events = api.getContent("history", "2026-" + key).events;
+  assert(
+    events.every((e, i) => i === 0 || events[i - 1].year <= e.year),
+    key,
+  );
+}
 assert(rows("2026-02-17").some((x) => x[1].includes("春节")));
 assert(rows("2026-02-16").some((x) => x[1].includes("除夕")));
 assert(rows("2026-04-05").some((x) => x[1].includes("清明")));

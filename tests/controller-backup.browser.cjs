@@ -172,7 +172,6 @@ let browser;
       "settingsOpen",
       "setupButton",
       "plannedOvertimeToggle",
-      "helpOpen",
     ];
     const attached = ids.filter(
       (id) => document.getElementById(id).onclick !== null,
@@ -221,6 +220,7 @@ let browser;
       clock: {
         now: () => new Date("2026-10-04T12:00:00+08:00"),
         year: () => 2026,
+        today: () => model.today,
       },
       clipboard: {
         readText: () => new Promise((resolve) => pending.push(resolve)),

@@ -71,35 +71,66 @@ assert.equal(
 );
 // Festival dates exist independently of published holiday/makeup schedules.
 for (const [date, name] of [
-  ["2027-01-01", "元旦"],
+  ["2027-01-01", "元旦节"],
   ["2027-02-06", "春节"],
-  ["2027-04-05", "清明"],
+  ["2027-04-05", "清明节"],
   ["2027-05-01", "劳动节"],
-  ["2027-06-09", "端午"],
-  ["2027-09-15", "中秋"],
-  ["2027-10-01", "国庆"],
+  ["2027-06-09", "端午节"],
+  ["2027-09-15", "中秋节"],
+  ["2027-10-01", "国庆节"],
 ]) {
   const info = C.calendarInfo(date);
   assert.equal(C.calendarKnown(date), false);
   assert.equal(info.label, name);
-  assert.equal(info.holiday, "", "Festival names do not create days off");
+  assert.equal(
+    info.holiday,
+    name.replace(/节$/, name === "春节" || name === "劳动节" ? "节" : ""),
+  );
   assert.equal(info.makeup, false);
-  assert.equal(info.work, ![0, 6].includes(C.localDate(date).getDay()));
+  assert.equal(
+    info.work,
+    false,
+    "Unpublished schedules treat the festival date as a day off",
+  );
 }
 assert.equal(C.calendarInfo("2027-10-02").label, "周末");
+assert.equal(C.calendarInfo("2027-10-02").holiday, "");
+assert.equal(C.calendarInfo("2027-10-04").work, true);
+assert.equal(C.calendarInfo("2027-06-09", { kind: "work" }).holiday, "");
+assert.equal(C.calendarInfo("2026-10-01").label, "国庆节");
+assert.equal(C.calendarInfo("2026-10-02").label, "休息日");
+assert.equal(C.calendarInfo("2026-01-02").label, "休息日");
 assert.equal(
   C.calendarInfo("2027-06-09", { kind: "rest" }).label,
   "休息日 · 手动",
 );
 assert.equal(C.calendarInfo("2027-05-01", { kind: "work" }).work, true);
-assert.equal(C.festivalName("2020-10-01"), "国庆、中秋");
+assert.equal(C.festivalName("2020-10-01"), "国庆节、中秋节");
 assert.equal(
   C.festivalName("2027-02-20"),
   "",
   "Lantern Festival is outside the requested seven categories",
 );
-assert.equal(C.festivalName("2200-01-01"), "元旦");
+assert.equal(C.festivalName("2200-01-01"), "元旦节");
 assert.equal(C.festivalName("2200-02-01"), "");
+// Loading a published schedule replaces the provisional festival-only fallback.
+vm.runInContext(
+  'WorkTimeApp.data.calendars.schedules[2027] = { off: [["10-01", "10-07", "国庆"]], work: ["10-09"] };',
+  context,
+);
+vm.runInContext(
+  fs.readFileSync("assets/js/domain/calendar.js", "utf8"),
+  context,
+);
+const published = vm.runInContext("WorkTimeApp.domain.calendar", context);
+assert.equal(published.calendarKnown("2027-10-01"), true);
+assert.equal(published.calendarInfo("2027-10-04").holiday, "国庆");
+assert.equal(published.calendarInfo("2027-10-04").work, false);
+assert.equal(published.calendarInfo("2027-10-04").label, "休息日");
+assert.equal(published.calendarInfo("2027-10-09").makeup, true);
+assert.equal(published.calendarInfo("2027-10-09").work, true);
+assert.equal(published.calendarInfo("2027-06-09").holiday, "");
+assert.equal(published.calendarInfo("2027-06-09").work, true);
 assert.equal(
   fs.readFileSync("assets/data/major-festivals.js", "utf8"),
   require("../scripts/sync-major-festivals.cjs").build(),

@@ -37,7 +37,7 @@ for (const [index, date] of dates.entries()) {
   );
 }
 assert.equal(context.C.calendarInfo("2026-10-24").label, "周末");
-assert.equal(context.C.calendarInfo("2026-10-01").label, "国庆");
+assert.equal(context.C.calendarInfo("2026-10-01").label, "国庆节");
 let browser;
 (async () => {
   browser = await require("./helpers/browser.cjs").launchBrowser();

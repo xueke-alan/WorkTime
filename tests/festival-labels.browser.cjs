@@ -8,13 +8,13 @@ let browser;
   const errors = [];
   for (const width of [1600, 390]) {
     for (const [date, name] of [
-      ["2027-01-01", "元旦"],
+      ["2027-01-01", "元旦节"],
       ["2027-02-06", "春节"],
-      ["2027-04-05", "清明"],
+      ["2027-04-05", "清明节"],
       ["2027-05-01", "劳动节"],
-      ["2027-06-09", "端午"],
-      ["2027-09-15", "中秋"],
-      ["2027-10-01", "国庆"],
+      ["2027-06-09", "端午节"],
+      ["2027-09-15", "中秋节"],
+      ["2027-10-01", "国庆节"],
     ]) {
       const context = await browser.newContext({
         viewport: { width, height: 1100 },
@@ -32,13 +32,28 @@ let browser;
       );
       const card = page.locator(`[data-date="${date}"]`);
       assert((await card.locator(".daykind").textContent()).includes(name));
-      assert.equal(await card.getAttribute("data-holiday"), null);
+      assert.equal(
+        await card.getAttribute("data-holiday"),
+        name === "春节" || name === "劳动节" ? name : name.slice(0, -1),
+      );
+      assert.notEqual(
+        await card.evaluate((el) =>
+          getComputedStyle(el).getPropertyValue("--holiday-art").trim(),
+        ),
+        "",
+      );
       assert.equal(await card.getAttribute("data-festival"), name);
       assert.equal(
         await card
           .locator(".daykind")
           .evaluate((el) => getComputedStyle(el).color),
         "rgb(170, 98, 76)",
+      );
+      assert.equal(
+        await card
+          .locator(".daykind")
+          .evaluate((el) => getComputedStyle(el).fontWeight),
+        "700",
       );
       const check = await page.evaluate((date) => {
         const C = WorkTimeApp.domain.calendar;
@@ -52,10 +67,10 @@ let browser;
         };
       }, date);
       assert.equal(check.known, false);
-      assert.equal(check.work, !check.weekend);
+      assert.equal(check.work, false);
       assert.equal(
         await card.evaluate((el) => el.classList.contains("restday")),
-        check.weekend,
+        true,
       );
       await page.locator("#monthTitle").click();
       assert(
@@ -71,7 +86,7 @@ let browser;
   assert.deepEqual(errors, []);
   await browser.close();
   console.log(
-    "Festival labels passed: seven major festivals without notices, offline desktop/mobile month and year views; working-day rules unchanged.",
+    "Festival labels passed: seven provisional festival holidays with backgrounds, offline desktop/mobile month and year views.",
   );
 })().catch(async (error) => {
   console.error(error);

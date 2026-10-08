@@ -8,6 +8,17 @@ const { versionHtml, versionSite } = require("../scripts/version-site.cjs");
 const root = path.resolve(__dirname, "..");
 const original = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const output = versionHtml(original, root);
+const expectedVersion = "v" + require("../package.json").version;
+assert(
+  original.includes('<span id="siteVersion">' + expectedVersion + "</span>"),
+);
+assert(
+  output.includes('<span id="siteVersion">' + expectedVersion + "</span>"),
+);
+assert.equal(
+  versionHtml('<span id="siteVersion">v0.0.0</span>', root),
+  '<span id="siteVersion">' + expectedVersion + "</span>",
+);
 assert.equal(versionHtml(output, root), output);
 let count = 0;
 for (const [, asset, hash] of output.matchAll(

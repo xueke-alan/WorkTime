@@ -8,9 +8,25 @@ let browser;
   browser = await require("./helpers/browser.cjs").launchBrowser();
   const page = await browser.newPage({ reducedMotion: "reduce" });
   await page.route(/^https?:/, (route) => route.abort());
+  await page.addInitScript(() => {
+    localStorage.setItem("worktime.dateInfo.activeTab", "countdown");
+    document.addEventListener("DOMContentLoaded", () => {
+      const notice = document.createElement("div");
+      notice.className = "info-notification tone-warning";
+      notice.innerHTML = '<div class="notification-body">首屏已有通知</div>';
+      document.getElementById("feedbackList").prepend(notice);
+    });
+  });
   await page.goto(pathToFileURL(path.resolve(__dirname, "../index.html")).href);
   await page.waitForFunction(
-    () => document.documentElement.dataset.appState === "ready",
+    () =>
+      document.documentElement.dataset.appState === "ready" &&
+      !document.documentElement.classList.contains("app-loading"),
+  );
+  assert.equal(
+    await page.locator("#date-tab-countdown").getAttribute("aria-selected"),
+    "true",
+    "首屏已有通知不应替换上次选择的窗口",
   );
   await page.locator("#date-tab-countdown").click();
   await page.evaluate(() => {
@@ -64,7 +80,7 @@ let browser;
     () => !document.getElementById("editorInfo").hidden,
   );
   console.log(
-    "Notification switch: new, updated and reappearing notices switch tabs; unchanged notices and countdown updates do not",
+    "Notification switch: startup preserves the saved tab; new, updated and reappearing notices switch tabs; unchanged notices and countdown updates do not",
   );
 })()
   .catch((error) => {

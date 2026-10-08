@@ -43,10 +43,7 @@ function validateDates(days, kind) {
   if (JSON.stringify(Object.keys(days).sort()) !== JSON.stringify(expected))
     throw Error("Data must cover exactly all 366 calendar dates");
   for (const [date, items] of Object.entries(days)) {
-    if (
-      !Array.isArray(items) ||
-      (kind === "history" && (items.length < 3 || items.length > 5))
-    )
+    if (!Array.isArray(items) || (kind === "history" && items.length < 3))
       throw Error("Invalid records at " + date);
     const ids = new Set();
     for (const item of items) {
