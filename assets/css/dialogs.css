@@ -172,16 +172,18 @@ dialog::backdrop {
   padding: 0;
 }
 .import-input-grid .import-paste-button .ui-icon {
-  width: 1.714286rem;
-  height: 1.714286rem;
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
 }
 body #importDialog #pasteOAClipboard {
-  border: 0;
-  background: color-mix(in srgb, var(--accent) 5%, white);
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, white);
+  background: color-mix(in srgb, var(--accent) 4%, white);
+  color: var(--accent);
   box-shadow: none;
 }
 body #importDialog #pasteOAClipboard:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 10%, white);
+  border-color: color-mix(in srgb, var(--accent) 28%, white);
+  background: color-mix(in srgb, var(--accent) 8%, white);
 }
 #importTable tbody tr:hover {
   background: var(--theme-surface-paper, #f9fcfa);
