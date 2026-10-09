@@ -3,21 +3,23 @@ body .sidebar-actions > #importOpen {
   position: relative;
 }
 body #importOpen .import-main {
-  margin-right: calc(100% * 2 / 3);
-  transition: margin-right 280ms ease, background 160ms ease;
+  /* Keep a full-width layout and move its centered contents into the first slot.
+     Animating a margin resized the label every frame and retriggered alignment. */
+  transform: translateX(calc(-100% / 3));
+  transition: transform 280ms var(--motion-ease), background 160ms ease;
 }
 body .sidebar-actions .import-secondary-actions {
-  transition: transform 280ms ease, opacity 280ms ease, visibility 0s;
+  transition: transform 280ms var(--motion-ease), opacity 280ms var(--motion-ease), visibility 0s;
 }
 body #importOpen.is-return .import-main {
-  margin-right: 0;
+  transform: translateX(0);
 }
 body .sidebar-actions:has(#importOpen.is-return) .import-secondary-actions {
   transform: translateX(100%);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: transform 280ms ease, opacity 280ms ease, visibility 0s 280ms;
+  transition: transform 280ms var(--motion-ease), opacity 280ms var(--motion-ease), visibility 0s 280ms;
 }
 @media (prefers-reduced-motion: reduce) {
   body #importOpen .import-main,

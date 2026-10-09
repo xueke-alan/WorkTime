@@ -24,7 +24,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       const target = animation.effect?.target;
       if (
         !target?.closest?.(".sidebar-header") ||
-        !["margin-right", "transform", "opacity", "visibility"].includes(
+        !["transform", "opacity", "visibility"].includes(
           animation.transitionProperty,
         )
       )
