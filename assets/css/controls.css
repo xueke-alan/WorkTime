@@ -196,6 +196,14 @@ body :is(.backup-button-group, .settings-button-group) button.ui-button + button
   border-left: 1px solid var(--control-border) !important;
 }
 /* Keep OA text and symbols on stable raster sizes at desktop scaling. */
+body .sidebar-actions :is(#importOpen, #importOASite, [data-import-clipboard]) .ui-icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+body #importOpen .import-main > span {
+  line-height: 1;
+  translate: none;
+}
 @supports (font-size: round(nearest, 1rem, 1px)) {
   @media (min-width: 1921px) {
     body button.ui-button:not(.notification-tab) {

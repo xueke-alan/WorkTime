@@ -98,19 +98,18 @@
   position: relative;
   overflow: hidden;
   border-radius: var(--control-radius);
-  --import-action-size: var(--control-height);
 }
 body .sidebar-actions .import-secondary-actions {
   position: absolute;
-  top: 1px;
-  right: 1px;
+  top: 0;
+  right: 0;
   display: flex;
-  width: calc(2 * var(--import-action-size));
-  height: calc(100% - 2px);
+  width: calc(100% * 2 / 3);
+  height: 100%;
 }
 body .sidebar-actions .import-secondary-actions > button.ui-button {
-  width: var(--import-action-size);
-  flex: 0 0 var(--import-action-size);
+  width: 50%;
+  flex: 1 1 0;
   height: 100% !important;
   min-height: 0 !important;
   max-height: none !important;
@@ -128,7 +127,6 @@ body .sidebar-actions .import-secondary-actions > button:hover {
   background: var(--theme-accent-deep, #155f4d);
 }
 @media (min-width: 1800px) {
-  .sidebar-actions { --import-action-size: 3rem; }
   body .sidebar-actions #importOASite .ui-icon {
     width: 1.285714rem;
     height: 1.285714rem;
@@ -136,7 +134,6 @@ body .sidebar-actions .import-secondary-actions > button:hover {
 }
 @supports (font-size: round(nearest, 1rem, 1px)) {
   @media (min-width: 1800px) {
-    .sidebar-actions { --import-action-size: round(nearest, 3rem, 2px); }
     body .sidebar-actions #importOASite .ui-icon {
       width: round(nearest, 1.285714rem, 2px);
       height: round(nearest, 1.285714rem, 2px);

@@ -3,7 +3,7 @@ body .sidebar-actions > #importOpen {
   position: relative;
 }
 body #importOpen .import-main {
-  margin-right: calc(2 * var(--control-height));
+  margin-right: calc(100% * 2 / 3);
   transition: margin-right 280ms ease, background 160ms ease;
 }
 body .sidebar-actions .import-secondary-actions {
