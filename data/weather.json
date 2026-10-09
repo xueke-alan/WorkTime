@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-09T12:21:01Z",
+  "updatedAt": "2026-10-09T13:52:16Z",
   "cities": {
     "dongguan": {
       "name": "东莞",
@@ -15,14 +15,14 @@
         },
         "now": {
           "text": "多云",
-          "temp": 28,
-          "feels_like": 29,
-          "rh": 59,
-          "wind_class": "1级",
-          "wind_dir": "东南风",
+          "temp": 27,
+          "feels_like": 28,
+          "rh": 66,
+          "wind_class": "2级",
+          "wind_dir": "东风",
           "prec_1h": 0.0,
-          "clouds": 59,
-          "vis": 26900,
+          "clouds": 50,
+          "vis": 20200,
           "aqi": 38,
           "pm25": 26,
           "pm10": 38,
@@ -30,12 +30,12 @@
           "so2": 6,
           "o3": 108,
           "co": 0.8,
-          "wind_angle": 116,
+          "wind_angle": 104,
           "uvi": 0,
-          "pressure": 1008,
-          "slp": 1015,
-          "dpt": 19,
-          "uptime": "20261009201000"
+          "pressure": 1009,
+          "slp": 1016,
+          "dpt": 20,
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -186,22 +186,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "晴",
-            "temp_fc": 26,
-            "wind_class": "<3级",
-            "wind_dir": "东南风",
-            "rh": 68,
-            "prec_1h": 0.0,
-            "clouds": 10,
-            "wind_angle": 115,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 1012,
-            "slp": 1018,
-            "dpt": 20,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "晴",
             "temp_fc": 26,
@@ -569,6 +553,22 @@
             "slp": 1017,
             "dpt": 16,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "晴",
+            "temp_fc": 27,
+            "wind_class": "<3级",
+            "wind_dir": "东北风",
+            "rh": 46,
+            "prec_1h": 0.0,
+            "clouds": 0,
+            "wind_angle": 49,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 1011,
+            "slp": 1017,
+            "dpt": 14,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
@@ -585,28 +585,28 @@
           "id": "310118"
         },
         "now": {
-          "text": "多云",
-          "temp": 22,
-          "feels_like": 22,
-          "rh": 74,
+          "text": "晴",
+          "temp": 21,
+          "feels_like": 21,
+          "rh": 86,
           "wind_class": "1级",
-          "wind_dir": "东风",
+          "wind_dir": "东北风",
           "prec_1h": 0.0,
-          "clouds": 60,
-          "vis": 30000,
-          "aqi": 31,
-          "pm25": 9,
-          "pm10": 19,
-          "no2": 22,
+          "clouds": 0,
+          "vis": 18600,
+          "aqi": 27,
+          "pm25": 12,
+          "pm10": 26,
+          "no2": 24,
           "so2": 8,
-          "o3": 99,
+          "o3": 85,
           "co": 0.5,
-          "wind_angle": 77,
+          "wind_angle": 40,
           "uvi": 0,
           "pressure": 1019,
-          "slp": 1019,
-          "dpt": 17,
-          "uptime": "20261009201000"
+          "slp": 1020,
+          "dpt": 18,
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -770,22 +770,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "阴",
-            "temp_fc": 21,
-            "wind_class": "<3级",
-            "wind_dir": "东风",
-            "rh": 84,
-            "prec_1h": 0.0,
-            "clouds": 80,
-            "wind_angle": 107,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 1019,
-            "slp": 1019,
-            "dpt": 18,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "阴",
             "temp_fc": 20,
@@ -1153,6 +1137,22 @@
             "slp": 1018,
             "dpt": 17,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "多云",
+            "temp_fc": 22,
+            "wind_class": "<3级",
+            "wind_dir": "东北风",
+            "rh": 70,
+            "prec_1h": 0.0,
+            "clouds": 23,
+            "wind_angle": 61,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 1018,
+            "slp": 1018,
+            "dpt": 16,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
@@ -1170,27 +1170,27 @@
         },
         "now": {
           "text": "多云",
-          "temp": 27,
-          "feels_like": 28,
-          "rh": 70,
+          "temp": 26,
+          "feels_like": 27,
+          "rh": 67,
           "wind_class": "1级",
           "wind_dir": "南风",
           "prec_1h": 0.0,
-          "clouds": 35,
+          "clouds": 50,
           "vis": 30000,
-          "aqi": 47,
-          "pm25": 21,
-          "pm10": 47,
-          "no2": 12,
+          "aqi": 37,
+          "pm25": 16,
+          "pm10": 37,
+          "no2": 19,
           "so2": 6,
-          "o3": 132,
+          "o3": 111,
           "co": 1.0,
-          "wind_angle": 173,
+          "wind_angle": 197,
           "uvi": 0,
-          "pressure": 1007,
-          "slp": 1015,
-          "dpt": 21,
-          "uptime": "20261009201000"
+          "pressure": 1009,
+          "slp": 1016,
+          "dpt": 20,
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -1341,22 +1341,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "晴",
-            "temp_fc": 26,
-            "wind_class": "<3级",
-            "wind_dir": "东风",
-            "rh": 64,
-            "prec_1h": 0.0,
-            "clouds": 10,
-            "wind_angle": 108,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 1006,
-            "slp": 1013,
-            "dpt": 19,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "晴",
             "temp_fc": 26,
@@ -1724,6 +1708,22 @@
             "slp": 1012,
             "dpt": 18,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "晴",
+            "temp_fc": 27,
+            "wind_class": "<3级",
+            "wind_dir": "东风",
+            "rh": 50,
+            "prec_1h": 0.0,
+            "clouds": 3,
+            "wind_angle": 87,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 1005,
+            "slp": 1012,
+            "dpt": 16,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
@@ -1740,28 +1740,28 @@
           "id": "510117"
         },
         "now": {
-          "text": "轻雾",
+          "text": "小雨",
           "temp": 20,
-          "feels_like": 21,
+          "feels_like": 20,
           "rh": 87,
           "wind_class": "1级",
           "wind_dir": "南风",
           "prec_1h": 0.0,
-          "clouds": 81,
+          "clouds": 85,
           "vis": 4600,
-          "aqi": 68,
-          "pm25": 44,
-          "pm10": 66,
-          "no2": 20,
+          "aqi": 101,
+          "pm25": 61,
+          "pm10": 84,
+          "no2": 22,
           "so2": 2,
-          "o3": 46,
-          "co": 0.5,
-          "wind_angle": 200,
+          "o3": 28,
+          "co": 0.6,
+          "wind_angle": 176,
           "uvi": 0,
-          "pressure": 954,
-          "slp": 1019,
+          "pressure": 956,
+          "slp": 1020,
           "dpt": 18,
-          "uptime": "20261009201000"
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -1912,22 +1912,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "多云",
-            "temp_fc": 20,
-            "wind_class": "<3级",
-            "wind_dir": "东北风",
-            "rh": 86,
-            "prec_1h": 0.0,
-            "clouds": 65,
-            "wind_angle": 27,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 956,
-            "slp": 1020,
-            "dpt": 18,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "多云",
             "temp_fc": 19,
@@ -2295,6 +2279,22 @@
             "slp": 1018,
             "dpt": 14,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "多云",
+            "temp_fc": 20,
+            "wind_class": "<3级",
+            "wind_dir": "北风",
+            "rh": 62,
+            "prec_1h": 0.0,
+            "clouds": 40,
+            "wind_angle": 20,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 955,
+            "slp": 1019,
+            "dpt": 12,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
@@ -2311,28 +2311,28 @@
           "id": "610113"
         },
         "now": {
-          "text": "晴",
-          "temp": 23,
-          "feels_like": 23,
-          "rh": 56,
+          "text": "多云",
+          "temp": 22,
+          "feels_like": 22,
+          "rh": 59,
           "wind_class": "1级",
           "wind_dir": "西南风",
           "prec_1h": 0.0,
-          "clouds": 18,
-          "vis": 14100,
-          "aqi": 64,
-          "pm25": 33,
-          "pm10": 69,
-          "no2": 23,
-          "so2": 4,
-          "o3": 142,
-          "co": 0.6,
-          "wind_angle": 235,
+          "clouds": 38,
+          "vis": 10200,
+          "aqi": 65,
+          "pm25": 41,
+          "pm10": 70,
+          "no2": 36,
+          "so2": 3,
+          "o3": 93,
+          "co": 0.8,
+          "wind_angle": 213,
           "uvi": 0,
-          "pressure": 972,
-          "slp": 1019,
+          "pressure": 973,
+          "slp": 1020,
           "dpt": 14,
-          "uptime": "20261009201000"
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -2483,22 +2483,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "晴",
-            "temp_fc": 20,
-            "wind_class": "<3级",
-            "wind_dir": "南风",
-            "rh": 77,
-            "prec_1h": 0.0,
-            "clouds": 8,
-            "wind_angle": 165,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 969,
-            "slp": 1015,
-            "dpt": 16,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "晴",
             "temp_fc": 19,
@@ -2866,6 +2850,22 @@
             "slp": 1014,
             "dpt": 13,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "多云",
+            "temp_fc": 20,
+            "wind_class": "<3级",
+            "wind_dir": "西风",
+            "rh": 57,
+            "prec_1h": 0.0,
+            "clouds": 55,
+            "wind_angle": 252,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 968,
+            "slp": 1014,
+            "dpt": 11,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
@@ -2883,27 +2883,27 @@
         },
         "now": {
           "text": "晴",
-          "temp": 22,
-          "feels_like": 22,
-          "rh": 63,
+          "temp": 20,
+          "feels_like": 20,
+          "rh": 71,
           "wind_class": "1级",
           "wind_dir": "东风",
           "prec_1h": 0.0,
           "clouds": 0,
-          "vis": 17100,
-          "aqi": 65,
+          "vis": 17400,
+          "aqi": 35,
           "pm25": 11,
-          "pm10": 36,
-          "no2": 8,
+          "pm10": 29,
+          "no2": 15,
           "so2": 6,
-          "o3": 172,
+          "o3": 112,
           "co": 0.8,
-          "wind_angle": 105,
+          "wind_angle": 95,
           "uvi": 0,
-          "pressure": 1015,
-          "slp": 1019,
+          "pressure": 1016,
+          "slp": 1020,
           "dpt": 14,
-          "uptime": "20261009201000"
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -3067,22 +3067,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "晴",
-            "temp_fc": 19,
-            "wind_class": "<3级",
-            "wind_dir": "东风",
-            "rh": 88,
-            "prec_1h": 0.0,
-            "clouds": 0,
-            "wind_angle": 94,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 1015,
-            "slp": 1018,
-            "dpt": 17,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "晴",
             "temp_fc": 18,
@@ -3450,6 +3434,22 @@
             "slp": 1017,
             "dpt": 14,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "多云",
+            "temp_fc": 21,
+            "wind_class": "<3级",
+            "wind_dir": "东风",
+            "rh": 56,
+            "prec_1h": 0.0,
+            "clouds": 10,
+            "wind_angle": 69,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 1015,
+            "slp": 1018,
+            "dpt": 12,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
@@ -3467,27 +3467,27 @@
         },
         "now": {
           "text": "晴",
-          "temp": 23,
-          "feels_like": 23,
-          "rh": 60,
-          "wind_class": "2级",
-          "wind_dir": "东风",
+          "temp": 21,
+          "feels_like": 21,
+          "rh": 69,
+          "wind_class": "1级",
+          "wind_dir": "东南风",
           "prec_1h": 0.0,
           "clouds": 0,
-          "vis": 21800,
-          "aqi": 40,
-          "pm25": 23,
-          "pm10": 39,
-          "no2": 27,
-          "so2": 9,
-          "o3": 125,
-          "co": 0.5,
-          "wind_angle": 104,
+          "vis": 20700,
+          "aqi": 50,
+          "pm25": 31,
+          "pm10": 50,
+          "no2": 42,
+          "so2": 8,
+          "o3": 77,
+          "co": 0.6,
+          "wind_angle": 130,
           "uvi": 0,
           "pressure": 1014,
-          "slp": 1019,
+          "slp": 1020,
           "dpt": 15,
-          "uptime": "20261009201000"
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -3651,22 +3651,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "晴",
-            "temp_fc": 23,
-            "wind_class": "<3级",
-            "wind_dir": "东风",
-            "rh": 68,
-            "prec_1h": 0.0,
-            "clouds": 0,
-            "wind_angle": 70,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 1016,
-            "slp": 1021,
-            "dpt": 17,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "晴",
             "temp_fc": 22,
@@ -4034,6 +4018,22 @@
             "slp": 1019,
             "dpt": 14,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "晴",
+            "temp_fc": 22,
+            "wind_class": "<3级",
+            "wind_dir": "北风",
+            "rh": 55,
+            "prec_1h": 0.0,
+            "clouds": 1,
+            "wind_angle": 345,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 1015,
+            "slp": 1020,
+            "dpt": 13,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
@@ -4051,27 +4051,27 @@
         },
         "now": {
           "text": "多云",
-          "temp": 18,
-          "feels_like": 18,
-          "rh": 66,
+          "temp": 15,
+          "feels_like": 16,
+          "rh": 81,
           "wind_class": "0级",
           "wind_dir": "南风",
           "prec_1h": 0.0,
-          "clouds": 38,
-          "vis": 13900,
-          "aqi": 68,
+          "clouds": 36,
+          "vis": 10400,
+          "aqi": 74,
           "pm25": 32,
-          "pm10": 74,
-          "no2": 38,
+          "pm10": 83,
+          "no2": 52,
           "so2": 3,
-          "o3": 142,
-          "co": 0.6,
-          "wind_angle": 183,
+          "o3": 96,
+          "co": 0.8,
+          "wind_angle": 193,
           "uvi": 0,
-          "pressure": 1012,
+          "pressure": 1013,
           "slp": 1018,
           "dpt": 12,
-          "uptime": "20261009201000"
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -4235,22 +4235,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "多云",
-            "temp_fc": 19,
-            "wind_class": "<3级",
-            "wind_dir": "南风",
-            "rh": 69,
-            "prec_1h": 0.0,
-            "clouds": 71,
-            "wind_angle": 174,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 1006,
-            "slp": 1011,
-            "dpt": 13,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "多云",
             "temp_fc": 18,
@@ -4618,6 +4602,22 @@
             "slp": 1011,
             "dpt": 9,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "多云",
+            "temp_fc": 17,
+            "wind_class": "<3级",
+            "wind_dir": "南风",
+            "rh": 47,
+            "prec_1h": 0.0,
+            "clouds": 10,
+            "wind_angle": 158,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 1007,
+            "slp": 1012,
+            "dpt": 6,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
@@ -4639,23 +4639,23 @@
           "feels_like": 23,
           "rh": 51,
           "wind_class": "1级",
-          "wind_dir": "北风",
+          "wind_dir": "西北风",
           "prec_1h": 0.0,
-          "clouds": 0,
+          "clouds": 10,
           "vis": 15400,
-          "aqi": 50,
-          "pm25": 30,
-          "pm10": 38,
-          "no2": 25,
+          "aqi": 48,
+          "pm25": 28,
+          "pm10": 48,
+          "no2": 28,
           "so2": 9,
-          "o3": 159,
-          "co": 0.6,
-          "wind_angle": 19,
+          "o3": 126,
+          "co": 0.7,
+          "wind_angle": 303,
           "uvi": 0,
-          "pressure": 1009,
-          "slp": 1018,
+          "pressure": 1010,
+          "slp": 1019,
           "dpt": 12,
-          "uptime": "20261009201000"
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -4818,22 +4818,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "晴",
-            "temp_fc": 23,
-            "wind_class": "<3级",
-            "wind_dir": "北风",
-            "rh": 61,
-            "prec_1h": 0.0,
-            "clouds": 1,
-            "wind_angle": 341,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 1014,
-            "slp": 1023,
-            "dpt": 15,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "晴",
             "temp_fc": 22,
@@ -5201,6 +5185,22 @@
             "slp": 1022,
             "dpt": 15,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "晴",
+            "temp_fc": 25,
+            "wind_class": "<3级",
+            "wind_dir": "西风",
+            "rh": 48,
+            "prec_1h": 0.0,
+            "clouds": 3,
+            "wind_angle": 269,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 1013,
+            "slp": 1022,
+            "dpt": 13,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
@@ -5218,27 +5218,27 @@
         },
         "now": {
           "text": "晴",
-          "temp": 23,
-          "feels_like": 23,
-          "rh": 67,
+          "temp": 22,
+          "feels_like": 21,
+          "rh": 86,
           "wind_class": "2级",
           "wind_dir": "东风",
           "prec_1h": 0.0,
           "clouds": 0,
-          "vis": 30000,
-          "aqi": 27,
-          "pm25": 9,
-          "pm10": 15,
-          "no2": 31,
+          "vis": 24800,
+          "aqi": 23,
+          "pm25": 12,
+          "pm10": 23,
+          "no2": 30,
           "so2": 10,
-          "o3": 84,
+          "o3": 67,
           "co": 0.6,
-          "wind_angle": 82,
+          "wind_angle": 76,
           "uvi": 0,
-          "pressure": 1018,
-          "slp": 1019,
-          "dpt": 17,
-          "uptime": "20261009201500"
+          "pressure": 1019,
+          "slp": 1020,
+          "dpt": 19,
+          "uptime": "20261009214500"
         },
         "indexes": [
           {
@@ -5402,22 +5402,6 @@
           }
         ],
         "forecast_hours": [
-          {
-            "text": "多云",
-            "temp_fc": 19,
-            "wind_class": "<3级",
-            "wind_dir": "东风",
-            "rh": 70,
-            "prec_1h": 0.0,
-            "clouds": 26,
-            "wind_angle": 68,
-            "pop": 0,
-            "uvi": 0,
-            "pressure": 1019,
-            "slp": 1020,
-            "dpt": 13,
-            "data_time": "2026-10-09 20:00:00"
-          },
           {
             "text": "多云",
             "temp_fc": 19,
@@ -5785,6 +5769,22 @@
             "slp": 1018,
             "dpt": 17,
             "data_time": "2026-10-10 19:00:00"
+          },
+          {
+            "text": "多云",
+            "temp_fc": 21,
+            "wind_class": "<3级",
+            "wind_dir": "东风",
+            "rh": 65,
+            "prec_1h": 0.0,
+            "clouds": 10,
+            "wind_angle": 85,
+            "pop": 0,
+            "uvi": 0,
+            "pressure": 1018,
+            "slp": 1019,
+            "dpt": 14,
+            "data_time": "2026-10-10 20:00:00"
           }
         ]
       }
