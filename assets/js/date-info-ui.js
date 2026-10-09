@@ -468,6 +468,33 @@
     panel.classList.toggle("almanac-panel", active === "almanac");
     panel.classList.toggle("festivals-panel", active === "festivals");
     panel.classList.toggle("weather-panel", active === "weather");
+    if (
+      active === "history" &&
+      !WorkTimeApp.data.dateInfo.history[date.slice(5)]
+    ) {
+      const requestedDate = date;
+      panel.replaceChildren(
+        node("p", "正在加载本月历史资料…", "date-info-empty"),
+      );
+      WorkTimeApp.services.dateInfo.loadHistory(date).then(
+        () => {
+          if (!disposed && active === "history" && date === requestedDate)
+            render();
+        },
+        (error) => {
+          if (disposed || active !== "history" || date !== requestedDate)
+            return;
+          const retry = node("button", "重试", "ui-button");
+          retry.type = "button";
+          retry.addEventListener("click", render, { once: true });
+          panel.replaceChildren(
+            node("p", error.message, "date-info-empty"),
+            retry,
+          );
+        },
+      );
+      return;
+    }
     const c = WorkTimeApp.services.dateInfo.getContent(active, date) || {
       ok: false,
       title: "日期资讯",

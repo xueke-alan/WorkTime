@@ -1,6 +1,37 @@
 (function (g) {
   "use strict";
   const providers = new Map();
+  const historyLoads = new Map();
+  function loadHistory(date) {
+    validDate(date);
+    const month = date.slice(5, 7);
+    if (WorkTimeApp.data.dateInfo.history[date.slice(5)])
+      return Promise.resolve();
+    if (historyLoads.has(month)) return historyLoads.get(month);
+    const pending = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      const version = WorkTimeApp.data.historyVersions?.[month];
+      script.src = new URL(
+        "assets/data/history/" +
+          month +
+          ".js" +
+          (version ? "?v=" + version : ""),
+        document.baseURI,
+      ).href;
+      script.onload = () => {
+        script.remove();
+        resolve();
+      };
+      script.onerror = () => {
+        script.remove();
+        historyLoads.delete(month);
+        reject(Error("历史资料加载失败，请重试"));
+      };
+      document.head.append(script);
+    });
+    historyLoads.set(month, pending);
+    return pending;
+  }
   function register(p) {
     if (!p || !p.id || !p.label || typeof p.getContent !== "function")
       throw Error("Invalid date info provider");
@@ -199,6 +230,7 @@
   });
   WorkTimeApp.services.dateInfo = {
     register,
+    loadHistory,
     getContent,
     list: () => [...providers.values()],
     lunar,

@@ -49,8 +49,13 @@ jobs:
           cp -R assets licenses _site/
           cp -R tools _site/
           if [ -d data ]; then cp -R data _site/; fi
+          node scripts/bundle-site.cjs _site
           node scripts/version-site.cjs _site
           touch _site/.nojekyll
+      - name: Verify published startup
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-startup.cjs _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

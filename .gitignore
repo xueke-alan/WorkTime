@@ -14,6 +14,7 @@
 !/package.json
 !/package-lock.json
 !/README.md
+!/AGENTS.md
 
 # Dependencies and generated site
 /node_modules/
@@ -40,6 +41,7 @@ __pycache__/
 /scripts/*
 !/scripts/check-site.cjs
 !/scripts/verify-offline.cjs
+!/scripts/verify-startup.cjs
 !/scripts/clean-css.cjs
 !/scripts/data-update.cjs
 !/scripts/fetch_weather.py
@@ -49,6 +51,7 @@ __pycache__/
 !/scripts/update-history.cjs
 !/scripts/update-international-festivals.cjs
 !/scripts/version-site.cjs
+!/scripts/bundle-site.cjs
 !/scripts/lib/
 !/scripts/vendor/
 /scripts/lib/*

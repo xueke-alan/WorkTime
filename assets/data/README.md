@@ -1,6 +1,6 @@
 # 日期资讯资料维护
 
-右栏底部的通知、历史、节气节日、农历黄历与选中日期联动。首次打开通知，之后恢复上次所选页签；资料随项目分发，运行时不联网。日期转换使用中国标准时间对应的公历日期，黄历按当日计算，不提供时辰黄历。
+右栏底部的通知、历史、节气节日、农历黄历与选中日期联动。首次打开通知，之后恢复上次所选页签；资料随项目分发，不请求第三方资料接口。历史事件在打开历史页签时按选中月份加载，网站模式请求本站文件，双击模式读取本地文件；加载期间显示提示，失败可重试，不阻塞工时界面启动。日期转换使用中国标准时间对应的公历日期，黄历按当日计算，不提供时辰黄历。
 
 ## 文件与资料来源
 
@@ -13,7 +13,7 @@
 
 ## 新增和更新数据
 
-历史月份数据以 `MM-DD` 为键，每条格式为 `{id,year,text,sourceUrl,sourceName,sourceDateUrl}`。年份为整数，公元前为负数。使用稳定 ID；同一 ID 后加载的记录覆盖前记录。新增补充包应放在 `assets/data/` 并在 `index.html` 中以普通 defer 脚本加载，顺序在namespace.js和基础资料之后、资讯模块之前；通过 `WorkTimeApp.data.dateInfo.history[key].push(...)` 增补或覆盖。旧DateInfoData全局名不再存在。
+历史月份数据以 `MM-DD` 为键，每条格式为 `{id,year,text,sourceUrl,sourceName,sourceDateUrl}`。年份为整数，公元前为负数。使用稳定 ID；同一 ID 后加载的记录覆盖前记录。历史月份包由 `WorkTimeApp.services.dateInfo.loadHistory(date)` 按需加载，不放回 `index.html` 的首屏脚本列表。新增历史条目应更新相应月份包，发布流程会重新计算月份包内容哈希；其他补充包可在 namespace.js 和基础资料之后、资讯模块之前以普通 defer 脚本加载。旧 DateInfoData 全局名不再存在。
 
 节日规则格式为 `{id,name,kind,month,...}`，kind 为 solar（公历，含 day）、lunar（农历，含 day）或 weekday（含 week、weekday，星期日为 0）。相同 ID 后加入的规则覆盖前规则。官方工作日与调休仍由工时核心管理，不通过资讯节日改变。
 

@@ -42,6 +42,10 @@ IndexedDB 不可用时显示临时模式，修改可导出，不能保存。损�
 
 维护：使用 Node.js 22.13+，运行 `npm ci`，通过 `npm run check`、`npm run lint` 和 `npm run check:format` 检查代码。GitHub Pages 自动发布，天气由 GitHub Actions 定时更新。测试、截图及历史审计资料仅在本地保留。
 
+每次推送代码前更新应用版本号，默认递增补丁版本，并同步 `package.json`、`package-lock.json` 和 `index.html` 中的显示版本；自动天气快照更新不属于代码发布。
+
+网站发布时，`scripts/bundle-site.cjs` 将发布副本的样式、主题启动脚本和应用脚本合并为 3 个资源，再由 `scripts/version-site.cjs` 添加内容哈希；源码入口继续支持双击使用。历史事件不参与首屏加载，打开历史页签后仅加载选中月份，失败可重试。月份包在发布时同样生成内容哈希，资料更新后不会沿用旧缓存。发布流程通过 `scripts/verify-startup.cjs` 检查 HTTP 和双击模式、月份加载、重试、快速切换日期及全年 366 天资料。
+
 本次本地回归已覆盖 Edge、Chrome 的双击 HTML 与网站模式，以及 Firefox 网站模式；包含旧版本迁移、事务回滚、冲突保护、备份往返和 1/10/30 年样本。Windows Playwright WebKit 的网站功能回归通过，但带复合索引的大批量 IndexedDB 写入在独立原生示例中也出现停顿，压力测试未通过；尚未验证 macOS Safari，不承诺其双击文件兼容。性能结果依赖浏览器、设备和数据规模，不作为所有环境的固定时限保证。
 
 本地迁移和浏览器回归保留在 `tests/archive-upgrade.cjs`，结果在 `test-results/archive-upgrade-*.json`。例如运行 `node tests/archive-upgrade.cjs edge` 验证双击模式，添加 `--http` 验证网站模式；WebKit 使用 `--http --functional-only` 运行功能回归。样本覆盖已有数据契约及边界情况；首次迁移前仍建议导出现有真实存档，以便独立核对。
