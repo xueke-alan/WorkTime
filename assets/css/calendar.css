@@ -207,7 +207,7 @@
   background: #19876b;
 }
 .dot.estimate {
-  background: #d8a346;
+  background: #d06b20;
 }
 .weekdays {
   color: var(--theme-text-muted, #87968c);
@@ -273,7 +273,7 @@
   vertical-align: -0.08em;
 }
 .record-source-dot.manual {
-  background: #d8a346;
+  background: #d06b20;
 }
 .record-source-dot.oa {
   background: #19876b;
