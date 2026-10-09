@@ -14,7 +14,9 @@
 !/package.json
 !/package-lock.json
 !/README.md
-!/AGENTS.md
+
+# Local Codex collaboration instructions
+/AGENTS.md
 
 # Dependencies and generated site
 /node_modules/
