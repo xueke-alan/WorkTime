@@ -3,9 +3,9 @@ body .sidebar-actions > #importOpen {
   position: relative;
 }
 body #importOpen .import-main {
-  /* Keep a full-width layout and move its centered contents into the first slot.
+  /* Keep a full-width layout and center its contents beside the square actions.
      Animating a margin resized the label every frame and retriggered alignment. */
-  transform: translateX(calc(-100% / 3));
+  transform: translateX(calc(-1 * var(--oa-action-size)));
   transition: transform 280ms var(--motion-ease), background 160ms ease;
 }
 body .sidebar-actions .import-secondary-actions {
