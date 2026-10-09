@@ -75,7 +75,12 @@ WorkTimeApp.ui.createHoldAction = function ({
     end();
   }
   function cancel() {
-    held = holding || held;
+    held = holding || completing || held;
+    if (completing) {
+      clearTimeout(finishTimer);
+      completing = false;
+      button.classList.remove("is-holding", "is-completing");
+    }
     end();
   }
   const unlisten = compat.listen(reduced, () => {
@@ -100,7 +105,11 @@ WorkTimeApp.ui.createHoldAction = function ({
   events.listen(button, "pointerup", release);
   events.listen(button, "pointercancel", cancel);
   events.listen(button, "lostpointercapture", end);
-  events.listen(button, "blur", end);
+  events.listen(button, "blur", cancel);
+  events.listen(window, "blur", cancel);
+  events.listen(document, "visibilitychange", () => {
+    if (document.hidden) cancel();
+  });
   events.listen(button, "contextmenu", (event) => event.preventDefault());
   events.listen(button, "keydown", (event) => {
     if (keys.includes(event.code)) {

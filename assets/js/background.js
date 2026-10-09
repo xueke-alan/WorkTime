@@ -1,13 +1,17 @@
 (() => {
   "use strict";
   const canvas = document.getElementById("particleBg"),
-    ctx = canvas.getContext("2d"),
+    ctx = canvas?.getContext("2d"),
     reduced = WorkTimeApp.ui.animationCompat.preference();
+  if (!ctx) return;
+  const interval = 1000 / 30;
   let unlisten;
   let w,
     h,
     points = [],
     frame = null,
+    lastDraw = null,
+    lastTick = null,
     disposed = true;
   function resize() {
     w = innerWidth;
@@ -36,16 +40,28 @@
         .trim() || "21,126,104";
     synchronize();
   }
-  function draw() {
+  function draw(timestamp = performance.now()) {
     frame = null;
     if (disposed || document.hidden) return;
+    if (!reduced.matches) frame = requestAnimationFrame(draw);
+    // Display refresh rates must not dictate decorative work or particle speed.
+    if (lastTick !== null && timestamp - lastTick < interval) return;
+    const elapsed =
+      lastDraw === null ? 1 : Math.min(100, timestamp - lastDraw) / (1000 / 60);
+    lastTick =
+      lastTick === null
+        ? timestamp
+        : timestamp - ((timestamp - lastTick) % interval);
+    lastDraw = timestamp;
     ctx.clearRect(0, 0, w, h);
+    if (!reduced.matches)
+      for (const p of points) {
+        p.x = (p.x + p.vx * elapsed + w) % w;
+        p.y = (p.y + p.vy * elapsed + h) % h;
+      }
+    ctx.fillStyle = `rgba(${themeRGB},.24)`;
     for (let i = 0; i < points.length; i++) {
       const p = points[i];
-      if (!reduced.matches) {
-        p.x = (p.x + p.vx + w) % w;
-        p.y = (p.y + p.vy + h) % h;
-      }
       for (let j = i + 1; j < points.length; j++) {
         const q = points[j],
           dx = p.x - q.x,
@@ -59,16 +75,15 @@
           ctx.stroke();
         }
       }
-      ctx.fillStyle = `rgba(${themeRGB},.24)`;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, 7);
       ctx.fill();
     }
-    if (!reduced.matches) frame = requestAnimationFrame(draw);
   }
   function synchronize() {
     if (frame !== null) cancelAnimationFrame(frame);
     frame = null;
+    lastDraw = lastTick = null;
     if (!disposed && !document.hidden) draw();
   }
   function dispose() {

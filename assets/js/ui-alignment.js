@@ -331,6 +331,13 @@
   // Surface motion does not change font or line boxes. Ignore its bookkeeping,
   // including cleanup, while still observing mixed motion/layout class changes.
   const motionClasses = new Set([
+    "motion-enter",
+    "motion-content",
+    "motion-day",
+    "motion-selection",
+    "motion-calendar-view",
+    "motion-calendar-year",
+    "motion-year-month",
     "motion-startup",
     "motion-sidebar-forward",
     "motion-sidebar-back",
@@ -354,15 +361,12 @@
     if (record.attributeName !== "style") return false;
     const before = document.createElement("i").style;
     before.cssText = record.oldValue || "";
-    if (
-      before.getPropertyValue("--motion-delay") ===
-      element.style.getPropertyValue("--motion-delay")
-    )
-      return false;
     const after = document.createElement("i").style;
     after.cssText = element.getAttribute("style") || "";
-    before.removeProperty("--motion-delay");
-    after.removeProperty("--motion-delay");
+    for (const property of ["--motion-delay", "--motion-direction"]) {
+      before.removeProperty(property);
+      after.removeProperty(property);
+    }
     return before.cssText === after.cssText;
   }
   function mutationsChanged(records) {

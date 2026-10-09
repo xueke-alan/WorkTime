@@ -35,6 +35,8 @@ WorkTimeApp.services.clock = (() => {
       function arm() {
         if (stopped) return;
         cancel(timer);
+        timer = null;
+        if (document.visibilityState === "hidden") return;
         const nextMidnight = Date.parse(today() + "T00:00:00+08:00") + 86400000;
         timer = schedule(
           () => {
@@ -48,8 +50,7 @@ WorkTimeApp.services.clock = (() => {
         );
       }
       function resume() {
-        if (document.visibilityState === "hidden") return;
-        refresh();
+        if (document.visibilityState !== "hidden") refresh();
         arm();
       }
       document.addEventListener("visibilitychange", resume);

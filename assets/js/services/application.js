@@ -38,13 +38,14 @@ WorkTimeApp.services.application = (() => {
     }
     const compactInitial = C.compactOAState(clone(initial));
     let state = freeze(compactInitial),
+      stateText = JSON.stringify(state),
       revision = 0,
-      dirty =
-        unsaved || JSON.stringify(initial) !== JSON.stringify(compactInitial),
+      dirty = unsaved || JSON.stringify(initial) !== stateText,
       saveFailed = failed,
       loadCorrupt = corrupt;
     function commit(candidate, { atomic = false, restore = false } = {}) {
-      const changed = JSON.stringify(candidate) !== JSON.stringify(state);
+      const candidateText = JSON.stringify(candidate),
+        changed = candidateText !== stateText;
       if (!changed && !dirty && !saveFailed && !restore)
         return {
           changed: false,
@@ -57,6 +58,7 @@ WorkTimeApp.services.application = (() => {
         };
       if (changed && !atomic) {
         state = freeze(candidate);
+        stateText = candidateText;
         revision++;
       }
       const saved = restore
@@ -65,6 +67,7 @@ WorkTimeApp.services.application = (() => {
       if (restore && saved.persisted) loadCorrupt = false;
       if (saved.persisted && changed && atomic) {
         state = freeze(candidate);
+        stateText = candidateText;
         revision++;
       }
       saveFailed = !saved.persisted;
@@ -202,12 +205,14 @@ WorkTimeApp.services.application = (() => {
       },
       reload(candidate) {
         const compact = C.compactOAState(clone(candidate));
-        const changed = JSON.stringify(compact) !== JSON.stringify(state);
+        const compactText = JSON.stringify(compact),
+          changed = compactText !== stateText;
         if (changed) {
           state = freeze(compact);
+          stateText = compactText;
           revision++;
         }
-        dirty = JSON.stringify(candidate) !== JSON.stringify(compact);
+        dirty = JSON.stringify(candidate) !== compactText;
         saveFailed = false;
         loadCorrupt = false;
       },
