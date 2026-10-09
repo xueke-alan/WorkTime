@@ -74,7 +74,9 @@
     const unsubscribe = preferences.subscribe((state, result) => {
       notice.textContent = result.persisted
         ? ""
-        : "主题已应用，但未能保存，刷新后可能恢复默认";
+        : result.pending
+          ? "正在保存主题…"
+          : "主题已应用，但未能保存，刷新后可能恢复默认";
     });
     grid.addEventListener("change", change);
     document.addEventListener("worktime:themechange", synchronize);

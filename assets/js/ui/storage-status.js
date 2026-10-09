@@ -8,6 +8,7 @@ WorkTimeApp.ui.createStorageStatus = function ({
 }) {
   let mounted = false,
     generation = 0,
+    usageGeneration = 0,
     retryButton = null,
     recoveryOptions = null;
   function updateRecovery() {
@@ -20,19 +21,27 @@ WorkTimeApp.ui.createStorageStatus = function ({
         : recoveryOptions.corrupt);
   }
   function updateUsage() {
-    try {
-      const text = getStorage().getItem(key),
-        bytes = text === null ? 0 : (key.length + text.length) * 2;
-      const size =
-        bytes < 1024
-          ? bytes + " B"
-          : bytes < 1024 * 1024
-            ? (bytes / 1024).toFixed(2) + " KB"
-            : (bytes / (1024 * 1024)).toFixed(2) + " MB";
-      $("storageUsage").textContent = "当前占用：" + size;
-    } catch {
-      $("storageUsage").textContent = "当前占用：无法读取";
+    const requestVersion = ++usageGeneration;
+    if (typeof window.navigator.storage?.estimate !== "function") {
+      $("storageUsage").textContent = "当前占用：浏览器不提供估算";
+      return;
     }
+    void window.navigator.storage
+      .estimate()
+      .then(({ usage: bytes }) => {
+        if (requestVersion !== usageGeneration) return;
+        const size =
+          bytes < 1024
+            ? bytes + " B"
+            : bytes < 1024 * 1024
+              ? (bytes / 1024).toFixed(2) + " KB"
+              : (bytes / (1024 * 1024)).toFixed(2) + " MB";
+        $("storageUsage").textContent = "浏览器存储估算：" + size;
+      })
+      .catch(() => {
+        if (requestVersion !== usageGeneration) return;
+        $("storageUsage").textContent = "当前占用：无法读取";
+      });
   }
   function storageChanged(event) {
     if (event.key === key || event.key === null) updateUsage();
@@ -50,16 +59,27 @@ WorkTimeApp.ui.createStorageStatus = function ({
         "浏览器数据无法读取：" +
         readError.message +
         (loadIssue === "unavailable"
-          ? "。请允许浏览器存储访问后重新检查；当前页面显示临时默认数据。"
+          ? "。请允许浏览器存储访问后重新检查；当前页面显示临时数据。"
           : loadIssue === "unsupported"
-            ? "。请使用 tools/convert-backup.html 转换原始备份后恢复。"
-            : "。当前页面显示临时默认数据；可导出原始数据、恢复有效备份或初始化存档。");
+            ? "。请使用支持此存档版本的新版本应用；可先导出原始数据。"
+            : loadIssue === null
+              ? "。已保留当前存档，可导出恢复资料并选择恢复。"
+              : "。当前页面显示临时默认数据；可导出原始数据、恢复有效备份或初始化存档。");
     else if (accessError)
       $("storageNoticeText").textContent =
         "当前页面无法保存：" + accessError.message + "。";
     window.addEventListener("storage", storageChanged);
   }
   return {
+    saving() {
+      usageGeneration++;
+      $("storageUsage").textContent = "正在保存…";
+    },
+    externalUpdate() {
+      $("storageNotice").classList.remove("hidden");
+      $("storageNoticeText").textContent =
+        "其他页面已更新存档，请保留本页草稿并重新检查。";
+    },
     mount,
     updateRecovery,
     bindRetry(options) {

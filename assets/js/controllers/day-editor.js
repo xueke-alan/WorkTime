@@ -3,21 +3,25 @@
 WorkTimeApp.ui.createDayController = function (options) {
   const events = WorkTimeApp.ui.createEventScope();
   const { core: C, element: $, model, actions, application } = options;
+  let saveGeneration = 0;
 
-  function saveDayEdit() {
+  async function saveDayEdit() {
+    const date = model.selected,
+      generation = ++saveGeneration;
     actions.previewDay();
     try {
       const day = actions.formDay();
       const changed =
-        JSON.stringify(day) !==
-        JSON.stringify(model.state.days[model.selected] || {});
+        JSON.stringify(day) !== JSON.stringify(model.state.days[date] || {});
       let saved = true;
       // A failed write must remain retryable even when the fields are unchanged.
       if (changed || model.storageFailed) {
-        saved = application.saveDay(model.selected, day).persisted;
+        saved = (await application.saveDay(date, day)).persisted;
         actions.renderStats();
         actions.renderCalendar(true);
       }
+      if (date !== model.selected || generation !== saveGeneration)
+        return saved;
       actions.updateResetDayButton(day);
       const error = saved
         ? null
@@ -26,6 +30,8 @@ WorkTimeApp.ui.createDayController = function (options) {
       WorkTimeApp.ui.fieldErrors.show($("dayLeaveError"), error);
       return saved;
     } catch (err) {
+      if (date !== model.selected || generation !== saveGeneration)
+        return false;
       const error = { code: "VALIDATION", message: err.message };
       WorkTimeApp.ui.fieldErrors.show($("dayError"), error);
       WorkTimeApp.ui.fieldErrors.show($("dayLeaveError"), error);
@@ -44,16 +50,16 @@ WorkTimeApp.ui.createDayController = function (options) {
   function bind() {
     if (bound) return;
     bound = true;
-    events.handler($("plannedOvertimeToggle"), "onclick", () => {
+    events.handler($("plannedOvertimeToggle"), "onclick", async () => {
       const day = model.state.days[model.selected] || {};
       if (C.calendarInfo(model.selected, day).work) return;
-      const saved = application.togglePlanned(model.selected).persisted;
+      const saved = (await application.togglePlanned(model.selected)).persisted;
       actions.render();
       if (!saved) actions.toast("计划标记未能保存，请查看提醒", "error");
     });
-    events.handler($("dayForm"), "onsubmit", (e) => {
+    events.handler($("dayForm"), "onsubmit", async (e) => {
       e.preventDefault();
-      saveDayEdit();
+      await saveDayEdit();
     });
     events.handler($("dayLeaveToggle"), "onclick", () => {
       if ($("dayLeaveToggle").getAttribute("aria-expanded") === "true") {
@@ -83,12 +89,12 @@ WorkTimeApp.ui.createDayController = function (options) {
         $("dayLeaveDone").click();
       }
     });
-    events.handler($("dayLeaveFull"), "onclick", () => {
+    events.handler($("dayLeaveFull"), "onclick", async () => {
       $("dayLeave").value = C.hours(
         C.scheduleForDate(model.state, model.selected).standardMinutes,
       );
       WorkTimeApp.ui.fieldErrors.clear($("dayLeaveError"));
-      if (saveDayEdit()) {
+      if (await saveDayEdit()) {
         actions.closeLeavePanel(true);
         actions.toast(
           model.storageFailed
@@ -97,8 +103,8 @@ WorkTimeApp.ui.createDayController = function (options) {
         );
       }
     });
-    events.handler($("dayLeaveDone"), "onclick", () => {
-      if (saveDayEdit()) actions.closeLeavePanel(true);
+    events.handler($("dayLeaveDone"), "onclick", async () => {
+      if (await saveDayEdit()) actions.closeLeavePanel(true);
       else $("dayLeave").focus();
     });
     events.listen(document, "click", (e) => {
@@ -194,21 +200,83 @@ WorkTimeApp.ui.createDayController = function (options) {
     });
     for (const id of ["dayStart", "dayEnd"]) {
       const input = $(id);
-      events.listen(input, "input", () => {
-        const time = normalizeClock(input.value);
-        if (time !== null) input.value = time;
-        if (!input.value || time !== null) saveDayEdit();
+      function selectSegment(segment) {
+        const colon = input.value.indexOf(":"),
+          start = segment === 1 && colon >= 0 ? colon + 1 : 0,
+          end = segment === 0 && colon >= 0 ? colon : input.value.length;
+        input.setSelectionRange(start, end);
+      }
+      events.listen(input, "click", () => {
+        if (input.selectionStart !== input.selectionEnd || !input.value) return;
+        const colon = input.value.indexOf(":");
+        selectSegment(colon >= 0 && input.selectionStart > colon ? 1 : 0);
       });
-      events.listen(input, "blur", () => {
-        if (input.value && normalizeClock(input.value) === null) {
+      events.listen(input, "input", async (event) => {
+        // A single hour digit may be the first half of an in-place edit.
+        // Padding it now rewrites the value and moves the caret to the end.
+        const typedDigit =
+          event.inputType === "insertText" &&
+          !event.isComposing &&
+          /^\d$/.test(event.data || "");
+        if (
+          typedDigit &&
+          /^([01]\d|2[0-3])$/.test(input.value) &&
+          input.selectionStart === 2
+        ) {
+          input.value += ":";
+          selectSegment(1);
+          return;
+        }
+        const time = /^\d{2}(?::|\d)/.test(input.value)
+          ? normalizeClock(input.value)
+          : null;
+        const hourCompleted =
+          typedDigit &&
+          input.selectionStart === 2 &&
+          input.selectionEnd === 2 &&
+          /^([01]\d|2[0-3]):[0-5]\d$/.test(input.value);
+        if (time !== null && input.value !== time) input.value = time;
+        if (hourCompleted) input.setSelectionRange(3, 5);
+        if (!input.value || time !== null) await saveDayEdit();
+      });
+      events.listen(input, "blur", async () => {
+        const parts = /^(\d{1,2}):(\d{1,2})$/.exec(input.value);
+        if (parts && Number(parts[1]) < 24 && Number(parts[2]) < 60)
+          input.value = C.pad(Number(parts[1])) + ":" + C.pad(Number(parts[2]));
+        const time = normalizeClock(input.value);
+        if (time !== null) {
+          if (input.value !== time) input.value = time;
+        } else if (input.value) {
           const day = model.state.days[model.selected] || {},
             record = C.effectiveRecord(day, true) || day.oa || {};
           input.value = record[id === "dayStart" ? "start" : "end"] || "";
         }
         input.setSelectionRange(input.value.length, input.value.length);
         actions.previewDay();
+        if (time !== null) await saveDayEdit();
       });
       events.listen(input, "keydown", (event) => {
+        if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing)
+          return;
+        if (["ArrowLeft", "ArrowRight", "Tab", ":"].includes(event.key)) {
+          const colon = input.value.indexOf(":"),
+            segment = colon >= 0 && input.selectionStart > colon ? 1 : 0,
+            backwards =
+              event.key === "ArrowLeft" ||
+              (event.key === "Tab" && event.shiftKey),
+            next = segment + (backwards ? -1 : 1);
+          if (event.key === "Tab" && (next < 0 || next > 1)) return;
+          if (!input.value) return;
+          event.preventDefault();
+          if (event.key === ":" || next === 1) {
+            const hour = input.value.split(":")[0];
+            if (!/^\d{1,2}$/.test(hour) || Number(hour) >= 24) return;
+            input.value =
+              C.pad(Number(hour)) + ":" + (input.value.split(":")[1] || "");
+            selectSegment(1);
+          } else selectSegment(Math.max(0, Math.min(1, next)));
+          return;
+        }
         if (event.key === "Escape") {
           event.preventDefault();
           input.blur();
@@ -223,10 +291,10 @@ WorkTimeApp.ui.createDayController = function (options) {
     events.listen($("dayLeave"), "input", () => {
       WorkTimeApp.ui.fieldErrors.clear($("dayLeaveError"));
     });
-    events.handler($("clearManual"), "onclick", () => {
+    events.handler($("clearManual"), "onclick", async () => {
       const d = model.state.days[model.selected];
       if (!d) return;
-      const saved = application.resetDay(model.selected).persisted;
+      const saved = (await application.resetDay(model.selected)).persisted;
       actions.render();
       actions.toast(
         saved
@@ -239,6 +307,7 @@ WorkTimeApp.ui.createDayController = function (options) {
     });
   }
   function dispose() {
+    saveGeneration++;
     events.dispose();
     bound = false;
   }

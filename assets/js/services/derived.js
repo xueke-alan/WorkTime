@@ -17,13 +17,32 @@ WorkTimeApp.services.derived = (() => {
     function synchronize() {
       const current = getState(),
         nextRevision = getRevision();
-      if (
-        current !== state ||
-        nextRevision !== revision ||
-        current.days !== days ||
-        current.settings !== settings
-      ) {
-        clear();
+      if (current !== state || nextRevision !== revision) {
+        if (
+          !state ||
+          current.settings !== settings ||
+          current.scheduleRanges !== state.scheduleRanges ||
+          current.overtimeRequirements !== state.overtimeRequirements ||
+          current.personal.employmentDate !== state.personal.employmentDate
+        )
+          clear();
+        else if (current.days !== days) {
+          const changed = [
+            ...new Set([...Object.keys(days), ...Object.keys(current.days)]),
+          ].filter((date) => days[date] !== current.days[date]);
+          for (const key of values.keys()) {
+            const [kind, start, end] = JSON.parse(key);
+            const affects =
+              kind === "day"
+                ? changed.includes(start)
+                : core.validDate(start) && core.validDate(end)
+                  ? changed.some((date) => date >= start && date <= end)
+                  : true;
+            if (affects) values.delete(key);
+          }
+          // Rebuild month membership lazily, preserving domain iteration order.
+          months = null;
+        }
         state = current;
         revision = nextRevision;
         days = current.days;

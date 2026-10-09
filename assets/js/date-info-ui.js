@@ -222,7 +222,7 @@
       return node("span", text);
     }
   }
-  let visibleNotifications = new Map();
+  let visibleAlerts = new Map();
   function updateNotificationBadge() {
     const button = document.getElementById("date-tab-notifications");
     if (!button) return;
@@ -234,21 +234,30 @@
         return true;
       },
     );
-    const currentNotifications = new Map(
-      items.map((item) => [
-        item,
-        (item.querySelector(".notification-body")?.textContent || "").trim(),
-      ]),
+    const currentAlerts = new Map(
+      items
+        .filter(
+          (item) =>
+            item.classList.contains("tone-warning") ||
+            item.classList.contains("tone-error"),
+        )
+        .map((item) => [
+          item,
+          (item.classList.contains("tone-error") ? "error:" : "warning:") +
+            (
+              item.querySelector(".notification-body")?.textContent || ""
+            ).trim(),
+        ]),
     );
-    const hasNewNotification = [...currentNotifications].some(
-      ([item, text]) => visibleNotifications.get(item) !== text,
+    const hasNewAlert = [...currentAlerts].some(
+      ([item, signature]) => visibleAlerts.get(item) !== signature,
     );
-    visibleNotifications = currentNotifications;
+    visibleAlerts = currentAlerts;
     // Startup notices establish the baseline without replacing the saved tab.
     const firstScreenReady =
       document.documentElement.dataset.appState === "ready" &&
       !document.documentElement.classList.contains("app-loading");
-    if (firstScreenReady && hasNewNotification && active !== "notifications") {
+    if (firstScreenReady && hasNewAlert && active !== "notifications") {
       active = "notifications";
       render();
       notices.scrollTop = 0;

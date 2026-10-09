@@ -18,6 +18,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     stack = [];
   let disposed = false;
   function finishNavigationMotion() {
+    if (disposed) return;
     WorkTimeApp.ui.motion?.stop(host);
     WorkTimeApp.ui.motion?.stop(document.getElementById("cards"));
     for (const animation of sidebar.getAnimations?.({ subtree: true }) || []) {
@@ -169,10 +170,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     importOpen
       .querySelector(".import-main use")
       .setAttribute("href", active ? "#ms-chevron-left" : "#ms-add");
-    importOpen.setAttribute(
-      "aria-label",
-      active ? returnLabel : "OA记录；右侧从剪贴板直接导入",
-    );
+    importOpen.setAttribute("aria-label", active ? returnLabel : "OA记录");
     importOpen.title = active ? returnLabel : "打开 OA 导入";
     host.hidden = !active;
     for (const element of overview)
@@ -193,7 +191,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       });
     }
   }
-  function open(id) {
+  function open(id, { motionDuration } = {}) {
     if (id === "settingsDialog" && !disposed) {
       closePageSettings(false);
       const trigger = document.activeElement;
@@ -212,28 +210,45 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       return true;
     }
     if (!panes.has(id) || disposed) return false;
-    const index = stack.findIndex((entry) => entry.id === id);
-    if (index >= 0) {
-      const removed = stack.splice(index + 1);
-      for (const entry of removed) panes.get(entry.id).close();
-    } else stack.push({ id, trigger: document.activeElement });
-    render();
-    const pane = panes.get(id);
-    if (!pane.open) pane.show();
-    WorkTimeApp.ui.motion?.play(host, "motion-sidebar-forward");
-    if (id === "importDialog") pane.dispatchEvent(new Event("sidebar-open"));
-    WorkTimeApp.ui.alignment?.refresh([pane]);
-    if (window.matchMedia("(max-width: 1150px)").matches)
-      sidebar.scrollIntoView({ block: "nearest" });
-    (id === "importDialog"
-      ? document.getElementById("pasteText")
-      : pane.querySelector(
-          "#importDetailRawText,[data-detail-step]:not(:disabled)",
-        ) || pane.querySelector(".dialog-head [data-close]")
-    ).focus({ preventScroll: true });
-    // Commit the new surface before a synchronous OA popup takes focus.
-    void sidebar.offsetWidth;
-    return true;
+    const instant = motionDuration === 0;
+    if (instant) {
+      finishNavigationMotion();
+      sidebar.classList.add("sidebar-navigation-instant");
+      // Apply zero timing before changing the view, including an interrupted return.
+      void sidebar.offsetWidth;
+    }
+    try {
+      const index = stack.findIndex((entry) => entry.id === id);
+      if (index >= 0) {
+        const removed = stack.splice(index + 1);
+        for (const entry of removed) panes.get(entry.id).close();
+      } else stack.push({ id, trigger: document.activeElement });
+      render();
+      const pane = panes.get(id);
+      if (!pane.open) pane.show();
+      if (!instant) WorkTimeApp.ui.motion?.play(host, "motion-sidebar-forward");
+      if (id === "importDialog") pane.dispatchEvent(new Event("sidebar-open"));
+      WorkTimeApp.ui.alignment?.refresh([pane]);
+      if (window.matchMedia("(max-width: 1150px)").matches)
+        sidebar.scrollIntoView({ block: "nearest" });
+      (id === "importDialog"
+        ? document.getElementById("pasteText")
+        : pane.querySelector(
+            "#importDetailRawText,[data-detail-step]:not(:disabled)",
+          ) || pane.querySelector(".dialog-head [data-close]")
+      ).focus({ preventScroll: true });
+      if (instant) {
+        // Commit the final zero-duration state in the click handler before opening OA.
+        void sidebar.offsetWidth;
+        finishNavigationMotion();
+      }
+      return true;
+    } finally {
+      if (instant) {
+        sidebar.classList.remove("sidebar-navigation-instant");
+        void sidebar.offsetWidth;
+      }
+    }
   }
   function closed(event) {
     const index = stack.findIndex((entry) => entry.id === event.target.id);
@@ -313,5 +328,10 @@ WorkTimeApp.ui.createSidebarPanels = function ({
   document.addEventListener("keydown", keydown);
   document.addEventListener("visibilitychange", onVisibility);
   window.addEventListener("blur", finishNavigationMotion);
-  return { open, dispose, closeSettings: closeSettingsPanel };
+  return {
+    open,
+    dispose,
+    closeSettings: closeSettingsPanel,
+    finishNavigationMotion,
+  };
 };

@@ -27,7 +27,7 @@
   --clock-background: #f8fcfa;
   --clock-border: #9dc4b5;
   --clock-ink: #244e40;
-  --clock-placeholder: #839f93;
+  --clock-placeholder: color-mix(in srgb, var(--muted) 60%, white);
   --clock-font: clamp(18px, 1.285714rem, 22px);
   --motion-fast: 160ms;
   --motion-normal: 240ms;
@@ -87,7 +87,7 @@
   --theme-accent-dark: color-mix(in srgb, var(--accent) 85%, black);
   --theme-accent-deep: color-mix(in srgb, var(--accent) 70%, black);
   --clock-ink: var(--ink);
-  --clock-placeholder: var(--muted);
+  --clock-placeholder: color-mix(in srgb, var(--muted) 60%, white);
   --theme-text-faint: var(--muted);
   --theme-text-muted: var(--muted);
   --theme-text-strong: var(--ink);

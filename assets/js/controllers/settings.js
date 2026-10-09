@@ -305,7 +305,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
         )
           input.value = value.toFixed(1);
       });
-    const saveSettings = () => {
+    const saveSettings = async () => {
       try {
         const requirements = C.validateOvertimeRequirements(
           Array.from({ length: 5 }, (_, i) => {
@@ -318,7 +318,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
           }),
         );
         WorkTimeApp.ui.fieldErrors.clear($("settingsError"));
-        const result = application.saveSettings(
+        const result = await application.saveSettings(
           model.state.settings,
           requirements,
         );
@@ -351,7 +351,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
       pendingLeave = null;
       openScheduleRange();
     });
-    events.handler($("scheduleRangeForm"), "onsubmit", (event) => {
+    events.handler($("scheduleRangeForm"), "onsubmit", async (event) => {
       event.preventDefault();
       try {
         const range = rangeController.read();
@@ -361,7 +361,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
           range.start,
           range.end,
         );
-        const result = application.applySchedule(candidate);
+        const result = await application.applySchedule(candidate);
         if (!result.persisted)
           throw Error(
             "作息未应用：" + result.error.message + "。请保留草稿并重试。",

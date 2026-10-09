@@ -8,6 +8,13 @@
   "revision": "737e3324305806514d7909874fa1818ae1808232",
   "icons": [
     {
+      "id": "ms-content-paste-go",
+      "name": "content_paste_go",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/content_paste_go/materialsymbolsrounded/content_paste_go_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "64b81358702f11b79991b1facddc986d9857e2748256c6e2b7c4fbef69225490"
+    },
+    {
       "id": "ms-event-note",
       "name": "event_note",
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/event_note/materialsymbolsrounded/event_note_24px.svg",
@@ -62,13 +69,6 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/add/materialsymbolsrounded/add_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "a3f12b6561069cc586e38d4ecfee6819ac54acf94ff9a965aa514834f816194b"
-    },
-    {
-      "id": "ms-content-paste-go",
-      "name": "content_paste_go",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/content_paste_go/materialsymbolsrounded/content_paste_go_24px.svg",
-      "viewBox": "0 -960 960 960",
-      "sha256": "64b81358702f11b79991b1facddc986d9857e2748256c6e2b7c4fbef69225490"
     },
     {
       "id": "ms-settings",

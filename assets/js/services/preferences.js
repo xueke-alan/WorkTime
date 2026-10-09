@@ -1,5 +1,5 @@
 "use strict";
-/** Independently persisted appearance; never writes or locks the work-record store. */
+/** Long-lived preferences belong to the archive; localStorage is only a paint cache. */
 WorkTimeApp.services.preferences = (() => {
   const key = "worktime.pageTheme",
     rules = WorkTimeApp.domain.preferences;
@@ -8,10 +8,13 @@ WorkTimeApp.services.preferences = (() => {
     let state,
       revision = 0,
       dirty = false,
-      mountedWindow = null;
+      mountedWindow = null,
+      archive = null;
     function read() {
       try {
-        return rules.normalize(getStorage().getItem(key));
+        return rules.normalize(
+          getStorage().getItem("worktime.themePaintCache"),
+        );
       } catch {
         return "green";
       }
@@ -30,23 +33,35 @@ WorkTimeApp.services.preferences = (() => {
       for (const listener of listeners) listener(state, operation);
       return operation;
     }
-    function saveTheme(id) {
-      if (!rules.isTheme(id)) throw Error("Invalid theme identity");
-      const changed = id !== state.pageTheme;
+    async function savePreference(preferences) {
+      const changed = Object.entries(preferences).some(
+        ([name, value]) => state[name] !== value,
+      );
       if (!changed && !dirty) return result(false, true);
-      if (changed) {
-        state = Object.freeze({ pageTheme: id });
-        revision++;
-      }
+      state = Object.freeze({ ...state, ...preferences });
+      const generation = ++revision;
       let error = null;
+      dirty = true;
+      publish({ ...result(changed, false), pending: true });
       try {
-        getStorage().setItem(key, id);
-        dirty = false;
+        if (!archive) throw Error("存档尚未准备完成，请稍后重试。");
+        const saved = await archive.save(preferences);
+        if (!saved.persisted) throw saved.error;
       } catch (failure) {
-        dirty = true;
         error = failure;
       }
+      // Older completions must not clear a newer pending/failed preference.
+      if (generation !== revision) return result(changed, !error, error);
+      dirty = !!error;
+      if (!error)
+        try {
+          getStorage().setItem("worktime.themePaintCache", state.pageTheme);
+        } catch {}
       return publish(result(changed, !error, error));
+    }
+    function saveTheme(id) {
+      if (!rules.isTheme(id)) throw Error("Invalid theme identity");
+      return savePreference({ pageTheme: id });
     }
     function storage(event) {
       let store;
@@ -57,9 +72,10 @@ WorkTimeApp.services.preferences = (() => {
       }
       if (
         event.storageArea !== store ||
-        (event.key !== key && event.key !== null)
+        (event.key !== "worktime.themePaintCache" && event.key !== null)
       )
         return;
+      if (archive) return;
       const id = read(),
         changed = id !== state.pageTheme;
       if (changed) {
@@ -80,6 +96,24 @@ WorkTimeApp.services.preferences = (() => {
         return dirty;
       },
       saveTheme,
+      attach(adapter) {
+        archive = adapter;
+        state = Object.freeze({ ...adapter.state });
+        revision++;
+        dirty = false;
+        publish(result(true, true));
+      },
+      synchronize() {
+        if (!archive) return;
+        state = Object.freeze({ ...archive.getState() });
+        revision++;
+        dirty = false;
+        publish(result(true, true));
+      },
+      async saveForecastMode(mode) {
+        if (!archive || !["hourly", "daily"].includes(mode)) return;
+        return savePreference({ forecastMode: mode });
+      },
       subscribe(listener) {
         listeners.add(listener);
         return () => listeners.delete(listener);

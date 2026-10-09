@@ -51,8 +51,8 @@ WorkTimeApp.ui.createWorkspace = function ({
       renderCalendar();
       renderEditor();
     },
-    open(id) {
-      if (disposed || sidebarPanels.open(id)) return;
+    open(id, options) {
+      if (disposed || sidebarPanels.open(id, options)) return;
       const dialog = $(id);
       // Let native dialog focusing run while visible. No frame is painted between
       // showModal and preparation; alignment completes before the opening fade.

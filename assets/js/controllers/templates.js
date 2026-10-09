@@ -159,7 +159,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       updateTimeTemplateNextToggle();
     });
     events.handler($("addTimeTemplate"), "onclick", () => openTimeTemplate());
-    events.handler($("timeTemplateList"), "onclick", (e) => {
+    events.handler($("timeTemplateList"), "onclick", async (e) => {
       const fill = e.target.closest("[data-template-fill]"),
         edit = e.target.closest("[data-template-edit]"),
         id = fill
@@ -175,14 +175,14 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       }
       applyTimeTemplate(template, "day");
       WorkTimeApp.ui.fieldErrors.clear($("dayError"));
-      if (actions.saveDayEdit())
+      if (await actions.saveDayEdit())
         actions.toast(
           model.storageFailed
             ? "已应用模板，保存异常请查看提醒"
             : "已应用并保存“" + template.name + "”",
         );
     });
-    events.handler($("timeTemplateForm"), "onsubmit", (e) => {
+    events.handler($("timeTemplateForm"), "onsubmit", async (e) => {
       e.preventDefault();
       try {
         if (
@@ -191,20 +191,14 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         )
           throw Error("模板已满（4 个），请先删除。");
         const template = C.validateTimeTemplate({
-          id:
-            templateEditingId ||
-            "template-" +
-              Date.now() +
-              "-" +
-              Math.random().toString(36).slice(2, 8),
+          id: templateEditingId || WorkTimeApp.services.archive.uuid(),
           name: $("timeTemplateName").value,
           start: $("timeTemplateStart").value,
           end: $("timeTemplateEnd").value,
           nextDay: $("timeTemplateNext").checked,
         });
-        const saved = application.saveTemplate(
-          template,
-          !!templateEditingId,
+        const saved = (
+          await application.saveTemplate(template, !!templateEditingId)
         ).persisted;
         templateEditingId = template.id;
         renderTimeTemplates();
@@ -217,9 +211,10 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         $("timeTemplateError").textContent = err.userMessage || err.message;
       }
     });
-    events.handler($("deleteTimeTemplate"), "onclick", () => {
+    events.handler($("deleteTimeTemplate"), "onclick", async () => {
       if (!templateEditingId) return;
-      const saved = application.removeTemplate(templateEditingId).persisted;
+      const saved = (await application.removeTemplate(templateEditingId))
+        .persisted;
       renderTimeTemplates();
       $("timeTemplateDialog").close();
       actions.saveFeedback(saved, "时间模板已删除");

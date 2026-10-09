@@ -164,7 +164,10 @@
       context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
       if ("fontStretch" in context)
         context.fontStretch = canvasFontStretch(style.fontStretch);
-      const text = element.textContent.trim();
+      // Date changes must retain one baseline, regardless of weekday glyph bounds.
+      const text = element.matches(".editor-day-header .editor-date")
+        ? "0123456789 · 周日一二三四五六"
+        : element.textContent.trim();
       measurements.push({
         element,
         metrics: cachedMetrics(style, text),

@@ -1,5 +1,5 @@
 "use strict";
-/** Pure import planning; both clipboard and pasted text use the same conflict policy. */
+/** Pure import planning for pasted OA text. */
 WorkTimeApp.services.imports = (() => {
   function prepare(core, state, sources, year, referenceDate = null) {
     const records = [],
@@ -35,8 +35,6 @@ WorkTimeApp.services.imports = (() => {
       records,
       warnings,
       rows,
-      needsReview:
-        warnings.length > 0 || rows.some((row) => row.result.conflict),
     };
   }
   function acceptedRecords(plan, choose = () => "new") {

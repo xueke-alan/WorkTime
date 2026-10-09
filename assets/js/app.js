@@ -19,7 +19,7 @@ WorkTimeApp.services.bootstrap.run(
       leaveBatch: () => workspace.leaveBatch(),
     });
     lifecycle.defer(() => sidebarPanels.dispose());
-    const persistence = WorkTimeApp.services.storage.create({
+    const persistence = WorkTimeApp.services.indexedStorage.create({
       key: D.state.KEY,
       validate: D.validation.validateBackup,
       defaultState: D.state.defaultState,
@@ -31,7 +31,8 @@ WorkTimeApp.services.bootstrap.run(
       persistence.releaseWriteAccess();
       return;
     }
-    const loaded = persistence.load();
+    const loaded = await persistence.load();
+    WorkTimeApp.services.archiveCache = persistence.cache;
     const storageStatus = WorkTimeApp.ui.createStorageStatus({
       element: $,
       key: D.state.KEY,
@@ -70,7 +71,7 @@ WorkTimeApp.services.bootstrap.run(
       },
       failed: !!loaded.error || !access.ok,
       corrupt: loaded.corrupt,
-      unsaved: !!loaded.error,
+      unsaved: loaded.corrupt,
     });
     Object.defineProperties(model, {
       state: { get: () => stateOwner.state },
@@ -264,13 +265,22 @@ WorkTimeApp.services.bootstrap.run(
       locks: navigator.locks,
       hasDraft: () => controllers.some((controller) => controller.hasDraft?.()),
       onCommit(result) {
+        if (result.pending) {
+          storageStatus.saving();
+          return;
+        }
         if (result.applied)
           WorkTimeApp.services.countdown.setState(model.state);
         storageStatus.commit(result, stateOwner.failed);
+        if (stateOwner.pending) storageStatus.saving();
+        if (result.persisted) channel?.postMessage({ updated: true });
         storageStatus.updateRecovery();
         for (const controller of controllers) controller.updateRecovery?.();
       },
-      onReload: workspace.reload,
+      onReload() {
+        WorkTimeApp.services.preferences.page.synchronize();
+        workspace.reload();
+      },
       onRecovered() {
         for (const controller of controllers) controller.onSaveRecovered?.();
       },
@@ -292,6 +302,7 @@ WorkTimeApp.services.bootstrap.run(
         "saveOAUrl",
         "saveSettings",
         "savePersonal",
+        "savePreferences",
         "restore",
         "initialize",
         "applySchedule",
@@ -300,6 +311,27 @@ WorkTimeApp.services.bootstrap.run(
         (...args) => saveSession.commit(stateOwner[name](...args)),
       ]),
     );
+    WorkTimeApp.services.preferences.page.attach({
+      state: model.state.preferences,
+      save: (preferences) => application.savePreferences(preferences),
+      getState: () => model.state.preferences,
+    });
+    const beforeUnload = (event) => {
+      if (
+        !stateOwner.pending &&
+        !stateOwner.dirty &&
+        !stateOwner.failed &&
+        !WorkTimeApp.services.preferences.page.dirty &&
+        !controllers.some((controller) => controller.hasDraft?.())
+      )
+        return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    lifecycle.defer(() =>
+      window.removeEventListener("beforeunload", beforeUnload),
+    );
     Object.assign(actions, {
       controlIcon,
       clone: D.state.cloneState,
@@ -307,6 +339,7 @@ WorkTimeApp.services.bootstrap.run(
       render,
       open,
       closeSettings: sidebarPanels.closeSettings,
+      finishSidebarNavigation: sidebarPanels.finishNavigationMotion,
       toast,
       previewDay,
       formDay,
@@ -331,6 +364,10 @@ WorkTimeApp.services.bootstrap.run(
         },
         saveTheme: WorkTimeApp.services.preferences.page.saveTheme,
       },
+      persistence,
+      exportArchive: () =>
+        stateOwner.export(WorkTimeApp.services.preferences.page.state),
+      hydrateImports: () => stateOwner.hydrateImports(),
       importIndex,
       clipboard: WorkTimeApp.services.clipboard.create(
         () => navigator.clipboard,
@@ -339,6 +376,28 @@ WorkTimeApp.services.bootstrap.run(
     };
     lifecycle.defer(() => controllerOptions.downloads.dispose());
     const controllers = [];
+    let channel;
+    if (typeof BroadcastChannel === "function") {
+      channel = new BroadcastChannel("worktime-archive");
+      channel.onmessage = async () => {
+        try {
+          if (await persistence.hasExternalUpdate())
+            storageStatus.externalUpdate();
+        } catch {}
+      };
+      lifecycle.defer(() => channel.close());
+    }
+    const legacyChanged = async (event) => {
+      if (event.key !== D.state.KEY && event.key !== null) return;
+      try {
+        await persistence.checkLegacy();
+      } catch (error) {
+        stateOwner.markUnsaved();
+        storageStatus.commit({ persisted: false, error }, true);
+      }
+    };
+    window.addEventListener("storage", legacyChanged);
+    lifecycle.defer(() => window.removeEventListener("storage", legacyChanged));
     for (const [create, operations, core] of [
       [
         WorkTimeApp.ui.createTemplateController,
@@ -429,14 +488,36 @@ WorkTimeApp.services.bootstrap.run(
     }
     for (const controller of controllers) controller.bind();
     workspace.mount();
+    if (model.loadIssue === "unsupported") {
+      const allowed = new Set([
+        "prevMonth",
+        "nextMonth",
+        "todayButton",
+        "backup",
+        "recoveryOpen",
+        "exportCorruptStorage",
+        "downloadRecovery",
+      ]);
+      for (const element of document.querySelectorAll(
+        "button,input,select,textarea",
+      )) {
+        if (
+          allowed.has(element.id) ||
+          element.dataset.close ||
+          element.hasAttribute("data-date")
+        )
+          continue;
+        element.disabled = true;
+      }
+    }
     storageStatus.bindRetry({
-      available: !!navigator.locks?.request,
+      available: true,
       corrupt: model.loadCorrupt,
       getLoadIssue: () => model.loadIssue,
       retry: saveSession.retry,
     });
     if (stateOwner.dirty && !loaded.error && access.ok) {
-      saveSession.commit(stateOwner.retry());
+      await saveSession.commit(stateOwner.retry());
       workspace.recoveryDone();
     }
     if (!access.ok) saveSession.wait();

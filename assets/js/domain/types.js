@@ -5,7 +5,11 @@
  * @typedef {{start:number,end:number}} WorkBreak
  * @typedef {{configured:boolean,workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[]}} WorkSettings
  * @typedef {{employmentDate:string,workCity:string}} WorkPersonal
- * @typedef {{pageTheme:'green'|'blue'|'purple'|'orange'|'rose'|'slate'|'cyan'|'mint'|'olive'|'gold'|'red'|'brown'}} WorkPreferences
+ * @typedef {{pageTheme:'green'|'blue'|'purple'|'orange'|'rose'|'slate'|'cyan'|'mint'|'olive'|'gold'|'red'|'brown',forecastMode?:'hourly'|'daily'}} WorkPreferences
+ * @typedef {{id:string,order?:number,data:Object}} ArchiveRecord
+ * @typedef {{id:string,version:number,records:ArchiveRecord[]}} ArchiveModule
+ * @typedef {{format:'worktime-archive',formatVersion:1,archive:{id:string,createdAt:string},modules:ArchiveModule[],exportedAt?:string}} WorkArchive
+ * @typedef {{load:function():Promise<Object>,commit:function(Object,Object):Promise<WorkOperationResult>,restore:function(Object):Promise<WorkOperationResult>,export:function(Object):Promise<WorkArchive>}} WorkPersistence
  * @typedef {{start:string,end:string,nextDay:boolean,effectiveMinutes:number|null}} WorkManualRecord
  * @typedef {{start:string,end:string,nextDay:boolean}} WorkDraft
  * @typedef {{date:string,start:string,end:string,nextDay:boolean,status:'complete'|'pending'|'off',source:string,raw:string,importId?:string}} WorkOAObservation
@@ -29,6 +33,8 @@
  * draft preserves incomplete edits and suppresses effective minutes until completed.
  * Only manual records accept non-null effectiveMinutes; 0 is a valid correction.
  * Every import contains explicit accepted records; [] means no accepted records. Raw text is never replayed by the runtime.
+ * Schema 3 is only the internal calculation projection. Persisted data uses WorkArchive.
+ * Internal _archive retains extension metadata; _lazy import details must hydrate before replay/export.
  * overtimeRequirements contains five tiers in minutes; null means not configured.
  * UI accepts tenths of an hour; backup requirements retain finite precision without rounding.
  */

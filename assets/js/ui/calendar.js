@@ -543,7 +543,12 @@ WorkTimeApp.ui.createCalendar = function (options) {
                       : "green",
             )) +
         (!info.work && day.plannedOvertime
-          ? "<div>" + tag(hasPunch ? "加班" : "计划加班", "amber") + "</div>"
+          ? "<div>" +
+            tag(
+              hasPunch ? "加班" : "计划加班",
+              hasPunch ? "amber" : "overtime-plan",
+            ) +
+            "</div>"
           : "") +
         (scheduleChanged ? scheduleChangeTag() : "") +
         (day.leaveMinutes

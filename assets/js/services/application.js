@@ -36,51 +36,121 @@ WorkTimeApp.services.application = (() => {
       }
       return value;
     }
-    const compactInitial = C.compactOAState(clone(initial));
-    let state = freeze(compactInitial),
-      stateText = JSON.stringify(state),
+    const A = WorkTimeApp.services.archive;
+    let state = freeze(initial),
       revision = 0,
-      dirty = unsaved || JSON.stringify(initial) !== stateText,
+      dirty = unsaved,
       saveFailed = failed,
-      loadCorrupt = corrupt;
-    function commit(candidate, { atomic = false, restore = false } = {}) {
-      const candidateText = JSON.stringify(candidate),
-        changed = candidateText !== stateText;
+      loadCorrupt = corrupt,
+      pending = 0,
+      exclusive = false;
+    let dirtyChanges = {};
+    function collect(before, after, hints) {
+      const changes = { ...hints };
+      for (const key of [
+        "personal",
+        "preferences",
+        "settings",
+        "overtimeRequirements",
+        "oaUrl",
+        "scheduleRanges",
+        "timeTemplates",
+      ])
+        if (before[key] !== after[key]) changes[key] = true;
+      if (before.days !== after.days && !changes.days)
+        changes.days = [
+          ...new Set([...Object.keys(before.days), ...Object.keys(after.days)]),
+        ].filter((key) => before.days[key] !== after.days[key]);
+      if (before.imports !== after.imports && !changes.imports)
+        changes.imports = [
+          ...new Set([
+            ...before.imports.map((log) => log.id),
+            ...after.imports.map((log) => log.id),
+          ]),
+        ];
+      return changes;
+    }
+    function combine(left, right) {
+      const result = { ...left, ...right };
+      for (const key of ["days", "imports"])
+        if (left[key] || right[key])
+          result[key] = [
+            ...new Set([...(left[key] || []), ...(right[key] || [])]),
+          ];
+      return result;
+    }
+    function commit(
+      candidate,
+      { atomic = false, restore = false, changes = {} } = {},
+    ) {
+      if (persistence.loadIssue === "unsupported")
+        return Promise.resolve({
+          persisted: false,
+          applied: false,
+          error: A.error(
+            "当前存档版本需要更新的应用，已启用只读保护。",
+            "UNSUPPORTED_VERSION",
+          ),
+        });
+      if (exclusive)
+        return Promise.resolve({
+          persisted: false,
+          applied: false,
+          error: A.error("正在恢复或应用作息，请完成后重试。", "BUSY"),
+        });
+      const before = state,
+        changed = candidate !== state;
+      const patch = collect(before, candidate, changes);
       if (!changed && !dirty && !saveFailed && !restore)
-        return {
+        return Promise.resolve({
           changed: false,
           applied: false,
           persisted: true,
           dirty: false,
           error: null,
-          code: null,
-          message: "",
-        };
-      if (changed && !atomic) {
+        });
+      if (atomic) exclusive = true;
+      else if (changed) {
         state = freeze(candidate);
-        stateText = candidateText;
         revision++;
+        dirty = true;
       }
-      const saved = restore
-        ? persistence.replace(candidate)
-        : persistence.save(candidate);
-      if (restore && saved.persisted) loadCorrupt = false;
-      if (saved.persisted && changed && atomic) {
-        state = freeze(candidate);
-        stateText = candidateText;
-        revision++;
-      }
-      saveFailed = !saved.persisted;
-      dirty = saved.persisted ? false : atomic ? dirty : true;
-      return {
-        changed,
-        applied: changed && (!atomic || saved.persisted),
-        persisted: saved.persisted,
-        dirty,
-        error: saved.error || null,
-        code: saved.error?.code || (saved.persisted ? null : "WRITE_FAILED"),
-        message: saved.error?.userMessage || saved.error?.message || "",
-      };
+      if (!atomic) dirtyChanges = combine(dirtyChanges, patch);
+      const generation = revision;
+      pending++;
+      const work = restore
+        ? persistence.restore(candidate)
+        : persistence.commit(
+            candidate,
+            atomic ? combine(dirtyChanges, patch) : { ...dirtyChanges },
+          );
+      return Promise.resolve(work)
+        .then((saved) => {
+          if (saved.persisted && atomic) {
+            state = freeze(candidate);
+            revision++;
+          }
+          if (saved.persisted && (atomic || generation === revision)) {
+            dirty = false;
+            dirtyChanges = {};
+          }
+          if (!saved.persisted && !atomic) dirty = true;
+          saveFailed = !saved.persisted;
+          if (restore && saved.persisted) loadCorrupt = false;
+          return {
+            changed,
+            applied: changed && (!atomic || saved.persisted),
+            persisted: saved.persisted,
+            dirty,
+            error: saved.error || null,
+            code: saved.error?.code || null,
+            message: saved.error?.message || "",
+          };
+        })
+        .finally(() => {
+          pending--;
+          if (atomic) exclusive = false;
+        });
     }
     const service = {
       get state() {
@@ -88,6 +158,9 @@ WorkTimeApp.services.application = (() => {
       },
       get revision() {
         return revision;
+      },
+      get pending() {
+        return pending > 0;
       },
       get dirty() {
         return dirty;
@@ -108,10 +181,27 @@ WorkTimeApp.services.application = (() => {
         return commit(state);
       },
       saveDay(date, day) {
-        return commit({
-          ...state,
-          days: { ...state.days, [date]: clone(day) },
-        });
+        const previous = state.days[date] || {};
+        const known = [
+          "oa",
+          "actual",
+          "estimate",
+          "draft",
+          "kind",
+          "leaveMinutes",
+          "note",
+          "plannedOvertime",
+        ];
+        const extras = Object.fromEntries(
+          Object.entries(previous).filter(([key]) => !known.includes(key)),
+        );
+        const next = { ...extras, ...clone(day) };
+        for (const key of ["oa", "actual", "estimate", "draft"])
+          if (next[key]) next[key] = A.merge(previous[key], next[key]);
+        return commit(
+          { ...state, days: { ...state.days, [date]: next } },
+          { changes: { days: [date] } },
+        );
       },
       togglePlanned(date) {
         const day = { ...state.days[date] };
@@ -124,9 +214,23 @@ WorkTimeApp.services.application = (() => {
         const days = { ...state.days },
           old = days[date];
         if (!old) return commit(state);
-        if (old.oa) days[date] = { oa: old.oa };
+        const owned = [
+          "oa",
+          "actual",
+          "estimate",
+          "draft",
+          "kind",
+          "leaveMinutes",
+          "note",
+          "plannedOvertime",
+        ];
+        const extras = Object.fromEntries(
+          Object.entries(old).filter(([key]) => !owned.includes(key)),
+        );
+        if (old.oa) days[date] = { ...extras, oa: old.oa };
+        else if (Object.keys(extras).length) days[date] = extras;
         else delete days[date];
-        return commit({ ...state, days });
+        return commit({ ...state, days }, { changes: { days: [date] } });
       },
       saveTemplate(template, editing) {
         const clean = C.validateTimeTemplate(template),
@@ -134,7 +238,7 @@ WorkTimeApp.services.application = (() => {
         if (editing) {
           const index = templates.findIndex((item) => item.id === clean.id);
           if (index < 0) throw Error("模板已不存在。");
-          templates[index] = clean;
+          templates[index] = { ...templates[index], ...clean };
         } else {
           if (templates.length >= 4)
             throw Error("最多保存 4 个模板，请先删除一个模板。");
@@ -153,26 +257,95 @@ WorkTimeApp.services.application = (() => {
         for (const date of dates) {
           if (!C.canBatchEditDate(state, date)) continue;
           const day = { ...days[date] };
+          const field = day.oa || day.actual ? "actual" : "estimate";
+          const extensions = Object.fromEntries(
+            Object.entries(day[field] || {}).filter(
+              ([key]) =>
+                !["start", "end", "nextDay", "effectiveMinutes"].includes(key),
+            ),
+          );
           if (day.oa || day.actual) {
-            day.actual = { ...record };
+            day.actual = { ...extensions, ...record };
             delete day.estimate;
-          } else day.estimate = { ...record };
+          } else day.estimate = { ...extensions, ...record };
           delete day.draft;
           days[date] = day;
         }
         return commit({ ...state, days });
       },
       importRecords(log) {
-        const candidate = clone(state);
+        const candidate = {
+          ...state,
+          days: { ...state.days },
+          imports: [...state.imports],
+        };
+        for (const record of log.records)
+          if (candidate.days[record.date])
+            candidate.days[record.date] = clone(candidate.days[record.date]);
         for (const record of log.records)
           C.applyObservation(candidate, record, log.id);
         candidate.imports.push(clone(log));
-        return commit(C.compactOAState(candidate));
+        const compact = C.compactOAState({
+          ...candidate,
+          days: Object.fromEntries(
+            log.records.map((record) => [
+              record.date,
+              candidate.days[record.date],
+            ]),
+          ),
+          imports: [candidate.imports.at(-1)],
+        });
+        candidate.days = { ...candidate.days, ...compact.days };
+        candidate.imports[candidate.imports.length - 1] = compact.imports[0];
+        return commit(candidate, {
+          changes: {
+            days: log.records.map((record) => record.date),
+            imports: [log.id],
+          },
+        });
       },
-      removeImport(id) {
-        const candidate = clone(state),
-          impact = C.deleteImport(candidate, id);
-        return { ...commit(candidate), impact };
+      async removeImport(id) {
+        await service.hydrateImports();
+        const dates = Object.keys(state.days).filter(
+          (date) => state.days[date].oa?.importId === id,
+        );
+        const affected = new Set(dates);
+        const candidate = {
+          ...state,
+          days: Object.fromEntries(
+            Object.entries(state.days).map(([date, day]) => [
+              date,
+              affected.has(date) ? clone(day) : day,
+            ]),
+          ),
+          imports: [...state.imports],
+        };
+        const impact = C.deleteImport(candidate, id);
+        for (const date of dates)
+          if (!candidate.days[date]) {
+            const known = [
+              "oa",
+              "actual",
+              "estimate",
+              "draft",
+              "kind",
+              "leaveMinutes",
+              "note",
+              "plannedOvertime",
+            ];
+            const extras = Object.fromEntries(
+              Object.entries(state.days[date]).filter(
+                ([key]) => !known.includes(key),
+              ),
+            );
+            if (Object.keys(extras).length) candidate.days[date] = extras;
+          }
+        return {
+          ...(await commit(candidate, {
+            changes: { days: dates, imports: [id] },
+          })),
+          impact,
+        };
       },
       saveOAUrl(oaUrl) {
         return commit({ ...state, oaUrl });
@@ -180,18 +353,29 @@ WorkTimeApp.services.application = (() => {
       saveSettings(settings, overtimeRequirements) {
         return commit({
           ...state,
-          settings: clone(settings),
+          settings: { ...state.settings, ...clone(settings) },
           overtimeRequirements: [...overtimeRequirements],
         });
       },
       applySchedule(candidate) {
-        return commit(clone(candidate), { atomic: true });
+        return commit(candidate, { atomic: true });
       },
       savePersonal(personal) {
-        return commit({ ...state, personal: clone(personal) });
+        return commit({
+          ...state,
+          personal: { ...state.personal, ...clone(personal) },
+        });
       },
       restore(candidate) {
-        return commit(C.compactOAState(C.validateBackup(clone(candidate))), {
+        if (saveFailed && Object.keys(dirtyChanges).length)
+          return Promise.resolve({
+            persisted: false,
+            error: A.error(
+              "请先导出本页未保存修改并刷新，再恢复备份。",
+              "UNSAVED",
+            ),
+          });
+        return commit(A.migrate(candidate), {
           restore: true,
           atomic: true,
         });
@@ -199,20 +383,50 @@ WorkTimeApp.services.application = (() => {
       initialize(pageTheme) {
         if (persistence.loadIssue !== "corrupt")
           throw Error("仅损坏的存档可以初始化。");
-        const candidate = C.defaultState();
+        const candidate = A.migrate(C.defaultState());
         candidate.preferences.pageTheme = pageTheme;
         return commit(candidate, { restore: true, atomic: true });
       },
+      savePreferences(preferences) {
+        return commit({
+          ...state,
+          preferences: { ...state.preferences, ...preferences },
+        });
+      },
+      async hydrateImports() {
+        if (!state.imports.some((log) => log._lazy)) return;
+        const captured = state;
+        const hydrated = await persistence.hydrateImports(captured);
+        const full = new Map(hydrated.imports.map((log) => [log.id, log]));
+        state = freeze({
+          ...state,
+          _archive: {
+            ...state._archive,
+            recordExtras:
+              hydrated._archive?.recordExtras || state._archive?.recordExtras,
+            dataExtras:
+              hydrated._archive?.dataExtras || state._archive?.dataExtras,
+          },
+          imports: state.imports.map((log) =>
+            log._lazy ? full.get(log.id) : log,
+          ),
+        });
+      },
+      async export(preferences) {
+        return persistence.export(
+          preferences
+            ? {
+                ...state,
+                preferences: { ...state.preferences, ...preferences },
+              }
+            : state,
+        );
+      },
       reload(candidate) {
-        const compact = C.compactOAState(clone(candidate));
-        const compactText = JSON.stringify(compact),
-          changed = compactText !== stateText;
-        if (changed) {
-          state = freeze(compact);
-          stateText = compactText;
-          revision++;
-        }
-        dirty = JSON.stringify(candidate) !== compactText;
+        state = freeze(candidate);
+        revision++;
+        dirty = false;
+        dirtyChanges = {};
         saveFailed = false;
         loadCorrupt = false;
       },

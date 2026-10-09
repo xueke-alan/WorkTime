@@ -50,7 +50,7 @@ WorkTimeApp.domain.calendar = (() => {
     }
     if (makeups.has(k)) {
       work = true;
-      label = "调休补班";
+      label = "调休日";
     }
     if (struggleDays.has(k)) label = "奋斗日";
     if (day.kind === "work") {

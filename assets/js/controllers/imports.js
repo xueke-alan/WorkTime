@@ -9,15 +9,16 @@ WorkTimeApp.ui.createImportController = function (options) {
     model,
     application,
     actions,
-    clipboard,
     clock,
     importIndex,
+    hydrateImports,
+    clipboard,
   } = options;
   let holdAction = null;
   let preview = null;
   let disposed = false;
-  let generation = 0;
   let importParseTimer = null;
+  let oaNavigationTimer = null;
   let resultsMode = "history";
   function anomalyReason(record) {
     if (!record.start && !record.end) return "无记录";
@@ -93,11 +94,11 @@ WorkTimeApp.ui.createImportController = function (options) {
       animateResults("history");
     }
   }
-  function parseImport(inputSources = null) {
+  function parseImport() {
     invalidatePreview(false);
     const year = clock.year(),
-      sources = Array.isArray(inputSources) ? inputSources : [];
-    if (!inputSources && $("pasteText").value.trim())
+      sources = [];
+    if ($("pasteText").value.trim())
       sources.push({ name: "粘贴文本", raw: $("pasteText").value });
     if (!sources.length) {
       invalidatePreview();
@@ -181,26 +182,24 @@ WorkTimeApp.ui.createImportController = function (options) {
       $("importWarnings").textContent = "解析失败：" + error.message;
     }
   }
-  function commitOARecords(
+  async function commitOARecords(
     records,
     year,
     sources,
     count = records.length,
     focusDate = records[0]?.date,
   ) {
-    const id =
-      "import-" +
-      clock.now().getTime() +
-      "-" +
-      Math.random().toString(36).slice(2, 8);
-    const saved = application.importRecords({
-      id,
-      at: clock.now().toISOString(),
-      year,
-      sources,
-      count,
-      records: records.map((record) => ({ ...record })),
-    }).persisted;
+    const id = WorkTimeApp.services.archive.uuid();
+    const saved = (
+      await application.importRecords({
+        id,
+        at: clock.now().toISOString(),
+        year,
+        sources,
+        count,
+        records: records.map((record) => ({ ...record })),
+      })
+    ).persisted;
     if (focusDate) {
       model.month = focusDate.slice(0, 7);
       model.selected = focusDate;
@@ -209,54 +208,15 @@ WorkTimeApp.ui.createImportController = function (options) {
     renderImportHistory();
     return saved;
   }
-  async function importFromClipboard() {
-    const lifetime = generation;
-    try {
-      const raw = await clipboard.readText();
-      if (disposed || lifetime !== generation) return;
-      if (!raw.trim()) throw Error("剪贴板中没有 OA 文本");
-      if (raw.length > 5 * 1024 * 1024) throw Error("剪贴板文本超过 5MB");
-      const year = clock.year(),
-        sources = [{ name: "剪贴板", raw }],
-        plan = WorkTimeApp.services.imports.prepare(
-          C,
-          model.state,
-          sources,
-          year,
-          clock.today(),
-        );
-      if (!plan.records.length)
-        throw Error(plan.warnings[0] || "未识别到 OA 记录");
-      if (plan.needsReview) {
-        $("pasteText").value = raw;
-        parseImport(sources);
-        actions.open("importDialog");
-        $("importDetails").classList.remove("hidden");
-        actions.toast("导入记录需核查，请确认后导入");
-        return;
-      }
-      const saved = commitOARecords(
-        WorkTimeApp.services.imports.acceptedRecords(plan),
-        year,
-        sources,
-      );
-      actions.saveFeedback(
-        saved,
-        "已从剪贴板导入 " + plan.records.length + " 条 OA 记录",
-      );
-    } catch (err) {
-      if (disposed || lifetime !== generation) return;
-      actions.toast(
-        "剪贴板导入失败：" +
-          (err.name === "NotAllowedError"
-            ? "请允许读取剪贴板后重试"
-            : err.message),
-        "error",
-      );
-    }
-  }
   let importToDelete = null;
-  function renderImportHistory() {
+  async function renderImportHistory() {
+    try {
+      await hydrateImports();
+    } catch (error) {
+      actions.toast(error.message, "error");
+      return;
+    }
+    if (disposed) return;
     const logs = model.state.imports.slice().reverse();
     const dates = new Set(
       logs.flatMap((log) => importIndex.describe(log).acceptedDates),
@@ -302,7 +262,14 @@ WorkTimeApp.ui.createImportController = function (options) {
       : '<div class="import-history-empty">暂无导入历史</div>';
   }
   let detailId = null;
-  function showImportDetail(id) {
+  async function showImportDetail(id) {
+    try {
+      await hydrateImports();
+    } catch (error) {
+      actions.toast(error.message, "error");
+      return;
+    }
+    if (disposed) return;
     const logs = model.state.imports.slice().reverse(),
       index = logs.findIndex((log) => log.id === id),
       log = logs[index];
@@ -359,7 +326,14 @@ WorkTimeApp.ui.createImportController = function (options) {
       WorkTimeApp.ui.motion?.play($("sourceBody"), "motion-sidebar-forward");
     WorkTimeApp.ui.alignment?.refresh([pane]);
   }
-  function showSources() {
+  async function showSources() {
+    try {
+      await hydrateImports();
+    } catch (error) {
+      actions.toast(error.message, "error");
+      return;
+    }
+    if (disposed) return;
     const day = model.state.days[model.selected] || {},
       logs = importIndex.logsForDate(model.state.imports, model.selected),
       log =
@@ -394,6 +368,9 @@ WorkTimeApp.ui.createImportController = function (options) {
       const url = new URL(model.state.oaUrl);
       if (!["http:", "https:"].includes(url.protocol))
         throw Error("请使用 http 或 https 链接。");
+      // A popup may suspend painting before blur/visibilitychange is delivered.
+      // Leave the sidebar at its final state before handing focus to OA.
+      actions.finishSidebarNavigation();
       window.open(url.href, "_blank", "noopener,noreferrer");
     } catch (error) {
       if (disposed) return;
@@ -401,15 +378,20 @@ WorkTimeApp.ui.createImportController = function (options) {
       $("oaLinkError").textContent = error.message;
     }
   }
+  function cancelOANavigation() {
+    clearTimeout(oaNavigationTimer);
+    oaNavigationTimer = null;
+  }
   let bound = false;
   function bind() {
     if (bound) return;
     bound = true;
     disposed = false;
-    generation++;
     events.listen($("importDialog"), "close", resetImportInput);
+    events.listen($("importDialog"), "close", cancelOANavigation);
     events.listen($("importDialog"), "sidebar-open", renderImportHistory);
-    events.handler($("importHistoryList"), "onclick", (e) => {
+    events.handler($("importHistoryList"), "onclick", async (e) => {
+      await hydrateImports();
       const view = e.target.closest("[data-view-import]"),
         remove = e.target.closest("[data-delete-import]");
       if (view) {
@@ -443,9 +425,9 @@ WorkTimeApp.ui.createImportController = function (options) {
         " 个日期撤回该批次打卡。";
       actions.open("deleteImportDialog");
     });
-    events.handler($("confirmDeleteImport"), "onclick", () => {
+    events.handler($("confirmDeleteImport"), "onclick", async () => {
       if (!importToDelete) return;
-      const commit = application.removeImport(importToDelete);
+      const commit = await application.removeImport(importToDelete);
       const result = commit.impact;
       importToDelete = null;
       $("deleteImportDialog").close();
@@ -461,28 +443,18 @@ WorkTimeApp.ui.createImportController = function (options) {
     events.handler($("sourceOpen"), "onclick", showSources);
     events.handler($("importOASite"), "onclick", () => {
       parseImport();
-      actions.open("importDialog");
-      openOAWebsite();
+      actions.open("importDialog", { motionDuration: 0 });
+      cancelOANavigation();
+      // Give the browser time to paint the settled sidebar before OA takes focus.
+      oaNavigationTimer = setTimeout(() => {
+        oaNavigationTimer = null;
+        if (!disposed && $("importDialog").open) openOAWebsite();
+      }, 10);
     });
     events.listen($("sourceDialog"), "click", detailClick);
     events.handler($("importOpen"), "onclick", () => {
       parseImport();
       actions.open("importDialog");
-    });
-    events.handler(
-      document.querySelector("[data-import-clipboard]"),
-      "onclick",
-      importFromClipboard,
-    );
-    events.handler($("importOpen"), "onkeydown", (e) => {
-      if (
-        e.key === "Enter" &&
-        e.shiftKey &&
-        !$("importOpen").classList.contains("is-return")
-      ) {
-        e.preventDefault();
-        importFromClipboard();
-      }
     });
     holdAction = WorkTimeApp.ui.createHoldAction({
       button: oaShortcut,
@@ -492,7 +464,7 @@ WorkTimeApp.ui.createImportController = function (options) {
       cancelShortAfterFeedback: true,
     });
     events.listen($("importDialog"), "close", () => holdAction.cancel());
-    events.handler($("oaLinkForm"), "onsubmit", (event) => {
+    events.handler($("oaLinkForm"), "onsubmit", async (event) => {
       event.preventDefault();
       try {
         const url = new URL($("oaLinkInput").value.trim());
@@ -502,7 +474,7 @@ WorkTimeApp.ui.createImportController = function (options) {
           url.password
         )
           throw Error("请填写有效的 http 或 https 网页地址。");
-        if (application.saveOAUrl(url.href).persisted) {
+        if ((await application.saveOAUrl(url.href)).persisted) {
           $("oaLinkDialog").close();
           actions.toast("OA系统链接已保存");
         }
@@ -511,7 +483,35 @@ WorkTimeApp.ui.createImportController = function (options) {
       }
     });
     events.handler($("pasteText"), "oninput", scheduleImportParse);
-    events.handler($("commitImport"), "onclick", () => {
+    events.handler($("pasteOAClipboard"), "onclick", async () => {
+      const button = $("pasteOAClipboard"),
+        input = $("pasteText"),
+        start = input.selectionStart,
+        end = input.selectionEnd;
+      if (button.disabled) return;
+      button.disabled = true;
+      try {
+        const text = await clipboard.readText();
+        if (disposed || !$("importDialog").open) return;
+        if (!text.trim()) {
+          actions.toast("剪贴板中没有文本，请先复制OA考勤信息");
+          return;
+        }
+        input.setRangeText(text, start, end, "end");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.focus({ preventScroll: true });
+      } catch (error) {
+        if (disposed || !$("importDialog").open) return;
+        actions.toast(
+          "无法读取剪贴板，请允许剪贴板访问或按 Ctrl+V 粘贴",
+          "error",
+        );
+        input.focus({ preventScroll: true });
+      } finally {
+        button.disabled = false;
+      }
+    });
+    events.handler($("commitImport"), "onclick", async () => {
       if (!preview || !preview.rows.length || $("commitImport").disabled)
         return;
       const processed = preview.rows.length,
@@ -521,7 +521,7 @@ WorkTimeApp.ui.createImportController = function (options) {
             $("importRows").querySelector('[data-conflict="' + i + '"]')
               ?.value || "new",
         );
-      const saved = commitOARecords(
+      const saved = await commitOARecords(
         acceptedRecords,
         preview.year,
         preview.sources,
@@ -543,7 +543,6 @@ WorkTimeApp.ui.createImportController = function (options) {
     }
   }
   function dispose() {
-    generation++;
     events.dispose();
     bound = false;
     $("sourceDialog").removeEventListener("click", detailClick);
@@ -551,6 +550,7 @@ WorkTimeApp.ui.createImportController = function (options) {
     $("importDialog").removeEventListener("sidebar-open", renderImportHistory);
     holdAction?.dispose();
     clearTimeout(importParseTimer);
+    cancelOANavigation();
   }
   const hasDraft = () =>
     !!$("pasteText").value.trim() ||

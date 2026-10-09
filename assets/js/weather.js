@@ -15,7 +15,6 @@
     requestTimeout = null;
   const subscribers = new Set(),
     demands = new Set();
-  const cacheKey = "worktime.weather.baidu.v1.";
   function beijingDate(value = Date.now()) {
     return new Date(value + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
   }
@@ -133,9 +132,11 @@
     if (!validRecord(value, target.id)) throw Error("城市天气数据不完整");
     return value;
   }
-  function cached(id) {
+  async function cached(id) {
     try {
-      const value = JSON.parse(localStorage.getItem(cacheKey + id));
+      const value = await WorkTimeApp.services.archiveCache?.get(
+        "weather:" + id,
+      );
       return validRecord(value, id) ? value : null;
     } catch {
       return null;
@@ -198,7 +199,10 @@
       if (disposed || token !== generation) return;
       record = result;
       try {
-        localStorage.setItem(cacheKey + target.id, JSON.stringify(record));
+        await WorkTimeApp.services.archiveCache?.set(
+          "weather:" + target.id,
+          record,
+        );
       } catch {}
     } catch (error) {
       if (disposed || token !== generation) return;
@@ -225,7 +229,16 @@
     ++generation;
     cancelRequest();
     city = resolveCity(text);
-    record = city ? cached(city.id) : null;
+    record = null;
+    const target = city;
+    if (target)
+      void cached(target.id).then((value) => {
+        if (!disposed && city?.id === target.id && !record && value) {
+          record = value;
+          if (message) message = "刷新失败，显示最近缓存";
+          notify();
+        }
+      });
     loading = false;
     message = "";
     attemptedAt = 0;

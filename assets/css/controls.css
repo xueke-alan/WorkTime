@@ -80,6 +80,8 @@ body #personalSettingsForm :is(#employmentDate, #workCity) {
 }
 body .editor #dayForm .time-entry .clock-input::placeholder,
 body #settingsForm #workCity::placeholder,
+body input::placeholder,
+body input:is([type="number"], [inputmode="numeric"])::placeholder,
 body input.clock-input::placeholder {
   font: inherit;
   letter-spacing: inherit;
@@ -196,7 +198,7 @@ body :is(.backup-button-group, .settings-button-group) button.ui-button + button
   border-left: 1px solid var(--control-border) !important;
 }
 /* Keep OA text and symbols on stable raster sizes at desktop scaling. */
-body .sidebar-actions :is(#importOpen, #importOASite, [data-import-clipboard]) .ui-icon {
+body .sidebar-actions :is(#importOpen, #importOASite) .ui-icon {
   width: var(--icon-size);
   height: var(--icon-size);
 }
@@ -214,9 +216,6 @@ body #importOpen .import-main > span {
     body .sidebar-actions > #importOpen {
       font-size: round(nearest, 0.928571rem, 1px);
       --control-height: round(nearest, 3rem, 2px);
-    }
-    body .sidebar-actions .import-clipboard {
-      width: round(nearest, 3rem, 2px);
     }
     body #importOpen .ui-icon {
       width: round(nearest, 1.285714rem, 2px);

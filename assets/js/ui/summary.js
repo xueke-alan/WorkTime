@@ -33,13 +33,29 @@ WorkTimeApp.ui.createSummary = function (options) {
     const [a, b] = bounds(),
       valid = rangeValid(),
       ready = state.settings.configured,
-      actual = valid ? C.summary(state, a, b) : C.summary(state, "", "");
+      actual = valid ? C.summary(state, a, b) : C.summary(state, "", ""),
+      requirement =
+        ready && valid
+          ? C.selectOvertimeRequirement(state, a, b).targetMinutes
+          : null,
+      surplus =
+        requirement === null
+          ? null
+          : actual.workOvertime - requirement * actual.attendance,
+      surplusMinutes = surplus === null ? null : Math.round(Math.abs(surplus)),
+      surplusNegative = surplus < 0 && surplusMinutes > 0;
     const data = [
       [
         "平均加班",
         ready && valid && actual.average !== null ? actual.average / 60 : 0,
         "工作日加班 ÷ 折算出勤",
         { decimals: 3, unit: "h" },
+      ],
+      [
+        "工时盈余",
+        surplusMinutes,
+        "累计加班 − 加班要求 × 折算出勤",
+        { unit: "" },
       ],
       [
         "折算出勤",
@@ -77,6 +93,7 @@ WorkTimeApp.ui.createSummary = function (options) {
       cards = data.map(([label, , description]) => {
         const card = document.createElement("article");
         card.className = "card" + (label === "平均加班" ? " average-card" : "");
+        if (label === "工时盈余") card.classList.add("surplus-card");
         card.innerHTML =
           '<div class="card-label"></div><div class="metric"></div>' +
           (description ? '<div class="card-foot"></div>' : "");
@@ -85,16 +102,43 @@ WorkTimeApp.ui.createSummary = function (options) {
       });
       $("cards").replaceChildren(...cards);
       cards[0].after(targetPanel);
+      const divider = document.createElement("hr");
+      divider.className = "summary-divider";
+      divider.setAttribute("aria-hidden", "true");
+      cards[1].after(divider);
     }
     data.forEach((item, index) => {
-      numbers.set(cards[index].querySelector(".metric"), item[1], {
-        ...item[3],
-        alignInk: true,
-        unit: item[1] === null ? "" : item[3].unit,
-      });
+      const metric = cards[index].querySelector(".metric");
+      if (item[0] === "工时盈余") {
+        if (surplusMinutes === null) updateHTML(metric, "—");
+        else {
+          updateHTML(
+            metric,
+            '<span class="surplus-hours"></span><span class="surplus-minutes"></span>',
+          );
+          numbers.set(
+            metric.querySelector(".surplus-hours"),
+            (surplusNegative ? "-" : "") + Math.floor(surplusMinutes / 60),
+            { unit: "h", alignInk: true },
+          );
+          numbers.set(
+            metric.querySelector(".surplus-minutes"),
+            surplusMinutes % 60,
+            { unit: "m", alignInk: true },
+          );
+        }
+      } else
+        numbers.set(metric, item[1], {
+          ...item[3],
+          alignInk: true,
+          unit: item[1] === null ? "" : item[3].unit,
+        });
       if (item[2])
         updateHTML(cards[index].querySelector(".card-foot"), item[2]);
     });
+    cards[1]
+      .querySelector(".metric")
+      .classList.toggle("is-negative", surplusNegative);
     $("setupNotice").classList.toggle("hidden", ready);
     $("storageNotice").classList.toggle("hidden", !storageFailed);
     renderTarget();

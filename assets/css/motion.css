@@ -3,9 +3,9 @@ body .sidebar-actions > #importOpen {
   position: relative;
 }
 body #importOpen .import-main {
-  /* Keep a full-width layout and center its contents beside the square actions.
+  /* Keep a full-width layout and center its contents beside the square action.
      Animating a margin resized the label every frame and retriggered alignment. */
-  transform: translateX(calc(-1 * var(--oa-action-size)));
+  transform: translateX(calc(-0.5 * var(--oa-action-size)));
   transition: transform 280ms var(--motion-ease), background 160ms ease;
 }
 body .sidebar-actions .import-secondary-actions {
@@ -20,6 +20,17 @@ body .sidebar-actions:has(#importOpen.is-return) .import-secondary-actions {
   visibility: hidden;
   pointer-events: none;
   transition: transform 280ms var(--motion-ease), opacity 280ms var(--motion-ease), visibility 0s 280ms;
+}
+/* Commit the OA entry before its external window can suspend rendering. */
+body .summary-sidebar.sidebar-navigation-instant #importOpen .import-main,
+body .summary-sidebar.sidebar-navigation-instant .import-secondary-actions {
+  transition-duration: 0s;
+  transition-delay: 0s;
+}
+body .summary-sidebar.sidebar-navigation-instant .sidebar-oa-workspace,
+body .summary-sidebar.sidebar-navigation-instant .sidebar-oa-pane[open] {
+  animation-duration: 0s;
+  animation-delay: 0s;
 }
 @media (prefers-reduced-motion: reduce) {
   body #importOpen .import-main,

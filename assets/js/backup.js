@@ -2,7 +2,7 @@
 /** Backup transport independent of DOM, storage and confirmation dialogs. */
 WorkTimeApp.services.backup = (() => {
   const PREFIX = "WORKTIME:GZIP:1:";
-  const MAX_BYTES = 30 * 1024 * 1024;
+  const MAX_BYTES = 100 * 1024 * 1024;
   async function encode(raw) {
     const bytes = new Uint8Array(
       await new Response(
@@ -19,7 +19,7 @@ WorkTimeApp.services.backup = (() => {
     text = text.trim();
     const limitError = () =>
       Error("备份超过 " + Math.round(maxBytes / 1024 / 1024) + "MB 大小限制。");
-    if (text.length > maxBytes * 1.4) throw limitError();
+    if (new TextEncoder().encode(text).length > maxBytes) throw limitError();
     if (text.startsWith(PREFIX)) {
       const binary = atob(text.slice(PREFIX.length));
       const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));

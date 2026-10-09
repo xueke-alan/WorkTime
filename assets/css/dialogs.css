@@ -1,3 +1,29 @@
+/* Compact recovery dialog; only the snapshot list grows and scrolls. */
+body #recoveryDialog {
+  width: min(520px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  max-height: 88dvh;
+}
+body #recoveryDialog[open] { display: flex; flex-direction: column; }
+body #recoveryDialog .dialog-head,
+body #recoveryDialog .dialog-body { padding: 1rem 1.25rem; }
+body #recoveryDialog .dialog-head,
+body #recoveryDialog .dialog-foot { flex: none; }
+body #recoveryDialog .dialog-body { min-height: 0; max-height: none; }
+body #recoveryDialog .help { margin: 0; line-height: 1.6; }
+body #recoveryDialog #snapshotList {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.571429rem;
+  margin-top: 1rem;
+  max-height: 240px;
+  overflow-y: auto;
+}
+body #recoveryDialog #snapshotList button { flex: none; }
+body #recoveryDialog #recoveryError:empty { display: none; }
+body #recoveryDialog .dialog-foot { padding: 0.857143rem 1.25rem; flex-wrap: wrap; }
+
 /* Residual shared-file rules restored to their component owner. */
 dialog {
   padding: 0;
@@ -124,6 +150,7 @@ dialog::backdrop {
   width: 560px;
 }
 .import-input-grid {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 14px;
@@ -134,6 +161,27 @@ dialog::backdrop {
   height: 160px;
   min-height: 160px;
   resize: none;
+  padding-bottom: 4.428571rem;
+}
+.import-input-grid .import-paste-button {
+  --control-height: 3.142857rem;
+  --control-radius: 0.357143rem;
+  position: absolute;
+  bottom: 0.571429rem;
+  right: 1.571429rem;
+  padding: 0;
+}
+.import-input-grid .import-paste-button .ui-icon {
+  width: 1.714286rem;
+  height: 1.714286rem;
+}
+body #importDialog #pasteOAClipboard {
+  border: 0;
+  background: color-mix(in srgb, var(--accent) 5%, white);
+  box-shadow: none;
+}
+body #importDialog #pasteOAClipboard:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 10%, white);
 }
 #importTable tbody tr:hover {
   background: var(--theme-surface-paper, #f9fcfa);

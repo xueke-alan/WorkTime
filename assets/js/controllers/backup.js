@@ -12,8 +12,9 @@ WorkTimeApp.ui.createBackupController = function (options) {
     actions,
     clipboard,
     downloads,
-    clock,
     preferences,
+    persistence,
+    exportArchive,
   } = options;
   let restoreData = null;
   let pendingTheme = null;
@@ -25,11 +26,13 @@ WorkTimeApp.ui.createBackupController = function (options) {
   const BACKUP_MAX_BYTES = WorkTimeApp.services.backup.MAX_BYTES;
   const compressBackupText = WorkTimeApp.services.backup.encode;
   const readBackupText = (text) =>
-    WorkTimeApp.services.backup.decode(text, C.validateBackup);
+    WorkTimeApp.services.backup.decode(
+      text,
+      WorkTimeApp.services.archive.migrate,
+    );
   function updateRecovery() {
     const issue = model.loadIssue;
-    $("exportCorruptStorage").hidden =
-      !model.loadCorrupt || getOriginalStorageText() === null;
+    $("exportCorruptStorage").hidden = getOriginalStorageText() === null;
     $("restoreStorage").hidden = !model.loadCorrupt;
     $("initializeStorage").hidden = issue !== "corrupt";
     $("convertStorage").hidden = issue !== "unsupported";
@@ -47,33 +50,22 @@ WorkTimeApp.ui.createBackupController = function (options) {
       );
   }
   function finishThemeRestore() {
-    const result = preferences.saveTheme(pendingTheme);
-    if (!result.persisted) {
-      $("restoreError").textContent =
-        "记录已恢复，主题未保存：" + result.error.message;
-      $("retryRestoreTheme").hidden = false;
-      $("confirmRestore").disabled = true;
-      actions.toast("记录已恢复，主题未保存，请重试", "error");
-      return;
-    }
+    WorkTimeApp.services.preferences.page.synchronize();
     pendingTheme = null;
     $("restoreDialog").close();
     actions.toast("备份已恢复", "countdown");
   }
-  function exportedState() {
-    return {
-      ...model.state,
-      preferences: preferences.state,
-      exportedAt: clock.now().toISOString(),
-    };
-  }
-  function backup() {
-    download(
-      "工作记录备份-" + model.today + ".json",
-      JSON.stringify(exportedState(), null, 2),
-      "application/json;charset=utf-8",
-    );
-    actions.toast("备份已下载", "countdown");
+  async function backup() {
+    try {
+      download(
+        "工作记录备份-" + model.today + ".json",
+        JSON.stringify(await exportArchive(), null, 2),
+        "application/json;charset=utf-8",
+      );
+      actions.toast("备份已下载", "countdown");
+    } catch (error) {
+      actions.toast("备份失败：" + error.message, "error");
+    }
   }
   let backupCopying = false;
   async function copyBackup() {
@@ -82,8 +74,11 @@ WorkTimeApp.ui.createBackupController = function (options) {
     if (backupCopying) return;
     backupCopying = true;
     try {
-      const raw = JSON.stringify(exportedState());
-      const text = await compressBackupText(raw);
+      const raw = JSON.stringify(await exportArchive());
+      const text =
+        typeof CompressionStream === "function"
+          ? await compressBackupText(raw)
+          : raw;
       if (disposed || lifetime !== generation) return;
       await clipboard.writeText(text);
       if (disposed || lifetime !== generation) return;
@@ -166,6 +161,72 @@ WorkTimeApp.ui.createBackupController = function (options) {
     disposed = false;
     generation++;
     updateRecovery();
+    events.handler($("recoveryOpen"), "onclick", async () => {
+      try {
+        const rows = await persistence.snapshots();
+        const list = $("snapshotList");
+        list.replaceChildren();
+        for (const row of rows) {
+          const button = document.createElement("button");
+          button.className = "ui-button";
+          button.textContent =
+            (row.type === "daily" ? "日常快照 " : "操作前快照 ") +
+            new Date(row.at).toLocaleString("zh-CN");
+          button.onclick = () => {
+            try {
+              const data = WorkTimeApp.services.archive.migrate(row.document);
+              $("recoveryDialog").close();
+              previewRestore(data, "历史快照");
+            } catch (error) {
+              $("recoveryError").textContent =
+                "此快照无法直接恢复，请下载恢复资料保留原文：" + error.message;
+            }
+          };
+          list.append(button);
+        }
+        if (!rows.length) list.textContent = "暂无历史快照。";
+        $("recoveryError").textContent = "";
+        actions.open("recoveryDialog");
+      } catch (error) {
+        actions.toast("恢复资料读取失败：" + error.message, "error");
+      }
+    });
+    events.handler($("downloadRecovery"), "onclick", async () => {
+      try {
+        download(
+          "工作记录恢复资料-" + model.today + ".json",
+          JSON.stringify(await persistence.recoveryData(), null, 2),
+          "application/json;charset=utf-8",
+        );
+      } catch (error) {
+        $("recoveryError").textContent = error.message;
+      }
+    });
+    events.handler($("clearSnapshots"), "onclick", () =>
+      actions.open("clearSnapshotsDialog"),
+    );
+    events.handler($("confirmClearSnapshots"), "onclick", async () => {
+      try {
+        await persistence.clearSnapshots();
+        $("clearSnapshotsDialog").close();
+        $("snapshotList").textContent = "暂无历史快照。";
+      } catch (error) {
+        actions.toast("快照清理失败：" + error.message, "error");
+      }
+    });
+    events.handler($("restoreLegacy"), "onclick", async () => {
+      try {
+        const data = await persistence.recoveryData();
+        if (!data.legacyText) throw Error("没有可读取的旧存档。");
+        previewRestore(
+          WorkTimeApp.services.archive.migrate(JSON.parse(data.legacyText)),
+          "遗留旧存档",
+        );
+        $("recoveryDialog").close();
+      } catch (error) {
+        $("recoveryError").textContent = error.message;
+      }
+    });
     events.handler($("exportCorruptStorage"), "onclick", exportOriginal);
     events.handler($("exportBeforeInitialize"), "onclick", exportOriginal);
     events.handler($("restoreStorage"), "onclick", restoreFromClipboard);
@@ -174,9 +235,11 @@ WorkTimeApp.ui.createBackupController = function (options) {
       $("initializeError").textContent = "";
       actions.open("initializeDialog");
     });
-    events.handler($("confirmInitialize"), "onclick", () => {
+    events.handler($("confirmInitialize"), "onclick", async () => {
       try {
-        const result = application.initialize(preferences.state.pageTheme);
+        const result = await application.initialize(
+          preferences.state.pageTheme,
+        );
         if (!result.persisted) {
           $("initializeError").textContent =
             "初始化未保存：" + result.error.message;
@@ -210,7 +273,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
       if (!f) return;
       restoreData = null;
       try {
-        if (f.size > BACKUP_MAX_BYTES) throw Error("备份超过 30MB。");
+        if (f.size > BACKUP_MAX_BYTES) throw Error("备份超过 100 MiB。");
         const decoded = await readBackupText(await f.text());
         if (disposed || lifetime !== generation) return;
         previewRestore(decoded, "文件");
@@ -221,14 +284,22 @@ WorkTimeApp.ui.createBackupController = function (options) {
       }
       e.target.value = "";
     });
-    events.handler($("confirmRestore"), "onclick", () => {
+    events.handler($("confirmRestore"), "onclick", async () => {
       if (!restoreData) return;
-      const result = application.restore(restoreData);
+      const candidate = restoreData;
+      $("confirmRestore").disabled = true;
+      let result;
+      try {
+        result = await application.restore(candidate);
+      } catch (error) {
+        result = { persisted: false, error };
+      }
       if (!result.persisted) {
         $("restoreError").textContent = "恢复未保存：" + result.error.message;
+        $("confirmRestore").disabled = false;
         return;
       }
-      pendingTheme = restoreData.preferences.pageTheme;
+      pendingTheme = candidate.preferences.pageTheme;
       restoreData = null;
       actions.render();
       finishThemeRestore();

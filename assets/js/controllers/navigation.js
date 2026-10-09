@@ -271,7 +271,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         calculateBatchEndTime();
       }
     });
-    events.handler($("batchForm"), "onsubmit", (e) => {
+    events.handler($("batchForm"), "onsubmit", async (e) => {
       e.preventDefault();
       for (const date of model.batchDays)
         if (!C.canBatchEditDate(model.state, date))
@@ -292,7 +292,8 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         return;
       }
       const count = model.batchDays.size;
-      const saved = application.saveBatch(model.batchDays, record).persisted;
+      const saved = (await application.saveBatch(model.batchDays, record))
+        .persisted;
       model.batchMode = false;
       model.batchDays.clear();
       model.batchAnchor = null;

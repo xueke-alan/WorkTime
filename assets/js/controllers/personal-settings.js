@@ -326,7 +326,7 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
     closeCities();
     WorkTimeApp.ui.fieldErrors.clear($("personalSettingsError"));
   }
-  function savePersonal({ validate = false, cityOnly = false } = {}) {
+  async function savePersonal({ validate = false, cityOnly = false } = {}) {
     const errorElement = $("personalSettingsError");
     try {
       let employmentDate = dateValue();
@@ -341,7 +341,7 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
         }
         employmentDate = model.state.personal.employmentDate;
       }
-      const result = application.savePersonal({
+      const result = await application.savePersonal({
         employmentDate,
         workCity: $("workCity").value.trim(),
       });

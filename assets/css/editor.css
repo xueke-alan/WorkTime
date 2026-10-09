@@ -1292,6 +1292,7 @@ body .editor .editor-date {
   font-size: 1.571429rem;
   line-height: 1.3;
   margin-top: 0;
+  font-variant-numeric: tabular-nums;
 }
 body .editor,
 body .editor-content {
@@ -1839,6 +1840,12 @@ body .editor .settings-pane-actions {
   flex: none;
   padding: 0.857143rem var(--editor-gutter) var(--editor-gutter);
 }
+body .editor .settings-content-divider {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 1rem 0;
+}
+body .editor .settings-archive-actions { display: flex; flex-wrap: wrap; }
 body .editor .settings-pane-actions button {
   height: var(--control-height);
   min-height: var(--control-height);
@@ -1976,9 +1983,9 @@ body .editor :is(#dayForm, #batchForm) .time-template-header .time-template-titl
 }
 body .editor .time-template-header :is(#addTimeTemplate, #batchAddTimeTemplate) {
   --control-height: 1.857143rem;
-  width: var(--control-height) !important;
-  min-width: var(--control-height) !important;
-  max-width: var(--control-height) !important;
+  width: var(--input-height) !important;
+  min-width: var(--input-height) !important;
+  max-width: var(--input-height) !important;
   height: var(--control-height) !important;
   min-height: var(--control-height) !important;
   padding: 0;

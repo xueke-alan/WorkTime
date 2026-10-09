@@ -32,15 +32,10 @@
     });
   }
   const forecastState = new WeakMap();
-  const forecastModeKey = "worktime.weather.forecastMode";
   function readForecastMode() {
-    try {
-      return g.localStorage.getItem(forecastModeKey) === "daily"
-        ? "daily"
-        : "hourly";
-    } catch {
-      return "hourly";
-    }
+    return WorkTimeApp.services.preferences.page.state.forecastMode === "daily"
+      ? "daily"
+      : "hourly";
   }
   let resumeFrame = 0;
   let resumeCount = 0;
@@ -304,9 +299,7 @@
       }
       saved.mode = mode;
       if (animate) {
-        try {
-          g.localStorage.setItem(forecastModeKey, mode);
-        } catch {}
+        void WorkTimeApp.services.preferences.page.saveForecastMode(mode);
       }
       for (const [key, view] of Object.entries(views)) {
         view.hidden = key !== mode;

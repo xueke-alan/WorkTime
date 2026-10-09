@@ -20,7 +20,7 @@
     const file = event.target.files[0],
       request = generation;
     if (!file) return;
-    if (file.size > WorkTimeApp.services.backup.MAX_BYTES * 1.4) {
+    if (file.size > WorkTimeApp.services.backup.MAX_BYTES) {
       element("status").textContent = "文件超过备份大小限制。";
       return;
     }
@@ -45,7 +45,7 @@
       element("backupOutput").value = JSON.stringify(result, null, 2);
       element("download").disabled = false;
       element("status").textContent =
-        `转换成功：${Object.keys(result.days).length} 个日期，${result.imports.length} 次导入，${result.scheduleRanges.length} 个排班区间。`;
+        `转换成功：${result.modules.length} 个独立模块。`;
     } catch (error) {
       if (!disposed && request === generation)
         element("status").textContent = "转换失败：" + error.message;
@@ -54,7 +54,7 @@
   element("download").addEventListener("click", () => {
     if (disposed || element("download").disabled) return;
     downloads.download(
-      "工作记录备份-v3.json",
+      "工作记录备份-archive.json",
       element("backupOutput").value,
       "application/json;charset=utf-8",
     );

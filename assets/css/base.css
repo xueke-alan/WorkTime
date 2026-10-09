@@ -321,6 +321,10 @@ input[type="checkbox"] {
   background: #fff1d9;
   color: #ab731d;
 }
+.pill.overtime-plan {
+  background: #f0eafb;
+  color: #7150a3;
+}
 .pill.blue {
   background: #edf1fb;
   color: #637ab5;

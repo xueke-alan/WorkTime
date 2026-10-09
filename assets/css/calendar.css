@@ -1321,12 +1321,34 @@ body button.year-day:hover {
   filter: brightness(0.94);
 }
 body button.year-day.selected {
-  border: 0;
-  box-shadow: inset 0 0 0 3px var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 body .year-month .year-day.selected > span {
-  color: var(--theme-text-strong, var(--ink));
   opacity: 1;
+}
+body .year-month .year-day[aria-current="date"] > span {
+  position: relative;
+  top: -2px;
+  line-height: 1;
+  opacity: 1;
+}
+body button.year-day[aria-current="date"]::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 10px;
+  max-width: calc(100% - 6px);
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+body .year-month .year-day.selected:focus-visible {
+  box-shadow:
+    inset 0 0 0 1px var(--accent),
+    inset 0 -2px 0 currentColor !important;
 }
 @media (max-width: 540px) {
   .year-days {

@@ -37,6 +37,7 @@
     } = {},
   ) {
     if (disposed) return;
+    element.classList.toggle("summary-number-value", Boolean(unit));
     const number =
       value === null
         ? null
@@ -146,7 +147,6 @@
     if (unit) {
       const label = document.createElement("small");
       label.textContent = unit;
-      if (alignInk) label.dataset.numberInk = "";
       element.append(label);
     }
   }
