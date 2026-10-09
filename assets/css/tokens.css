@@ -28,7 +28,7 @@
   --clock-border: #9dc4b5;
   --clock-ink: #244e40;
   --clock-placeholder: #839f93;
-  --clock-font: 16px;
+  --clock-font: clamp(18px, 1.285714rem, 22px);
   --motion-fast: 160ms;
   --motion-normal: 240ms;
   --motion-enter: 360ms;

@@ -44,43 +44,42 @@ WorkTimeApp.ui.createSummary = function (options) {
       [
         "折算出勤",
         ready && valid ? Number(actual.attendance.toFixed(4)) : null,
-        "按请假时长折算",
+        "",
         { unit: "d" },
       ],
       [
         "工作日加班",
         ready && valid ? actual.workOvertime / 60 : null,
-        "包含调休补班",
+        "",
         { decimals: 2, unit: " h" },
       ],
       [
         "休息日加班",
         ready && valid ? actual.restOvertime / 60 : null,
-        "不参与平均加班",
+        "",
         { decimals: 2, unit: " h" },
       ],
       [
         "总工时",
         ready && valid ? actual.total / 60 : null,
-        '<span class="fixed-record-count">' +
-          actual.completeDays +
-          "</span> d · 完整记录",
+        "",
         { decimals: 2, unit: " h" },
       ],
       [
         "待录入",
         valid ? C.pendingWorkdays(state, a, b, today) : null,
-        "未完整打卡的工作日",
+        "",
         { unit: "d" },
       ],
     ];
     const targetPanel = document.querySelector(".target-panel");
     if (!cards.length) {
-      cards = data.map(([label]) => {
+      cards = data.map(([label, , description]) => {
         const card = document.createElement("article");
         card.className = "card" + (label === "平均加班" ? " average-card" : "");
         card.innerHTML =
-          '<div class="card-label"></div><div class="metric"></div><div class="card-foot"></div>';
+          '<div class="card-label"></div><div class="metric"></div>' +
+          (description ? '<div class="card-foot"></div>' : "");
         card.firstElementChild.textContent = label;
         return card;
       });
@@ -93,7 +92,8 @@ WorkTimeApp.ui.createSummary = function (options) {
         alignInk: true,
         unit: item[1] === null ? "" : item[3].unit,
       });
-      updateHTML(cards[index].querySelector(".card-foot"), item[2]);
+      if (item[2])
+        updateHTML(cards[index].querySelector(".card-foot"), item[2]);
     });
     $("setupNotice").classList.toggle("hidden", ready);
     $("storageNotice").classList.toggle("hidden", !storageFailed);

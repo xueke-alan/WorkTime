@@ -15,6 +15,18 @@ WorkTimeApp.domain.schedule = (() => {
     );
     return range ? { ...state.settings, ...range.schedule } : state.settings;
   }
+  function canBatchEditDate(state, date) {
+    if (!validDate(date)) return false;
+    const day = state.days[date] || {};
+    return (
+      WorkTimeApp.domain.calendar.calendarInfo(date, day).work &&
+      !day.plannedOvertime &&
+      !(
+        day.leaveMinutes > 0 &&
+        day.leaveMinutes >= scheduleForDate(state, date).standardMinutes
+      )
+    );
+  }
   function scheduleError(path, message) {
     const error = Error(message + " [" + path + "]");
     error.name = "BackupValidationError";
@@ -197,6 +209,7 @@ WorkTimeApp.domain.schedule = (() => {
   }
   return {
     scheduleForDate,
+    canBatchEditDate,
     validateSchedule,
     validateScheduleRanges,
     scheduleSignature,

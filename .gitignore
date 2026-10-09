@@ -3,10 +3,8 @@
 !/.github/
 !/assets/
 !/data/
-!/docs/
 !/licenses/
 !/scripts/
-!/tests/
 !/tools/
 !/.gitignore
 !/.gitattributes
@@ -36,14 +34,25 @@
 __pycache__/
 *.py[cod]
 
-# Keep only maintained documentation; historical reports/screenshots stay local.
-/docs/*
-!/docs/ARCHITECTURE.md
-!/docs/CSS_CONTRACT.md
-!/docs/PERFORMANCE_CONTRACT.md
-!/docs/WEATHER.md
-!/docs/BACKUP_CONVERSION.md
-!/docs/ANIMATION_COMPATIBILITY.md
+# Local documentation, tests and review tools stay off GitHub.
+/docs/
+/tests/
+/scripts/*
+!/scripts/check-site.cjs
+!/scripts/verify-offline.cjs
+!/scripts/clean-css.cjs
+!/scripts/data-update.cjs
+!/scripts/fetch_weather.py
+!/scripts/sync-major-festivals.cjs
+!/scripts/sync-material-icons.cjs
+!/scripts/sync-weather-cities.cjs
+!/scripts/update-history.cjs
+!/scripts/update-international-festivals.cjs
+!/scripts/version-site.cjs
+!/scripts/lib/
+!/scripts/vendor/
+/scripts/lib/*
+!/scripts/lib/wiki-source.cjs
 
 # Local configuration, credentials and editor files
 .env

@@ -95,7 +95,7 @@ WorkTimeApp.ui.createImportController = function (options) {
   }
   function parseImport(inputSources = null) {
     invalidatePreview(false);
-    const year = updateImportYearHint(),
+    const year = clock.year(),
       sources = Array.isArray(inputSources) ? inputSources : [];
     if (!inputSources && $("pasteText").value.trim())
       sources.push({ name: "粘贴文本", raw: $("pasteText").value });
@@ -378,18 +378,28 @@ WorkTimeApp.ui.createImportController = function (options) {
     showImportDetail(log.id);
     actions.open("sourceDialog");
   }
-  function updateImportYearHint() {
-    const year = clock.year();
-    $("importYearHint").textContent =
-      "默认按 " + year + " 年导入；近期跨年日期自动推断，提示后请核查";
-    return year;
-  }
   const oaShortcut = $("oaShortcut");
   function editOALink() {
     $("oaLinkInput").value = model.state.oaUrl || "";
     $("oaLinkError").textContent = "";
     actions.open("oaLinkDialog");
     $("oaLinkInput").focus();
+  }
+  function openOAWebsite() {
+    if (!model.state.oaUrl) {
+      editOALink();
+      return;
+    }
+    try {
+      const url = new URL(model.state.oaUrl);
+      if (!["http:", "https:"].includes(url.protocol))
+        throw Error("请使用 http 或 https 链接。");
+      window.open(url.href, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      if (disposed) return;
+      editOALink();
+      $("oaLinkError").textContent = error.message;
+    }
   }
   let bound = false;
   function bind() {
@@ -449,15 +459,21 @@ WorkTimeApp.ui.createImportController = function (options) {
       actions.saveFeedback(saved, "导入记录已删除，工时统计已更新");
     });
     events.handler($("sourceOpen"), "onclick", showSources);
-    events.listen($("sourceDialog"), "click", detailClick);
-    events.handler($("importOpen"), "onclick", (e) => {
-      if (e.target.closest("[data-import-clipboard]")) importFromClipboard();
-      else {
-        updateImportYearHint();
-        parseImport();
-        actions.open("importDialog");
-      }
+    events.handler($("importOASite"), "onclick", () => {
+      parseImport();
+      actions.open("importDialog");
+      openOAWebsite();
     });
+    events.listen($("sourceDialog"), "click", detailClick);
+    events.handler($("importOpen"), "onclick", () => {
+      parseImport();
+      actions.open("importDialog");
+    });
+    events.handler(
+      document.querySelector("[data-import-clipboard]"),
+      "onclick",
+      importFromClipboard,
+    );
     events.handler($("importOpen"), "onkeydown", (e) => {
       if (
         e.key === "Enter" &&
@@ -471,22 +487,7 @@ WorkTimeApp.ui.createImportController = function (options) {
     holdAction = WorkTimeApp.ui.createHoldAction({
       button: oaShortcut,
       enabled: () => !!model.state.oaUrl,
-      onShort: () => {
-        if (!model.state.oaUrl) {
-          editOALink();
-          return;
-        }
-        try {
-          const url = new URL(model.state.oaUrl);
-          if (!["http:", "https:"].includes(url.protocol))
-            throw Error("请使用 http 或 https 链接。");
-          window.open(url.href, "_blank", "noopener,noreferrer");
-        } catch (error) {
-          if (disposed) return;
-          editOALink();
-          $("oaLinkError").textContent = error.message;
-        }
-      },
+      onShort: openOAWebsite,
       onLong: editOALink,
       cancelShortAfterFeedback: true,
     });
@@ -509,7 +510,6 @@ WorkTimeApp.ui.createImportController = function (options) {
         $("oaLinkError").textContent = error.message;
       }
     });
-    updateImportYearHint();
     events.handler($("pasteText"), "oninput", scheduleImportParse);
     events.handler($("commitImport"), "onclick", () => {
       if (!preview || !preview.rows.length || $("commitImport").disabled)

@@ -313,6 +313,15 @@ body .notification-empty {
   color: var(--muted);
 }
 
+.batch-selection-count {
+  margin: 0;
+  padding-block: 0.857143rem;
+  padding-inline-start: 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--text-body);
+  text-align: left;
+}
 .batch-editor h2 {
   font-size: 21px;
   margin-top: 2px;
@@ -1844,11 +1853,10 @@ body .editor .settings-pane-actions button {
 
 /* Equal-width expected attendance, recorded attendance and average overtime. */
 body #dayPreview .preview-day.has-daily-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: 0; font-size: 0.75rem; line-height: 1.4; }
-body #dayPreview .preview-day.has-daily-metrics > span { display: inline-flex; align-items: baseline; min-width: 0; gap: 0.15rem; white-space: nowrap; }
-body #dayPreview .preview-day.has-daily-metrics > span + span { padding-inline-start: 0.25rem; }
+body #dayPreview .preview-day.has-daily-metrics > span { display: inline-flex; align-items: baseline; justify-content: flex-start; min-width: 0; padding-inline: 0; gap: 0.428571rem; white-space: nowrap; }
 body #dayPreview .preview-day.has-daily-metrics strong { font-size: 0.9rem; font-weight: 650; font-variant-numeric: tabular-nums; }
 body #dayPreview .preview-totals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-body #dayPreview .preview-totals > span { padding-inline: 0.35rem; font-size: 0.85rem; }
+body #dayPreview .preview-totals > span { padding-inline: 0; font-size: 0.85rem; }
 body #dayPreview .preview-values { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.2rem; margin-top: 0.15rem; white-space: nowrap; }
 body #dayPreview .preview-totals strong { font-size: 0.95rem; white-space: nowrap; overflow-wrap: normal; }
 body #dayPreview #expectedHours { flex: 0 0 4.6ch; width: 4.6ch; }
@@ -1951,6 +1959,78 @@ body .editor #dayForm .time-template-title {
   margin: 0 0 var(--field-spacing);
 }
 body .editor #dayForm .template-toolbar { gap: var(--row-spacing); }
+/* Compact template slots keep three per row, with the add action in the heading. */
+body .editor .time-template-area {
+  --template-control-height: 2rem;
+  --template-edit-width: 1.428571rem;
+}
+body .editor .time-template-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.571429rem;
+  margin-bottom: var(--field-spacing);
+}
+body .editor :is(#dayForm, #batchForm) .time-template-header .time-template-title {
+  margin: 0;
+}
+body .editor .time-template-header :is(#addTimeTemplate, #batchAddTimeTemplate) {
+  --control-height: 1.857143rem;
+  width: var(--control-height) !important;
+  min-width: var(--control-height) !important;
+  max-width: var(--control-height) !important;
+  height: var(--control-height) !important;
+  min-height: var(--control-height) !important;
+  padding: 0;
+  flex: none;
+}
+body .editor .time-template-header :is(#addTimeTemplate, #batchAddTimeTemplate) .ui-icon {
+  width: 1.142857rem;
+  height: 1.142857rem;
+}
+body .editor .time-template-area .template-toolbar {
+  display: block;
+}
+body .editor .time-template-area .time-template-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.428571rem;
+  width: 100%;
+  overflow: visible;
+}
+body .editor .time-template-area .time-template-chip {
+  --control-height: var(--template-control-height);
+  width: 100%;
+  min-width: 0;
+  border-radius: 0.5rem;
+}
+body .editor .time-template-area .time-template-chip button {
+  font-size: 0.785714rem;
+}
+body .editor .time-template-area .template-fill {
+  max-width: none;
+  padding-inline: 0.285714rem;
+}
+body .editor .time-template-area .template-fill .button-label {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+body .editor .time-template-area .template-edit.icon-only {
+  width: var(--template-edit-width) !important;
+  min-width: var(--template-edit-width) !important;
+  max-width: var(--template-edit-width) !important;
+  flex: 0 0 var(--template-edit-width);
+}
+body .editor .time-template-area .template-edit.icon-only .ui-icon {
+  width: 1rem;
+  height: 1rem;
+}
+body .editor .time-template-list .template-empty {
+  grid-column: 1 / -1;
+}
 body .editor #dayForm .day-action-row {
   margin-bottom: var(--section-spacing);
   padding-top: var(--section-spacing);

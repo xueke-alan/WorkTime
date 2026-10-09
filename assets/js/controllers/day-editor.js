@@ -119,6 +119,34 @@ WorkTimeApp.ui.createDayController = function (options) {
     });
     events.listen(
       document,
+      "keydown",
+      (event) => {
+        const input = event.target;
+        if (
+          event.key !== "Enter" ||
+          event.isComposing ||
+          event.repeat ||
+          event.ctrlKey ||
+          event.altKey ||
+          event.metaKey ||
+          event.shiftKey ||
+          !(input instanceof HTMLInputElement) ||
+          !input.matches("input.clock-input:not(.date-entry)") ||
+          input.disabled ||
+          input.readOnly ||
+          input.value.trim()
+        )
+          return;
+        const value = normalizeClock(input.placeholder);
+        if (value === null) return;
+        event.preventDefault();
+        input.value = value;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      },
+      true,
+    );
+    events.listen(
+      document,
       "input",
       (event) => {
         const input = event.target;

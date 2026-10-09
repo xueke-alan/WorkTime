@@ -89,13 +89,17 @@ WorkTimeApp.domain.validation = (() => {
       template.name.trim().length > 30
     )
       fail(path + ".name", "模板名称须为 1–30 个字符。");
-    clock(template.start, path + ".start");
-    clock(template.end, path + ".end");
+    clock(template.start, path + ".start", true);
+    clock(template.end, path + ".end", true);
+    if (!template.start && !template.end)
+      fail(path + ".start", "请至少填写上班或下班时间。");
     if (typeof template.nextDay !== "boolean")
       fail(path + ".nextDay", "请填写完整的上下班时间。");
     if (
+      template.start &&
+      template.end &&
       timeMin(template.end) + (template.nextDay ? 1440 : 0) <
-      timeMin(template.start)
+        timeMin(template.start)
     )
       fail(path + ".end", "下班早于上班，跨午夜请勾选“次日下班”。");
     return {

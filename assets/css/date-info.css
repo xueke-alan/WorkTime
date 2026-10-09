@@ -332,6 +332,10 @@ body #countdownFocusToggle:focus-visible .ui-icon {
 body.is-countdown-focused {
   overflow: hidden;
 }
+body.is-countdown-focused #countdownFocusToggle {
+  top: 2rem;
+  right: 2rem;
+}
 body.is-countdown-focused .countdown-focus-hidden {
   visibility: hidden !important;
   pointer-events: none !important;

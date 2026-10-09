@@ -3,8 +3,59 @@
 WorkTimeApp.ui.createNavigationController = function (options) {
   const events = WorkTimeApp.ui.createEventScope();
   const { core: C, model, actions, element: $, clock, application } = options;
+  const animationCompat = WorkTimeApp.ui.animationCompat;
+  const reducedMotion = animationCompat.preference();
+  let todayAttention = null,
+    unlistenMotion;
+
+  function stopTodayAttention() {
+    todayAttention?.cancel();
+    todayAttention = null;
+  }
+  function highlightToday() {
+    stopTodayAttention();
+    const card = $("calendar").querySelector(
+      "button.day[data-date=" + JSON.stringify(model.today) + "]",
+    );
+    if (!card || document.hidden) return;
+    // Read the final selected surface, rather than an in-flight hover/selection color.
+    for (const animation of card.getAnimations?.() || []) {
+      if (
+        ["background-color", "box-shadow"].includes(
+          animation.transitionProperty,
+        )
+      )
+        animation.finish();
+    }
+    const style = getComputedStyle(card),
+      background = style.backgroundColor,
+      accent = style.getPropertyValue("--accent").trim() || "#439e7f",
+      shadow = style.boxShadow === "none" ? "" : style.boxShadow + ", ",
+      bright = `color-mix(in srgb, ${background} 88%, white)`,
+      ring = (spread, blur, opacity) =>
+        `${shadow}0 0 ${blur}px ${spread}px color-mix(in srgb, ${accent} ${opacity}%, transparent)`;
+    const frames = reducedMotion.matches
+      ? [
+          { backgroundColor: bright, boxShadow: ring(3, 0, 22) },
+          { backgroundColor: bright, boxShadow: ring(3, 0, 22) },
+        ]
+      : [
+          { offset: 0, backgroundColor: background, boxShadow: ring(0, 0, 0) },
+          { offset: 0.3, backgroundColor: bright, boxShadow: ring(3, 10, 32) },
+          { offset: 1, backgroundColor: background, boxShadow: ring(8, 16, 0) },
+        ];
+    const attention = animationCompat.animate(card, frames, {
+      duration: 800,
+      easing: "ease-out",
+    });
+    todayAttention = attention;
+    attention.finished.then(() => {
+      if (todayAttention === attention) todayAttention = null;
+    });
+  }
 
   function navigateMonth(v) {
+    stopTodayAttention();
     model.yearMode = false;
     if (!/^\d{4}-\d{2}$/.test(v) || !C.validDate(v + "-01")) return;
     model.month = v;
@@ -93,11 +144,17 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   function bind() {
     if (bound) return;
     bound = true;
+    unlistenMotion = animationCompat.listen(reducedMotion, stopTodayAttention);
+    events.listen(document, "visibilitychange", () => {
+      if (document.hidden) stopTodayAttention();
+    });
+    events.listen($("calendar"), "click", stopTodayAttention, true);
     events.handler($("calendar"), "onclick", (e) => {
       const b = e.target.closest("button.day[data-date]");
       if (!b) return;
       const k = b.dataset.date;
       if (model.batchMode) {
+        if (!C.canBatchEditDate(model.state, k)) return;
         if (e.shiftKey && model.batchAnchor) {
           const [first, last] = [model.batchAnchor, k].sort();
           for (const card of $("calendar").querySelectorAll(
@@ -107,7 +164,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
             if (
               date >= first &&
               date <= last &&
-              C.calendarInfo(date, model.state.days[date] || {}).work
+              C.canBatchEditDate(model.state, date)
             )
               model.batchDays.add(date);
           }
@@ -132,6 +189,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       }
     });
     events.handler($("monthTitle"), "onclick", () => {
+      stopTodayAttention();
       if (model.yearMode) {
         model.yearMode = false;
         model.month = model.returnMonth;
@@ -158,6 +216,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         ?.focus();
     });
     events.handler($("prevMonth"), "onclick", () => {
+      stopTodayAttention();
       if (model.yearMode) {
         if (model.viewYear > 1900) model.viewYear--;
         actions.renderCalendar();
@@ -168,6 +227,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       navigateMonth(C.dateKey(d).slice(0, 7));
     });
     events.handler($("nextMonth"), "onclick", () => {
+      stopTodayAttention();
       if (model.yearMode) {
         if (model.viewYear < 9999) model.viewYear++;
         actions.renderCalendar();
@@ -180,8 +240,10 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     events.handler($("todayButton"), "onclick", () => {
       model.today = clock.today();
       navigateMonth(model.today.slice(0, 7));
+      highlightToday();
     });
     events.handler($("batchToggle"), "onclick", () => {
+      stopTodayAttention();
       if ($("settingsDialog").open) actions.closeSettings();
       model.batchMode = !model.batchMode;
       model.batchDays.clear();
@@ -190,6 +252,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       actions.renderCalendar();
     });
     events.handler($("batchCancel"), "onclick", () => {
+      stopTodayAttention();
       model.batchMode = false;
       model.batchDays.clear();
       model.batchAnchor = null;
@@ -210,6 +273,9 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
     events.handler($("batchForm"), "onsubmit", (e) => {
       e.preventDefault();
+      for (const date of model.batchDays)
+        if (!C.canBatchEditDate(model.state, date))
+          model.batchDays.delete(date);
       if (!model.batchDays.size) {
         $("batchError").textContent = "请先选择需要填写的日期。";
         return;
@@ -235,6 +301,9 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
   }
   function dispose() {
+    stopTodayAttention();
+    unlistenMotion?.();
+    unlistenMotion = null;
     events.dispose();
     bound = false;
   }

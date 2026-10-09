@@ -148,6 +148,7 @@ WorkTimeApp.services.application = (() => {
       saveBatch(dates, record) {
         const days = { ...state.days };
         for (const date of dates) {
+          if (!C.canBatchEditDate(state, date)) continue;
           const day = { ...days[date] };
           if (day.oa || day.actual) {
             day.actual = { ...record };

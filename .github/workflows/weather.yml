@@ -29,8 +29,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Test collector
-        run: python -m unittest discover -s tests -p 'test_fetch_weather.py'
+      - name: Check collector syntax
+        run: python -m py_compile scripts/fetch_weather.py
       - name: Fetch office weather
         id: weather
         env:

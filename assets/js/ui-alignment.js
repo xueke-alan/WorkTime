@@ -9,6 +9,7 @@
     ".year-day>span",
     ".day-date .daynum-text",
     ".calendar .daykind",
+    ".calendar .day-average > span",
     ".summary-sidebar .card-label",
     ".summary-sidebar [data-number-ink]",
     ".sidebar-brand h1",

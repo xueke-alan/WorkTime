@@ -71,6 +71,13 @@ body .editor #dayForm input.number-input {
   min-height: var(--input-height) !important;
   max-height: var(--input-height) !important;
 }
+body #settingsForm .settings-requirement input.number-input {
+  font-size: 1rem;
+  font-weight: 600;
+}
+body #personalSettingsForm :is(#employmentDate, #workCity) {
+  font-size: 1rem;
+}
 body .editor #dayForm .time-entry .clock-input::placeholder,
 body #settingsForm #workCity::placeholder,
 body input.clock-input::placeholder {
@@ -200,7 +207,7 @@ body :is(.backup-button-group, .settings-button-group) button.ui-button + button
       font-size: round(nearest, 0.928571rem, 1px);
       --control-height: round(nearest, 3rem, 2px);
     }
-    body #importOpen .import-clipboard {
+    body .sidebar-actions .import-clipboard {
       width: round(nearest, 3rem, 2px);
     }
     body #importOpen .ui-icon {

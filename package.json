@@ -1,28 +1,15 @@
 {
   "name": "worktime",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "description": "Offline work time records; development tools do not affect file:// use.",
   "scripts": {
-    "test:struggle-days": "node tests/struggle-days.browser.cjs",
-    "test:weather": "node tests/weather.test.cjs && node tests/weather.browser.cjs && node tests/weather-freshness.browser.cjs && node tests/weather-hour-window.browser.cjs",
-    "test": "node scripts/test.cjs",
-    "test:schedule": "node tests/schedule.test.cjs && node tests/schedule.browser.cjs && node tests/schedule-change.browser.cjs && node tests/schedule-range-picker.browser.cjs",
-    "test:browser": "node scripts/test.cjs --browser",
-    "check": "node scripts/test.cjs --syntax",
-    "test:icons": "node scripts/test.cjs --resources",
-    "test:styles": "node scripts/test.cjs --styles",
+    "test": "npm run check",
+    "check": "node scripts/check-site.cjs",
+    "lint": "eslint assets/js scripts tools eslint.config.cjs --max-warnings 0",
     "format:css": "node scripts/clean-css.cjs",
-    "lint": "eslint assets/js scripts tests tools eslint.config.cjs --max-warnings 0",
-    "format:source": "prettier --write \"assets/js/**/*.js\" \"scripts/**/*.cjs\" \"tests/**/*.cjs\" \"tools/**/*.js\" eslint.config.cjs",
-    "check:format": "prettier --check \"assets/js/**/*.js\" \"scripts/**/*.cjs\" \"tests/**/*.cjs\" \"tools/**/*.js\" eslint.config.cjs",
-    "benchmark": "node scripts/benchmark-browser.cjs",
-    "trace": "node scripts/trace-browser.cjs",
-    "test:theme": "node tests/theme.browser.cjs",
-    "test:all": "node scripts/test.cjs --all",
-    "test:python": "node scripts/test.cjs --python",
-    "test:list": "node scripts/test.cjs --list",
-    "snapshot": "node scripts/snapshot-workspace.cjs"
+    "format:source": "prettier --write \"assets/js/**/*.js\" \"scripts/**/*.cjs\" \"tools/**/*.js\" eslint.config.cjs",
+    "check:format": "prettier --check \"assets/js/**/*.js\" \"scripts/**/*.cjs\" \"tools/**/*.js\" eslint.config.cjs"
   },
   "engines": {
     "node": ">=22.13"

@@ -35,13 +35,13 @@ jobs:
       - name: Install development dependencies
         run: npm ci
       - name: Code and data quality gate
-        run: node scripts/test.cjs --syntax --quality --unit --python
+        run: npm run check && npm run lint && npm run check:format
       - name: Install offline browser
         run: npx playwright install --with-deps chromium
       - name: Verify offline entry
         env:
           WORKTIME_BROWSER_CHANNEL: chromium
-        run: node tests/offline-entry.browser.cjs
+        run: node scripts/verify-offline.cjs
       - name: Prepare site
         run: |
           mkdir _site

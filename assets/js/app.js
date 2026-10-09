@@ -60,6 +60,7 @@ WorkTimeApp.services.bootstrap.run(
       persistence,
       core: {
         defaultState: D.state.defaultState,
+        canBatchEditDate: D.schedule.canBatchEditDate,
         validateBackup: D.validation.validateBackup,
         applyObservation: D.observations.applyObservation,
         compactOAState: D.observations.compactOAState,
@@ -183,6 +184,7 @@ WorkTimeApp.services.bootstrap.run(
     const calendarUI = WorkTimeApp.ui.createCalendar({
       ...shared,
       core: {
+        canBatchEditDate: D.schedule.canBatchEditDate,
         actualRecord: D.records.actualRecord,
         calculate: queries.calculate,
         calendarInfo: D.calendar.calendarInfo,
@@ -396,6 +398,7 @@ WorkTimeApp.services.bootstrap.run(
         WorkTimeApp.ui.createNavigationController,
         ["saveBatch"],
         {
+          canBatchEditDate: D.schedule.canBatchEditDate,
           calendarInfo: D.calendar.calendarInfo,
           complete: D.records.complete,
           dateKey: D.time.dateKey,

@@ -722,13 +722,13 @@
   vertical-align: initial;
 }
 .day-average .trend-up {
-  color: var(--theme-text-strong, #278260);
+  color: #00856a;
 }
 .day-average .trend-down {
-  color: #b96555;
+  color: #d13b32;
 }
 .day-average .trend-flat {
-  color: var(--theme-text-muted, #91a69a);
+  color: #506681;
 }
 @media (min-width: 1800px) and (min-height: 900px) {
   .day-average .trend-icon {
@@ -1379,20 +1379,12 @@ body .calendar .day-date {
   flex: none;
 }
 body .calendar .payday-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  --date-marker-background: #efd5ce;
+  display: block;
   width: calc(var(--date-ink-height, 1em) + 8px);
   height: calc(var(--date-ink-height, 1em) + 8px);
   flex: none;
-  border-radius: 50%;
-  background: #efd5ce;
   color: #bd514b;
-}
-body .calendar .payday-icon svg {
-  display: block;
-  width: 78%;
-  height: 78%;
 }
 body .calendar {
   --date-circle-size: 24px;
@@ -1612,7 +1604,7 @@ body .calendar .day-date .daynum-text {
   }
 }
 body .calendar .employment-icon {
-  background: #d3decf;
+  --date-marker-background: #d3decf;
   color: #49624c;
 }
 #backup.is-resetting .hold-progress {
@@ -1694,6 +1686,14 @@ body .panel-head #backup .backup-icon-slot {
 body .calendar .day[data-festival] .daykind {
   color: #aa624c;
   font-weight: 700;
+}
+
+/* Unavailable batch dates stay dim and do not respond to pointer hover. */
+body .calendar.is-batch-editing > button.day[aria-disabled="true"] {
+  --day-opacity: 0.55;
+  opacity: var(--day-opacity);
+  pointer-events: none;
+  cursor: default;
 }
 
 /* Shared date marker slot: overlap icons while the carousel changes. */

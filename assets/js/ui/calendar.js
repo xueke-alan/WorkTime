@@ -46,7 +46,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         label,
         hint: label + "；入职日期：" + start,
         className: " employment-icon",
-        icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2.5c0-3.6 3.1-6 7-6s7 2.4 7 6V21Z"/></svg>',
+        icon: '<g transform="translate(11 11) scale(3.25)" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2.5c0-3.6 3.1-6 7-6s7 2.4 7 6V21Z"/></g>',
       });
     }
     if (date === payday.date)
@@ -54,7 +54,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         label: "发薪日",
         hint: paydayHint,
         className: "",
-        icon: '<svg class="ui-icon" aria-hidden="true"><use href="#ms-currency-yen"/></svg>',
+        icon: '<use href="#ms-currency-yen" x="11" y="11" width="78" height="78" fill="currentColor"/>',
       });
     return {
       label: markers.map((marker) => " " + marker.label).join(""),
@@ -67,11 +67,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
           markers
             .map(
               (marker) =>
-                '<span class="payday-icon' +
+                '<svg class="payday-icon' +
                 marker.className +
-                '" aria-hidden="true">' +
+                '" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="50" fill="var(--date-marker-background)"/>' +
                 marker.icon +
-                "</span>",
+                "</svg>",
             )
             .join("") +
           "</span>"
@@ -303,6 +303,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const state = getState();
     const { today, month, selected, batchMode, batchDays, yearMode, viewYear } =
       getView();
+    for (const date of batchDays)
+      if (!C.canBatchEditDate(state, date)) batchDays.delete(date);
     if (!keepLeavePanel) closeLeavePanel();
     const viewChanged =
       renderedYearMode !== null && renderedYearMode !== yearMode;
@@ -385,6 +387,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     for (let i = 1; i <= total; i++) {
       const k = month + "-" + C.pad(i),
         day = state.days[k] || {},
+        batchEligible = C.canBatchEditDate(state, k),
         info = C.calendarInfo(k, day),
         r = C.effectiveRecord(day, true),
         sourceRecord = r || day.oa,
@@ -407,6 +410,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
       } else if (day.oa && day.oa.status === "pending") counts.pending++;
       const classes = [
         "day",
+        batchMode && batchEligible ? "batch-eligible" : "",
         !info.work ? "restday" : "",
         info.weekend ? "weekend" : "",
         isFullLeave(day, k)
@@ -480,6 +484,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         '" data-date="' +
         k +
         '"' +
+        (batchMode && !batchEligible ? ' aria-disabled="true"' : "") +
         (info.holiday ? ' data-holiday="' + esc(info.holiday) + '"' : "") +
         (info.festival ? ' data-festival="' + esc(info.festival) + '"' : "") +
         ' aria-pressed="' +
@@ -578,6 +583,10 @@ WorkTimeApp.ui.createCalendar = function (options) {
       batchMode ? "取消批量填写" : "批量填写",
     );
     $("batchSave").disabled = !batchDays.size;
+    updateText(
+      $("batchSelectionCount"),
+      "当前已选择 " + batchDays.size + " 天",
+    );
     $("batchToggle").classList.toggle("primary", batchMode);
     if (monthChanged) {
       $("calendar").style.setProperty("--motion-direction", direction);

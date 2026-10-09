@@ -3,27 +3,26 @@ body .sidebar-actions > #importOpen {
   position: relative;
 }
 body #importOpen .import-main {
-  margin-right: var(--control-height);
+  margin-right: calc(2 * var(--control-height));
   transition: margin-right 280ms ease, background 160ms ease;
 }
-body #importOpen .import-clipboard {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: var(--control-height);
-  transition: transform 280ms ease, opacity 280ms ease, background 160ms ease;
+body .sidebar-actions .import-secondary-actions {
+  transition: transform 280ms ease, opacity 280ms ease, visibility 0s;
 }
 body #importOpen.is-return .import-main {
   margin-right: 0;
 }
-body #importOpen.is-return .import-clipboard {
+body .sidebar-actions:has(#importOpen.is-return) .import-secondary-actions {
   transform: translateX(100%);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+  transition: transform 280ms ease, opacity 280ms ease, visibility 0s 280ms;
 }
 @media (prefers-reduced-motion: reduce) {
   body #importOpen .import-main,
-  body #importOpen .import-clipboard {
+  body .sidebar-actions .import-secondary-actions,
+  body .sidebar-actions:has(#importOpen.is-return) .import-secondary-actions {
     transition: none;
   }
 }
@@ -113,14 +112,14 @@ body .motion-sidebar-back {
 .motion-selection {
   animation: motion-selection 240ms ease-out;
 }
-body .calendar.is-batch-editing > button.day[data-date] {
+body .calendar.is-batch-editing > button.day.batch-eligible[data-date] {
   animation: motion-batch-wiggle 320ms ease-in-out -80ms infinite;
 }
-body .calendar.is-batch-editing > button.day[data-date]:nth-child(3n) {
+body .calendar.is-batch-editing > button.day.batch-eligible[data-date]:nth-child(3n) {
   animation-duration: 350ms;
   animation-delay: -170ms;
 }
-body .calendar.is-batch-editing > button.day[data-date]:nth-child(3n + 1) {
+body .calendar.is-batch-editing > button.day.batch-eligible[data-date]:nth-child(3n + 1) {
   animation-duration: 290ms;
   animation-delay: -230ms;
 }

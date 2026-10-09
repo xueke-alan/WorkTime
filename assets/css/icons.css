@@ -60,7 +60,3 @@ body .calendar .day-average .trend-icon {
   width: var(--icon-size-indicator);
   height: var(--icon-size-indicator);
 }
-body .calendar .payday-icon svg {
-  width: 78%;
-  height: 78%;
-}

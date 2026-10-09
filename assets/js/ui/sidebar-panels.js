@@ -17,6 +17,28 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     host = sidebar.querySelector(".sidebar-oa-workspace"),
     stack = [];
   let disposed = false;
+  function finishNavigationMotion() {
+    WorkTimeApp.ui.motion?.stop(host);
+    WorkTimeApp.ui.motion?.stop(document.getElementById("cards"));
+    for (const animation of sidebar.getAnimations?.({ subtree: true }) || []) {
+      const target = animation.effect?.target;
+      if (
+        !target?.closest?.(".sidebar-header") ||
+        !["margin-right", "transform", "opacity", "visibility"].includes(
+          animation.transitionProperty,
+        )
+      )
+        continue;
+      try {
+        animation.finish();
+      } catch {
+        /* Navigation remains usable without optional animation APIs. */
+      }
+    }
+  }
+  function onVisibility() {
+    if (document.hidden) finishNavigationMotion();
+  }
   const editor = document.querySelector(".workspace > .editor"),
     editorViews = [editor.querySelector(".editor-content")],
     settings = document.getElementById("settingsDialog");
@@ -135,9 +157,11 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     sidebar.classList.toggle("is-oa-open", !!active);
     const importOpen = document.getElementById("importOpen");
     importOpen.classList.toggle("is-return", !!active);
-    importOpen
-      .querySelector(".import-clipboard")
-      .setAttribute("aria-hidden", String(!!active));
+    const secondaryActions = document.querySelector(
+      ".import-secondary-actions",
+    );
+    secondaryActions.inert = !!active;
+    secondaryActions.setAttribute("aria-hidden", String(!!active));
     const returnLabel = stack.length > 1 ? "返回导入" : "返回概览";
     importOpen.querySelector(".import-main > span").textContent = active
       ? returnLabel
@@ -207,6 +231,8 @@ WorkTimeApp.ui.createSidebarPanels = function ({
           "#importDetailRawText,[data-detail-step]:not(:disabled)",
         ) || pane.querySelector(".dialog-head [data-close]")
     ).focus({ preventScroll: true });
+    // Commit the new surface before a synchronous OA popup takes focus.
+    void sidebar.offsetWidth;
     return true;
   }
   function closed(event) {
@@ -266,6 +292,8 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     settings.removeEventListener("close", closeSettings);
     editorTabs.removeEventListener("click", leaveSettingsFromTab);
     document.removeEventListener("keydown", keydown);
+    document.removeEventListener("visibilitychange", onVisibility);
+    window.removeEventListener("blur", finishNavigationMotion);
     document
       .getElementById("importOpen")
       .removeEventListener("click", returnFromHeader);
@@ -283,5 +311,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     .getElementById("importOpen")
     .addEventListener("click", returnFromHeader);
   document.addEventListener("keydown", keydown);
+  document.addEventListener("visibilitychange", onVisibility);
+  window.addEventListener("blur", finishNavigationMotion);
   return { open, dispose, closeSettings: closeSettingsPanel };
 };

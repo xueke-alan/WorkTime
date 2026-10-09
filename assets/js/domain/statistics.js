@@ -187,15 +187,7 @@ WorkTimeApp.domain.statistics = (() => {
     const earned = (derivedSummary || summary(state, start, end)).workOvertime;
     const today = state.days[asOf] || {},
       startsTomorrow =
-        start <= asOf &&
-        asOf <= end &&
-        [today.oa, today.draft, today.actual, today.estimate].some(
-          (record) =>
-            record &&
-            (record.start ||
-              record.end ||
-              Number.isFinite(record.effectiveMinutes)),
-        );
+        start <= asOf && asOf <= end && complete(effectiveRecord(today, true));
     let plannedDays = 0,
       remainingDays = 0;
     const cursor = localDate(start);

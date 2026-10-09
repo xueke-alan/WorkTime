@@ -83,19 +83,14 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       ? "编辑时间模板"
       : "新增时间模板";
     $("timeTemplateName").value = template ? template.name : "";
-    $("timeTemplateStart").value = template
-      ? template.start
-      : (defaults?.start ??
-        ($("dayStart").value ||
-          C.scheduleForDate(model.state, model.selected).workStart));
-    $("timeTemplateEnd").value = template
-      ? template.end
-      : (defaults?.end ??
-        ($("dayEnd").value ||
-          C.scheduleForDate(model.state, model.selected).workEnd));
-    $("timeTemplateNext").checked = template
-      ? template.nextDay
-      : (defaults?.nextDay ?? $("dayNext").checked);
+    const schedule = C.scheduleForDate(model.state, model.selected);
+    $("timeTemplateStart").placeholder =
+      defaults?.start || $("dayStart").value || schedule.workStart;
+    $("timeTemplateEnd").placeholder =
+      defaults?.end || $("dayEnd").value || schedule.workEnd;
+    $("timeTemplateStart").value = template ? template.start : "";
+    $("timeTemplateEnd").value = template ? template.end : "";
+    $("timeTemplateNext").checked = template ? template.nextDay : false;
     updateTimeTemplateNextToggle();
     $("deleteTimeTemplate").classList.toggle("hidden", !template);
     $("timeTemplateError").textContent = "";
@@ -107,6 +102,14 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       "aria-pressed",
       String($("timeTemplateNext").checked),
     );
+  }
+  // Empty fields leave the existing punch time (and its overnight flag) intact.
+  function applyTimeTemplate(template, prefix) {
+    if (template.start) $(prefix + "Start").value = template.start;
+    if (template.end) {
+      $(prefix + "End").value = template.end;
+      $(prefix + "Next").checked = template.nextDay;
+    }
   }
   function renderBatchTimeTemplates() {
     updateTemplateLimit();
@@ -170,9 +173,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         openTimeTemplate(template);
         return;
       }
-      $("dayStart").value = template.start;
-      $("dayEnd").value = template.end;
-      $("dayNext").checked = template.nextDay;
+      applyTimeTemplate(template, "day");
       WorkTimeApp.ui.fieldErrors.clear($("dayError"));
       if (actions.saveDayEdit())
         actions.toast(
@@ -245,9 +246,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         openTimeTemplate(template);
         return;
       }
-      $("batchStart").value = template.start;
-      $("batchEnd").value = template.end;
-      $("batchNext").checked = !!template.nextDay;
+      applyTimeTemplate(template, "batch");
       actions.updateBatchNextToggle();
       renderBatchTimeTemplates();
       $("batchError").textContent = "";

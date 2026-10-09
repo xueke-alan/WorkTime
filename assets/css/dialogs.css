@@ -288,7 +288,7 @@ dialog::backdrop {
   animation: oa-hold-fill 1.8s cubic-bezier(0.25, 0.65, 0.65, 0.92) forwards;
 }
 #oaLinkDialog {
-  width: 520px;
+  width: 720px;
 }
 #oaLinkInput::selection {
   background: var(--theme-surface-active, #c7e7d4);
