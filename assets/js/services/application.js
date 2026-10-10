@@ -240,8 +240,8 @@ WorkTimeApp.services.application = (() => {
           if (index < 0) throw Error("模板已不存在。");
           templates[index] = { ...templates[index], ...clean };
         } else {
-          if (templates.length >= 4)
-            throw Error("最多保存 4 个模板，请先删除一个模板。");
+          if (templates.length >= WorkTimeApp.services.templateShare.LIMIT)
+            throw Error("最多保存 6 个模板，请先删除一个模板。");
           templates.push(clean);
         }
         return commit({ ...state, timeTemplates: templates });
@@ -251,6 +251,17 @@ WorkTimeApp.services.application = (() => {
           ...state,
           timeTemplates: state.timeTemplates.filter((item) => item.id !== id),
         });
+      },
+      replaceTemplates(templates) {
+        const clean = WorkTimeApp.services.templateShare
+          .validate(templates)
+          .map((template) =>
+            C.validateTimeTemplate({
+              ...template,
+              id: A.uuid(),
+            }),
+          );
+        return commit({ ...state, timeTemplates: clean }, { atomic: true });
       },
       saveBatch(dates, record) {
         const days = { ...state.days };

@@ -874,3 +874,33 @@ body #scheduleRangeDialog { width: 900px; }
   #scheduleRangeDialog .dialog-body { grid-template-columns: minmax(0, 1fr); }
   .schedule-arrangements { padding-inline-start: 0; padding-top: 1.142857rem; border-inline-start: 0; border-top: 1px solid var(--line); }
 }
+/* Template transport stays compact while keeping pasted strings scrollable. */
+:is(#templateImportDialog, #templateShareDialog) {
+  width: min(520px, calc(100vw - 24px));
+}
+:is(#templateImportDialog, #templateShareDialog) textarea {
+  margin-block: 0.428571rem;
+  font-family: var(--font-numeric);
+  overflow-wrap: anywhere;
+}
+#templateImportPreview {
+  margin-block: 0.714286rem;
+  display: grid;
+  gap: 0.428571rem;
+}
+#templateImportPreview[hidden] {
+  display: none;
+}
+#templateImportPreview article {
+  padding: 0.571429rem 0.714286rem;
+  border: 1px solid var(--line);
+  border-radius: var(--control-radius);
+  overflow-wrap: anywhere;
+}
+#templateImportPreview article span {
+  display: block;
+  color: var(--muted);
+}
+:is(#templateImportDialog, #templateShareDialog) .dialog-foot {
+  flex-wrap: wrap;
+}

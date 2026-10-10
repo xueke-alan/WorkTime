@@ -207,7 +207,7 @@
   background: #19876b;
 }
 .dot.estimate {
-  background: #287eaf;
+  background: #e58a2b;
 }
 .weekdays {
   color: var(--theme-text-muted, #87968c);
@@ -273,7 +273,7 @@
   vertical-align: -0.08em;
 }
 .record-source-dot.manual {
-  background: #287eaf;
+  background: #e58a2b;
 }
 .record-source-dot.oa {
   background: #19876b;
@@ -371,9 +371,6 @@
     gap: 8px;
     font-size: 10px;
     margin-top: 10px;
-  }
-  .legend > span:last-child {
-    display: none;
   }
   .daykind {
     font-size: 8px;
@@ -745,7 +742,10 @@
 .calendar-footer .legend .dot {
   width: 1em;
   height: 1em;
-  vertical-align: -0.1em;
+  flex: none;
+}
+.calendar-footer .legend .legend-label {
+  display: inline-block;
 }
 @media (min-width: 1151px) {
   .workspace > section.panel > .panel-head {

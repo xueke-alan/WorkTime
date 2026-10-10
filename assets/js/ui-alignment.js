@@ -1,6 +1,8 @@
 /* Align single-line UI ink, keeping font metrics out of layout and paragraph flow. */
 (() => {
   "use strict";
+  const metricSelector =
+    ".summary-sidebar .card:not(.average-card):not(.surplus-card) .metric";
   const selectors = [
     "button.ui-button",
     ".month-title-year",
@@ -11,6 +13,7 @@
     ".calendar .daykind",
     ".calendar .day-average > span",
     ".summary-sidebar .card-label",
+    metricSelector,
     ".summary-sidebar [data-number-ink]",
     ".sidebar-brand h1",
     ".editor-day-header .editor-date",
@@ -18,6 +21,7 @@
     ".page-settings-header h2",
     "dialog:not(#sourceDialog) .dialog-head h2",
     "#calendarFoot",
+    ".calendar-footer .legend-label",
     ".almanac-watermark-text",
   ];
   const targetSelector = selectors.join(",");
@@ -165,9 +169,20 @@
       if ("fontStretch" in context)
         context.fontStretch = canvasFontStretch(style.fontStretch);
       // Date changes must retain one baseline, regardless of weekday glyph bounds.
+      const metric = element.matches(metricSelector);
+      const number = metric
+        ? element.querySelector(".summary-number-accessible")
+        : null;
       const text = element.matches(".editor-day-header .editor-date")
         ? "0123456789 · 周日一二三四五六"
-        : element.textContent.trim();
+        : (number || element).textContent.trim();
+      const baselineHost = metric ? document.createElement("span") : element;
+      if (metric) {
+        // Measure a stationary digit so rolling tracks cannot move the baseline.
+        baselineHost.style.cssText =
+          "position:absolute;top:0;left:0;visibility:hidden;line-height:1.3";
+        baselineHost.textContent = "0";
+      }
       measurements.push({
         element,
         metrics: cachedMetrics(style, text),
@@ -175,6 +190,7 @@
           ? dateInkHeight(style, text)
           : null,
         baselineProbe: probe.cloneNode(),
+        baselineHost,
       });
     }
     // Apply date geometry and add every zero-size baseline probe in one write phase.
@@ -186,7 +202,9 @@
             "--date-ink-height",
             item.dateBounds.height.toFixed(3) + "px",
           );
-      item.element.appendChild(item.baselineProbe);
+      if (item.baselineHost !== item.element)
+        item.element.appendChild(item.baselineHost);
+      item.baselineHost.appendChild(item.baselineProbe);
     }
     // No DOM writes between the first and last geometry reads.
     for (const item of measurements) {
@@ -198,10 +216,12 @@
       metrics,
       dateBounds,
       baselineProbe,
+      baselineHost,
       box,
       baseline,
     } of measurements) {
       baselineProbe.remove();
+      if (baselineHost !== element) baselineHost.remove();
       const inkCenter =
         baseline +
         (dateBounds
@@ -247,7 +267,10 @@
     observer.disconnect();
     const targets = new Set();
     const candidates = new Set();
-    for (const scope of scopes || [document]) {
+    const roots = scopes || [document];
+    for (const scope of roots) {
+      if (roots.some((other) => other !== scope && other.contains(scope)))
+        continue;
       if (scope instanceof Element && scope.matches(targetSelector))
         candidates.add(scope);
       scope
@@ -259,6 +282,12 @@
         // Ordinary controls share a baseline. Per-string ink corrections break that contract.
         return;
       }
+      // These cards align the complete metric, including its placeholder.
+      if (
+        element.hasAttribute("data-number-ink") &&
+        element.parentElement.matches(metricSelector)
+      )
+        return;
       // Components declare text layers; alignment never changes their structure.
       targets.add(element);
     });
@@ -374,12 +403,15 @@
   }
   function mutationsChanged(records) {
     for (const record of records) {
-      if (isMotionMetadata(record)) continue;
       const element =
         record.target instanceof Element
           ? record.target
           : record.target.parentElement;
       if (!element) continue;
+      // Digit tracks keep a fixed line box; their cleanup only changes visual rows.
+      // Wrapper/value replacement still reaches the observer through its parent.
+      if (element.closest(".summary-number-visual")) continue;
+      if (isMotionMetadata(record)) continue;
       const scope = element.closest(scopeSelector);
       if (scope) queue(scope);
       else queue();

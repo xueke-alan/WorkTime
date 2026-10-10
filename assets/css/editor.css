@@ -1978,6 +1978,34 @@ body .editor .time-template-header {
   gap: 0.571429rem;
   margin-bottom: var(--field-spacing);
 }
+.template-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--row-spacing, 0.571429rem);
+  flex: none;
+}
+.template-share-buttons {
+  --control-height: 1.857143rem;
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-height);
+  overflow: hidden;
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+}
+body .editor .time-template-header .template-share-buttons button {
+  --control-height: calc(1.857143rem - 2px);
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none;
+}
+body .editor .template-share-buttons button + button {
+  border-left: 1px solid var(--control-border) !important;
+}
+body .editor .template-share-buttons .ui-icon {
+  width: 0.857143rem;
+  height: 0.857143rem;
+}
 body .editor :is(#dayForm, #batchForm) .time-template-header .time-template-title {
   margin: 0;
 }

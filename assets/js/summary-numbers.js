@@ -135,14 +135,10 @@
       }
       wrapper.append(accessible, visual);
       element.replaceChildren(wrapper);
-      const digitRow = visual.querySelector(".summary-number-digit");
-      if (digitRow && pending.length) {
-        const height = getComputedStyle(digitRow).height;
-        if (parseFloat(height) > 0)
-          visual.style.setProperty("--number-row-height", height);
-        if (!document.documentElement.classList.contains("app-loading"))
-          pending.forEach(start);
-      }
+      // Rows and transforms share the CSS 1.3em height. Reading pixel geometry
+      // here would force a layout after every individual numeric DOM update.
+      if (!document.documentElement.classList.contains("app-loading"))
+        pending.forEach(start);
     }
     if (unit) {
       const label = document.createElement("small");

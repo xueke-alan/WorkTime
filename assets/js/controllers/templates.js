@@ -9,18 +9,163 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     actions,
     core: C,
     application,
+    clipboard,
   } = options;
-  const templateLimit = 4;
+  const transport = WorkTimeApp.services.templateShare;
+  const templateLimit = transport.LIMIT;
+  let sharing = false,
+    importing = false,
+    savingImport = false,
+    savingTemplate = false,
+    disposed = false,
+    generation = 0,
+    importPreview = null;
   function updateTemplateLimit() {
     const full = model.state.timeTemplates.length >= templateLimit;
     for (const id of ["addTimeTemplate", "batchAddTimeTemplate"]) {
       $(id).disabled = full;
-      $(id).title = full ? "模板已满（4 个），请先删除" : "新增时间模板";
+      $(id).title = full ? "模板已满（6 个），请先删除" : "新增时间模板";
+    }
+    for (const prefix of ["day", "batch"]) {
+      $(prefix + "ShareTemplates").disabled =
+        sharing || savingImport || !model.state.timeTemplates.length;
+      $(prefix + "ImportTemplates").disabled = importing;
+    }
+  }
+
+  function updateImportControls() {
+    $("templateImportText").disabled = importing;
+    $("parseTemplateImport").disabled =
+      importing || !$("templateImportText").value.trim();
+    $("confirmTemplateImport").disabled = importing || !importPreview;
+    $("templateImportDialog")
+      .querySelectorAll("[data-close]")
+      .forEach((button) => {
+        button.disabled = savingImport;
+      });
+    updateTemplateLimit();
+  }
+  function invalidateImport() {
+    generation++;
+    importPreview = null;
+    $("templateImportPreview").replaceChildren();
+    $("templateImportPreview").hidden = true;
+    $("templateImportError").textContent = "";
+    updateImportControls();
+  }
+  function openTemplateImport() {
+    if (importing) return;
+    $("templateImportText").value = "";
+    $("templateImportWarning").textContent =
+      "将替换现有全部模板，请核对预览后确认导入。";
+    invalidateImport();
+    actions.open("templateImportDialog");
+    $("templateImportText").focus({ preventScroll: true });
+  }
+  async function shareTemplates() {
+    if (sharing || !model.state.timeTemplates.length) return;
+    sharing = true;
+    updateTemplateLimit();
+    let text;
+    try {
+      text = await transport.encode(model.state.timeTemplates);
+      if (disposed) return;
+      await clipboard.writeText(text);
+      if (!disposed) actions.toast("打卡模板已复制到剪贴板");
+    } catch (error) {
+      if (disposed) return;
+      if (text) {
+        $("templateShareText").value = text;
+        $("templateShareError").textContent =
+          "无法自动复制，请全选后手动复制。";
+        actions.open("templateShareDialog");
+        $("templateShareText").focus({ preventScroll: true });
+        $("templateShareText").select();
+      } else actions.toast(error.userMessage || error.message, "error");
+    } finally {
+      sharing = false;
+      if (!disposed) updateTemplateLimit();
+    }
+  }
+  async function parseTemplateImport() {
+    if (importing) return;
+    invalidateImport();
+    const lifetime = generation;
+    const text = $("templateImportText").value;
+    importing = true;
+    updateImportControls();
+    try {
+      const templates = await transport.decode(text);
+      if (
+        disposed ||
+        lifetime !== generation ||
+        !$("templateImportDialog").open
+      )
+        return;
+      importPreview = templates;
+      $("templateImportPreview").innerHTML = templates
+        .map(
+          (template) =>
+            "<article><strong>" +
+            esc(template.name) +
+            "</strong><span>" +
+            esc(
+              (template.start ? "上班 " + template.start : "不填写上班") +
+                " · " +
+                (template.end
+                  ? "下班 " +
+                    template.end +
+                    (template.nextDay ? "（次日）" : "")
+                  : "不填写下班"),
+            ) +
+            "</span></article>",
+        )
+        .join("");
+      $("templateImportPreview").hidden = false;
+      $("templateImportWarning").textContent =
+        "将用这 " +
+        templates.length +
+        " 个模板替换现有全部 " +
+        model.state.timeTemplates.length +
+        " 个模板，请核对后确认导入。";
+    } catch (error) {
+      if (!disposed && lifetime === generation)
+        $("templateImportError").textContent =
+          error.userMessage || error.message;
+    } finally {
+      importing = false;
+      if (!disposed) updateImportControls();
+    }
+  }
+  async function confirmTemplateImport() {
+    if (importing || !importPreview) return;
+    importing = savingImport = true;
+    $("templateImportError").textContent = "";
+    updateImportControls();
+    try {
+      const result = await application.replaceTemplates(importPreview);
+      if (disposed) return;
+      if (!result.persisted) {
+        $("templateImportError").textContent =
+          "导入尚未保存，原模板已保留，可重试。" + (result.message || "");
+        return;
+      }
+      renderTimeTemplates();
+      $("templateImportDialog").close();
+      actions.saveFeedback(true, "打卡模板已导入");
+    } catch (error) {
+      if (!disposed)
+        $("templateImportError").textContent =
+          error.userMessage || error.message;
+    } finally {
+      importing = savingImport = false;
+      if (!disposed) updateImportControls();
     }
   }
 
   let templateEditingId = null,
     renderedTemplates = null,
+    renderedBatchTemplates = null,
     renderedTemplateIds = null,
     renderedBatchTemplateIds = null;
   function animateNewTemplates(list, previous) {
@@ -74,8 +219,9 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     renderBatchTimeTemplates();
   }
   function openTimeTemplate(template = null, defaults = null) {
+    if (savingTemplate) return;
     if (!template && model.state.timeTemplates.length >= templateLimit) {
-      actions.toast("模板已满（4 个），请先删除");
+      actions.toast("模板已满（6 个），请先删除");
       return;
     }
     templateEditingId = template ? template.id : null;
@@ -113,6 +259,9 @@ WorkTimeApp.ui.createTemplateController = function (options) {
   }
   function renderBatchTimeTemplates() {
     updateTemplateLimit();
+    const signature = JSON.stringify(model.state.timeTemplates);
+    if (signature === renderedBatchTemplates) return;
+    renderedBatchTemplates = signature;
     const list = $("batchTimeTemplateList");
     if (!model.state.timeTemplates.length) {
       list.innerHTML = '<span class="template-empty">暂无模板</span>';
@@ -151,9 +300,62 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     );
   }
   let bound = false;
+  function setTemplateSaving(value) {
+    savingTemplate = value;
+    $("timeTemplateDialog")
+      .querySelectorAll("button, input")
+      .forEach((control) => {
+        control.disabled = value;
+      });
+  }
   function bind() {
     if (bound) return;
     bound = true;
+    disposed = false;
+    for (const prefix of ["day", "batch"]) {
+      events.handler($(prefix + "ShareTemplates"), "onclick", shareTemplates);
+      events.handler(
+        $(prefix + "ImportTemplates"),
+        "onclick",
+        openTemplateImport,
+      );
+    }
+    events.listen($("templateImportText"), "input", invalidateImport);
+    events.handler($("parseTemplateImport"), "onclick", parseTemplateImport);
+    events.handler(
+      $("confirmTemplateImport"),
+      "onclick",
+      confirmTemplateImport,
+    );
+    events.listen($("templateImportDialog"), "close", invalidateImport);
+    events.listen($("templateImportDialog"), "cancel", (event) => {
+      if (savingImport) event.preventDefault();
+    });
+    events.handler($("selectTemplateShare"), "onclick", () => {
+      $("templateShareText").focus({ preventScroll: true });
+      $("templateShareText").select();
+    });
+    events.handler($("copyTemplateShare"), "onclick", async () => {
+      const button = $("copyTemplateShare");
+      if (button.disabled) return;
+      button.disabled = true;
+      try {
+        await clipboard.writeText($("templateShareText").value);
+        if (!disposed) {
+          $("templateShareDialog").close();
+          actions.toast("打卡模板已复制到剪贴板");
+        }
+      } catch {
+        if (!disposed)
+          $("templateShareError").textContent = "复制失败，请全选后手动复制。";
+      } finally {
+        if (!disposed) button.disabled = false;
+      }
+    });
+    updateImportControls();
+    events.listen($("timeTemplateDialog"), "cancel", (event) => {
+      if (savingTemplate) event.preventDefault();
+    });
     events.handler($("timeTemplateNextToggle"), "onclick", () => {
       $("timeTemplateNext").checked = !$("timeTemplateNext").checked;
       updateTimeTemplateNextToggle();
@@ -184,12 +386,14 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     });
     events.handler($("timeTemplateForm"), "onsubmit", async (e) => {
       e.preventDefault();
+      if (savingTemplate) return;
+      setTemplateSaving(true);
       try {
         if (
           !templateEditingId &&
           model.state.timeTemplates.length >= templateLimit
         )
-          throw Error("模板已满（4 个），请先删除。");
+          throw Error("模板已满（6 个），请先删除。");
         const template = C.validateTimeTemplate({
           id: templateEditingId || WorkTimeApp.services.archive.uuid(),
           name: $("timeTemplateName").value,
@@ -200,6 +404,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         const saved = (
           await application.saveTemplate(template, !!templateEditingId)
         ).persisted;
+        if (disposed) return;
         templateEditingId = template.id;
         renderTimeTemplates();
         if (saved) $("timeTemplateDialog").close();
@@ -208,16 +413,29 @@ WorkTimeApp.ui.createTemplateController = function (options) {
             "模板尚未保存，可重试提交或关闭后备份。";
         actions.saveFeedback(saved, "时间模板已保存");
       } catch (err) {
-        $("timeTemplateError").textContent = err.userMessage || err.message;
+        if (!disposed)
+          $("timeTemplateError").textContent = err.userMessage || err.message;
+      } finally {
+        if (!disposed) setTemplateSaving(false);
       }
     });
     events.handler($("deleteTimeTemplate"), "onclick", async () => {
-      if (!templateEditingId) return;
-      const saved = (await application.removeTemplate(templateEditingId))
-        .persisted;
-      renderTimeTemplates();
-      $("timeTemplateDialog").close();
-      actions.saveFeedback(saved, "时间模板已删除");
+      if (savingTemplate || !templateEditingId) return;
+      setTemplateSaving(true);
+      try {
+        const saved = (await application.removeTemplate(templateEditingId))
+          .persisted;
+        if (disposed) return;
+        renderTimeTemplates();
+        $("timeTemplateDialog").close();
+        actions.saveFeedback(saved, "时间模板已删除");
+      } catch (error) {
+        if (!disposed)
+          $("timeTemplateError").textContent =
+            error.userMessage || error.message;
+      } finally {
+        if (!disposed) setTemplateSaving(false);
+      }
     });
     events.handler($("batchAddTimeTemplate"), "onclick", () =>
       openTimeTemplate(null, {
@@ -250,10 +468,14 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       events.listen($(id), "input", renderBatchTimeTemplates);
   }
   function dispose() {
+    disposed = true;
+    generation++;
     events.dispose();
     bound = false;
   }
   function hasDraft() {
+    if ($("templateImportDialog").open && $("templateImportText").value.trim())
+      return true;
     if (!$("timeTemplateDialog").open) return false;
     const original = model.state.timeTemplates.find(
       (item) => item.id === templateEditingId,

@@ -296,6 +296,7 @@ WorkTimeApp.services.bootstrap.run(
         "resetDay",
         "saveTemplate",
         "removeTemplate",
+        "replaceTemplates",
         "saveBatch",
         "importRecords",
         "removeImport",
@@ -401,7 +402,7 @@ WorkTimeApp.services.bootstrap.run(
     for (const [create, operations, core] of [
       [
         WorkTimeApp.ui.createTemplateController,
-        ["saveTemplate", "removeTemplate"],
+        ["saveTemplate", "removeTemplate", "replaceTemplates"],
         {
           scheduleForDate: D.schedule.scheduleForDate,
           validateTimeTemplate: D.validation.validateTimeTemplate,
