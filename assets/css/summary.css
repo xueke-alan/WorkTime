@@ -92,7 +92,7 @@
   line-height: 1.4;
 }
 .sidebar-actions {
-  --oa-action-size: var(--control-height);
+  --oa-action-size: calc(var(--control-height) * 1.25);
   display: flex;
   align-items: center;
   gap: 7px;
@@ -129,7 +129,7 @@ body .sidebar-actions .import-secondary-actions > button:hover {
 }
 @media (min-width: 1800px) {
   .sidebar-actions {
-    --oa-action-size: 3rem;
+    --oa-action-size: 3.75rem;
   }
   body .sidebar-actions #importOASite .ui-icon {
     width: 1.285714rem;
@@ -139,7 +139,7 @@ body .sidebar-actions .import-secondary-actions > button:hover {
 @supports (font-size: round(nearest, 1rem, 1px)) {
   @media (min-width: 1800px) {
     .sidebar-actions {
-      --oa-action-size: round(nearest, 3rem, 2px);
+      --oa-action-size: round(nearest, 3.75rem, 2px);
     }
     body .sidebar-actions #importOASite .ui-icon {
       width: round(nearest, 1.285714rem, 2px);
@@ -1260,7 +1260,11 @@ body .summary-sidebar :is(.metric, .target-value, .target-metric) small {
 }
 @media (min-width: 1151px) {
   body .summary-sidebar .cards {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
     grid-template-rows: auto auto repeat(5, auto);
     grid-auto-rows: auto;
     align-content: start;
@@ -1315,6 +1319,13 @@ body .summary-sidebar .card:is(.average-card, .surplus-card) .card-label {
 body .summary-sidebar .card:is(.average-card, .surplus-card) .metric {
   grid-column: 2;
   grid-row: 1;
+}
+/* Compact the five trailing totals when the desktop sidebar has limited height. */
+@container (max-height: 900px) {
+  body .summary-sidebar .cards > .card:nth-last-child(-n + 5) {
+    min-height: 3.285714rem;
+    padding-block: 0.428571rem;
+  }
 }
 @media (max-width: 540px) {
   body .summary-sidebar .card:not(.average-card) {
@@ -1925,6 +1936,8 @@ body .summary-sidebar #sourceDialog.import-detail-view > .dialog-foot {
 }
 /* Three figures share a right edge; the divider steps up between columns. */
 body .summary-sidebar .cards > .target-panel {
+  /* Include every row exposed by display: contents in the outer grid's sizing. */
+  height: max-content;
   --target-row-gap: 0rem;
   --target-heading-gap: 1rem;
   --target-number-inset: 0.142857rem;

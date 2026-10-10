@@ -81,6 +81,13 @@ body .calendar .day:is([data-holiday], .weekend, .full-leave) {
     border-color var(--motion-fast),
     box-shadow var(--motion-fast);
 }
+body .editor #dayForm :is(#plannedOvertimeToggle, #dayLeaveToggle) {
+  transition:
+    width var(--motion-normal) var(--motion-ease),
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
 body input,
 body select,
 body textarea {

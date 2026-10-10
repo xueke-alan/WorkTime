@@ -23,8 +23,13 @@ WorkTimeApp.ui.createTemplateController = function (options) {
   function updateTemplateLimit() {
     const full = model.state.timeTemplates.length >= templateLimit;
     for (const id of ["addTimeTemplate", "batchAddTimeTemplate"]) {
-      $(id).disabled = full;
-      $(id).title = full ? "模板已满（6 个），请先删除" : "新增时间模板";
+      const button = $(id);
+      button.disabled = full;
+      button.title = full ? "模板已满（6 个），请先删除" : "新增时间模板";
+      button.setAttribute("aria-label", button.title);
+      const icon = button.querySelector("use"),
+        href = full ? "#ms-block" : "#ms-add";
+      if (icon.getAttribute("href") !== href) icon.setAttribute("href", href);
     }
     for (const prefix of ["day", "batch"]) {
       $(prefix + "ShareTemplates").disabled =

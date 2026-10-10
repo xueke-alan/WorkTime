@@ -186,7 +186,10 @@
       measurements.push({
         element,
         metrics: cachedMetrics(style, text),
-        dateBounds: element.matches(".day-date .daynum-text,.calendar .daykind")
+        // Mixed Latin/CJK legends also need hinted pixel bounds, not outline metrics.
+        dateBounds: element.matches(
+          ".day-date .daynum-text,.calendar .daykind,.calendar-footer .legend-label",
+        )
           ? dateInkHeight(style, text)
           : null,
         baselineProbe: probe.cloneNode(),
@@ -375,6 +378,12 @@
     "motion-sidebar-back",
     "motion-dialog-preparing",
   ]);
+  const calendarSurfaceClasses = new Set([
+    "is-batch-editing",
+    "batch-eligible",
+    "batchselected",
+    "selected",
+  ]);
   function isMotionMetadata(record) {
     if (record.type !== "attributes") return false;
     const element = record.target;
@@ -386,8 +395,11 @@
       const changed = [...new Set([...before, ...after])].filter(
         (token) => before.has(token) !== after.has(token),
       );
-      return (
-        changed.length > 0 && changed.every((token) => motionClasses.has(token))
+      return changed.every(
+        (token) =>
+          motionClasses.has(token) ||
+          (element.matches(".calendar,.calendar > .day") &&
+            calendarSurfaceClasses.has(token)),
       );
     }
     if (record.attributeName !== "style") return false;

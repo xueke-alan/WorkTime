@@ -31,6 +31,14 @@ WorkTimeApp.ui.createCalendar = function (options) {
   let calendarMarkup = "";
   const calendarNodes = new Map();
   const markup = new WeakMap();
+  function attributeValue(element, attribute) {
+    if (attribute.name !== "class") return attribute.value;
+    // Font profiles belong to alignment, not the calendar's business markup.
+    const profiles = [...element.classList].filter((token) =>
+      ["ui-font-13", "ui-font-14-plus"].includes(token),
+    );
+    return [attribute.value, ...profiles].join(" ");
+  }
   function dateMarkers(date, payday, paydayHint) {
     const start = getState().personal.employmentDate,
       markers = [];
@@ -128,9 +136,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
       for (const attribute of [...button.attributes])
         if (!next.hasAttribute(attribute.name))
           button.removeAttribute(attribute.name);
-      for (const attribute of next.attributes)
-        if (button.getAttribute(attribute.name) !== attribute.value)
-          button.setAttribute(attribute.name, attribute.value);
+      for (const attribute of next.attributes) {
+        const value = attributeValue(button, attribute);
+        if (button.getAttribute(attribute.name) !== value)
+          button.setAttribute(attribute.name, value);
+      }
       updateText(button.querySelector("span"), next.textContent);
     }
     return true;
@@ -173,9 +183,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
           for (const attribute of previous.attributes)
             if (!candidate.hasAttribute(attribute))
               element.removeAttribute(attribute);
-          for (const attribute of candidate.attributes)
-            if (element.getAttribute(attribute.name) !== attribute.value)
-              element.setAttribute(attribute.name, attribute.value);
+          for (const attribute of candidate.attributes) {
+            const value = attributeValue(element, attribute);
+            if (element.getAttribute(attribute.name) !== value)
+              element.setAttribute(attribute.name, value);
+          }
           if (
             previous.content !== candidateContent &&
             !(

@@ -477,8 +477,8 @@
 .day.weekend:not([data-holiday]):not(.full-leave)::before {
   content: "";
   position: absolute;
-  right: 24%;
-  bottom: 16%;
+  right: 0;
+  bottom: 0;
   width: 95px;
   height: 95px;
   max-width: 88%;
@@ -739,10 +739,16 @@
   height: 16px;
 }
 
+.calendar-footer .legend:not(.year-legend) > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
 .calendar-footer .legend .dot {
   width: 1em;
   height: 1em;
   flex: none;
+  margin: 0;
 }
 .calendar-footer .legend .legend-label {
   display: inline-block;
@@ -1504,30 +1510,14 @@ body .calendar .day-date .daynum-text {
   pointer-events: none;
   z-index: -1;
 }
-/* Permanently reserve the weather area; National Day keeps its full-cell scenery. */
-.calendar .day.weekend:not([data-holiday]):not(.full-leave)::before,
-.calendar .day[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::before {
+/* Reserve space beside actual weather icons without lifting artwork into date labels.
+   Keep the same bottom anchor across viewport widths and display scaling. */
+.calendar .day.has-weather.weekend:not([data-holiday]):not(.full-leave)::before,
+.calendar .day.has-weather[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::before,
+#calendar .day.has-weather.full-leave::before {
   right: calc(clamp(32px, 3.5vw, 56px) + 1rem);
   bottom: 0.5rem;
   max-width: calc(100% - clamp(32px, 3.5vw, 56px) - 1.5rem);
-}
-@media (max-width: 1799px) {
-  .calendar .day.weekend:not([data-holiday]):not(.full-leave)::before,
-  .calendar .day[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::before {
-    right: 0.5rem;
-    bottom: calc(clamp(32px, 3.5vw, 56px) + 1rem);
-    max-width: 88%;
-    max-height: calc(100% - clamp(32px, 3.5vw, 56px) - 1.5rem);
-  }
-}
-#calendar .day.has-weather.full-leave::before {
-  right: 32%;
-  bottom: 20%;
-  width: 64%;
-  height: 60%;
-  max-width: none;
-  max-height: none;
-  opacity: 0.3;
 }
 #backup {
   touch-action: none;

@@ -68,21 +68,35 @@ WorkTimeApp.ui.year = (() => {
     );
   }
   function months(state, year, today) {
+    // Partition once: each monthly total only needs that month's records, even
+    // when the archive holds decades of history. Preserve record iteration order.
+    const records = new Map();
+    for (const [date, day] of Object.entries(state.days)) {
+      if (!date.startsWith(year + "-")) continue;
+      const month = date.slice(0, 7);
+      if (!records.has(month)) records.set(month, {});
+      records.get(month)[date] = day;
+    }
     const result = Array.from({ length: 12 }, (_, index) => {
       const prefix = year + "-" + pad(index + 1),
         first = prefix + "-01",
         total = new Date(year, index + 1, 0, 12).getDate();
       return {
         month: index + 1,
-        summary: summary(state, first, prefix + "-" + pad(total)),
+        summary: summary(
+          { ...state, days: records.get(prefix) || {} },
+          first,
+          prefix + "-" + pad(total),
+        ),
         offset: (localDate(first).getDay() + 6) % 7,
         days: Array.from({ length: total }, (_, i) => {
           const date = prefix + "-" + pad(i + 1),
             day = state.days[date] || {},
             info = calendarInfo(date, day),
-            calc = calculate(date, day, scheduleForDate(state, date), true);
+            schedule = scheduleForDate(state, date),
+            calc = calculate(date, day, schedule, true);
           const leave = Math.min(
-            scheduleForDate(state, date).standardMinutes,
+            schedule.standardMinutes,
             Math.max(0, day.leaveMinutes || 0),
           );
           const rest =
