@@ -904,3 +904,146 @@ body #scheduleRangeDialog { width: 900px; }
 :is(#templateImportDialog, #templateShareDialog) .dialog-foot {
   flex-wrap: wrap;
 }
+
+/* Keep template input and preview in a stable, independently scrollable frame. */
+body #templateImportDialog {
+  width: 860px;
+  max-width: calc(100vw - 24px);
+  height: 600px;
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+#templateImportDialog[open] { display: flex; flex-direction: column; }
+#templateImportDialog .dialog-head,
+#templateImportDialog .dialog-foot { flex: none; }
+#templateImportDialog .dialog-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+}
+.template-import-input,
+.template-import-preview-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+.template-import-preview-pane {
+  padding-inline-start: 24px;
+  border-inline-start: 1px solid var(--line);
+}
+#templateImportInputTitle,
+#templateImportPreviewTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+}
+#templateImportDialog #templateImportText {
+  flex: 1;
+  min-height: 0;
+  height: 0;
+  margin: 0;
+  resize: none;
+  overflow: auto;
+}
+#templateImportDialog :is(.help, .warnings) { margin: 0; overflow-wrap: anywhere; }
+#templateImportDialog .dialog-foot { align-items: center; }
+#templateImportDialog #templateImportError {
+  margin-inline-end: auto;
+  max-width: calc(100% - 290px);
+  max-height: 2.6em;
+  overflow: auto;
+  line-height: 1.3;
+}
+#templateImportError:empty { display: none; }
+.template-import-preview-scroll {
+  container-type: size;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+#templateImportPreview {
+  --template-preview-gap: 8px;
+  --template-preview-heading-height: calc(var(--text-small) * 1.5 + 4px);
+  --template-preview-card-height: calc((100cqh - var(--template-preview-heading-height) - 6 * var(--template-preview-gap)) / 6);
+  margin: 0;
+  align-content: start;
+  gap: var(--template-preview-gap);
+}
+#templateImportDialog #templateImportPreview :is(article, .template-preview-columns) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5.5rem 5.5rem;
+  align-items: center;
+  gap: 12px;
+  padding-inline: 10px;
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+#templateImportDialog #templateImportPreview article {
+  min-height: max(42px, var(--template-preview-card-height));
+  padding-block: 8px;
+}
+/* Match card borders so header and row columns share identical content edges. */
+.template-preview-columns {
+  height: var(--template-preview-heading-height);
+  border: 1px solid transparent;
+  color: var(--muted);
+  padding-block: 1px;
+}
+.template-preview-columns > span:first-child { text-align: start; }
+#templateImportPreview strong { text-align: start; min-width: 0; }
+#templateImportDialog #templateImportPreview .template-preview-time,
+.template-preview-columns > span:not(:first-child) {
+  position: relative;
+  padding-inline-end: 1.1rem;
+  text-align: end;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+#templateImportDialog #templateImportPreview .template-preview-time { font-family: var(--font-numeric); }
+.template-preview-nextday {
+  position: absolute;
+  inset-inline-end: 0;
+  top: -0.3em;
+  font-size: 0.7em;
+  font-weight: 650;
+  color: var(--accent);
+  line-height: 1;
+}
+@media (max-width: 700px) {
+  #templateImportDialog .dialog-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(80px, 1fr) minmax(120px, 2fr);
+    gap: 12px;
+    overflow: auto;
+  }
+  .template-import-preview-pane {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+    padding-block-start: 12px;
+    border-block-start: 1px solid var(--line);
+  }
+  #templateImportDialog #templateImportPreview :is(article, .template-preview-columns) {
+    grid-template-columns: minmax(0, 1fr) 4.5rem 4.5rem;
+    gap: 4px;
+    padding-inline: 6px;
+  }
+  #templateImportPreview { --template-preview-gap: 4px; }
+}
+.template-import-empty { margin: 0; color: var(--muted); line-height: 1.6; }
+.template-import-preview-scroll:has(#templateImportPreview:not([hidden])) .template-import-empty { display: none; }
+@media (max-width: 540px) {
+  #templateImportDialog .dialog-body { gap: 12px; padding: 16px; }
+  #templateImportDialog .dialog-foot { gap: 6px; padding: 12px; }
+  #templateImportDialog .dialog-foot button { min-width: 0; }
+  #templateImportDialog #templateImportError {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}

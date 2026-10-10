@@ -236,3 +236,18 @@ body #importOpen .import-main > span {
     }
   }
 }
+
+/* Overnight toggles retain a clear selected state in editors and dialogs. */
+body button.ui-button.nextday-toggle[aria-pressed="true"] {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px #ffffff30;
+}
+body button.ui-button.nextday-toggle[aria-pressed="true"]:hover:not(:disabled),
+body button.ui-button.nextday-toggle[aria-pressed="true"]:focus-visible,
+body button.ui-button.nextday-toggle[aria-pressed="true"]:active:not(:disabled) {
+  color: #fff;
+  background: var(--theme-accent-deep, var(--accent));
+  border-color: var(--theme-accent-deep, var(--accent));
+}

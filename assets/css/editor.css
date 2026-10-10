@@ -2018,6 +2018,18 @@ body .editor .time-template-header .template-header-actions .ui-icon {
   width: var(--icon-size);
   height: var(--icon-size);
 }
+body .editor .time-template-header :is(#dayImportTemplates, #batchImportTemplates) > .ui-icon {
+  width: calc(var(--icon-size) + 4px);
+  height: calc(var(--icon-size) + 4px);
+}
+body .editor .time-template-header :is(#addTimeTemplate, #batchAddTimeTemplate) > .ui-icon {
+  width: calc(var(--icon-size) + 4px);
+  height: calc(var(--icon-size) + 4px);
+}
+body .editor .time-template-header :is(#addTimeTemplate, #batchAddTimeTemplate):disabled > .ui-icon {
+  width: calc(var(--icon-size) + 2px);
+  height: calc(var(--icon-size) + 2px);
+}
 body .editor :is(#dayForm, #batchForm) .time-template-header .time-template-title {
   margin: 0;
 }
@@ -2256,3 +2268,27 @@ body #dayPreview #previewAverage { margin-top: 0.15rem; }
 .theme-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .theme-save-notice { margin-top: 0.85rem; color: var(--ink); }
 .theme-save-notice:empty { display: none; }
+
+/* Template sharing uses the same successful-copy ripple as calendar backup. */
+.template-share-buttons:has(.is-copying) { overflow: visible; }
+.template-share-icon-slot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+:is(#dayShareTemplates, #batchShareTemplates).is-copying .template-share-icon-slot::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: backup-ripple 450ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(#dayShareTemplates, #batchShareTemplates).is-copying .template-share-icon-slot::after {
+    animation: none;
+    opacity: 0;
+  }
+}

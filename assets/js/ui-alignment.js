@@ -98,18 +98,27 @@
     ink.fillText(text, 4, size * 2);
     const pixels = ink.getImageData(0, 0, raster.width, raster.height).data;
     let first = raster.height,
-      last = -1;
-    for (let y = 0; y < raster.height; y++)
-      for (let x = 0; x < raster.width; x++)
-        if (pixels[(y * raster.width + x) * 4 + 3] > 0) {
-          first = Math.min(first, y);
-          last = Math.max(last, y);
-          break;
-        }
+      last = -1,
+      left = raster.width,
+      right = -1;
+    // Only each row's outer pixels affect the bounds; skip the glyph interior.
+    for (let y = 0; y < raster.height; y++) {
+      const row = y * raster.width * 4;
+      let start = 0;
+      while (start < raster.width && !pixels[row + start * 4 + 3]) start++;
+      if (start === raster.width) continue;
+      let end = raster.width - 1;
+      while (end > start && !pixels[row + end * 4 + 3]) end--;
+      first = Math.min(first, y);
+      last = y;
+      left = Math.min(left, start);
+      right = Math.max(right, end);
+    }
     const height = last >= first ? (last - first + 1) / scale : size;
     const bounds = {
       height,
       center: last >= first ? (first + last + 1) / (2 * scale) - size * 2 : 0,
+      centerX: right >= left ? (left + right + 1) / (2 * scale) - 4 : 0,
     };
     return remember(dateInkHeights, key, bounds, 128);
   }
@@ -152,7 +161,7 @@
     for (const element of visible) {
       element.classList.add("ui-aligned-text");
       element.style.setProperty("--ui-ink-offset", "0px");
-      if (element.matches(".year-day>span"))
+      if (element.matches(".year-day>span,.day-date .daynum-text"))
         element.style.setProperty("--ui-ink-offset-x", "0px");
     }
     const measurements = [];
@@ -239,6 +248,11 @@
             metrics.actualBoundingBoxLeft -
             metrics.actualBoundingBoxRight) /
           2;
+        if (Number.isFinite(x))
+          element.style.setProperty("--ui-ink-offset-x", x.toFixed(3) + "px");
+      }
+      if (element.matches(".day-date .daynum-text") && dateBounds) {
+        const x = box.width / 2 - dateBounds.centerX;
         if (Number.isFinite(x))
           element.style.setProperty("--ui-ink-offset-x", x.toFixed(3) + "px");
       }
@@ -398,6 +412,8 @@
       return changed.every(
         (token) =>
           motionClasses.has(token) ||
+          (token === "is-copying" &&
+            element.matches("#dayShareTemplates,#batchShareTemplates")) ||
           (element.matches(".calendar,.calendar > .day") &&
             calendarSurfaceClasses.has(token)),
       );

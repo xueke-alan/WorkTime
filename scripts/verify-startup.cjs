@@ -5,6 +5,147 @@ const path = require("node:path");
 const http = require("node:http");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
+async function verifyTemplates(page) {
+  const templates = Array.from({ length: 6 }, (_, index) => ({
+    name: "跨午夜工作模板名称用于验证长文本可以完整换行显示" + index,
+    start: "08:00",
+    end: "01:30",
+    nextDay: true,
+  }));
+  const text = await page.evaluate(
+    (items) => WorkTimeApp.services.templateShare.encode(items),
+    templates,
+  );
+  await page.locator("#dayImportTemplates").click();
+  await page.locator("#templateImportText").fill(text);
+  await page.waitForSelector("#templateImportPreview article");
+  assert.equal(await page.locator("#templateImportPreview article").count(), 6);
+  assert.equal(await page.locator(".template-preview-nextday").count(), 6);
+  assert.match(
+    await page.locator("#templateImportWarning").textContent(),
+    /替换/,
+  );
+  for (const width of [1440, 768, 540, 375, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    const geometry = await page.evaluate(() => {
+      const pane = document.querySelector(".template-import-preview-scroll");
+      return {
+        overflow: pane.scrollWidth - pane.clientWidth,
+        names: [
+          ...document.querySelectorAll("#templateImportPreview strong"),
+        ].map((element) => element.getBoundingClientRect().width),
+        inputHeight: document.querySelector("#templateImportText").clientHeight,
+        rowsFit: [
+          ...document.querySelectorAll("#templateImportPreview article"),
+        ].every((row) => row.scrollHeight <= row.clientHeight),
+      };
+    });
+    assert.ok(geometry.overflow <= 1, "Template preview must fit at " + width);
+    assert.ok(geometry.names.every((size) => size >= 50));
+    assert.ok(geometry.inputHeight >= 40);
+    assert.ok(geometry.rowsFit, "Long names must fit their preview rows");
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.locator("#templateImportText").fill("invalid");
+  assert.equal(await page.locator("#confirmTemplateImport").isDisabled(), true);
+  await page.waitForFunction(
+    () => document.querySelector("#templateImportError").textContent,
+  );
+  await page.locator("#templateImportText").fill(text);
+  await page.locator("#templateImportDialog [data-close]").first().click();
+  await page.waitForTimeout(350);
+  assert.equal(await page.locator("#templateImportPreview article").count(), 0);
+  await page.locator("#dayImportTemplates").click();
+  assert.equal(await page.locator("#templateImportText").inputValue(), "");
+  // A decode already in flight must not restore a preview after closing.
+  await page.evaluate(() => {
+    const transport = WorkTimeApp.services.templateShare;
+    const decode = transport.decode;
+    transport.decode = async (value) => {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      return decode(value);
+    };
+    window.reviewRestoreDecode = () => {
+      transport.decode = decode;
+    };
+  });
+  await page.locator("#templateImportText").fill(text);
+  await page.locator("#parseTemplateImport").click();
+  await page.locator("#templateImportDialog [data-close]").first().click();
+  await page.waitForTimeout(250);
+  assert.equal(await page.locator("#templateImportPreview article").count(), 0);
+  assert.equal(await page.locator("#confirmTemplateImport").isDisabled(), true);
+  await page.evaluate(() => {
+    window.reviewRestoreDecode();
+    delete window.reviewRestoreDecode;
+  });
+  await page.locator("#dayImportTemplates").click();
+  await page.locator("#templateImportText").fill(text);
+  await page.waitForSelector("#templateImportPreview article");
+  await page.locator("#confirmTemplateImport").click();
+  await page.waitForFunction(
+    () => !document.querySelector("#templateImportDialog").open,
+  );
+  assert.equal(
+    await page.locator("#timeTemplateList [data-template-fill]").count(),
+    6,
+  );
+  assert.equal(await page.locator("#addTimeTemplate").isDisabled(), true);
+  // Exercise successful sharing without writing to the system clipboard.
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: async (value) => {
+          window.reviewSharedText = value;
+        },
+      },
+    });
+  });
+  await page.locator("#dayShareTemplates").click();
+  await page.waitForFunction(() =>
+    document
+      .querySelector("#dayShareTemplates")
+      .classList.contains("is-copying"),
+  );
+  assert.deepEqual(
+    await page.evaluate(() =>
+      WorkTimeApp.services.templateShare.decode(window.reviewSharedText),
+    ),
+    templates,
+  );
+  await page.waitForFunction(
+    () =>
+      !document
+        .querySelector("#dayShareTemplates")
+        .classList.contains("is-copying"),
+  );
+  await page.locator("#timeTemplateList [data-template-fill]").first().click();
+  assert.equal(await page.locator("#dayStart").inputValue(), "08:00");
+  assert.equal(await page.locator("#dayEnd").inputValue(), "01:30");
+  assert.equal(
+    await page.locator("#dayNextToggle").getAttribute("aria-pressed"),
+    "true",
+  );
+  await page.reload();
+  await page.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  assert.equal(
+    await page.locator("#timeTemplateList [data-template-fill]").count(),
+    6,
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.locator("#monthTitle").click();
+  assert.equal(await page.locator("[data-year-date]").count(), 365);
+  assert.equal(
+    await page.evaluate(
+      () => document.querySelector(".year-day").getAnimations().length,
+    ),
+    0,
+  );
+  await page.locator("#monthTitle").click();
+}
 async function verify() {
   const root = path.resolve(process.argv[2] || "_site");
   const types = {
@@ -138,10 +279,12 @@ async function verify() {
         366,
       );
       assert.deepEqual(errors, []);
+      await verifyTemplates(page);
+      assert.deepEqual(errors, []);
       await context.close();
     }
     console.log(
-      "Published HTTP and offline startup, lazy history and all 366 dates verified.",
+      "Published HTTP/offline startup, lazy history, template import/persistence, responsive layout and reduced motion verified.",
     );
   } finally {
     await browser?.close();

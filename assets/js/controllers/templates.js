@@ -13,13 +13,15 @@ WorkTimeApp.ui.createTemplateController = function (options) {
   } = options;
   const transport = WorkTimeApp.services.templateShare;
   const templateLimit = transport.LIMIT;
+  const shareFeedbackTimers = new Map();
   let sharing = false,
     importing = false,
     savingImport = false,
     savingTemplate = false,
     disposed = false,
     generation = 0,
-    importPreview = null;
+    importPreview = null,
+    importParseTimer = null;
   function updateTemplateLimit() {
     const full = model.state.timeTemplates.length >= templateLimit;
     for (const id of ["addTimeTemplate", "batchAddTimeTemplate"]) {
@@ -51,6 +53,8 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     updateTemplateLimit();
   }
   function invalidateImport() {
+    clearTimeout(importParseTimer);
+    importParseTimer = null;
     generation++;
     importPreview = null;
     $("templateImportPreview").replaceChildren();
@@ -58,17 +62,24 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     $("templateImportError").textContent = "";
     updateImportControls();
   }
+  function scheduleTemplateImport(event) {
+    invalidateImport();
+    if (event.isComposing || !$("templateImportText").value.trim()) return;
+    importParseTimer = setTimeout(() => {
+      importParseTimer = null;
+      if (!disposed && $("templateImportDialog").open) parseTemplateImport();
+    }, 300);
+  }
   function openTemplateImport() {
     if (importing) return;
     $("templateImportText").value = "";
-    $("templateImportWarning").textContent =
-      "将替换现有全部模板，请核对预览后确认导入。";
     invalidateImport();
     actions.open("templateImportDialog");
     $("templateImportText").focus({ preventScroll: true });
   }
-  async function shareTemplates() {
+  async function shareTemplates(event) {
     if (sharing || !model.state.timeTemplates.length) return;
+    const button = event.currentTarget;
     sharing = true;
     updateTemplateLimit();
     let text;
@@ -76,7 +87,20 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       text = await transport.encode(model.state.timeTemplates);
       if (disposed) return;
       await clipboard.writeText(text);
-      if (!disposed) actions.toast("打卡模板已复制到剪贴板");
+      if (disposed) return;
+      const restarting = shareFeedbackTimers.has(button);
+      clearTimeout(shareFeedbackTimers.get(button));
+      button.classList.remove("is-copying");
+      if (restarting) void button.offsetWidth;
+      button.classList.add("is-copying");
+      shareFeedbackTimers.set(
+        button,
+        setTimeout(() => {
+          button.classList.remove("is-copying");
+          shareFeedbackTimers.delete(button);
+        }, 450),
+      );
+      actions.toast("打卡模板已复制到剪贴板");
     } catch (error) {
       if (disposed) return;
       if (text) {
@@ -108,31 +132,34 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       )
         return;
       importPreview = templates;
-      $("templateImportPreview").innerHTML = templates
-        .map(
-          (template) =>
-            "<article><strong>" +
-            esc(template.name) +
-            "</strong><span>" +
-            esc(
-              (template.start ? "上班 " + template.start : "不填写上班") +
-                " · " +
-                (template.end
+      $("templateImportPreview").innerHTML =
+        '<div class="template-preview-columns" aria-hidden="true"><span>名称</span><span>上班时间</span><span>下班时间</span></div>' +
+        templates
+          .map(
+            (template) =>
+              "<article><strong>" +
+              esc(template.name) +
+              '</strong><span class="template-preview-time" aria-label="' +
+              esc(template.start ? "上班 " + template.start : "不填写上班") +
+              '">' +
+              esc(template.start || "—") +
+              '</span><span class="template-preview-time" aria-label="' +
+              esc(
+                template.end
                   ? "下班 " +
-                    template.end +
-                    (template.nextDay ? "（次日）" : "")
-                  : "不填写下班"),
-            ) +
-            "</span></article>",
-        )
-        .join("");
+                      template.end +
+                      (template.nextDay ? "（次日）" : "")
+                  : "不填写下班",
+              ) +
+              '">' +
+              esc(template.end || "—") +
+              (template.end && template.nextDay
+                ? '<sup class="template-preview-nextday" aria-hidden="true">+1</sup>'
+                : "") +
+              "</span></article>",
+          )
+          .join("");
       $("templateImportPreview").hidden = false;
-      $("templateImportWarning").textContent =
-        "将用这 " +
-        templates.length +
-        " 个模板替换现有全部 " +
-        model.state.timeTemplates.length +
-        " 个模板，请核对后确认导入。";
     } catch (error) {
       if (!disposed && lifetime === generation)
         $("templateImportError").textContent =
@@ -325,7 +352,12 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         openTemplateImport,
       );
     }
-    events.listen($("templateImportText"), "input", invalidateImport);
+    events.listen($("templateImportText"), "input", scheduleTemplateImport);
+    events.listen(
+      $("templateImportText"),
+      "compositionend",
+      scheduleTemplateImport,
+    );
     events.handler($("parseTemplateImport"), "onclick", parseTemplateImport);
     events.handler(
       $("confirmTemplateImport"),
@@ -473,6 +505,13 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       events.listen($(id), "input", renderBatchTimeTemplates);
   }
   function dispose() {
+    for (const [button, timer] of shareFeedbackTimers) {
+      clearTimeout(timer);
+      button.classList.remove("is-copying");
+    }
+    shareFeedbackTimers.clear();
+    clearTimeout(importParseTimer);
+    importParseTimer = null;
     disposed = true;
     generation++;
     events.dispose();
