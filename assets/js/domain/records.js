@@ -47,14 +47,12 @@ WorkTimeApp.domain.records = (() => {
       record = { start, end, nextDay, effectiveMinutes: null },
       oa = old.oa;
     const unchangedOA =
-      oa &&
-      !old.actual &&
-      !old.estimate &&
-      start === oa.start &&
-      end === oa.end &&
-      nextDay === oa.nextDay;
-    if (unchangedOA) delete day.draft;
-    else if (complete(record)) {
+      oa && start === oa.start && end === oa.end && nextDay === oa.nextDay;
+    if (unchangedOA) {
+      delete day.draft;
+      delete day.actual;
+      delete day.estimate;
+    } else if (complete(record)) {
       delete day.draft;
       if (
         (oa && (oa.status === "complete" || start !== oa.start)) ||

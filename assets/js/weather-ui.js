@@ -262,7 +262,7 @@
         );
         low.setAttribute("aria-label", "最低温度 " + number(row.low, "摄氏度"));
         temperatures.append(high, low);
-        const uv = node("span", "UV ", "weather-day-uv");
+        const uv = node("span", "UVI ", "weather-day-uv");
         const uvValue = node(
           "span",
           uvLevel(row.uvIndex) === "暂无" ? "—" : number(row.uvIndex),
