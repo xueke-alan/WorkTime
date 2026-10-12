@@ -3,8 +3,63 @@
   flex: 1;
 }
 .panel-head {
+  --month-item-gap: 0.714286rem;
   padding: 20px 22px;
   border-bottom: 1px solid var(--line);
+}
+body .panel-head > .row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+}
+.calendar-today {
+  justify-self: center;
+  position: relative;
+  top: 2px;
+  display: flex;
+  align-items: center;
+  height: var(--control-height);
+  gap: 0.142857rem;
+  line-height: 1;
+  color: var(--text);
+  font-size: var(--text-title);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.calendar-today-number,
+.calendar-today-weekday {
+  display: block;
+  transform: translateY(var(--ui-ink-offset, 0px));
+}
+.calendar-today-weekday {
+  margin-left: 0.464286rem;
+  width: 2.5em;
+  flex: 0 0 2.5em;
+  text-align: center;
+}
+@container calendar-panel (max-width: 849px) {
+  body .workspace > section.panel > .panel-head {
+    height: auto;
+    min-height: var(--column-header-height, 4.857143rem);
+    padding-block: 10px;
+  }
+  body .panel-head > .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .calendar-today {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+}
+@media (max-width: 850px) {
+  body .panel-head > .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .calendar-today {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
 }
 .month-title {
   font-size: 21px;
@@ -80,7 +135,7 @@
 .dayhours {
   font-size: 12px;
   display: flex;
-  align-items: flex-end;
+  align-items: baseline;
   flex-wrap: wrap;
   column-gap: 10px;
   font-variant-numeric: tabular-nums;
@@ -232,9 +287,10 @@
   color: var(--theme-text-faint, #a3aea7);
 }
 .day {
+  --day-radius: 11px;
   border-color: var(--theme-border-soft, #e6ede8);
   background: #fff;
-  border-radius: 11px;
+  border-radius: var(--day-radius);
   transition:
     background 0.14s,
     border-color 0.14s,
@@ -314,6 +370,54 @@
 .daystatus:has(.muted) {
   color: var(--theme-text-muted, #94a297);
 }
+/* Tags and the daily average share the remaining space below the totals. */
+body .calendar .day-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+body .calendar .day-footer .daystatus {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  min-width: 0;
+  margin-top: 0;
+}
+body .calendar .day-footer .daystatus > * {
+  min-width: 0;
+  max-width: 100%;
+}
+body .calendar .day-footer .daystatus .pill {
+  box-sizing: border-box;
+  max-width: 100%;
+  white-space: normal;
+}
+body .calendar .day-footer .daystatus .pill-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+body .calendar .day-footer .day-average {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  min-width: 0;
+  margin-top: 0;
+}
+body .calendar .day-footer:not(:has(.day-average:not(:empty))) {
+  grid-template-columns: minmax(0, 1fr);
+}
+body .calendar .day-footer:has(.daystatus:empty) {
+  grid-template-columns: minmax(0, 1fr);
+}
+body .calendar .day-footer:has(.daystatus:empty) .day-average {
+  grid-column: 1;
+  justify-self: end;
+}
+body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empty))) {
+  display: none;
+}
 .calendar-foot {
   border-color: var(--theme-border-soft, #ecf1ed);
   background: #fbfdfb;
@@ -391,7 +495,7 @@
     font-size: 8px;
   }
   .day {
-    border-radius: 7px;
+    --day-radius: 7px;
   }
   .daytime {
     font-size: 9px;
@@ -722,18 +826,28 @@
   }
 }
 .day-average:not(:empty) {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  text-align: right;
   align-items: flex-end;
   gap: 3px;
-  border-top: 1px solid var(--line);
-  padding-top: 3px;
+  margin-top: -2px;
+  padding-top: 2px;
+}
+.day-average:not(:empty)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 67%;
+  height: 1px;
+  background: var(--line);
+  pointer-events: none;
 }
 .day-average > span {
   white-space: nowrap;
-}
-.day-average .day-average-label {
-  font-size: 0.85em;
 }
 .day-average .day-average-value.below-target {
   color: #d13b32;
@@ -741,6 +855,7 @@
 .day-average .trend-icon {
   display: block;
   align-self: center;
+  transform: translateY(var(--average-trend-offset, 0px));
   width: 12px;
   height: 12px;
   flex: none;
@@ -965,7 +1080,6 @@ body .panel-head .calendar-toolbar-actions button.ui-button.primary:hover:not(:d
   color: var(--toolbar-icon-color);
 }
 body .month-controls {
-  --month-item-gap: 0.714286rem;
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -1019,10 +1133,19 @@ body .daytime {
   overflow-wrap: anywhere;
 }
 body .workspace .day {
+  --day-inline-padding: 0.642857rem;
   padding: 0.642857rem;
+  padding-inline: var(--day-inline-padding);
+  padding-bottom: 9px;
   gap: 0.285714rem;
 }
+body .calendar .daystatus:not(:empty) {
+  margin-inline-start: 0;
+}
 @media (max-width: 699px) {
+  .calendar-today {
+    font-size: 1.285714rem;
+  }
   body .month-controls .month-title {
     font-size: 1.285714rem;
     min-width: 8.571429rem;
@@ -1192,6 +1315,7 @@ body .calendar .day.today .daynum {
 }
 body .calendar .daystatus .pill {
   display: inline-flex;
+  border-radius: calc(var(--day-radius) / 2);
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -1200,9 +1324,29 @@ body .calendar .daystatus .pill {
   letter-spacing: 0;
 }
 /* Narrow cells retain readable labels rather than clipping single-line pills. */
+@container calendar-panel (max-width: 849px) {
+  body .calendar .day-footer:has(.daystatus:not(:empty)):has(.day-average:not(:empty)) :is(.day-average, .pill) {
+    font-size: 0.714286rem;
+  }
+  body .calendar .day-footer .daystatus .pill {
+    padding-inline: 1px;
+  }
+  body .calendar .day-footer .day-average .trend-icon {
+    width: 0.714286rem;
+    height: 0.714286rem;
+  }
+}
 @container calendar-panel (max-width: 699px) {
+  body .calendar .day-footer:has(.daystatus:not(:empty)):has(.day-average:not(:empty)) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    column-gap: 2px;
+  }
+  body .calendar .day-footer .day-average-value {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
   body .workspace .day {
-    padding-inline: 3px;
+    --day-inline-padding: 3px;
   }
   body .calendar .daystatus .pill {
     box-sizing: border-box;
@@ -1795,7 +1939,7 @@ body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
 /* Keep complete metrics and date markers readable in seven narrow columns. */
 @media (max-width: 390px) {
   body .workspace .calendar > .day {
-    padding-inline: 2px;
+    --day-inline-padding: 2px;
   }
   body .calendar .dayhours,
   body .calendar .day-average {
@@ -1804,9 +1948,6 @@ body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
   body .calendar .day-date {
     flex-wrap: wrap;
     gap: 2px;
-  }
-  .day-average-label {
-    flex-basis: 100%;
   }
   .day-average .trend-icon {
     width: 8px;

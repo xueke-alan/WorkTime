@@ -31,6 +31,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
   let calendarMarkup = "";
   const calendarNodes = new Map();
   const markup = new WeakMap();
+  const dateDivider =
+    '<svg class="month-title-divider" viewBox="0 0 12 24" aria-hidden="true" focusable="false"><path d="M9 4 3 20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>';
   function attributeValue(element, attribute) {
     if (attribute.name !== "class") return attribute.value;
     // Font profiles belong to alignment, not the calendar's business markup.
@@ -98,7 +100,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const title = $("monthTitle");
     if (!title.querySelector(".month-title-divider")) {
       title.innerHTML =
-        '<span id="monthTitleYear" class="month-title-year" data-number-motion></span><svg class="month-title-divider" viewBox="0 0 12 24" aria-hidden="true" focusable="false"><path d="M9 4 3 20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg><span id="monthTitleMonth" class="month-title-month" data-number-motion></span>';
+        '<span id="monthTitleYear" class="month-title-year" data-number-motion></span>' +
+        dateDivider +
+        '<span id="monthTitleMonth" class="month-title-month" data-number-motion></span>';
     }
     for (const [selector, value] of [
       [".month-title-year", String(year)],
@@ -306,7 +310,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
       esc(kind) +
       "</span></div>" +
       (scheduleChanged
-        ? '<div class="daystatus">' + scheduleChangeTag() + "</div>"
+        ? '<div class="day-footer"><div class="daystatus">' +
+          scheduleChangeTag() +
+          "</div></div>"
         : "") +
       "</div>"
     );
@@ -315,6 +321,26 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const state = getState();
     const { today, month, selected, batchMode, batchDays, yearMode, viewYear } =
       getView();
+    const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+      C.localDate(today).getDay()
+    ];
+    updateHTML(
+      $("calendarToday"),
+      today
+        .split("-")
+        .map(
+          (part) => '<span class="calendar-today-number">' + part + "</span>",
+        )
+        .join(dateDivider) +
+        '<span class="calendar-today-weekday">' +
+        weekday +
+        "</span>",
+    );
+    $("calendarToday").setAttribute(
+      "aria-label",
+      "今天日期：" + today.replaceAll("-", "/") + " " + weekday,
+    );
+    $("calendarToday").dateTime = today;
     for (const date of batchDays)
       if (!C.canBatchEditDate(state, date)) batchDays.delete(date);
     if (!keepLeavePanel) closeLeavePanel();
@@ -549,7 +575,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
             C.formatMinutes(calc.overtime) +
             "</span>"
           : "") +
-        '</div><div class="day-average" title="' +
+        '</div><div class="day-footer"><div class="day-average" title="' +
         esc(
           "本月截至当日：累计工作日加班 ÷ 已完成记录的折算出勤" +
             (dailyAverages[k].pending ? "；打卡未完成，暂不显示平均加班" : "") +
@@ -557,7 +583,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         ) +
         '">' +
         (averageText
-          ? '<span class="day-average-label">AVG</span><span class="day-average-value' +
+          ? '<span class="day-average-value' +
             (average !== null &&
             Number.isFinite(targetMinutes) &&
             average < targetMinutes
@@ -600,7 +626,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
               tag("请假 " + C.hours(day.leaveMinutes) + "h", "leave") +
               "</div>"
           : "") +
-        "</div></button>";
+        "</div></div></button>";
     }
     for (let i = 1; i <= weeks * 7 - offset - total; i++) {
       const preview = C.localDate(last);

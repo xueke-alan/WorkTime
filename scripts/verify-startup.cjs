@@ -298,6 +298,15 @@ async function verifyTemplates(page) {
   await page.locator("#monthTitle").click();
 }
 async function verifyCalendar(page) {
+  const today = page.locator("#calendarToday");
+  assert.equal(await today.getAttribute("datetime"), "2026-10-10");
+  assert.equal(
+    await today.locator(".calendar-today-weekday").textContent(),
+    "Sat",
+  );
+  await page.locator("#prevMonth").click();
+  assert.equal(await today.getAttribute("datetime"), "2026-10-10");
+  await page.locator("#todayButton").click();
   await page.emulateMedia({ reducedMotion: "no-preference" });
   for (const [date, end, overtime] of [
     ["2026-10-08", "19:30", "1.50 h"],
@@ -334,6 +343,39 @@ async function verifyCalendar(page) {
   for (const width of [1920, 1440, 1151, 850, 540, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     await page.waitForTimeout(100);
+    const headerIssues = await page.evaluate(() => {
+      const header = document
+        .querySelector(".panel-head")
+        .getBoundingClientRect();
+      const controls = [
+        ...document.querySelector(".panel-head > .row").children,
+      ].map((element) => ({
+        name: element.id || element.className,
+        box: element.getBoundingClientRect(),
+      }));
+      const issues = [];
+      for (const [index, { name, box }] of controls.entries()) {
+        if (
+          box.left < header.left - 1 ||
+          box.right > header.right + 1 ||
+          box.top < header.top - 1 ||
+          box.bottom > header.bottom + 1
+        )
+          issues.push(name + " escapes header");
+        for (const other of controls.slice(index + 1))
+          if (
+            Math.min(box.right, other.box.right) -
+              Math.max(box.left, other.box.left) >
+              1 &&
+            Math.min(box.bottom, other.box.bottom) -
+              Math.max(box.top, other.box.top) >
+              1
+          )
+            issues.push(name + " overlaps " + other.name);
+      }
+      return issues;
+    });
+    assert.deepEqual(headerIssues, [], "Calendar header must fit at " + width);
     const overflow = await page.evaluate(() => {
       const cells = [...document.querySelectorAll("button.day[data-date]")];
       return cells.flatMap((cell) => {

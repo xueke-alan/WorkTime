@@ -7,6 +7,8 @@
     "button.ui-button",
     ".month-title-year",
     ".month-title-month",
+    ".calendar-today-number",
+    ".calendar-today-weekday",
     ".calendar .daystatus .pill-text",
     ".year-day>span",
     ".day-date .daynum-text",
@@ -161,6 +163,10 @@
     for (const element of visible) {
       element.classList.add("ui-aligned-text");
       element.style.setProperty("--ui-ink-offset", "0px");
+      if (element.matches(".day-average-value"))
+        element.parentElement
+          .querySelector(".trend-icon")
+          ?.style.setProperty("--average-trend-offset", "0px");
       if (element.matches(".year-day>span,.day-date .daynum-text"))
         element.style.setProperty("--ui-ink-offset-x", "0px");
     }
@@ -197,12 +203,15 @@
         metrics: cachedMetrics(style, text),
         // Mixed Latin/CJK legends also need hinted pixel bounds, not outline metrics.
         dateBounds: element.matches(
-          ".day-date .daynum-text,.calendar .daykind,.calendar-footer .legend-label",
+          ".day-date .daynum-text,.calendar .daykind,.calendar-footer .legend-label,.day-average-value",
         )
           ? dateInkHeight(style, text)
           : null,
         baselineProbe: probe.cloneNode(),
         baselineHost,
+        trendIcon: element.matches(".day-average-value")
+          ? element.parentElement.querySelector(".trend-icon")
+          : null,
       });
     }
     // Apply date geometry and add every zero-size baseline probe in one write phase.
@@ -222,6 +231,7 @@
     for (const item of measurements) {
       item.box = item.element.getBoundingClientRect();
       item.baseline = item.baselineProbe.getBoundingClientRect().top;
+      item.trendBox = item.trendIcon?.getBoundingClientRect();
     }
     for (const {
       element,
@@ -231,6 +241,8 @@
       baselineHost,
       box,
       baseline,
+      trendIcon,
+      trendBox,
     } of measurements) {
       baselineProbe.remove();
       if (baselineHost !== element) baselineHost.remove();
@@ -242,6 +254,16 @@
               metrics.actualBoundingBoxAscent) /
             2);
       const offset = box.top + box.height / 2 - inkCenter;
+      if (trendBox) {
+        const sameLine = trendBox.bottom > box.top && trendBox.top < box.bottom;
+        trendIcon.style.setProperty(
+          "--average-trend-offset",
+          (sameLine
+            ? inkCenter + offset - (trendBox.top + trendBox.height / 2)
+            : 0
+          ).toFixed(3) + "px",
+        );
+      }
       if (element.matches(".year-day>span")) {
         const x =
           (box.width +
