@@ -558,7 +558,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
         '">' +
         (averageText
           ? '<span class="day-average-label">AVG</span><span class="day-average-value' +
-            (average !== null && average < targetMinutes
+            (average !== null &&
+            Number.isFinite(targetMinutes) &&
+            average < targetMinutes
               ? " below-target"
               : "") +
             '">' +

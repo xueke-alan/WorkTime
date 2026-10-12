@@ -5,6 +5,92 @@ const path = require("node:path");
 const http = require("node:http");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
+async function verifyOvertimeRules(page) {
+  const results = await page.evaluate(() => {
+    const { records, state } = WorkTimeApp.domain,
+      schedule = state.defaultState().settings,
+      workday = "2026-10-08",
+      calculate = (
+        start,
+        end,
+        extra = {},
+        settings = schedule,
+        date = workday,
+      ) =>
+        records.calculate(
+          date,
+          {
+            actual: {
+              start,
+              end,
+              nextDay: false,
+              effectiveMinutes: null,
+              ...extra.record,
+            },
+            ...extra.day,
+          },
+          settings,
+          true,
+        ),
+      cases = [
+        calculate("07:00", "17:30"),
+        calculate("07:00", "16:30"),
+        calculate("07:00", "18:30"),
+        calculate("08:54", "17:30"),
+        calculate("09:00", "19:00"),
+        calculate("07:00", "01:00", { record: { nextDay: true } }),
+        calculate("07:00", "07:30"),
+        calculate(
+          "07:00",
+          "17:30",
+          {},
+          {
+            ...schedule,
+            breaks: [{ start: 435, end: 465 }, ...schedule.breaks],
+          },
+        ),
+        calculate("08:00", "15:30", { day: { leaveMinutes: 120 } }),
+        calculate("08:00", "10:00", { day: { leaveMinutes: 480 } }),
+        calculate("18:00", "20:00", { day: { leaveMinutes: 480 } }),
+        calculate("", "", { record: { effectiveMinutes: 600 } }),
+        calculate("08:00", "17:30", { record: { effectiveMinutes: 600 } }),
+        calculate("07:00", "17:30", {}, schedule, "2026-10-11"),
+      ].map(({ minutes, overtime }) => [minutes, overtime]),
+      ends = [
+        ["07:00", 540],
+        ["08:00", 480],
+        ["09:00", 540],
+        ["20:00", 540],
+        ["07:00", 1320],
+      ].map(([start, target]) =>
+        records.endForDuration(start, target, schedule),
+      );
+    return { cases, ends };
+  });
+  assert.deepEqual(results.cases, [
+    [540, 0],
+    [480, -60],
+    [570, 30],
+    [426, -54],
+    [480, 0],
+    [960, 420],
+    [30, -480],
+    [510, 0],
+    [360, 0],
+    [120, 0],
+    [120, 120],
+    [600, 120],
+    [600, 0],
+    [540, 540],
+  ]);
+  assert.deepEqual(results.ends, [
+    { end: "19:00", nextDay: false },
+    { end: "17:30", nextDay: false },
+    { end: "20:00", nextDay: false },
+    { end: "05:00", nextDay: true },
+    null,
+  ]);
+}
 async function verifyCalendarAverage(page) {
   const selectedDate = await page
       .locator(".day.selected")
@@ -430,6 +516,7 @@ async function verify() {
         366,
       );
       assert.deepEqual(errors, []);
+      await verifyOvertimeRules(page);
       await verifyCalendarAverage(page);
       await verifyTemplates(page);
       await verifyCalendar(page);

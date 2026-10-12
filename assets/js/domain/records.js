@@ -107,22 +107,26 @@ WorkTimeApp.domain.records = (() => {
     return Math.max(0, end - start - deduction);
   }
   /**
-   * Earliest end reaching the target, within strictly less than 24 elapsed hours.
+   * Earliest end reaching the target, excluding early arrival, within strictly less than 24 elapsed hours.
    * @param {string} start Valid HH:mm.
    * @param {number} targetMinutes Nonnegative effective minutes.
-   * @param {{breaks:WorkBreak[]}} schedule
+   * @param {{workStart:string,breaks:WorkBreak[]}} schedule
    * @returns {{end:string,nextDay:boolean}|null} Null means unreachable.
    */
   function endForDuration(start, targetMinutes, schedule) {
-    const startMinutes = timeMin(start);
+    const startMinutes = timeMin(start),
+      countedStart =
+        startMinutes < timeMin(schedule.workStart) ? schedule.workStart : start;
     for (let elapsed = 0; elapsed < 1440; elapsed++) {
       const absolute = startMinutes + elapsed,
         endMinute = absolute % 1440,
         end = pad(Math.floor(endMinute / 60)) + ":" + pad(endMinute % 60),
         nextDay = absolute >= 1440;
       if (
-        duration({ start, end, nextDay, effectiveMinutes: null }, schedule) >=
-        targetMinutes
+        duration(
+          { start: countedStart, end, nextDay, effectiveMinutes: null },
+          schedule,
+        ) >= targetMinutes
       )
         return { end, nextDay };
     }
@@ -166,12 +170,47 @@ WorkTimeApp.domain.records = (() => {
         work: info.work,
       };
     const minutes = duration(r, settings);
+    let overtime = minutes;
+    if (info.work) {
+      const start = timeMin(r.start),
+        end = timeMin(r.end),
+        workStart = timeMin(settings.workStart),
+        workEnd = timeMin(settings.workEnd);
+      // Early arrival remains recorded work time, but never earns overtime.
+      const earlyMinutes =
+        start !== null && end !== null && start < workStart
+          ? duration(
+              {
+                start: r.start,
+                end: !r.nextDay && end < workStart ? r.end : settings.workStart,
+                nextDay: false,
+                effectiveMinutes: null,
+              },
+              settings,
+            )
+          : 0;
+      overtime =
+        Math.max(0, minutes - earlyMinutes) - settings.standardMinutes + leave;
+      if (start !== null && end !== null && overtime > 0) {
+        const eveningMinutes =
+          end + (r.nextDay ? 1440 : 0) > workEnd
+            ? duration(
+                {
+                  start: start > workEnd ? r.start : settings.workEnd,
+                  end: r.end,
+                  nextDay: r.nextDay,
+                  effectiveMinutes: null,
+                },
+                settings,
+              )
+            : 0;
+        overtime = Math.min(overtime, eveningMinutes);
+      }
+    }
     return {
       record: r,
       minutes,
-      overtime: info.work
-        ? minutes - settings.standardMinutes + leave
-        : minutes,
+      overtime,
       attendance: info.work
         ? (settings.standardMinutes - leave) / settings.standardMinutes
         : 0,
