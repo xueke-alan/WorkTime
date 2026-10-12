@@ -2230,8 +2230,8 @@ body .editor #dayForm .leave-inline #dayLeave {
   height: calc(var(--control-height) - 2px) !important;
   padding-inline: 2rem 0.285714rem;
   font-family: var(--font-numeric);
-  font-size: var(--clock-font);
-  font-weight: 650;
+  font-size: 1rem;
+  font-weight: 600;
 }
 body .editor #dayForm .leave-inline-unit { padding-inline: 0.285714rem 0.714286rem; }
 body .editor #dayForm .leave-inline :is(#dayLeaveFull, #dayLeaveDone) {
