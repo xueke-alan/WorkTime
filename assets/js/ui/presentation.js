@@ -37,7 +37,7 @@ WorkTimeApp.ui.createDayPresentation = function (options) {
   function visibleStatus(label, info) {
     const { today, month } = getView();
     if (label === "待录入" && month !== today.slice(0, 7)) return "";
-    return info.holiday && label === "无出勤记录" ? "" : label;
+    return (info.holiday || !info.work) && label === "无出勤记录" ? "" : label;
   }
   function tag(label, cls = "", title = "") {
     return (

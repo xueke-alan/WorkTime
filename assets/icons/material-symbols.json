@@ -183,11 +183,11 @@
       "sha256": "7c64a8b9feedd55f7c5f362e0883802cfe45aad603ee131c39417b8d26094c7b"
     },
     {
-      "id": "ms-trending-flat",
-      "name": "trending_flat",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/trending_flat/materialsymbolsrounded/trending_flat_24px.svg",
+      "id": "ms-horizontal-rule",
+      "name": "horizontal_rule",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/horizontal_rule/materialsymbolsrounded/horizontal_rule_24px.svg",
       "viewBox": "0 -960 960 960",
-      "sha256": "b6b727c6601095b8f3d6617426e246ccbc538bb5e59641f29a9cd7d48f197dfe"
+      "sha256": "e1042847c0140128fb79ae254ee525d368dc9ba695843c5074e2a3deb3bcfae6"
     },
     {
       "id": "ms-info",

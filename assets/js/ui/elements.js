@@ -78,7 +78,7 @@ WorkTimeApp.ui.createElements = function (document) {
   }
   function trendIcon(direction) {
     return icon(
-      "trending-" + direction,
+      direction === "flat" ? "horizontal-rule" : "trending-" + direction,
       "ui-icon trend-icon trend-" + direction,
     );
   }

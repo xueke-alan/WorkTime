@@ -438,7 +438,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
         .join(" ");
       const average = dailyAverages[k]?.averageMinutes,
         showAverage =
-          (info.work || (calc.minutes !== null && calc.minutes > 0)) &&
+          calc.minutes !== null &&
+          (info.work || calc.minutes > 0) &&
           (k <= today || (r && r.manual && C.complete(r))),
         averageText = !showAverage
           ? ""
@@ -452,22 +453,26 @@ WorkTimeApp.ui.createCalendar = function (options) {
           ? dailyAverages[C.dateKey(previous)]?.averageMinutes
           : null;
       const trend =
-          !averageText || average === null || previousAverage === null
+          !averageText || average === null
             ? ""
-            : Number((average / 60).toFixed(2)) >
-                Number((previousAverage / 60).toFixed(2))
-              ? "up"
-              : Number((average / 60).toFixed(2)) <
+            : previousAverage === null
+              ? "flat"
+              : Number((average / 60).toFixed(2)) >
                   Number((previousAverage / 60).toFixed(2))
-                ? "down"
-                : "flat",
+                ? "up"
+                : Number((average / 60).toFixed(2)) <
+                    Number((previousAverage / 60).toFixed(2))
+                  ? "down"
+                  : "flat",
         trendLabel =
           trend === "up"
             ? "较前一日上升"
             : trend === "down"
               ? "较前一日下降"
               : trend === "flat"
-                ? "与前一日持平"
+                ? previousAverage === null
+                  ? "平均加班起始基准"
+                  : "与前一日持平"
                 : "";
       const time =
           r && C.complete(r)
@@ -508,6 +513,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
         " " +
         visibleStatus(label, info) +
         (scheduleChanged ? " 工时变更" : "") +
+        (calc.overtime !== null
+          ? " 当天加班 " + C.formatMinutes(calc.overtime)
+          : "") +
         (averageText
           ? " 日均加班 " + averageText + (trendLabel ? "，" + trendLabel : "")
           : "") +
@@ -527,7 +535,15 @@ WorkTimeApp.ui.createCalendar = function (options) {
         esc(time) +
         sourceDot +
         '</div><div class="dayhours">' +
-        (calc.minutes !== null ? C.formatMinutes(calc.minutes) : "") +
+        (calc.minutes !== null
+          ? '<span class="day-total-hours">' +
+            C.formatMinutes(calc.minutes) +
+            '</span><span class="day-overtime' +
+            (calc.overtime < 0 ? " negative" : "") +
+            '" title="当天加班时长">' +
+            C.formatMinutes(calc.overtime) +
+            "</span>"
+          : "") +
         '</div><div class="day-average" title="' +
         esc(
           "本月截至当日：累计工作日加班 ÷ 已完成记录的折算出勤" +
@@ -536,7 +552,10 @@ WorkTimeApp.ui.createCalendar = function (options) {
         ) +
         '">' +
         (averageText
-          ? "<span>" + averageText + "</span>" + (trend ? trendIcon(trend) : "")
+          ? '<span class="day-average-label">AVG</span><span class="day-average-value">' +
+            averageText +
+            "</span>" +
+            (trend ? trendIcon(trend) : "")
           : "") +
         '</div><div class="daystatus">' +
         (["未填写", "手动填写", "OA导入"].includes(label)

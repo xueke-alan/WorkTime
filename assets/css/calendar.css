@@ -79,6 +79,21 @@
 }
 .dayhours {
   font-size: 12px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.dayhours > span {
+  white-space: nowrap;
+}
+.dayhours .day-overtime {
+  font-size: 0.9em;
+  font-weight: 400;
+}
+.dayhours .day-overtime.negative {
+  color: #d13b32;
 }
 .daystatus {
   font-size: 10px;
@@ -708,8 +723,14 @@
 }
 .day-average:not(:empty) {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 3px;
+  border-top: 1px solid var(--line);
+  padding-top: 3px;
+}
+.day-average > span {
+  white-space: nowrap;
 }
 .day-average .trend-icon {
   display: block;
@@ -1761,5 +1782,27 @@ body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
   body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon {
     --marker-shift: 0%;
     animation-timing-function: steps(1, end);
+  }
+}
+
+/* Keep complete metrics and date markers readable in seven narrow columns. */
+@media (max-width: 390px) {
+  body .workspace .calendar > .day {
+    padding-inline: 2px;
+  }
+  body .calendar .dayhours,
+  body .calendar .day-average {
+    font-size: 0.714286rem;
+  }
+  body .calendar .day-date {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  .day-average-label {
+    flex-basis: 100%;
+  }
+  .day-average .trend-icon {
+    width: 8px;
+    height: 8px;
   }
 }

@@ -64,6 +64,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
   );
   function closePageSettings(focus = true) {
     if (pageSettings.hidden) return;
+    WorkTimeApp.ui.motion?.stop(pageSettings);
     pageSettings.hidden = true;
     pageSettings.dispatchEvent(new Event("personal-settings-close"));
     editor.classList.remove("is-page-settings-open");
@@ -74,6 +75,8 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     pageSettingsButton
       .querySelector("use")
       .setAttribute("href", "#ms-settings");
+    if (!disposed)
+      WorkTimeApp.ui.motion?.play(editorViews[0], "motion-sidebar-back");
     if (focus) pageSettingsButton.focus({ preventScroll: true });
   }
   function togglePageSettings() {
@@ -87,6 +90,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     leaveBatch();
     pageSettings.dispatchEvent(new Event("personal-settings-open"));
     pageSettings.hidden = false;
+    WorkTimeApp.ui.motion?.stop(editorViews[0]);
     editor.classList.add("is-page-settings-open");
     pageSettingsButton.classList.add("primary");
     pageSettingsButton.setAttribute("aria-pressed", "true");
@@ -131,14 +135,12 @@ WorkTimeApp.ui.createSidebarPanels = function ({
   function closeSettings() {
     if (settings.open || !editor.classList.contains("is-settings-open")) return;
     editor.classList.remove("is-settings-open");
+    WorkTimeApp.ui.motion?.stop(document.getElementById("settingsForm"));
     editorViews.forEach((view) =>
       view.classList.remove("settings-view-hidden"),
     );
     updateSettingsButton(false);
-    WorkTimeApp.ui.motion?.play(
-      document.getElementById("dayForm"),
-      "motion-sidebar-back",
-    );
+    WorkTimeApp.ui.motion?.play(editorViews[0], "motion-sidebar-back");
     document.getElementById("settingsOpen").focus({ preventScroll: true });
   }
   settings.addEventListener("close", closeSettings);
@@ -195,6 +197,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     if (id === "settingsDialog" && !disposed) {
       closePageSettings(false);
       const trigger = document.activeElement;
+      WorkTimeApp.ui.motion?.stop(editorViews[0]);
       editor.classList.add("is-settings-open");
       editorViews.forEach((view) => view.classList.add("settings-view-hidden"));
       if (!settings.open) settings.show();

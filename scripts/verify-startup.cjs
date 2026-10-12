@@ -22,8 +22,9 @@ async function verifyTemplates(page) {
   assert.equal(await page.locator("#templateImportPreview article").count(), 6);
   assert.equal(await page.locator(".template-preview-nextday").count(), 6);
   assert.match(
-    await page.locator("#templateImportWarning").textContent(),
+    await page.locator("#confirmTemplateImport").textContent(),
     /替换/,
+    "The import action must disclose replacement of existing templates",
   );
   for (const width of [1440, 768, 540, 375, 320]) {
     await page.setViewportSize({ width, height: 800 });
@@ -145,6 +146,92 @@ async function verifyTemplates(page) {
     0,
   );
   await page.locator("#monthTitle").click();
+}
+async function verifyCalendar(page) {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  for (const [date, end, overtime] of [
+    ["2026-10-08", "19:30", "1.50 h"],
+    ["2026-10-09", "16:30", "-1.00 h"],
+  ]) {
+    await page.locator('.day[data-date="' + date + '"]').click();
+    await page.locator("#dayStart").fill("08:00");
+    await page.locator("#dayEnd").fill(end);
+    await page.locator("#dayEnd").blur();
+    await page.waitForFunction(
+      ({ date, overtime }) =>
+        document.querySelector('.day[data-date="' + date + '"] .day-overtime')
+          ?.textContent === overtime,
+      { date, overtime },
+    );
+  }
+  const first = page.locator('.day[data-date="2026-10-08"]');
+  const second = page.locator('.day[data-date="2026-10-09"]');
+  assert.equal(
+    await first.locator(".day-average-value").textContent(),
+    "1.50 h",
+  );
+  assert.equal(
+    await first.locator(".trend-flat use").getAttribute("href"),
+    "#ms-horizontal-rule",
+  );
+  assert.equal(
+    await second.locator(".day-average-value").textContent(),
+    "0.25 h",
+  );
+  assert.equal(await second.locator(".day-overtime.negative").count(), 1);
+  assert.match(await second.getAttribute("aria-label"), /当天加班 -1.00 h/);
+  // Every populated metric and marker must fit, including the payday cell.
+  for (const width of [1920, 1440, 1151, 850, 540, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.waitForTimeout(100);
+    const overflow = await page.evaluate(() => {
+      const cells = [...document.querySelectorAll("button.day[data-date]")];
+      return cells.flatMap((cell) => {
+        const box = cell.getBoundingClientRect();
+        return [
+          ...cell.querySelectorAll(
+            ".dayhours > span, .day-average > span, .trend-icon, .date-markers",
+          ),
+        ]
+          .filter((element) => {
+            const rect = element.getBoundingClientRect();
+            return rect.left < box.left - 1 || rect.right > box.right + 1;
+          })
+          .map((element) => cell.dataset.date + ": " + element.textContent);
+      });
+    });
+    assert.deepEqual(overflow, [], "Calendar contents must fit at " + width);
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.evaluate(() => {
+    // Reopening during the return animation must stop motion on the hidden editor.
+    const button = document.querySelector("#pageSettingsOpen");
+    button.click();
+    button.click();
+    button.click();
+  });
+  assert.equal(
+    await page.locator(".editor-content.motion-sidebar-back").count(),
+    0,
+  );
+  await page.locator("#pageSettingsOpen").click();
+  await page.evaluate(() => {
+    document.querySelector("#settingsOpen").click();
+    document.querySelector("#settingsOpen").click();
+    document.querySelector("#settingsOpen").click();
+  });
+  assert.equal(
+    await page.locator(".editor-content.motion-sidebar-back").count(),
+    0,
+  );
+  await page.locator("#settingsOpen").click();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  assert.equal(
+    await page.evaluate(
+      () => document.querySelector(".editor-content").getAnimations().length,
+    ),
+    0,
+  );
 }
 async function verify() {
   const root = path.resolve(process.argv[2] || "_site");
@@ -280,6 +367,7 @@ async function verify() {
       );
       assert.deepEqual(errors, []);
       await verifyTemplates(page);
+      await verifyCalendar(page);
       assert.deepEqual(errors, []);
       await context.close();
     }
