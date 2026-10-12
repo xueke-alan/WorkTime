@@ -80,7 +80,7 @@
 .dayhours {
   font-size: 12px;
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   flex-wrap: wrap;
   column-gap: 10px;
   font-variant-numeric: tabular-nums;
@@ -724,7 +724,7 @@
 .day-average:not(:empty) {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   gap: 3px;
   border-top: 1px solid var(--line);
   padding-top: 3px;
@@ -732,8 +732,15 @@
 .day-average > span {
   white-space: nowrap;
 }
+.day-average .day-average-label {
+  font-size: 0.85em;
+}
+.day-average .day-average-value.below-target {
+  color: #d13b32;
+}
 .day-average .trend-icon {
   display: block;
+  align-self: center;
   width: 12px;
   height: 12px;
   flex: none;

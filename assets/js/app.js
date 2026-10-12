@@ -192,6 +192,7 @@ WorkTimeApp.services.bootstrap.run(
         calendarKnown: D.calendar.calendarKnown,
         complete: D.records.complete,
         cumulativeAverageOvertime: queries.cumulativeAverageOvertime,
+        selectOvertimeRequirement: queries.selectOvertimeRequirement,
         dateKey: D.time.dateKey,
         effectiveRecord: D.records.effectiveRecord,
         formatMinutes: D.time.formatMinutes,

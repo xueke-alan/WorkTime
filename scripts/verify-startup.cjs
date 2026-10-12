@@ -5,6 +5,70 @@ const path = require("node:path");
 const http = require("node:http");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
+async function verifyCalendarAverage(page) {
+  const selectedDate = await page
+      .locator(".day.selected")
+      .getAttribute("data-date"),
+    day = page.locator('.day[data-date="2026-10-08"]'),
+    value = day.locator(".day-average-value");
+  await day.click();
+  assert.equal(await day.locator(".day-average").isVisible(), false);
+  await page.locator("#dayStart").fill("08:00");
+  await page.locator("#dayStart").press("Tab");
+  assert.equal(await day.locator(".day-average").isVisible(), false);
+  for (const [end, hours, below] of [
+    ["18:30", "0.50 h", true],
+    ["19:00", "1.00 h", false],
+    ["19:15", "1.25 h", false],
+  ]) {
+    await page.locator("#dayEnd").fill(end);
+    await page.locator("#dayEnd").press("Tab");
+    await page.waitForFunction(
+      (expected) =>
+        document.querySelector(
+          '.day[data-date="2026-10-08"] .day-average-value',
+        )?.textContent === expected,
+      hours,
+    );
+    assert.equal(
+      await value.evaluate((element) =>
+        element.classList.contains("below-target"),
+      ),
+      below,
+    );
+    if (below)
+      assert.equal(
+        await value.evaluate((element) => getComputedStyle(element).color),
+        "rgb(209, 59, 50)",
+      );
+    assert.equal(
+      await day.locator(".trend-icon use").getAttribute("href"),
+      "#ms-horizontal-rule",
+    );
+  }
+  await page.locator('.day[data-date="2026-10-11"]').click();
+  await page.locator("#plannedOvertimeToggle").click();
+  await page.waitForFunction(() =>
+    document
+      .querySelector('.day[data-date="2026-10-08"] .day-average-value')
+      ?.classList.contains("below-target"),
+  );
+  await page.locator("#plannedOvertimeToggle").click();
+  await page.waitForFunction(() => {
+    const value = document.querySelector(
+      '.day[data-date="2026-10-08"] .day-average-value',
+    );
+    return value && !value.classList.contains("below-target");
+  });
+  await day.click();
+  await page.locator("#clearManual").click();
+  await page.waitForFunction(
+    () =>
+      document.querySelector('.day[data-date="2026-10-08"] .day-average')
+        .textContent === "",
+  );
+  await page.locator('.day[data-date="' + selectedDate + '"]').click();
+}
 async function verifyTemplates(page) {
   const templates = Array.from({ length: 6 }, (_, index) => ({
     name: "跨午夜工作模板名称用于验证长文本可以完整换行显示" + index,
@@ -366,6 +430,7 @@ async function verify() {
         366,
       );
       assert.deepEqual(errors, []);
+      await verifyCalendarAverage(page);
       await verifyTemplates(page);
       await verifyCalendar(page);
       assert.deepEqual(errors, []);

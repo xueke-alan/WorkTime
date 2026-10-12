@@ -372,7 +372,12 @@ WorkTimeApp.ui.createCalendar = function (options) {
       d = C.localDate(first),
       offset = (d.getDay() + 6) % 7,
       total = Number(last.slice(8)),
-      weeks = Math.ceil((offset + total) / 7);
+      weeks = Math.ceil((offset + total) / 7),
+      targetMinutes = C.selectOvertimeRequirement(
+        state,
+        first,
+        last,
+      ).targetMinutes;
     let html = "",
       workdayNumber = 0,
       counts = { actual: 0, estimate: 0, pending: 0 },
@@ -552,7 +557,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
         ) +
         '">' +
         (averageText
-          ? '<span class="day-average-label">AVG</span><span class="day-average-value">' +
+          ? '<span class="day-average-label">AVG</span><span class="day-average-value' +
+            (average !== null && average < targetMinutes
+              ? " below-target"
+              : "") +
+            '">' +
             averageText +
             "</span>" +
             (trend ? trendIcon(trend) : "")
