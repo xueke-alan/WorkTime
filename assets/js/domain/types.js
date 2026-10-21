@@ -22,7 +22,7 @@
  * @typedef {{workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[]}} WorkScheduleData
  * @typedef {{start:string,end:string|null,schedule:WorkScheduleData}} WorkScheduleRange
  * @typedef {{scheduleRanges:WorkScheduleRange[],schemaVersion:3,personal:WorkPersonal,preferences:WorkPreferences,overtimeRequirements:(number|null)[],oaUrl:string,settings:WorkSettings,timeTemplates:WorkTimeTemplate[],days:Object<string,WorkDay>,imports:WorkImportLog[]}} WorkStateData
- * @typedef {{reset:'none'|'selected'|'all',dates:string[],record:WorkManualRecord|null,valid:boolean,canConfirm:boolean}} WorkBatchDraft
+ * @typedef {{reset:'none'|'selected'|'all',month:string,dates:string[],record:WorkManualRecord|null,valid:boolean,canConfirm:boolean}} WorkBatchDraft
  * @typedef {{base:WorkStateData,state:WorkStateData}} WorkBatchPreview
  * @typedef {{today:string,month:string,selected:string,batchMode:boolean,batchDays:Set<string>,batchDraft:WorkBatchDraft|null,batchSaving:boolean,yearMode:boolean,viewYear:number}} WorkViewState
  * @typedef {'unavailable'|'unsupported'|'corrupt'|null} WorkStorageLoadIssue

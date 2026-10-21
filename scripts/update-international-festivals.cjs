@@ -1,5 +1,18 @@
 "use strict";
 const crypto = require("crypto");
+const fs = require("node:fs");
+const path = require("node:path");
+const vm = require("node:vm");
+const festivalContext = {
+  WorkTimeApp: { data: { dateInfo: { festivals: [] } } },
+};
+vm.runInNewContext(
+  fs.readFileSync(path.join(__dirname, "../assets/data/festivals.js"), "utf8"),
+  festivalContext,
+);
+const typicalNames = new Set(
+  festivalContext.WorkTimeApp.data.dateInfo.typicalFestivals,
+);
 const { create, validateDates } = require("./data-update.cjs");
 const { dates, stripReferences, fetchPages } = require("./lib/wiki-source.cjs");
 const convert = require("./vendor/opencc-t2cn.cjs").Converter({
@@ -25,6 +38,7 @@ function parse(page) {
       .trim();
     if (!/^(国际|世界|全球|联合国)/.test(clean)) continue;
     const name = clean.split(/[：:，,。；;(（]/)[0].trim();
+    if (!typicalNames.has(name)) continue;
     if (name.length > 35 || name.length < 3 || !/[日节周]$/.test(name))
       continue;
     const target = links.find((x) => (x[2] || x[1]) === name)?.[1];

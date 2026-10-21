@@ -2065,6 +2065,9 @@ body .summary-sidebar .cards .summary-number-value {
   column-gap: 0;
   white-space: nowrap;
 }
+body .summary-sidebar .cards.is-batch-preview .metric {
+  opacity: 0.6;
+}
 body .summary-sidebar .summary-number-value > .summary-number {
   margin-block: 0;
 }

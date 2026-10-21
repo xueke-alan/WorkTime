@@ -44,16 +44,15 @@ WorkTimeApp.ui.year = (() => {
     };
   }
   function scaleMaximum(months) {
-    return (
-      Math.ceil(
-        Math.max(
-          0,
-          ...months.flatMap((month) =>
-            month.days.map((day) => day.overtime || 0),
-          ),
-        ) / 60,
-      ) * 60
-    );
+    const days = months.flatMap((month) => month.days),
+      weekdayMaximum = Math.max(
+        0,
+        ...days.filter((day) => !day.weekend).map((day) => day.overtime || 0),
+      );
+    // Weekend work must remain visible when no weekday has positive overtime.
+    const maximum =
+      weekdayMaximum || Math.max(0, ...days.map((day) => day.overtime || 0));
+    return Math.ceil(maximum / 60) * 60;
   }
   function scaleMinimum(months) {
     return (

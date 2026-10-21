@@ -355,6 +355,9 @@ body .panel-head > .row {
 .daytime {
   color: var(--theme-text-muted, #75897d);
 }
+.daytime .manual-time {
+  color: var(--amber);
+}
 .record-source-dot {
   display: inline-block;
   width: 0.9em;
@@ -400,7 +403,7 @@ body .panel-head > .row {
 .calendar .day .source-toggle {
   position: relative;
   display: inline-block;
-  width: calc(1.8em + 3px);
+  width: calc(1.62em + 3px);
   height: 0.9em;
   min-width: 0;
   min-height: 0;
@@ -425,10 +428,11 @@ body .panel-head > .row {
   top: 0;
   left: 0;
   margin: 0;
+  transform-origin: left bottom;
 }
 .calendar .day .source-toggle.oa > .manual,
 .calendar .day .source-toggle.manual > .oa {
-  transform: translateX(calc(100% + 3px));
+  transform: translateX(calc(100% + 3px)) scale(0.8);
 }
 .calendar .day .source-toggle.oa > .oa,
 .calendar .day .source-toggle.manual > .manual {
@@ -2063,6 +2067,11 @@ body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
   }
 }
 /* Batch previews stay within the current month until confirmed or cancelled. */
+.calendar.is-batch-editing .day > .daytime,
+.calendar.is-batch-editing .day > .dayhours,
+.calendar.is-batch-editing .day > .day-footer {
+  opacity: 0.6;
+}
 body #monthTitle[aria-disabled="true"] {
   opacity: 0.45;
   cursor: default;

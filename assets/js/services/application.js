@@ -242,20 +242,15 @@ WorkTimeApp.services.application = (() => {
         resetDate(days, date);
         return commit({ ...state, days }, { changes: { days: [date] } });
       },
-      // null resets every stored date, including dates outside batch selection rules.
-      resetBatch(dates) {
-        const selected =
-          dates === null
-            ? Object.keys(state.days)
-            : [...new Set(dates)].filter((date) =>
-                C.canBatchEditDate(state, date),
-              );
-        if (!selected.length) return commit(state);
-        const days = { ...state.days };
-        for (const date of selected) resetDate(days, date);
+      // Reset-all requires an explicit month, including non-selectable dates in it.
+      resetBatch(dates, month = null) {
         return commit(
-          { ...state, days },
-          { atomic: true, changes: { days: selected } },
+          WorkTimeApp.domain.batch.applyBatchChanges(state, {
+            dates: dates || [],
+            reset: dates === null ? "all" : "selected",
+            month,
+          }),
+          { atomic: true },
         );
       },
       saveTemplate(template, editing) {
@@ -289,9 +284,13 @@ WorkTimeApp.services.application = (() => {
           );
         return commit({ ...state, timeTemplates: clean }, { atomic: true });
       },
-      saveBatch(dates, record) {
+      saveBatch(dates, record, month = null) {
         return commit(
-          WorkTimeApp.domain.batch.applyBatchChanges(state, { dates, record }),
+          WorkTimeApp.domain.batch.applyBatchChanges(state, {
+            dates,
+            record,
+            month,
+          }),
         );
       },
       confirmBatch(draft) {

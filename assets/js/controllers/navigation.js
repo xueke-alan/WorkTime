@@ -99,11 +99,14 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     const empty = !record.start && !record.end;
     const complete = C.complete(record);
     const valid = complete || (reset !== "none" && empty);
-    const dates = [...model.batchDays].filter((date) =>
-      C.canBatchEditDate(model.state, date),
+    const dates = [...model.batchDays].filter(
+      (date) =>
+        date.slice(0, 7) === model.month &&
+        C.canBatchEditDate(model.state, date),
     );
     model.batchDraft = {
       reset,
+      month: model.month,
       dates,
       record: complete ? record : null,
       valid,
@@ -226,7 +229,11 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (!b) return;
       const k = b.dataset.date;
       if (model.batchMode) {
-        if (!C.canBatchEditDate(model.state, k)) return;
+        if (
+          k.slice(0, 7) !== model.month ||
+          !C.canBatchEditDate(model.state, k)
+        )
+          return;
         if (e.shiftKey && model.batchAnchor) {
           const [first, last] = [model.batchAnchor, k].sort();
           for (const card of $("calendar").querySelectorAll(
@@ -236,6 +243,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
             if (
               date >= first &&
               date <= last &&
+              date.slice(0, 7) === model.month &&
               C.canBatchEditDate(model.state, date)
             )
               model.batchDays.add(date);

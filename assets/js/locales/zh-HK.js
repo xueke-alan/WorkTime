@@ -325,10 +325,10 @@ WorkTimeApp.data.locales["zh-HK"] = {
   "copy.3f712eac83": "批量填寫",
   "copy.7c899c7c7b": "全部重置",
   "copy.533eec9a01": "批量重置",
-  "copy.ee5bb614c4": "全部重置手動填寫",
+  "copy.ee5bb614c4": "重置本月全部手動填寫",
   "copy.2455259fc5": "批量重置選中日期填寫",
   "copy.7b15e5e8e7": "清除",
-  "copy.78e45ac995": "所有月份全部日期",
+  "copy.78e45ac995": "本月全部日期",
   "copy.26139f522b": "選中日期",
   "copy.32ed29d7b7":
     "的手動工時、請假、備註、日期類型和計劃加班；保留 OA 原始記錄及時間模板",
@@ -744,6 +744,7 @@ WorkTimeApp.data.locales["zh-HK"] = {
   "copy.3e413a048b":
     "分段填寫年月日，支持自動補零和跳段，也可貼上 2000-9-9 或 20000909",
   "copy.acb666728b": "工作城市",
+  "settings.backupManage": "備份管理",
   "copy.7fd5b7383b": "歷史快照與還原資料",
   "copy.e638050747": "標準工時設定",
   "copy.ab9e21f1dc": "標準上班時間",

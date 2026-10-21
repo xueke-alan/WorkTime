@@ -51,7 +51,9 @@ __pycache__/
 !/scripts/generate-locales.cjs
 !/scripts/verify-languages.cjs
 !/scripts/verify-compact-layout.cjs
+!/scripts/verify-desktop-i18n.cjs
 !/scripts/verify-calendar-date.cjs
+!/scripts/verify-batch-month.cjs
 !/scripts/i18n/
 !/scripts/clean-css.cjs
 !/scripts/data-update.cjs

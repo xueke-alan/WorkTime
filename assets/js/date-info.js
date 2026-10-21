@@ -151,9 +151,11 @@
         data = WorkTimeApp.data.dateInfo,
         aliases = data.festivalAliases || {},
         internationalNames = new Set(data.internationalFestivals || []),
+        typicalNames = new Set(data.typicalFestivals || []),
         entries = new Map();
       const add = (name, category, url) => {
         name = aliases[name] || name;
+        if (!typicalNames.has(name)) return;
         entries.set(name, {
           name,
           category:

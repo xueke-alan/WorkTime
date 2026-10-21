@@ -1372,6 +1372,7 @@ body .editor #batchForm .batch-editor-actions {
   border-top: 1px solid var(--line);
 }
 .batch-preview-status {
+  white-space: pre-line;
   margin: 0.857143rem 0 0;
   padding: 0.571429rem 0.714286rem;
   border: 1px solid var(--line);
@@ -1874,6 +1875,7 @@ body .editor .settings-content-divider {
   margin: 1rem 0;
 }
 body .editor .settings-archive-actions { display: flex; flex-wrap: wrap; }
+body .editor .settings-archive-actions > button { display: grid; grid-template-columns: var(--icon-size) minmax(0, 1fr); align-items: center; min-width: 0; }
 body .editor .settings-pane-actions button {
   height: var(--control-height);
   min-height: var(--control-height);

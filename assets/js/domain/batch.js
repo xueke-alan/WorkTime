@@ -29,10 +29,18 @@ WorkTimeApp.domain.batch = (() => {
   }
   function applyBatchChanges(
     state,
-    { dates = [], reset = "none", record = null },
+    { dates = [], reset = "none", record = null, month = null },
   ) {
-    const selected = [...new Set(dates)].filter((date) =>
-      WorkTimeApp.domain.schedule.canBatchEditDate(state, date),
+    if (
+      (month !== null || reset === "all") &&
+      !WorkTimeApp.domain.time.validDate(month + "-01")
+    )
+      throw Error("Invalid batch month");
+    const inMonth = (date) => month === null || date.slice(0, 7) === month;
+    const selected = [...new Set(dates)].filter(
+      (date) =>
+        WorkTimeApp.domain.schedule.canBatchEditDate(state, date) &&
+        inMonth(date),
     );
     if (!["none", "selected", "all"].includes(reset))
       throw Error("Invalid batch reset scope");
@@ -40,7 +48,7 @@ WorkTimeApp.domain.batch = (() => {
       throw Error("Invalid batch time");
     const resetDates =
       reset === "all"
-        ? Object.keys(state.days)
+        ? Object.keys(state.days).filter(inMonth)
         : reset === "selected"
           ? selected
           : [];

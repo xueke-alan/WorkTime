@@ -310,6 +310,19 @@ async function verify() {
       second = card("2026-10-09"),
       toggle = first.locator(".source-toggle");
     assert.match(await first.locator(".daytime").textContent(), /08:00.*17:30/);
+    assert.equal(await first.locator(".manual-time").count(), 0);
+    assert.equal(await second.locator(".manual-time").textContent(), "19:00");
+    assert.equal(
+      await second.locator(".manual-time").evaluate((element) => {
+        const reference = document.createElement("span");
+        reference.style.color = "var(--amber)";
+        element.append(reference);
+        const expected = getComputedStyle(reference).color;
+        reference.remove();
+        return getComputedStyle(element).color === expected;
+      }),
+      true,
+    );
     assert.match(
       await second.locator(".source-toggle").getAttribute("title"),
       /下班时间由手录补齐/,

@@ -34,6 +34,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
   const markup = new WeakMap();
   const monthSlotWidths = new Map();
   let monthMeasureContext;
+  function timePart(value, manual) {
+    return manual
+      ? '<span class="manual-time">' + esc(value) + "</span>"
+      : esc(value);
+  }
   function sourceIndicator(day, record) {
     const manual = day.draft || day.actual || day.estimate,
       both = !!(day.oa && manual),
@@ -522,7 +527,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
     );
     $("calendarToday").dateTime = today;
     for (const date of batchDays)
-      if (!C.canBatchEditDate(getOriginalState(), date)) batchDays.delete(date);
+      if (
+        date.slice(0, 7) !== month ||
+        !C.canBatchEditDate(getOriginalState(), date)
+      )
+        batchDays.delete(date);
     if (!keepLeavePanel) closeLeavePanel();
     const viewChanged =
       renderedYearMode !== null && renderedYearMode !== yearMode;
@@ -686,12 +695,23 @@ WorkTimeApp.ui.createCalendar = function (options) {
                 : "";
       const time =
           r && C.complete(r)
-            ? (r.start || WorkTimeApp.i18n.t("copy.e7909cfbfe")) +
-              (r.end ? " – " + r.end + (r.nextDay ? "⁺¹" : "") : "")
+            ? timePart(
+                r.start || WorkTimeApp.i18n.t("copy.e7909cfbfe"),
+                r.filledStart,
+              ) +
+              (r.end
+                ? " – " + timePart(r.end + (r.nextDay ? "⁺¹" : ""), r.filledEnd)
+                : "")
             : r
-              ? (r.start || WorkTimeApp.i18n.t("copy.7c8d65e331")) +
+              ? timePart(
+                  r.start || WorkTimeApp.i18n.t("copy.7c8d65e331"),
+                  r.filledStart,
+                ) +
                 " – " +
-                (r.end || WorkTimeApp.i18n.t("copy.7c8d65e331"))
+                timePart(
+                  r.end || WorkTimeApp.i18n.t("copy.7c8d65e331"),
+                  r.filledEnd,
+                )
               : "",
         sourceDot = sourceIndicator(day, r);
       html +=
@@ -739,7 +759,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         '</span><span class="daykind">' +
         esc(kindLabel) +
         '</span></div><div class="daytime">' +
-        esc(time) +
+        time +
         sourceDot +
         '</div><div class="dayhours">' +
         (calc.minutes !== null
@@ -875,17 +895,23 @@ WorkTimeApp.ui.createCalendar = function (options) {
     );
     $("batchToggle").classList.toggle("primary", batchMode);
     const previewStatus = $("batchPreviewStatus");
-    const resetCount =
-      batchDraft?.reset === "all"
-        ? Object.keys(getOriginalState().days).length
-        : batchDraft?.reset === "selected"
-          ? batchDraft.dates.length
-          : 0;
+    const originalState = getOriginalState(),
+      resetState =
+        batchMode && batchDraft
+          ? WorkTimeApp.domain.batch.applyBatchChanges(originalState, {
+              ...batchDraft,
+              month,
+              record: null,
+            })
+          : originalState,
+      resetCount = Object.keys(originalState.days).filter(
+        (date) => originalState.days[date] !== resetState.days[date],
+      ).length;
     updateText(
       previewStatus,
       batchMode
         ? WorkTimeApp.i18n.t("batch.preview") +
-            " · " +
+            "\n" +
             WorkTimeApp.i18n.t(
               batchDraft?.reset === "all"
                 ? "batch.resetAllCount"

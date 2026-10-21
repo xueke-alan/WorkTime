@@ -289,6 +289,26 @@ async function verifyTemplates(page) {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.locator("#monthTitle").click();
   assert.equal(await page.locator("[data-year-date]").count(), 365);
+  const heatScales = await page.evaluate(() => {
+    const year = WorkTimeApp.ui.year;
+    const scale = (days) => year.scaleMaximum([{ days }]);
+    const weekend = { weekend: true, overtime: 480 };
+    const weekendMaximum = scale([weekend]);
+    return {
+      mixed: scale([weekend, { weekend: false, overtime: 61 }]),
+      weekendMaximum,
+      weekendRatio: year.heatColor(480, weekendMaximum).ratio,
+      empty: scale([]),
+      deficits: scale([{ weekend: false, overtime: -60 }]),
+    };
+  });
+  assert.deepEqual(heatScales, {
+    mixed: 120,
+    weekendMaximum: 480,
+    weekendRatio: 1,
+    empty: 0,
+    deficits: 0,
+  });
   assert.equal(
     await page.evaluate(
       () => document.querySelector(".year-day").getAnimations().length,

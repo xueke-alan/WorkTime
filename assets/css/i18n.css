@@ -145,6 +145,20 @@ html:not([lang="zh-CN"]) .editor-date { gap: 0.05em; }
 html:not([lang="zh-CN"]) .button-label { min-width: 0; }
 html[lang="ko"] { word-break: keep-all; }
 
+/* Archive actions must accommodate localized names rather than a half-column slot. */
+body .editor .settings-archive-actions > button {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 100%;
+  grid-template-columns: var(--icon-size) max-content;
+}
+body .editor .settings-archive-actions > button .button-label { white-space: nowrap; }
+/* Korean planned-overtime text is wider than the shared fixed Chinese button. */
+html:not([lang="zh-CN"]) body .editor #dayForm #plannedOvertimeToggle {
+  width: max-content;
+  max-width: 100%;
+}
+
 html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row { --day-action-columns: minmax(0, 1fr) max-content max-content; }
 html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row :is(#clearManual, #sourceOpen) { width: auto; }
 
