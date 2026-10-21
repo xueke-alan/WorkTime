@@ -7,9 +7,7 @@ WorkTimeApp.domain.batch = (() => {
     "estimate",
     "draft",
     "kind",
-    "leaveMinutes",
     "note",
-    "plannedOvertime",
     "sourcePriority",
   ]);
   function resetBatchDay(old) {

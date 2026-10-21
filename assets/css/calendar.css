@@ -687,13 +687,9 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 .day.weekend:not([data-holiday]):not(.full-leave)::before {
   content: "";
   position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 95px;
-  height: 95px;
-  max-width: 88%;
-  max-height: 85%;
-  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2096%2096%22%20fill%3D%22none%22%3E%0D%0A%20%20%3C%21--%20Simple%20flat%20shapes%3A%20a%20book%2C%20coffee%20and%20a%20two-leaf%20plant.%20--%3E%0D%0A%20%20%3Cpath%20d%3D%22M12%2061q14-4%2028%203%2014-7%2029-3v20q-15-4-29%203-14-7-28-3Z%22%20fill%3D%22%23dfd5bd%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M40%2065v17%22%20stroke%3D%22%23b9a68a%22%20stroke-width%3D%221.2%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M43%2036h5q9%200%209%208t-14%209v-5q9%200%209-4t-9-3Z%22%20fill%3D%22%23acc7b7%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M14%2034h30l-2%2017q-1%207-13%207T16%2051Z%22%20fill%3D%22%23acc7b7%22%2F%3E%0D%0A%20%20%3Cellipse%20cx%3D%2229%22%20cy%3D%2234%22%20rx%3D%2215%22%20ry%3D%223.5%22%20fill%3D%22%23dfd5bd%22%2F%3E%0D%0A%20%20%3Cellipse%20cx%3D%2229%22%20cy%3D%2234%22%20rx%3D%2211%22%20ry%3D%221.8%22%20fill%3D%22%23b9a68a%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M29%2025q-4-5%200-10%22%20stroke%3D%22%23acc7b7%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M67%2046V26%22%20stroke%3D%22%23acc7b7%22%20stroke-width%3D%221.5%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M67%2035Q53%2034%2054%2023q13%200%2013%2012M67%2029q0-13%2014-12-1%2011-14%2012%22%20fill%3D%22%23acc7b7%22%2F%3E%0D%0A%20%20%3Cpath%20d%3D%22M58%2044h19l-3%2014H61Z%22%20fill%3D%22%23dfd5bd%22%2F%3E%0D%0A%3C%2Fsvg%3E%0D%0A") bottom right/contain no-repeat;
+  inset: 0;
+  background: url("../images/weekend.svg") bottom center / cover no-repeat;
+  opacity: 0.25;
   pointer-events: none;
   z-index: -1;
 }
@@ -712,17 +708,12 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 .day[data-holiday]::before {
   content: "";
   position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 95px;
-  height: 95px;
-  max-width: 88%;
-  max-height: 85%;
+  inset: 0;
   background-image: var(--holiday-art);
-  background-size: contain;
-  background-position: bottom right;
+  background-size: cover;
+  background-position: bottom center;
   background-repeat: no-repeat;
-  opacity: 0.65;
+  opacity: 0.25;
   pointer-events: none;
   z-index: -1;
 }
@@ -740,12 +731,6 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 .day[data-holiday].batchselected {
   border-color: #8295ce;
   box-shadow: inset 0 0 0 1px #8295ce;
-}
-@media (min-width: 1800px) and (min-height: 900px) {
-  .day[data-holiday]::before {
-    width: 115px;
-    height: 115px;
-  }
 }
 .calendar .day.adjacent {
   border: 1px solid var(--theme-border-soft, #e6ede8);
@@ -795,14 +780,7 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
   --holiday-art: url("../images/national-day.svg");
 }
 .day[data-holiday="国庆"]::before {
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  max-height: none;
-  background-position: bottom center;
-  background-size: cover;
-  opacity: 0.35;
+  opacity: 0.4;
 }
 .day[data-holiday="国庆"]::after {
   content: "";
@@ -825,8 +803,7 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 .day.full-leave::before {
   content: "";
   position: absolute;
-  right: 0;
-  bottom: 0;
+  inset: auto 0 0 auto;
   width: 95px;
   height: 95px;
   max-width: 88%;
@@ -849,8 +826,6 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
     height: 115px;
   }
 }
-.day.weekend:not([data-holiday]):not(.full-leave)::before,
-.day[data-holiday]::before,
 .day.full-leave::before {
   opacity: 0.4;
 }
@@ -1089,9 +1064,6 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
   background: color-mix(in srgb, var(--day-surface) 92%, var(--day-tone));
   border-color: color-mix(in srgb, var(--day-tone) 55%, var(--day-surface));
   box-shadow: none;
-}
-.day.weekend:not([data-holiday]):not(.full-leave)::before {
-  opacity: 0.48;
 }
 :is(.backup-button-group, .settings-button-group) {
   display: inline-flex;
@@ -1766,17 +1738,7 @@ body .calendar .day-date .daynum-text {
   z-index: 0;
 }
 :is(.calendar-weather-icon, .calendar-weather-outgoing) img { display: block; width: 100%; height: 100%; }
-/* Weekend scenery stays subtle beneath the weather icon. */
-.calendar .day.weekend:not([data-holiday]):not(.full-leave)::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("../images/weekend-scenery.svg") bottom center / 100% 100% no-repeat;
-  opacity: 0.55;
-  pointer-events: none;
-  z-index: -1;
-}
-/* Quiet scenery may extend beneath weather; detailed motifs stay clear of it. */
+/* Soft holiday scenery and motifs extend beneath text and weather. */
 .calendar .day[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::after {
   content: "";
   position: absolute;
@@ -1786,9 +1748,7 @@ body .calendar .day-date .daynum-text {
   pointer-events: none;
   z-index: -1;
 }
-/* Keep artwork at the left, with consistent room for weather on every day. */
-.calendar .day.weekend:not([data-holiday]):not(.full-leave)::before,
-.calendar .day[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::before,
+/* Keep leave artwork at the left, clear of weather. */
 #calendar .day.full-leave::before {
   left: 0.5rem;
   right: auto;

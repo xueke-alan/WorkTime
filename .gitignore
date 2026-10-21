@@ -54,6 +54,9 @@ __pycache__/
 !/scripts/verify-desktop-i18n.cjs
 !/scripts/verify-calendar-date.cjs
 !/scripts/verify-batch-month.cjs
+!/scripts/verify-reset-state.cjs
+!/scripts/verify-rest-overtime.cjs
+!/scripts/verify-button-layout.cjs
 !/scripts/i18n/
 !/scripts/clean-css.cjs
 !/scripts/data-update.cjs

@@ -10,16 +10,15 @@ body .sidebar-actions > #importOpen {
   position: relative;
 }
 body #importOpen .import-main {
-  /* Keep a full-width layout and center its contents beside the square action.
-     Animating a margin resized the label every frame and retriggered alignment. */
-  transform: translateX(calc(-0.5 * var(--oa-action-size)));
-  transition: transform 280ms var(--motion-ease), background 160ms ease;
+  /* Reserve the external action's width without shifting the leading icon. */
+  padding-inline-end: calc(var(--button-icon-inset) + var(--oa-action-size)) !important;
+  transition: background 160ms ease;
 }
 body .sidebar-actions .import-secondary-actions {
   transition: transform 280ms var(--motion-ease), opacity 280ms var(--motion-ease), visibility 0s;
 }
 body #importOpen.is-return .import-main {
-  transform: translateX(0);
+  padding-inline-end: var(--button-icon-inset) !important;
 }
 body .sidebar-actions:has(#importOpen.is-return) .import-secondary-actions {
   transform: translateX(100%);

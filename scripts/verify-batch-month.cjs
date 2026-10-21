@@ -32,9 +32,12 @@ for (const date of dates) initial.days[date] = { estimate: record, note: date };
 initial.days["2026-10-20"] = {
   oa: { ...record },
   actual: record,
+  leaveMinutes: 120,
   extension: { keep: true },
 };
 initial.days["2026-10-21"] = { leaveMinutes: 1440, note: "full leave" };
+initial.days["2026-10-11"] = { plannedOvertime: true, estimate: record };
+initial.days["2026-10-18"] = { plannedOvertime: true };
 async function verify() {
   const before = plain(initial);
   for (const reset of ["none", "selected", "all"]) {
@@ -66,9 +69,12 @@ async function verify() {
     "Invalid selected dates must be ignored before checking month membership",
   );
   assert.equal(reset.days["2026-10-19"], undefined);
-  assert.equal(reset.days["2026-10-21"], undefined);
+  assert.deepEqual(plain(reset.days["2026-10-21"]), { leaveMinutes: 1440 });
+  assert.deepEqual(plain(reset.days["2026-10-11"]), { plannedOvertime: true });
+  assert.equal(reset.days["2026-10-18"], initial.days["2026-10-18"]);
   assert.deepEqual(plain(reset.days["2026-10-20"]), {
     oa: record,
+    leaveMinutes: 120,
     extension: { keep: true },
   });
   for (const invalid of [undefined, "2026-13", "2026-1"])
@@ -85,6 +91,73 @@ async function verify() {
   assert.throws(() => owner.resetBatch(null), /Invalid batch month/);
   await owner.resetBatch(null, month);
   assert.deepEqual(plain(owner.state), plain(reset));
+  for (const date of ["2026-10-20", "2026-10-21", "2026-10-11"]) {
+    const single = W.services.application.createState({
+      state: initial,
+      core: {},
+      persistence: { commit: async () => ({ persisted: true }) },
+    });
+    await single.resetDay(date);
+    assert.deepEqual(plain(single.state.days[date]), plain(reset.days[date]));
+    const draft = { month, dates: [date], reset: "selected" };
+    const preview = D.batch.applyBatchChanges(initial, draft);
+    const batch = W.services.application.createState({
+      state: initial,
+      core: {},
+      persistence: { commit: async () => ({ persisted: true }) },
+    });
+    await batch.confirmBatch(draft);
+    assert.deepEqual(plain(batch.state), plain(preview));
+    assert.deepEqual(
+      plain(preview.days[date]),
+      plain(
+        D.schedule.canBatchEditDate(initial, date)
+          ? reset.days[date]
+          : initial.days[date],
+      ),
+    );
+    for (const other of Object.keys(initial.days).filter((key) => key !== date))
+      assert.deepEqual(plain(preview.days[other]), plain(initial.days[other]));
+  }
+  const plannedDate = "2026-10-11";
+  const cancelState = D.state.defaultState();
+  cancelState.days[plannedDate] = {
+    plannedOvertime: true,
+    leaveMinutes: 60,
+    oa: record,
+    actual: record,
+    estimate: record,
+    draft: { start: "09:00" },
+    kind: "rest",
+    note: "clear me",
+    sourcePriority: "manual",
+    extension: { keep: true },
+  };
+  let writes = 0;
+  let allowCancel = false;
+  const cancel = W.services.application.createState({
+    state: cancelState,
+    core: {},
+    persistence: {
+      commit: async () => {
+        writes++;
+        return { persisted: allowCancel };
+      },
+    },
+  });
+  assert.equal((await cancel.cancelPlanned(plannedDate)).persisted, false);
+  assert.equal(writes, 1, "Cancellation and reset use one save");
+  assert.equal(cancel.dirty, true);
+  assert.deepEqual(plain(cancel.state.days[plannedDate]), {
+    leaveMinutes: 60,
+    oa: record,
+    extension: { keep: true },
+  });
+  allowCancel = true;
+  assert.equal((await cancel.retry()).persisted, true);
+  assert.equal(cancel.dirty, false);
+  await owner.cancelPlanned("2026-10-18");
+  assert.equal(owner.state.days["2026-10-18"], undefined);
   console.log(
     "Batch month verified: preview, fill, selected/all reset, failed save and atomic confirmation preserve other months.",
   );

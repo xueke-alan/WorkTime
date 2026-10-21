@@ -53,12 +53,16 @@ WorkTimeApp.ui.createDayController = function (options) {
       ? C.pad(Number(match[1])) + ":" + match[2]
       : null;
   }
-  async function resetSelectedDay() {
+  async function resetSelectedDay(cancelPlanned = false) {
     const date = model.selected,
       day = model.state.days[date];
     if (!day) return;
     saveGeneration++;
-    const saved = (await application.resetDay(date)).persisted;
+    const saved = (
+      await (cancelPlanned
+        ? application.cancelPlanned(date)
+        : application.resetDay(date))
+    ).persisted;
     actions.render();
     actions.toast(
       saved
@@ -77,7 +81,7 @@ WorkTimeApp.ui.createDayController = function (options) {
       const day = model.state.days[model.selected] || {};
       if (C.calendarInfo(model.selected, day).work) return;
       if (day.plannedOvertime) {
-        await resetSelectedDay();
+        await resetSelectedDay(true);
         return;
       }
       const saved = (await application.togglePlanned(model.selected)).persisted;
@@ -318,7 +322,7 @@ WorkTimeApp.ui.createDayController = function (options) {
     events.listen($("dayLeave"), "input", () => {
       WorkTimeApp.ui.fieldErrors.clear($("dayLeaveError"));
     });
-    events.handler($("clearManual"), "onclick", resetSelectedDay);
+    events.handler($("clearManual"), "onclick", () => resetSelectedDay());
   }
   function dispose() {
     saveGeneration++;

@@ -150,7 +150,6 @@ body .editor .settings-archive-actions > button {
   flex: 0 1 auto;
   width: auto;
   max-width: 100%;
-  grid-template-columns: var(--icon-size) max-content;
 }
 body .editor .settings-archive-actions > button .button-label { white-space: nowrap; }
 /* Korean planned-overtime text is wider than the shared fixed Chinese button. */
@@ -159,7 +158,7 @@ html:not([lang="zh-CN"]) body .editor #dayForm #plannedOvertimeToggle {
   max-width: 100%;
 }
 
-html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row { --day-action-columns: minmax(0, 1fr) max-content max-content; }
+html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row { --day-action-columns: minmax(max-content, 1fr) max-content max-content; }
 html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row :is(#clearManual, #sourceOpen) { width: auto; }
 
 html:not([lang="zh-CN"]) .calendar .daykind { hyphens: auto; }

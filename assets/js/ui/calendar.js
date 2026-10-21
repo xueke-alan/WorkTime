@@ -632,6 +632,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         schedule = C.scheduleForDate(state, k),
         scheduleChanged = hasScheduleChange(state, k, schedule),
         calc = C.calculate(k, day, schedule, true),
+        restOvertime = !info.work && calc.minutes > 0,
         label = stateLabel(day, r, k),
         markers = dateMarkers(k, payday, paydayHint),
         kindLabel =
@@ -811,11 +812,15 @@ WorkTimeApp.ui.createCalendar = function (options) {
                       ? ""
                       : "green",
             )) +
-        (!info.work && day.plannedOvertime
+        (restOvertime
           ? "<div>" +
-            tag(WorkTimeApp.i18n.t("copy.3cf2307526"), "overtime-plan") +
+            tag(WorkTimeApp.i18n.t("short.preview.ot"), "green overtime") +
             "</div>"
-          : "") +
+          : !info.work && day.plannedOvertime
+            ? "<div>" +
+              tag(WorkTimeApp.i18n.t("copy.3cf2307526"), "overtime-plan") +
+              "</div>"
+            : "") +
         (scheduleChanged ? scheduleChangeTag() : "") +
         (day.leaveMinutes
           ? isFullLeave(day, k)

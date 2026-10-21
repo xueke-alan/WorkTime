@@ -310,6 +310,7 @@ WorkTimeApp.services.bootstrap.run(
       [
         "saveDay",
         "togglePlanned",
+        "cancelPlanned",
         "toggleSourcePriority",
         "resetDay",
         "resetBatch",
@@ -467,7 +468,7 @@ WorkTimeApp.services.bootstrap.run(
       ],
       [
         WorkTimeApp.ui.createDayController,
-        ["saveDay", "togglePlanned", "resetDay"],
+        ["saveDay", "togglePlanned", "cancelPlanned", "resetDay"],
         {
           calendarInfo: D.calendar.calendarInfo,
           effectiveRecord: D.records.effectiveRecord,

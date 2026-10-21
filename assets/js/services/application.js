@@ -242,6 +242,16 @@ WorkTimeApp.services.application = (() => {
         resetDate(days, date);
         return commit({ ...state, days }, { changes: { days: [date] } });
       },
+      cancelPlanned(date) {
+        if (!state.days[date]?.plannedOvertime) return commit(state);
+        const days = { ...state.days };
+        resetDate(days, date);
+        const day = { ...days[date] };
+        delete day.plannedOvertime;
+        if (Object.keys(day).length) days[date] = day;
+        else delete days[date];
+        return commit({ ...state, days }, { changes: { days: [date] } });
+      },
       // Reset-all requires an explicit month, including non-selectable dates in it.
       resetBatch(dates, month = null) {
         return commit(

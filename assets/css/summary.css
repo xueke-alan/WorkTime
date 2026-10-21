@@ -1212,11 +1212,7 @@ body .sidebar-actions > #importOpen {
   line-height: 1;
 }
 body #importOpen .import-main {
-  display: grid;
-  grid-template-columns: var(--icon-size) minmax(0, 1fr);
-  align-items: center;
   gap: 0.357143rem;
-  padding-inline: 0.714286rem;
 }
 body #importOpen .import-main > .ui-icon {
   display: block;
@@ -1772,11 +1768,7 @@ body #sourceDialog.import-detail-view .dialog-foot { display: flex; justify-cont
 .import-parsed-list { display: grid; gap: 0.571429rem; }
 .import-parsed-list > article { display: flex; flex-direction: column; gap: 0.285714rem; padding: 0.714286rem; border: 1px solid var(--line); border-radius: 0.571429rem; }
 .import-parsed-list > article > span { color: var(--muted); font-variant-numeric: tabular-nums; }
-/* The label fills its own slot without moving the leading OA icon. */
 body #importOpen .import-main > span {
-  width: 100%;
-  min-width: 0;
-  text-align: center;
   white-space: nowrap;
 }
 .sidebar-history-heading { flex-wrap: wrap; }

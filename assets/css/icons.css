@@ -35,26 +35,6 @@ body .summary-sidebar .sidebar-import-history .import-history-item .row button .
   width: var(--icon-size-small);
   height: var(--icon-size-small);
 }
-body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle) {
-  display: inline-grid;
-  grid-template-columns: var(--icon-size-small) minmax(0, 1fr);
-  align-items: center;
-  justify-content: center;
-}
-body .editor #dayForm :is(#dayLeaveToggle, #plannedOvertimeToggle) > .button-label {
-  width: 100%;
-  min-width: 0;
-}
-/* Anchor leading icons to the control inset, independently of translated copy. */
-body .editor #dayForm .day-action-row :is(#clearManual, #sourceOpen, #dayLeaveFull, #dayLeaveDone),
-body .summary-sidebar #importDialog :is(#oaShortcut, #commitImport) {
-  display: grid;
-  grid-template-columns: var(--icon-size-small) minmax(0, 1fr);
-  align-items: center;
-}
-body .summary-sidebar #importDialog :is(#oaShortcut, #commitImport) {
-  grid-template-columns: var(--icon-size) minmax(0, 1fr);
-}
 body .editor > .notification-tabs {
   --tab-icon-size: var(--icon-size-tab);
 }

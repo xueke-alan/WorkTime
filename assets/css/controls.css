@@ -34,6 +34,25 @@ body button.ui-button {
   justify-content: center;
   gap: 5px;
 }
+/* Leading icons keep their natural width; labels center in the remaining space.
+   Match the child order so trailing icons and icon-only controls stay unchanged. */
+body button.ui-button:has(> :is(.ui-icon, .oa-icon-slot) + .button-label:last-child),
+body #importOpen .import-main {
+  display: inline-grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  /* Shared geometry takes precedence over component-specific button padding. */
+  padding-inline: var(--button-icon-inset) !important;
+}
+body button.ui-button > :is(.ui-icon, .oa-icon-slot):has(+ .button-label:last-child) {
+  justify-self: start;
+}
+body button.ui-button > :is(.ui-icon, .oa-icon-slot) + .button-label:last-child,
+body #importOpen .import-main > span {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
 body button.icon-only,
 body button.nextday-toggle {
   width: var(--control-height) !important;
@@ -166,7 +185,7 @@ body button.ui-button:disabled {
   opacity: 0.45;
   cursor: default;
 }
-/* Flex centers the icon slot; ui-alignment centers the visible text ink in its
+/* Layout centers the icon slot; ui-alignment centers the visible text ink in its
    line box after fonts load and labels change. Use that single correction:
    an additional optical nudge would move already-centered text down again. */
 body button.ui-button:not(.notification-tab) .button-label,
@@ -175,15 +194,6 @@ body #importOpen .import-main > span {
   font: inherit;
   line-height: 1.3;
   transform: translateY(var(--ui-ink-offset, 0px));
-}
-body #importOpen .import-main > span {
-  width: auto;
-  min-width: 0;
-  flex: 0 1 auto;
-}
-/* Equal side padding centers the return icon and label as one group. */
-body .editor .settings-pane-actions button {
-  padding-inline: 1.142857rem;
 }
 body #batchAddTimeTemplate {
   width: var(--control-height) !important;

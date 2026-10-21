@@ -1617,23 +1617,12 @@ body #dayPreview .preview-employment strong {
 body #dayPreview .preview-period > span { white-space: nowrap; }
 body #dayPreview .preview-period > span:first-child { grid-column: span 2; }
 
-/* Leave and planned overtime share a fixed icon slot and centered label slot. */
-body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle) {
-  display: inline-grid;
-  grid-template-columns: 1.142857rem minmax(0, 1fr);
-  column-gap: 0.357143rem;
-  align-items: center;
-}
 body .editor #dayForm :is(#dayLeaveToggle, #plannedOvertimeToggle) > .ui-icon {
   width: 1.142857rem;
   height: 1.142857rem;
   justify-self: start;
 }
-body .editor #dayForm :is(#dayLeaveToggle, #plannedOvertimeToggle) > .button-label {
-  width: 100%;
-  min-width: 0;
-  text-align: center;
-}/* Calculation settings replace the right editor without covering the calendar. */
+/* Calculation settings replace the right editor without covering the calendar. */
 body .workspace > .editor .settings-view-hidden { display: none !important; }
 body .workspace > .editor.is-settings-open { overflow: hidden; }
 body .workspace > .editor #settingsDialog.settings-sidebar-pane[open] {
@@ -1875,7 +1864,7 @@ body .editor .settings-content-divider {
   margin: 1rem 0;
 }
 body .editor .settings-archive-actions { display: flex; flex-wrap: wrap; }
-body .editor .settings-archive-actions > button { display: grid; grid-template-columns: var(--icon-size) minmax(0, 1fr); align-items: center; min-width: 0; }
+body .editor .settings-archive-actions > button { min-width: 0; }
 body .editor .settings-pane-actions button {
   height: var(--control-height);
   min-height: var(--control-height);
@@ -2149,7 +2138,7 @@ body .editor #personalSettingsForm #workCity {
 
 /* Shared language-independent action slots; leave editing swaps their contents. */
 body .editor #dayForm .day-action-row {
-  --day-action-columns: minmax(0, 1fr) 5.357143rem 5.357143rem;
+  --day-action-columns: minmax(0, 4fr) repeat(2, minmax(0, 3fr));
   --control-height: var(--action-control-height);
   display: grid;
   grid-template-columns: var(--day-action-columns);
@@ -2167,9 +2156,8 @@ body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggl
   min-width: 0;
   max-width: none;
 }
-/* Keep planning actions compact while reserving the row for inline leave editing. */
+/* Fill the leave slot while retaining the shared inline editor alignment. */
 body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle) {
-  width: min(7.142857rem, 100%);
   padding-inline: 0.357143rem;
 }
 body .editor #dayForm .day-action-row #dayLeaveToggle[aria-expanded="true"] {
@@ -2202,7 +2190,7 @@ body .editor #dayForm #dayLeaveToggle[aria-pressed="true"][aria-expanded="true"]
 }
 body .editor #dayForm #dayLeaveToggle > .ui-icon {
   position: absolute;
-  left: 0.357143rem;
+  left: var(--button-icon-inset);
   opacity: 1;
   transform: none;
 }

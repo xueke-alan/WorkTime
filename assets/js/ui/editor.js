@@ -72,10 +72,8 @@ WorkTimeApp.ui.createEditor = function (options) {
       !day.estimate &&
       !day.draft &&
       !day.note &&
-      !day.leaveMinutes &&
       !day.kind &&
-      !day.sourcePriority &&
-      !day.plannedOvertime;
+      !day.sourcePriority;
   }
   function updatePlannedOvertime(day, info) {
     const planned = !info.work && !!day.plannedOvertime,
