@@ -1,4 +1,75 @@
 "use strict";
+(() => {
+  const messages = {
+    "zh-CN": [
+      "确认",
+      "预览中，确认后保存",
+      "重置 {count} 天",
+      "全部月份重置 {count} 天",
+      "填写 {count} 天",
+      "批量修改已保存。",
+      "保存失败，预览尚未录入，请重试或取消。",
+    ],
+    "zh-TW": [
+      "確認",
+      "預覽中，確認後儲存",
+      "重設 {count} 天",
+      "所有月份重設 {count} 天",
+      "填寫 {count} 天",
+      "批次修改已儲存。",
+      "儲存失敗，預覽尚未寫入，請重試或取消。",
+    ],
+    "zh-HK": [
+      "確認",
+      "預覽中，確認後儲存",
+      "重設 {count} 天",
+      "所有月份重設 {count} 天",
+      "填寫 {count} 天",
+      "批次修改已儲存。",
+      "儲存失敗，預覽尚未寫入，請重試或取消。",
+    ],
+    en: [
+      "Confirm",
+      "Preview · confirm to save",
+      "Reset {count} days",
+      "Reset {count} days across all months",
+      "Fill {count} days",
+      "Batch changes saved.",
+      "Save failed. Preview has not been saved. Retry or cancel.",
+    ],
+    ja: [
+      "確定",
+      "プレビュー中・確定して保存",
+      "{count} 日をリセット",
+      "全月の {count} 日をリセット",
+      "{count} 日を入力",
+      "一括変更を保存しました。",
+      "保存できませんでした。プレビューは未保存です。再試行またはキャンセルしてください。",
+    ],
+    ko: [
+      "확인",
+      "미리 보기 · 확인 후 저장",
+      "{count}일 초기화",
+      "모든 달의 {count}일 초기화",
+      "{count}일 입력",
+      "일괄 변경 사항이 저장되었습니다.",
+      "저장하지 못했습니다. 미리 보기는 저장되지 않았습니다. 다시 시도하거나 취소하세요.",
+    ],
+  };
+  const keys = [
+    "confirm",
+    "preview",
+    "resetCount",
+    "resetAllCount",
+    "fillCount",
+    "saved",
+    "saveFailed",
+  ];
+  for (const [locale, values] of Object.entries(messages))
+    keys.forEach((key, index) => {
+      WorkTimeApp.data.locales[locale]["batch." + key] = values[index];
+    });
+})();
 // Batch actions share a compact row; their existing title/ARIA keeps full scope.
 (() => {
   for (const [language, [label, selected]] of Object.entries({
@@ -8,9 +79,6 @@
     en: ["Reset all", "Reset"],
     ko: ["전체 초기화", "초기화"],
     ja: ["リセット", "リセット"],
-    es: ["Restabl.", "Restabl."],
-    de: ["Reset", "Reset"],
-    fr: ["Réinit.", "Réinit."],
   })) {
     WorkTimeApp.data.locales[language]["short.batchReset"] = label;
     WorkTimeApp.data.locales[language]["short.batchResetSelected"] = selected;
@@ -24,9 +92,6 @@
     en: ["Calendar weather", "{days} days", "Hidden"],
     ko: ["달력 날씨", "{days}일", "표시 안 함"],
     ja: ["カレンダーの天気", "{days}日", "非表示"],
-    es: ["Tiempo en el calendario", "{days} días", "Ocultar"],
-    de: ["Kalenderwetter", "{days} Tage", "Ausblenden"],
-    fr: ["Météo du calendrier", "{days} jours", "Masquer"],
   };
   for (const [locale, [label, days, off]] of Object.entries(labels))
     Object.assign(WorkTimeApp.data.locales[locale], {
@@ -43,9 +108,6 @@
     en: ["OT needed", "Available"],
     ko: ["필요 초과", "가능 시간"],
     ja: ["必要残業", "余裕時間"],
-    es: ["Necesarias", "Disponibles"],
-    de: ["Nötig", "Verfügbar"],
-    fr: ["À prévoir", "Disponible"],
   };
   for (const [language, [needed, available]] of Object.entries(rows))
     Object.assign(WorkTimeApp.data.locales[language], {
@@ -62,9 +124,6 @@
     en: "Daily overtime",
     ko: "일일 초과근무",
     ja: "当日の残業時間",
-    es: "Horas extra del día",
-    de: "Tägliche Überstunden",
-    fr: "Heures supplémentaires du jour",
   }))
     WorkTimeApp.data.locales[locale]["preview.dailyOvertime"] = value;
 })();
@@ -175,51 +234,6 @@
       "今月{date}まで",
       "勤続{count}日目",
       "開始まで{count}日",
-    ],
-    es: [
-      "Registro",
-      "Objetivo extra/mes",
-      "Extra laborable",
-      "Extra en descanso",
-      "Extra laborable ÷ asistencia",
-      "Extra laborable − objetivo × asistencia",
-      "Extra prevista: {count} d",
-      "Horas",
-      "Extra",
-      "Asist.",
-      "Hasta {date}",
-      "Día {count} en plantilla",
-      "Empieza en {count} días",
-    ],
-    de: [
-      "Zeiterfassung",
-      "Überstd.-Ziel",
-      "ÜStd. werktags",
-      "ÜStd. Ruhetage",
-      "Überstd. Arbeitstage ÷ Anw.",
-      "Überstd. Arbeitstage − Ziel × Anw.",
-      "Überstd. geplant: {count} d",
-      "Zeit",
-      "Überstd.",
-      "Anw.",
-      "Bis {date}",
-      "Tag {count} im Betrieb",
-      "Beginn in {count} Tagen",
-    ],
-    fr: [
-      "Pointage",
-      "Objectif h. sup.",
-      "H. sup. ouvrées",
-      "H. sup. repos",
-      "H. sup. ouvrées ÷ présence",
-      "H. sup. ouvrées − objectif × présence",
-      "H. sup. prévues : {count} d",
-      "Durée",
-      "H. sup.",
-      "Prés.",
-      "Au {date}",
-      "Jour {count} en poste",
-      "Début dans {count} jours",
     ],
   };
   for (const [locale, values] of Object.entries(rows))
@@ -350,57 +364,6 @@
       "{start}–{end} · 休憩 {breaks}",
       "バックアップが{size} MBの上限を超えています。",
     ],
-    es: [
-      "{label} · Quedan {days}",
-      "Wikipedia en inglés",
-      "Wikipedia en chino",
-      "El texto de los eventos históricos está en inglés.",
-      "Historia y festividades",
-      "Lab.",
-      "Libre",
-      "Recup.",
-      "Extra",
-      "h",
-      "h/d",
-      "{year} a. C.",
-      "Error horario: la salida {end} es anterior a la entrada {start}. No se incluye en las horas trabajadas.",
-      "{start}–{end} · Pausas {breaks}",
-      "La copia supera el límite de {size} MB.",
-    ],
-    de: [
-      "{label} · Noch {days}",
-      "Englische Wikipedia",
-      "Chinesische Wikipedia",
-      "Die historischen Ereignistexte sind auf Englisch.",
-      "Geschichte und Feste",
-      "Arb.",
-      "Frei",
-      "Ausgl.",
-      "Zusatz",
-      "Std.",
-      "Std./Tag",
-      "{year} v. Chr.",
-      "Zeitproblem: Arbeitsende {end} liegt vor Arbeitsbeginn {start}. Nicht als Arbeitszeit gezählt.",
-      "{start}–{end} · Pausen {breaks}",
-      "Die Sicherung überschreitet das Größenlimit von {size} MB.",
-    ],
-    fr: [
-      "{label} · Reste {days}",
-      "Wikipédia en anglais",
-      "Wikipédia en chinois",
-      "Le texte des événements historiques est en anglais.",
-      "Histoire et fêtes",
-      "Trav.",
-      "Repos",
-      "Récup.",
-      "Suppl.",
-      "h",
-      "h/j",
-      "{year} av. J.-C.",
-      "Anomalie horaire : le départ {end} précède l’arrivée {start}. Exclu du temps de travail.",
-      "{start}–{end} · Pauses {breaks}",
-      "La sauvegarde dépasse la taille limite de {size} Mo.",
-    ],
   };
   for (const [locale, values] of Object.entries(rows))
     Object.assign(
@@ -435,22 +398,75 @@
       "{date}に取り込んだ「{sources}」を削除しますか？{affected}日分を更新し、{restored}日分は別の取込から復元、{cleared}日分はこの取込から消去します。",
       "取込{imports}件・有効な日付{dates}日分",
     ],
-    es: [
-      "¿Eliminar «{sources}», importado el {date}? Se actualizarán {affected} fechas: {restored} se recuperarán de otras importaciones y {cleared} se borrarán de este lote.",
-      "{imports} importaciones · {dates} fechas válidas",
-    ],
-    de: [
-      "„{sources}“ vom {date} löschen? Dabei werden {affected} Tage aktualisiert: {restored} aus anderen Importen wiederhergestellt und {cleared} aus diesem Import entfernt.",
-      "{imports} Importe · {dates} gültige Tage",
-    ],
-    fr: [
-      "Supprimer « {sources} », importé le {date} ? {affected} dates seront actualisées : {restored} restaurées depuis d’autres importations et {cleared} effacées de ce lot.",
-      "{imports} importations · {dates} dates valides",
-    ],
   };
   for (const [language, [confirmation, totals]] of Object.entries(rows))
     Object.assign(WorkTimeApp.data.locales[language], {
       "import.deleteSummary": confirmation,
       "import.historyTotals": totals,
+    });
+})();
+
+// Per-card source preference and field-level OA completion.
+(() => {
+  const rows = {
+    "zh-CN": [
+      "OA 优先，缺失时间由手录补齐",
+      "仅使用手录数据",
+      "点击切换为手录优先",
+      "点击切换为 OA 优先",
+      "上班时间由手录补齐",
+      "下班时间由手录补齐",
+    ],
+    "zh-TW": [
+      "OA 優先，缺少時間由手動記錄補齊",
+      "僅使用手動記錄",
+      "點擊切換為手動優先",
+      "點擊切換為 OA 優先",
+      "上班時間由手動記錄補齊",
+      "下班時間由手動記錄補齊",
+    ],
+    "zh-HK": [
+      "OA 優先，缺少時間由手動記錄補齊",
+      "僅使用手動記錄",
+      "點擊切換為手動優先",
+      "點擊切換為 OA 優先",
+      "上班時間由手動記錄補齊",
+      "下班時間由手動記錄補齊",
+    ],
+    en: [
+      "OA first; missing times filled from manual entries",
+      "Manual entries only",
+      "Click to use manual entries only",
+      "Click to prefer OA",
+      "Start filled from manual entry",
+      "End filled from manual entry",
+    ],
+    ja: [
+      "OA 優先、不足時刻は手入力で補完",
+      "手入力のみ使用",
+      "クリックして手入力優先に切替",
+      "クリックして OA 優先に切替",
+      "出勤時刻を手入力で補完",
+      "退勤時刻を手入力で補完",
+    ],
+    ko: [
+      "OA 우선, 누락 시간은 수동 기록으로 보완",
+      "수동 기록만 사용",
+      "클릭하여 수동 우선으로 전환",
+      "클릭하여 OA 우선으로 전환",
+      "출근 시간을 수동 기록으로 보완",
+      "퇴근 시간을 수동 기록으로 보완",
+    ],
+  };
+  for (const [language, values] of Object.entries(rows))
+    [
+      "oa",
+      "manual",
+      "switchManual",
+      "switchOA",
+      "filledStart",
+      "filledEnd",
+    ].forEach((key, index) => {
+      WorkTimeApp.data.locales[language]["source." + key] = values[index];
     });
 })();

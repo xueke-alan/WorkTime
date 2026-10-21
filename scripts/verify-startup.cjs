@@ -338,7 +338,10 @@ async function verifyCalendar(page) {
     "0.25 h",
   );
   assert.equal(await second.locator(".day-overtime.negative").count(), 1);
-  assert.match(await second.getAttribute("aria-label"), /当天加班 -1.00 h/);
+  assert.match(
+    await second.locator(".day-select").getAttribute("aria-label"),
+    /当天加班 -1.00 h/,
+  );
   // Every populated metric and marker must fit, including the payday cell.
   for (const width of [1920, 1440, 1151, 850, 540, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -377,7 +380,7 @@ async function verifyCalendar(page) {
     });
     assert.deepEqual(headerIssues, [], "Calendar header must fit at " + width);
     const overflow = await page.evaluate(() => {
-      const cells = [...document.querySelectorAll("button.day[data-date]")];
+      const cells = [...document.querySelectorAll(".day[data-date]")];
       return cells.flatMap((cell) => {
         const box = cell.getBoundingClientRect();
         return [
@@ -403,7 +406,9 @@ async function verifyCalendar(page) {
     button.click();
   });
   assert.equal(
-    await page.locator(".editor-content.motion-sidebar-back").count(),
+    await page
+      .locator(".editor-content")
+      .evaluate((element) => element.getAnimations().length),
     0,
   );
   await page.locator("#pageSettingsOpen").click();
@@ -413,11 +418,17 @@ async function verifyCalendar(page) {
     document.querySelector("#settingsOpen").click();
   });
   assert.equal(
-    await page.locator(".editor-content.motion-sidebar-back").count(),
+    await page
+      .locator(".editor-content")
+      .evaluate((element) => element.getAnimations().length),
     0,
   );
   await page.locator("#settingsOpen").click();
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.waitForFunction(
+    () =>
+      document.querySelector(".editor-content").getAnimations().length === 0,
+  );
   assert.equal(
     await page.evaluate(
       () => document.querySelector(".editor-content").getAnimations().length,
@@ -484,7 +495,7 @@ async function verify() {
           document.documentElement.dataset.appState === "ready" &&
           !document.documentElement.classList.contains("app-loading"),
       );
-      assert.ok((await page.locator("button.day[data-date]").count()) >= 28);
+      assert.ok((await page.locator(".day[data-date]").count()) >= 28);
       assert.equal(
         historyRequests.length,
         0,

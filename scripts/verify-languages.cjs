@@ -19,9 +19,6 @@ const languages = process.env.WORKTIME_LAYOUT_LANGUAGES?.split(",") || [
   "zh-HK",
   "ko",
   "ja",
-  "es",
-  "de",
-  "fr",
 ];
 async function ready(page) {
   await page.waitForFunction(
@@ -226,7 +223,7 @@ async function verify() {
       await page.goto(pathToFileURL(path.join(root, "index.html")).href);
       await ready(page);
       assert.equal(await page.locator("html").getAttribute("lang"), language);
-      assert.equal(await page.locator("#languageOptions button").count(), 9);
+      assert.equal(await page.locator("#languageOptions button").count(), 6);
       assert.deepEqual(
         await page.locator("#languageOptions button").allTextContents(),
         [
@@ -236,9 +233,6 @@ async function verify() {
           "English",
           "한국어",
           "日本語",
-          "Español",
-          "Deutsch",
-          "Français",
         ],
       );
       const baseline = await page.evaluate(() =>
@@ -270,12 +264,8 @@ async function verify() {
       }));
       assert.equal(formatting.months.length, 12);
       assert.ok(!formatting.day.includes("{"));
-      if (["de", "es", "fr"].includes(language))
-        assert.equal(formatting.number, "1,5");
-      assert.equal(
-        formatting.duration,
-        ["de", "es", "fr"].includes(language) ? "1,50 h" : "1.50 h",
-      );
+      assert.equal(formatting.number, "1.5");
+      assert.equal(formatting.duration, "1.50 h");
       async function capture(view) {
         if (selectedViews && !selectedViews.includes(view)) return;
         for (const width of widths) {
@@ -300,7 +290,7 @@ async function verify() {
             })),
           );
           if (
-            ["en", "ko", "es", "de", "fr"].includes(language) &&
+            ["en", "ko"].includes(language) &&
             !["import", "converter"].includes(view)
           ) {
             const leaks = await page.evaluate(() => {
@@ -365,7 +355,7 @@ async function verify() {
       await page.locator("#batchToggle").click();
       await capture("batch");
       const eligible = page
-        .locator('.calendar button.day:not([aria-disabled="true"])')
+        .locator('.calendar .day[data-date]:not([aria-disabled="true"])')
         .first();
       await eligible.click();
       await capture("batch-selected");
@@ -373,7 +363,7 @@ async function verify() {
       await page.locator("#batchCancel").click();
       // A half-size CSS viewport at DPR 2 exercises the reflow and pixel size
       // of 200% browser zoom on the two target displays (no pinch/CSS zoom).
-      if (!selectedViews && ["zh-CN", "de", "fr"].includes(language)) {
+      if (!selectedViews && ["zh-CN", "en", "ko"].includes(language)) {
         for (const [width, height] of [
           [960, 540],
           [1280, 720],
@@ -513,7 +503,7 @@ async function verify() {
         fullPage: true,
       });
       await page.locator("#languageTrigger").press("Escape");
-      for (const next of ["zh-TW", "ja", "fr", language])
+      for (const next of ["zh-TW", "ja", "en", language])
         await page.locator("#languageSelect").selectOption(next);
       assert.equal(await page.locator("#dayStart").inputValue(), "09:17");
       await page.waitForFunction(

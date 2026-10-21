@@ -7,6 +7,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     element: $,
     escape: esc,
     getState,
+    getOriginalState = getState,
     getView,
     getRange: monthBounds,
     closeLeavePanel,
@@ -33,6 +34,44 @@ WorkTimeApp.ui.createCalendar = function (options) {
   const markup = new WeakMap();
   const monthSlotWidths = new Map();
   let monthMeasureContext;
+  function sourceIndicator(day, record) {
+    const manual = day.draft || day.actual || day.estimate,
+      both = !!(day.oa && manual),
+      priority = day.sourcePriority === "manual" || !day.oa ? "manual" : "oa";
+    if (!both && !record) return "";
+    let hint = WorkTimeApp.i18n.t("source." + priority);
+    if (record?.filledStart)
+      hint += " · " + WorkTimeApp.i18n.t("source.filledStart");
+    if (record?.filledEnd)
+      hint += " · " + WorkTimeApp.i18n.t("source.filledEnd");
+    if (both)
+      hint +=
+        " · " +
+        WorkTimeApp.i18n.t(
+          priority === "oa" ? "source.switchManual" : "source.switchOA",
+        );
+    return both
+      ? '<button type="button" class="record-source-dot source-toggle ' +
+          priority +
+          '" data-source-date="' +
+          day.oa.date +
+          '" title="' +
+          esc(hint) +
+          '" aria-label="' +
+          esc(hint) +
+          '" aria-pressed="' +
+          (priority === "manual") +
+          '"' +
+          (getView().batchMode ? " disabled" : "") +
+          "></button>"
+      : '<span class="record-source-dot ' +
+          priority +
+          '" title="' +
+          esc(hint) +
+          '" aria-label="' +
+          esc(hint) +
+          '"></span>';
+  }
   const dateDivider =
     '<svg class="month-title-divider" viewBox="0 0 12 24" aria-hidden="true" focusable="false"><path d="M9 4 3 20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>';
   function attributeValue(element, attribute) {
@@ -205,10 +244,26 @@ WorkTimeApp.ui.createCalendar = function (options) {
   }
   function updateCalendar(html) {
     if (html === calendarMarkup) return;
+    const focused = document.activeElement,
+      focusDate = focused?.closest(".day[data-date]")?.dataset.date,
+      focusSource = focused?.matches(".source-toggle");
     const container = $("calendar"),
       template = document.createElement("template"),
       next = new Map();
     template.innerHTML = html;
+    for (const card of template.content.querySelectorAll(
+      "div.day[data-date]",
+    )) {
+      const select = document.createElement("button");
+      select.type = "button";
+      select.className = "day-select";
+      for (const name of ["aria-label", "aria-pressed", "aria-disabled"]) {
+        if (card.hasAttribute(name))
+          select.setAttribute(name, card.getAttribute(name));
+        if (name !== "aria-disabled") card.removeAttribute(name);
+      }
+      card.prepend(select);
+    }
     const candidates = [...template.content.children],
       nodeKey = (candidate, index) =>
         candidate.tagName +
@@ -238,7 +293,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
       if (previous && previous.element.parentElement === container) {
         element = previous.element;
         if (previous.source !== source) {
-          // Preserve the day button itself, including its keyboard focus.
+          // Preserve the day surface and weather layers across record updates.
           for (const attribute of previous.attributes)
             if (!candidate.hasAttribute(attribute))
               element.removeAttribute(attribute);
@@ -293,6 +348,15 @@ WorkTimeApp.ui.createCalendar = function (options) {
     });
     for (const [key, previous] of calendarNodes)
       if (!next.has(key)) previous.element.remove();
+    if (focusDate && !focused.isConnected)
+      container
+        .querySelector(
+          '[data-date="' +
+            focusDate +
+            '"] ' +
+            (focusSource ? ".source-toggle" : ".day-select"),
+        )
+        ?.focus({ preventScroll: true });
     calendarNodes.clear();
     for (const [key, value] of next) calendarNodes.set(key, value);
     calendarMarkup = html;
@@ -386,8 +450,21 @@ WorkTimeApp.ui.createCalendar = function (options) {
   }
   function renderCalendar(keepLeavePanel = false) {
     const state = getState();
-    const { today, month, selected, batchMode, batchDays, yearMode, viewYear } =
-      getView();
+    const {
+      today,
+      month,
+      selected,
+      batchMode,
+      batchDays,
+      batchDraft,
+      batchSaving,
+      yearMode,
+      viewYear,
+    } = getView();
+    for (const id of ["prevMonth", "nextMonth", "todayButton"])
+      $(id).disabled = batchMode;
+    $("monthTitle").setAttribute("aria-disabled", String(batchMode));
+    $("monthTitle").tabIndex = batchMode ? -1 : 0;
     const weekday = WorkTimeApp.i18n.weekday(today);
     const dateLabel = WorkTimeApp.i18n.date(today).replace(/\s*\/\s*/g, " / ");
     const dateParts = dateLabel.split(/\s*\/\s*/);
@@ -416,7 +493,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     );
     $("calendarToday").dateTime = today;
     for (const date of batchDays)
-      if (!C.canBatchEditDate(state, date)) batchDays.delete(date);
+      if (!C.canBatchEditDate(getOriginalState(), date)) batchDays.delete(date);
     if (!keepLeavePanel) closeLeavePanel();
     const viewChanged =
       renderedYearMode !== null && renderedYearMode !== yearMode;
@@ -457,9 +534,6 @@ WorkTimeApp.ui.createCalendar = function (options) {
       renderYear();
       if (viewChanged) {
         WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-view");
-        [...$("calendar").children].forEach((element, i) =>
-          WorkTimeApp.ui.motion?.play(element, "motion-year-month", i * 12),
-        );
       } else if (yearChanged) {
         $("calendar").style.setProperty("--motion-direction", direction);
         WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-year");
@@ -514,10 +588,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
     for (let i = 1; i <= total; i++) {
       const k = month + "-" + C.pad(i),
         day = state.days[k] || {},
-        batchEligible = C.canBatchEditDate(state, k),
+        batchEligible = C.canBatchEditDate(getOriginalState(), k),
         info = C.calendarInfo(k, day),
         r = C.effectiveRecord(day, true),
-        sourceRecord = r || day.oa,
         schedule = C.scheduleForDate(state, k),
         scheduleChanged = hasScheduleChange(state, k, schedule),
         calc = C.calculate(k, day, schedule, true),
@@ -586,23 +659,14 @@ WorkTimeApp.ui.createCalendar = function (options) {
           r && C.complete(r)
             ? (r.start || WorkTimeApp.i18n.t("copy.e7909cfbfe")) +
               (r.end ? " – " + r.end + (r.nextDay ? "⁺¹" : "") : "")
-            : day.draft
-              ? (day.draft.start || WorkTimeApp.i18n.t("copy.7c8d65e331")) +
+            : r
+              ? (r.start || WorkTimeApp.i18n.t("copy.7c8d65e331")) +
                 " – " +
-                (day.draft.end || WorkTimeApp.i18n.t("copy.7c8d65e331"))
-              : day.oa && day.oa.start
-                ? day.oa.start + WorkTimeApp.i18n.t("copy.a73dd6d86d")
-                : "",
-        sourceDot =
-          sourceRecord &&
-          (C.complete(sourceRecord) || sourceRecord.start || sourceRecord.end)
-            ? sourceRecord.manual
-              ? WorkTimeApp.i18n.t("copy.6439fe575a") +
-                (day.oa ? WorkTimeApp.i18n.t("copy.932f850a42") : "")
-              : WorkTimeApp.i18n.t("copy.84059d0fb3")
-            : "";
+                (r.end || WorkTimeApp.i18n.t("copy.7c8d65e331"))
+              : "",
+        sourceDot = sourceIndicator(day, r);
       html +=
-        '<button class="' +
+        '<div class="' +
         classes +
         '" data-date="' +
         k +
@@ -718,7 +782,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
               ) +
               "</div>"
           : "") +
-        "</div></div></button>";
+        "</div></div></div>";
     }
     for (let i = 1; i <= weeks * 7 - offset - total; i++) {
       const preview = C.localDate(last);
@@ -751,8 +815,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
         ? WorkTimeApp.i18n.t("copy.03b15bbfb8")
         : WorkTimeApp.i18n.t("copy.3f712eac83"),
     );
-    $("batchSave").disabled =
-      !batchDays.size || $("batchForm").getAttribute("aria-busy") === "true";
+    $("batchSave").disabled = !batchDraft?.canConfirm || batchSaving;
+    $("batchCancel").disabled = $("batchToggle").disabled = !!batchSaving;
     const resetAll = !batchDays.size;
     $("batchReset").disabled =
       $("batchForm").getAttribute("aria-busy") === "true";
@@ -781,11 +845,34 @@ WorkTimeApp.ui.createCalendar = function (options) {
         WorkTimeApp.i18n.t("copy.f8bb0516cc"),
     );
     $("batchToggle").classList.toggle("primary", batchMode);
-    if (monthChanged) {
+    const previewStatus = $("batchPreviewStatus");
+    const resetCount =
+      batchDraft?.reset === "all"
+        ? Object.keys(getOriginalState().days).length
+        : batchDraft?.reset === "selected"
+          ? batchDraft.dates.length
+          : 0;
+    updateText(
+      previewStatus,
+      batchMode
+        ? WorkTimeApp.i18n.t("batch.preview") +
+            " · " +
+            WorkTimeApp.i18n.t(
+              batchDraft?.reset === "all"
+                ? "batch.resetAllCount"
+                : "batch.resetCount",
+              { count: resetCount },
+            ) +
+            " · " +
+            WorkTimeApp.i18n.t("batch.fillCount", {
+              count: batchDraft?.record ? batchDraft.dates.length : 0,
+            })
+        : "",
+    );
+    $("cards").classList.toggle("is-batch-preview", batchMode);
+    if (monthChanged && !viewChanged) {
       $("calendar").style.setProperty("--motion-direction", direction);
-      [...$("calendar").children].forEach((day, i) =>
-        WorkTimeApp.ui.motion?.play(day, "motion-day", Math.floor(i / 7) * 22),
-      );
+      WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-year");
     } else if (selectionChanged && !batchMode)
       WorkTimeApp.ui.motion?.play(
         $("calendar").querySelector(".selected"),

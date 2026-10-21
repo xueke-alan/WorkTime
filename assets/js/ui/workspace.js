@@ -28,6 +28,17 @@ WorkTimeApp.ui.createWorkspace = function ({
     renderEditor();
     notifications.updateNotificationEmptyState();
   }
+  function leaveBatch() {
+    if (disposed || !model.batchMode || model.batchSaving) return;
+    model.batchMode = false;
+    model.batchDays.clear();
+    model.batchAnchor = null;
+    model.batchDraft = null;
+    model.batchPreview = null;
+    renderStats();
+    renderCalendar();
+    renderEditor();
+  }
   return {
     render,
     mount() {
@@ -43,15 +54,18 @@ WorkTimeApp.ui.createWorkspace = function ({
       observer?.disconnect();
       observer = null;
     },
-    leaveBatch() {
-      if (disposed || !model.batchMode) return;
-      model.batchMode = false;
-      model.batchDays.clear();
-      model.batchAnchor = null;
-      renderCalendar();
-      renderEditor();
-    },
+    leaveBatch,
     open(id, options) {
+      if (
+        [
+          "importDialog",
+          "sourceDialog",
+          "restoreDialog",
+          "recoveryDialog",
+          "initializeDialog",
+        ].includes(id)
+      )
+        leaveBatch();
       if (disposed || sidebarPanels.open(id, options)) return;
       const dialog = $(id);
       // Let native dialog focusing run while visible. No frame is painted between
@@ -73,6 +87,7 @@ WorkTimeApp.ui.createWorkspace = function ({
     },
     reload() {
       if (disposed) return;
+      leaveBatch();
       if ($("settingsDialog").open) refreshSettings();
       render();
       $("importDialog").dispatchEvent(new window.Event("sidebar-open"));

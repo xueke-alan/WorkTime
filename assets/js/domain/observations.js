@@ -172,7 +172,6 @@ WorkTimeApp.domain.observations = (() => {
     const day = state.days[record.date] || (state.days[record.date] = {});
     const result = mergeObservation(day.oa, record);
     if (result.record !== day.oa) day.oa = { ...result.record, importId };
-    if (day.oa.status === "complete") delete day.estimate;
     return result;
   }
   function importRecords(log) {

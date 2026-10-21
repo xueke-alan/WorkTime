@@ -1,200 +1,200 @@
-400|일 월 화 수 목 금 토|日 月 火 水 木 金 土|dom lun mar mié jue vie sáb|So Mo Di Mi Do Fr Sa|dim. lun. mar. mer. jeu. ven. sam.
-401|일|日|dom|So|dim.
-402|: 요일이 맞지 않습니다. 연도를 확인하세요.|：曜日が一致しません。年を確認してください。|: el día de la semana no coincide. Comprueba el año.|: Wochentag stimmt nicht. Jahr prüfen.| : le jour de la semaine ne correspond pas. Vérifiez l’année.
-403|타각이 2개를 초과합니다. 이 날짜는 가져오지 않았습니다. 직접 확인하세요.|打刻が3件以上あります。この日は取り込んでいません。手動で確認してください。|tiene más de dos fichajes. No se importó esta fecha; revísala manualmente.|hat mehr als zwei Buchungen. Dieser Tag wurde nicht importiert. Bitte manuell prüfen.|comporte plus de deux pointages. Cette date n’a pas été importée ; vérifiez-la manuellement.
-404|: 타각 또는 --가 없어 가져오지 않았습니다.|：打刻も--もないため、この日は取り込んでいません。|: no hay fichajes ni --. No se importó esta fecha.|: weder Buchungen noch -- gefunden. Dieser Tag wurde nicht importiert.| : aucun pointage ni -- trouvé. Cette date n’a pas été importée.
-405|: 퇴근이 출근보다 빠릅니다. ‘익일 퇴근’을 켜고 직접 입력하세요.|：退勤が出勤より前です。「翌日退勤」を有効にして手動で入力してください。|: la salida es anterior a la entrada. Activa «Salida al día siguiente» e introduce las horas manualmente.|: Ende liegt vor Beginn. „Ende am Folgetag“ aktivieren und Uhrzeiten manuell eingeben.| : le départ précède l’arrivée. Activez « Départ le lendemain » et saisissez les heures manuellement.
-406|--와 타각이 함께 있습니다. 타각을 우선합니다.|--と打刻が両方あります。打刻を優先します。|contiene -- y fichajes. Se da prioridad a los fichajes.|enthält -- und Buchungen. Buchungen haben Vorrang.|contient -- et des pointages. Les pointages sont prioritaires.
-407|: MM/DD 날짜 기록을 찾지 못했습니다.|：MM/DD形式の日付記録が見つかりません。|: no se encontraron registros con fecha MM/DD.|: keine Einträge mit Datum MM/DD gefunden.| : aucun enregistrement daté au format MM/DD trouvé.
-408|그린|グリーン|Verde|Grün|Vert
-409|블루|ブルー|Azul|Blau|Bleu
-410|퍼플|パープル|Morado|Violett|Violet
-411|오렌지|オレンジ|Naranja|Orange|Orange
-412|로즈|ローズ|Rosa|Rosé|Rose
-413|블루 그레이|ブルーグレー|Gris azulado|Schieferblau|Gris ardoise
-414|틸|ティール|Verde azulado|Petrol|Bleu canard
-415|민트|ミント|Menta|Mint|Menthe
-416|올리브|オリーブ|Oliva|Olivgrün|Olive
-417|앰버|アンバー|Ámbar|Bernstein|Ambre
-418|레드|レッド|Rojo|Rot|Rouge
-419|브라운|ブラウン|Marrón|Braun|Brun
-420|지원 범위 밖의 날짜입니다.|日付が対応範囲外です。|Fecha fuera del intervalo admitido.|Datum außerhalb des unterstützten Bereichs.|Date hors de la plage prise en charge.
-421|근무 일정 형식이 잘못되었습니다.|勤務スケジュールの形式が無効です。|Formato de horario no válido.|Ungültiges Arbeitsplanformat.|Format d’horaire invalide.
-422|예정 출근 시간이 잘못되었습니다.|勤務開始予定時刻が無効です。|Hora de inicio prevista no válida.|Ungültiger geplanter Arbeitsbeginn.|Heure de début prévue invalide.
-423|예정 퇴근은 출근보다 늦어야 합니다.|終了予定時刻は開始予定時刻より後にしてください。|El fin previsto debe ser posterior al inicio.|Geplantes Ende muss nach dem Beginn liegen.|La fin prévue doit suivre le début.
-424|휴게 시간 형식이 잘못되었습니다.|休憩の形式が無効です。|Formato de pausa no válido.|Ungültiges Pausenformat.|Format de pause invalide.
-425|휴게 시작 시간이 잘못되었습니다.|休憩開始時刻が無効です。|Inicio de pausa no válido.|Ungültiger Pausenbeginn.|Début de pause invalide.
-426|휴게 종료 시간이 잘못되었습니다.|休憩終了時刻が無効です。|Fin de pausa no válido.|Ungültiges Pausenende.|Fin de pause invalide.
-427|휴게를 제외한 기본 근무 시간은 0보다 커야 합니다.|休憩を除く所定労働時間は0より大きくしてください。|La jornada sin pausas debe ser mayor que 0.|Sollzeit nach Pausenabzug muss größer als 0 sein.|La durée normale hors pauses doit être supérieure à 0.
-428|기본 근무 시간이 일정과 일치하지 않습니다.|所定労働時間がスケジュールと一致しません。|La jornada estándar no coincide con el horario.|Sollstunden stimmen nicht mit dem Arbeitsplan überein.|La durée normale ne correspond pas à l’horaire.
-429|근무 일정 기간 형식이 잘못되었습니다.|スケジュール期間の形式が無効です。|Formato de periodo de horario no válido.|Ungültiges Format des Arbeitsplanzeitraums.|Format de période d’horaire invalide.
-430|근무 일정 시작일이 잘못되었습니다.|スケジュール開始日が無効です。|Inicio de horario no válido.|Ungültiges Anfangsdatum des Arbeitsplans.|Date de début d’horaire invalide.
-431|근무 일정 종료일이 잘못되었습니다.|スケジュール終了日が無効です。|Fin de horario no válido.|Ungültiges Enddatum des Arbeitsplans.|Date de fin d’horaire invalide.
-432|근무 일정 기간은 시간순이어야 하며 겹칠 수 없습니다.|スケジュール期間は日付順とし、重複しないようにしてください。|Los periodos deben estar ordenados y no solaparse.|Arbeitsplanzeiträume müssen geordnet sein und dürfen sich nicht überschneiden.|Les périodes doivent être ordonnées et ne pas se chevaucher.
-433|올바른 시작일과 종료일을 선택하세요.|有効な開始日と終了日を選択してください。|Elige fechas de inicio y fin válidas.|Gültiges Anfangs- und Enddatum wählen.|Choisissez des dates de début et de fin valides.
-434|모든 날짜에는 종료일을 지정할 수 없습니다.|「すべての日付」には終了日を指定できません。|«Todas las fechas» no admite fecha de fin.|„Alle Daten“ darf kein Enddatum haben.|« Toutes les dates » ne peut pas avoir de date de fin.
-435|다음 날짜의 휴가가 새 기본 근무 시간을 초과합니다. 먼저 수정하세요:|次の日付の休暇が新しい所定労働時間を超えています。先に修正してください：|El permiso supera la nueva jornada en estas fechas. Corrígelo primero:|Urlaub überschreitet an diesen Tagen die neue Sollzeit. Bitte zuerst korrigieren:|Le congé dépasse la nouvelle durée normale à ces dates. Corrigez-les d’abord :
-436|선택한 날짜가 잘못되었습니다.|選択した日付が無効です。|Fecha seleccionada no válida.|Ungültiges ausgewähltes Datum.|Date sélectionnée invalide.
-437|HH:MM 형식으로 올바른 시간을 입력하세요.|HH:MM形式で有効な時刻を入力してください。|Introduce una hora válida en formato HH:MM.|Gültige Uhrzeit im Format HH:MM eingeben.|Saisissez une heure valide au format HH:MM.
-438|백업의 텍스트 필드가 잘못되었습니다.|バックアップのテキスト項目が無効です。|Campo de texto no válido en la copia.|Ungültiges Textfeld in der Sicherung.|Champ texte invalide dans la sauvegarde.
-439|초과근무 5개 구간을 0~24시간으로 설정하세요. 기본 목표는 필수입니다.|5段階の残業区分を0～24時間で設定してください。基本目標は必須です。|Define cinco niveles extra de 0 a 24 h. El objetivo base es obligatorio.|Fünf Überstundenstufen von 0–24 Stunden festlegen. Das Basisziel ist erforderlich.|Définissez cinq paliers de 0 à 24 h. L’objectif de base est obligatoire.
-440|백업의 가져온 타각이 잘못되었습니다.|バックアップの取込打刻が無効です。|Fichaje importado no válido en la copia.|Ungültige importierte Buchung in der Sicherung.|Pointage importé invalide dans la sauvegarde.
-441|백업의 가져온 날짜가 잘못되었습니다.|バックアップの取込日付が無効です。|Fecha importada no válida en la copia.|Ungültiges importiertes Datum in der Sicherung.|Date importée invalide dans la sauvegarde.
-442|백업의 익일 표시가 잘못되었습니다.|バックアップの翌日フラグが無効です。|Indicador nocturno no válido en la copia.|Ungültige Folgetagsangabe in der Sicherung.|Indicateur de lendemain invalide dans la sauvegarde.
-443|백업의 가져온 타각 상태가 잘못되었습니다.|バックアップの取込打刻状態が無効です。|Estado de fichaje importado no válido en la copia.|Ungültiger Status einer importierten Buchung in der Sicherung.|État de pointage importé invalide dans la sauvegarde.
-444|가져온 근무 시간은 수동 기록으로 조정하세요.|取り込んだ労働時間は手入力で調整してください。|Ajusta las horas importadas mediante una entrada manual.|Importierte Stunden mit einem manuellen Eintrag anpassen.|Ajustez les heures importées à l’aide d’une saisie manuelle.
-445|백업의 완료된 가져오기 기록이 잘못되었습니다.|バックアップの完全な取込記録が無効です。|Registro importado completo no válido en la copia.|Ungültiger vollständiger Importeintrag in der Sicherung.|Enregistrement importé complet invalide dans la sauvegarde.
-446|템플릿 ID가 잘못되었습니다.|テンプレートIDが無効です。|ID de plantilla no válido.|Ungültige Vorlagen-ID.|Identifiant de modèle invalide.
-447|템플릿 이름은 1~30자여야 합니다.|テンプレート名は1～30文字にしてください。|El nombre debe tener entre 1 y 30 caracteres.|Vorlagenname muss 1–30 Zeichen lang sein.|Le nom du modèle doit comporter de 1 à 30 caractères.
-448|출근 또는 퇴근 시간을 입력하세요.|出勤または退勤時刻を入力してください。|Introduce una hora de entrada o salida.|Arbeitsbeginn oder Arbeitsende eingeben.|Saisissez une heure d’arrivée ou de départ.
-449|출근 및 퇴근 시간을 모두 입력하세요.|出勤と退勤の両時刻を入力してください。|Introduce las horas de entrada y salida.|Arbeitsbeginn und Arbeitsende eingeben.|Saisissez les heures d’arrivée et de départ.
-450|퇴근이 출근보다 빠릅니다. 자정을 넘기면 ‘익일 퇴근’을 켜세요.|退勤が出勤より前です。日をまたぐ場合は「翌日退勤」を有効にしてください。|La salida es anterior a la entrada. Activa «Salida al día siguiente» para turnos nocturnos.|Ende liegt vor Beginn. Bei Nachtschichten „Ende am Folgetag“ aktivieren.|Le départ précède l’arrivée. Activez « Départ le lendemain » pour le travail après minuit.
-451|백업의 일일 기록이 잘못되었습니다.|バックアップの日別記録が無効です。|Registro diario no válido en la copia.|Ungültiger Tageseintrag in der Sicherung.|Saisie journalière invalide dans la sauvegarde.
-452|: 날짜 유형이 잘못되었습니다.|：日区分が無効です。|: tipo de día no válido.|: ungültige Tagesart.| : type de jour invalide.
-453|: 휴가는 기본 일일 근무 시간을 초과할 수 없습니다.|：休暇は1日の所定労働時間を超えられません。|: el permiso no debe superar la jornada estándar diaria.|: Urlaub darf die tägliche Sollzeit nicht überschreiten.| : le congé ne peut pas dépasser la durée normale journalière.
-454|: 초과근무 계획 표시가 잘못되었습니다.|：残業予定フラグが無効です。|: indicador de extra prevista no válido.|: ungültige Angabe für geplante Überstunden.| : indicateur d’h. sup. prévues invalide.
-455|메모 형식이 잘못되었습니다.|メモの形式が無効です。|Formato de nota no válido.|Ungültiges Notizformat.|Format de note invalide.
-456|: 타각 기록이 잘못되었습니다.|：打刻記録が無効です。|: registro de fichaje no válido.|: ungültige Zeitbuchung.| : pointage invalide.
-457|: 익일 표시가 잘못되었습니다.|：翌日フラグが無効です。|: indicador nocturno no válido.|: ungültige Folgetagsangabe.| : indicateur de lendemain invalide.
-458|: 조정 시간이 잘못되었습니다.|：調整時間が無効です。|: horas ajustadas no válidas.|: ungültige angepasste Stunden.| : heures ajustées invalides.
-459|: OA 근무 시간은 수동 기록으로 조정하세요.|：OAの労働時間は手入力で調整してください。|: usa una entrada manual para ajustar las horas OA.|: OA-Stunden mit einem manuellen Eintrag anpassen.| : ajustez les heures OA avec une saisie manuelle.
-460|: OA 상태가 잘못되었습니다.|：OA状態が無効です。|: estado OA no válido.|: ungültiger OA-Status.| : état OA invalide.
-461|: 완료된 근무 기록이 잘못되었습니다.|：完全な勤務記録が無効です。|: registro completo de trabajo no válido.|: ungültiger vollständiger Arbeitseintrag.| : saisie de travail complète invalide.
-462|OA 날짜가 일치하지 않습니다.|OAの日付が一致しません。|La fecha OA no coincide.|OA-Datum stimmt nicht überein.|La date OA ne correspond pas.
-463|지원하지 않는 WorkTime 백업 파일입니다.|未対応のWorkTimeバックアップです。|Archivo de copia WorkTime no compatible.|Nicht unterstützte WorkTime-Sicherungsdatei.|Fichier de sauvegarde WorkTime non pris en charge.
-464|복원 전에 tools/convert-backup.html에서 백업을 변환하세요.|復元前にtools/convert-backup.htmlでバックアップを変換してください。|Convierte la copia con tools/convert-backup.html antes de restaurarla.|Sicherung vor der Wiederherstellung mit tools/convert-backup.html konvertieren.|Convertissez la sauvegarde avec tools/convert-backup.html avant de la restaurer.
-465|백업의 근무 일정이 잘못되었습니다.|バックアップの勤務スケジュールが無効です。|Horario laboral no válido en la copia.|Ungültiger Arbeitsplan in der Sicherung.|Horaire de travail invalide dans la sauvegarde.
-466|백업의 가져오기 내역이 잘못되었습니다.|バックアップの取込履歴が無効です。|Historial de importación no válido en la copia.|Ungültiger Importverlauf in der Sicherung.|Historique d’importation invalide dans la sauvegarde.
-467|백업의 기본 근무 시간이 잘못되었습니다.|バックアップの所定労働時間が無効です。|Jornada estándar no válida en la copia.|Ungültige Sollstunden in der Sicherung.|Durée normale invalide dans la sauvegarde.
-468|백업의 개인 정보가 잘못되었습니다.|バックアップのプロフィールが無効です。|Perfil no válido en la copia.|Ungültiges Profil in der Sicherung.|Profil invalide dans la sauvegarde.
-469|백업의 입사일이 잘못되었습니다.|バックアップの入社日が無効です。|Fecha de incorporación no válida en la copia.|Ungültiges Eintrittsdatum in der Sicherung.|Date d’embauche invalide dans la sauvegarde.
-470|근무 도시는 64자 이내의 텍스트여야 합니다.|勤務地の都市は64文字以内にしてください。|La ciudad de trabajo debe ser texto de hasta 64 caracteres.|Arbeitsort muss Text mit maximal 64 Zeichen sein.|La ville de travail doit être un texte de 64 caractères maximum.
-471|백업의 테마가 잘못되었습니다.|バックアップのテーマが無効です。|Tema no válido en la copia.|Ungültiges Design in der Sicherung.|Thème invalide dans la sauvegarde.
-472|백업의 OA URL이 잘못되었습니다.|バックアップのOA URLが無効です。|URL OA no válida en la copia.|Ungültige OA-URL in der Sicherung.|URL OA invalide dans la sauvegarde.
-473|백업의 가져오기 ID가 잘못되었거나 중복됩니다.|バックアップの取込IDが無効か重複しています。|ID de importación no válido o duplicado en la copia.|Ungültige oder doppelte Import-ID in der Sicherung.|Identifiant d’importation invalide ou en double dans la sauvegarde.
-474|백업의 가져오기 시각이 잘못되었습니다.|バックアップの取込日時が無効です。|Marca temporal de importación no válida en la copia.|Ungültiger Importzeitstempel in der Sicherung.|Horodatage d’importation invalide dans la sauvegarde.
-475|백업의 가져오기 연도가 잘못되었습니다.|バックアップの取込年が無効です。|Año de importación no válido en la copia.|Ungültiges Importjahr in der Sicherung.|Année d’importation invalide dans la sauvegarde.
-476|백업의 가져오기 출처가 잘못되었습니다.|バックアップの取込元が無効です。|Origen de importación no válido en la copia.|Ungültige Importquelle in der Sicherung.|Source d’importation invalide dans la sauvegarde.
-477|백업의 가져오기 개수가 잘못되었습니다.|バックアップの取込件数が無効です。|Cantidad importada no válida en la copia.|Ungültige Importanzahl in der Sicherung.|Nombre d’importations invalide dans la sauvegarde.
-478|백업의 시간 템플릿이 잘못되었습니다.|バックアップの時刻テンプレートが無効です。|Plantillas horarias no válidas en la copia.|Ungültige Zeitvorlagen in der Sicherung.|Modèles horaires invalides dans la sauvegarde.
-479|백업에 중복 템플릿 ID가 있습니다.|バックアップのテンプレートIDが重複しています。|ID de plantilla duplicado en la copia.|Doppelte Vorlagen-ID in der Sicherung.|Identifiant de modèle en double dans la sauvegarde.
-480|이 저장 자료를 열려면 앱을 업데이트하세요. 읽기 전용 모드입니다.|この保存データを開くには更新が必要です。読み取り専用モードです。|Actualiza la aplicación para abrir los datos. Modo de solo lectura activado.|Zum Öffnen dieser Daten die App aktualisieren. Schreibschutz ist aktiv.|Mettez l’application à jour pour ouvrir l’archive. Le mode lecture seule est activé.
-481|복원 또는 일정 업데이트 중입니다. 완료 후 다시 시도하세요.|復元またはスケジュール更新中です。完了後に再試行してください。|Restauración o actualización de horario en curso. Reintenta cuando termine.|Wiederherstellung oder Planaktualisierung läuft. Danach erneut versuchen.|Restauration ou mise à jour d’horaire en cours. Réessayez ensuite.
-482|템플릿이 더 이상 없습니다.|テンプレートは存在しません。|La plantilla ya no existe.|Vorlage existiert nicht mehr.|Le modèle n’existe plus.
-483|템플릿은 최대 6개까지 저장할 수 있습니다. 먼저 하나를 삭제하세요.|テンプレートは最大6件です。先に1件削除してください。|Puedes guardar hasta 6 plantillas. Elimina una primero.|Maximal 6 Vorlagen möglich. Zuerst eine löschen.|Vous pouvez enregistrer 6 modèles au maximum. Supprimez-en un d’abord.
-484|백업 복원 전에 미저장 변경 사항을 내보내고 새로고침하세요.|復元前に未保存の変更を書き出し、再読み込みしてください。|Exporta los cambios sin guardar y recarga antes de restaurar.|Vor der Wiederherstellung ungespeicherte Änderungen exportieren und neu laden.|Exportez les modifications non enregistrées et rechargez avant de restaurer.
-485|손상된 저장 자료만 초기화할 수 있습니다.|破損した保存データのみリセットできます。|Solo se pueden restablecer datos dañados.|Nur beschädigte Daten können zurückgesetzt werden.|Seule une archive endommagée peut être réinitialisée.
-486|시작 실패:|起動失敗：|Error de inicio:|Start fehlgeschlagen:|Échec du démarrage :
-487|. 페이지를 다시 열고 모든 프로젝트 파일이 있는지 확인하세요.|。ページを開き直し、必要なファイルがそろっているか確認してください。|. Vuelve a abrir la página y comprueba que estén todos los archivos del proyecto.|. Seite erneut öffnen und prüfen, ob alle Projektdateien vorhanden sind.|. Rouvrez la page et vérifiez que tous les fichiers du projet sont présents.
-488|이 브라우저는 클립보드를 읽을 수 없습니다|このブラウザーはクリップボードを読み込めません|Este navegador no puede leer el portapapeles|Dieser Browser kann die Zwischenablage nicht lesen|Ce navigateur ne peut pas lire le presse-papiers
-489|이 브라우저는 클립보드에 쓸 수 없습니다|このブラウザーはクリップボードに書き込めません|Este navegador no puede escribir en el portapapeles|Dieser Browser kann nicht in die Zwischenablage schreiben|Ce navigateur ne peut pas écrire dans le presse-papiers
-490|시계가 올바르지 않은 시간을 반환했습니다.|時計が無効な時刻を返しました。|El reloj devolvió una hora no válida.|Die Uhr lieferte eine ungültige Zeit.|L’horloge a renvoyé une heure invalide.
-491|저장 자료가 아직 준비되지 않았습니다. 잠시 후 다시 시도하세요.|保存データの準備ができていません。しばらくして再試行してください。|Los datos aún no están listos. Reintenta en un momento.|Daten noch nicht bereit. In Kürze erneut versuchen.|L’archive n’est pas prête. Réessayez dans un instant.
-492|원본 저장 자료를 다시 열기 전에 임시 변경 사항의 백업을 다운로드하고 새로고침하세요.|元の保存データを開く前に、仮の変更のバックアップをダウンロードして再読み込みしてください。|Descarga una copia de los cambios temporales y recarga antes de reabrir los datos originales.|Vor dem erneuten Öffnen der Originaldaten temporäre Änderungen sichern und neu laden.|Téléchargez une sauvegarde des modifications temporaires et rechargez avant de rouvrir l’archive d’origine.
-493|공유 코드는 시간 템플릿 1~6개를 포함해야 합니다.|共有コードには時刻テンプレートを1～6件含めてください。|El código debe contener de 1 a 6 plantillas horarias.|Freigabecode muss 1–6 Zeitvorlagen enthalten.|Le code de partage doit contenir de 1 à 6 modèles horaires.
-494|템플릿|テンプレート|Plantilla|Vorlage|Modèle
-495|항목이 잘못되었습니다.|は無効です。|no es válido.|ist ungültig.|est invalide.
-496|개 템플릿|件のテンプレート|plantillas|Vorlagen|modèles
-497|템플릿 공유 코드가 16 KiB를 초과합니다.|テンプレート共有コードが16 KiBを超えています。|El código de plantillas supera los 16 KiB.|Vorlagen-Freigabecode überschreitet 16 KiB.|Le code de partage dépasse 16 Kio.
-498|템플릿 공유 코드를 붙여넣으세요.|テンプレート共有コードを貼り付けてください。|Pega un código de plantillas.|Vorlagen-Freigabecode einfügen.|Collez un code de partage de modèles.
-499|지원하지 않는 템플릿 공유 코드입니다. 내용과 버전을 확인하세요.|未対応のテンプレート共有コードです。内容とバージョンを確認してください。|Código de plantillas no compatible. Revisa el contenido y la versión.|Nicht unterstützter Vorlagen-Freigabecode. Inhalt und Version prüfen.|Code de partage non pris en charge. Vérifiez son contenu et sa version.
-500|템플릿 공유 코드가 손상되었습니다.|テンプレート共有コードが破損しています。|El código de plantillas está dañado.|Vorlagen-Freigabecode ist beschädigt.|Le code de partage est endommagé.
-501|템플릿 압축 해제를 위해 브라우저를 업데이트하세요.|テンプレートを展開するにはブラウザーを更新してください。|Actualiza el navegador para descomprimir las plantillas.|Browser zum Entpacken der Vorlagen aktualisieren.|Mettez le navigateur à jour pour décompresser les modèles.
-502|크기 제한|サイズ上限|límite de tamaño|Größenlimit|taille limite
-503|손상된 템플릿 공유 코드의 압축을 풀 수 없습니다.|破損した共有コードを展開できません。|No se puede descomprimir el código dañado.|Beschädigter Vorlagen-Freigabecode kann nicht entpackt werden.|Impossible de décompresser le code de partage endommagé.
-504|손상된 템플릿 공유 코드를 분석할 수 없습니다.|破損した共有コードを解析できません。|No se puede analizar el código dañado.|Beschädigter Vorlagen-Freigabecode kann nicht ausgewertet werden.|Impossible d’analyser le code de partage endommagé.
-505|공유 코드에 시간 템플릿이 없습니다.|共有コードに時刻テンプレートが含まれていません。|El código no contiene plantillas horarias.|Freigabecode enthält keine Zeitvorlagen.|Le code ne contient aucun modèle horaire.
-506|모듈 등록이 잘못되었습니다.|モジュール登録が無効です。|Registro de módulo no válido.|Ungültige Modulregistrierung.|Enregistrement de module invalide.
-507|저장 자료에 안전하지 않은 필드가 있습니다.|保存データに安全でない項目が含まれています。|Los datos contienen campos no seguros.|Daten enthalten unsichere Felder.|L’archive contient des champs non sûrs.
-508|: OA 가져오기 링크를 찾지 못했습니다.|：OA取込リンクが見つかりません。|: no se encontró el enlace de importación OA.|: OA-Importlink nicht gefunden.| : lien d’importation OA introuvable.
-509|지원하지 않는 WorkTime 저장 자료입니다.|未対応のWorkTime保存データです。|Datos WorkTime no compatibles.|Nicht unterstützte WorkTime-Daten.|Archive WorkTime non prise en charge.
-510|지원하지 않는 저장 자료 버전입니다. 앱을 업데이트하세요.|未対応の保存データ形式です。アプリを更新してください。|Versión de datos no compatible. Actualiza la aplicación.|Nicht unterstützte Datenversion. App aktualisieren.|Version d’archive non prise en charge. Mettez l’application à jour.
-511|저장 자료 ID가 잘못되었습니다.|保存データIDが無効です。|ID de datos no válido.|Ungültige Daten-ID.|Identifiant d’archive invalide.
-512|저장 자료 생성 시각이 잘못되었습니다.|保存データの作成日時が無効です。|Fecha de creación de datos no válida.|Ungültiger Erstellungszeitpunkt der Daten.|Date de création de l’archive invalide.
-513|저장 자료의 모듈 목록이 잘못되었습니다.|保存データのモジュール一覧が無効です。|Lista de módulos no válida.|Ungültige Modulliste.|Liste des modules de l’archive invalide.
-514|모듈 ID가 잘못되었거나 중복됩니다.|モジュールIDが無効か重複しています。|ID de módulo no válido o duplicado.|Ungültige oder doppelte Modul-ID.|Identifiant de module invalide ou en double.
-515|모듈 버전 또는 기록이 잘못되었습니다.|モジュールのバージョンまたは記録が無効です。|Versión o registros de módulo no válidos.|Ungültige Modulversion oder Einträge.|Version ou enregistrements de module invalides.
-516|모듈|モジュール|Módulo|Modul|Module
-517|더 최신 앱 버전이 필요합니다.|には新しいアプリが必要です。|requiere una versión más reciente.|benötigt eine neuere App-Version.|nécessite une version plus récente de l’application.
-518|사용 가능한 마이그레이션이 없습니다.|には移行手段がありません。|no tiene migración disponible.|hat keinen verfügbaren Migrationspfad.|n’a aucune migration disponible.
-519|모듈 마이그레이션은 ID를 유지하며 한 버전씩 진행해야 합니다.|モジュール移行ではIDを保持し、1バージョンずつ更新してください。|La migración debe conservar el ID y avanzar una versión cada vez.|Modulmigration muss die ID beibehalten und jeweils eine Version weitergehen.|La migration doit conserver l’identifiant et avancer d’une version à la fois.
-520|모듈 기록 ID 또는 내용이 잘못되었습니다.|モジュール記録のIDまたは内容が無効です。|ID o contenido de registro de módulo no válido.|Ungültige ID oder Inhalt eines Moduleintrags.|Identifiant ou contenu d’enregistrement de module invalide.
-521|기록 순서가 잘못되었습니다.|記録の順序が無効です。|Orden de registros no válido.|Ungültige Eintragsreihenfolge.|Ordre des enregistrements invalide.
-522|모듈이 없거나 잘못되었습니다.|モジュールがないか無効です。|módulo ausente o no válido.|Modul fehlt oder ist ungültig.|module manquant ou invalide.
-523|필수 모듈 누락:|必須モジュールがありません：|Faltan módulos obligatorios:|Erforderliche Module fehlen:|Modules obligatoires manquants :
-524|가져오기 참조가 잘못되었습니다.|取込参照が無効です。|Referencia de importación no válida.|Ungültiger Importverweis.|Référence d’importation invalide.
-525|가져오기 순서 또는 ID가 잘못되었습니다.|取込順序またはIDが無効です。|Orden o ID de importación no válido.|Ungültige Importreihenfolge oder ID.|Ordre ou identifiant d’importation invalide.
-526|가져오기 기록 순서가 연속적이지 않습니다.|取込記録の順序が連続していません。|El orden de registros importados no es consecutivo.|Reihenfolge der Importeinträge ist nicht fortlaufend.|L’ordre des enregistrements importés n’est pas consécutif.
-527|근무 일정 ID가 잘못되었습니다.|スケジュールIDが無効です。|ID de horario no válido.|Ungültige Arbeitsplan-ID.|Identifiant d’horaire invalide.
-528|날씨 설정이 잘못되었습니다.|天気の設定が無効です。|Preferencia meteorológica no válida.|Ungültige Wettereinstellung.|Préférence météo invalide.
-529|IndexedDB를 사용할 수 없습니다. 변경 사항은 이 페이지에만 있습니다. 백업을 내보내세요.|IndexedDBを使用できません。変更はこのページにのみ残ります。バックアップを書き出してください。|IndexedDB no disponible. Los cambios solo están en esta página. Exporta una copia.|IndexedDB nicht verfügbar. Änderungen bleiben nur auf dieser Seite. Sicherung exportieren.|IndexedDB indisponible. Les modifications restent sur cette page uniquement. Exportez une sauvegarde.
-530|저장 시간이 초과되어 취소되었습니다. 원본은 유지됩니다. 변경 사항을 내보내고 새로고침하세요.|保存がタイムアウトで中止されました。元データは保持されています。変更を書き出して再読み込みしてください。|Guardado cancelado por tiempo agotado. Se conservan los originales. Exporta los cambios y recarga.|Speichern wegen Zeitüberschreitung abgebrochen. Originaldaten bleiben erhalten. Änderungen exportieren und neu laden.|Enregistrement annulé après expiration du délai. Archive d’origine conservée. Exportez vos modifications et rechargez.
-531|트랜잭션이 취소되었습니다.|トランザクションが中止されました。|Transacción cancelada.|Transaktion abgebrochen.|Transaction annulée.
-532|이 브라우저는 IndexedDB를 지원하지 않습니다.|このブラウザーはIndexedDBに対応していません。|Este navegador no admite IndexedDB.|Dieser Browser unterstützt IndexedDB nicht.|Ce navigateur ne prend pas en charge IndexedDB.
-533|페이지가 닫혔습니다.|ページが閉じられました。|Página cerrada.|Seite geschlossen.|Page fermée.
-534|다른 탭이 데이터베이스 업데이트를 차단했습니다. 닫은 후 새로고침하세요.|別のタブがデータベースの更新を妨げています。そのタブを閉じて再読み込みしてください。|Otra pestaña bloquea la actualización de la base de datos. Ciérrala y recarga.|Ein anderer Tab blockiert das Datenbankupgrade. Diesen schließen und neu laden.|Un autre onglet bloque la mise à niveau de la base. Fermez-le et rechargez.
-535|저장 자료 메타데이터가 없습니다. 데이터베이스 기록은 유지됩니다. 복구 데이터를 내보내세요.|保存データのメタデータがありません。データベースの記録は保持されています。復旧データを書き出してください。|Faltan los metadatos. Se conservan los registros. Exporta los datos de recuperación.|Metadaten fehlen. Datenbankeinträge bleiben erhalten. Wiederherstellungsdaten exportieren.|Métadonnées manquantes. Enregistrements conservés. Exportez les données de récupération.
-536|다른 탭에서 저장 자료를 마이그레이션 중입니다. 닫은 후 다시 확인하세요.|別のタブでデータを移行中です。そのタブを閉じて再確認してください。|Otra pestaña está migrando los datos. Ciérrala y comprueba de nuevo.|Ein anderer Tab migriert die Daten. Diesen schließen und erneut prüfen.|Un autre onglet migre l’archive. Fermez-le et revérifiez.
-537|마이그레이션 중 이전 자료가 변경되었습니다. 새로고침하세요.|移行中に旧データが変更されました。再読み込みしてください。|Los datos antiguos cambiaron durante la migración. Recarga.|Altdaten wurden während der Migration geändert. Neu laden.|L’ancienne archive a changé pendant la migration. Rechargez.
-538|마이그레이션된 저장 자료를 검증하지 못했습니다.|移行後の保存データを検証できませんでした。|No se pudieron verificar los datos migrados.|Migrierte Daten konnten nicht geprüft werden.|Impossible de vérifier l’archive migrée.
-539|다른 탭에서 이전 자료를 변경했습니다. 복원 전에 현재 백업과 원본 데이터를 모두 내보내세요.|別のタブで旧データが変更されました。復元前に現在のバックアップと元データの両方を書き出してください。|Otra pestaña cambió los datos antiguos. Exporta la copia actual y los originales antes de restaurar.|Ein anderer Tab hat Altdaten geändert. Vor der Wiederherstellung aktuelle Sicherung und Originaldaten exportieren.|Un autre onglet a modifié l’ancienne archive. Exportez la sauvegarde actuelle et les données d’origine avant de restaurer.
-540|저장 모듈 업데이트가 필요합니다. 다른 편집 탭을 닫고 다시 시도하세요.|保存モジュールの更新が必要です。ほかの編集タブを閉じて再試行してください。|Los módulos requieren actualización. Cierra la otra pestaña de edición y reintenta.|Datenmodule müssen aktualisiert werden. Anderen Bearbeitungstab schließen und erneut versuchen.|Les modules doivent être mis à niveau. Fermez l’autre onglet d’édition et réessayez.
-541|다른 탭에서 편집 중입니다. 현재 변경 사항을 내보낼 수 있습니다.|別のタブで編集中です。現在の変更を書き出せます。|Otra pestaña está editando. Puedes exportar los cambios actuales.|Ein anderer Tab bearbeitet die Daten. Aktuelle Änderungen können exportiert werden.|Un autre onglet est en cours d’édition. Vous pouvez exporter vos modifications.
-542|저장 자료 검증에 실패했습니다. 변경 사항은 이 페이지에만 있습니다.|保存データの検証に失敗しました。変更はこのページにのみ残っています。|Falló la validación. Los cambios solo están en esta página.|Datenprüfung fehlgeschlagen. Änderungen bleiben nur auf dieser Seite.|Validation de l’archive échouée. Les modifications restent sur cette page uniquement.
-543|이전 자료가 갱신되었습니다. 원본 데이터를 내보내고 새로고침하세요.|旧データが更新されました。元データを書き出して再読み込みしてください。|Datos antiguos actualizados. Exporta los originales y recarga.|Altdaten aktualisiert. Originaldaten exportieren und neu laden.|Ancienne archive actualisée. Exportez les données d’origine et rechargez.
-544|다른 탭에서 저장 자료를 갱신했습니다. 변경 사항을 내보내고 새로고침하세요.|別のタブで保存データが更新されました。変更を書き出して再読み込みしてください。|Otra pestaña actualizó los datos. Exporta los cambios y recarga.|Ein anderer Tab hat die Daten aktualisiert. Änderungen exportieren und neu laden.|Un autre onglet a actualisé l’archive. Exportez vos modifications et rechargez.
-545|스냅샷이 100 MiB를 초과합니다. 먼저 데이터를 내보내고 정리하세요.|スナップショットが100 MiBを超えています。先にデータを書き出して整理してください。|La instantánea supera los 100 MiB. Exporta y limpia los datos primero.|Snapshot überschreitet 100 MiB. Daten zuerst exportieren und bereinigen.|L’instantané dépasse 100 Mio. Exportez puis nettoyez les données d’abord.
-546|복원 전에 변경 사항을 저장하거나 내보내세요.|復元前に変更を保存するか書き出してください。|Guarda o exporta los cambios antes de restaurar.|Änderungen vor der Wiederherstellung speichern oder exportieren.|Enregistrez ou exportez vos modifications avant de restaurer.
-547|가져오기 내역을 읽지 못했습니다. 원본 저장 자료를 다운로드하세요.|取込履歴を読み込めません。元の保存データをダウンロードしてください。|No se pudo leer el historial. Descarga los datos originales.|Importverlauf nicht lesbar. Originaldaten herunterladen.|Historique d’importation illisible. Téléchargez l’archive d’origine.
-548|다른 탭에서 편집 중입니다. 닫히면 저장을 다시 시도합니다. 현재 변경 사항을 내보낼 수 있습니다.|別のタブで編集中です。そのタブが閉じると保存を再試行します。現在の変更を書き出すこともできます。|Otra pestaña está editando. Se reintentará guardar cuando se cierre. Puedes exportar los cambios.|Ein anderer Tab bearbeitet die Daten. Nach dem Schließen wird erneut gespeichert. Änderungen können exportiert werden.|Un autre onglet est en cours d’édition. L’enregistrement reprendra à sa fermeture. Vous pouvez exporter vos modifications.
-549|역사 자료를 불러오지 못했습니다. 다시 시도하세요.|歴史資料を読み込めませんでした。再試行してください。|No se pudo cargar la historia. Reintenta.|Geschichtsdaten konnten nicht geladen werden. Erneut versuchen.|Impossible de charger les événements historiques. Réessayez.
-550|날짜 형식이 잘못되었습니다|日付形式が無効です|Formato de fecha no válido|Ungültiges Datumsformat|Format de date invalide
-551|음력과 절기는 1900~2100년을 지원합니다|旧暦と二十四節気は1900～2100年に対応しています|El calendario lunar y los términos solares admiten 1900–2100|Mondkalender und Sonnenperioden unterstützen 1900–2100|Calendrier lunaire et termes solaires disponibles pour 1900–2100
-552|로컬 음력 자료를 불러오지 못했습니다|ローカルの旧暦データを読み込めません|No se pudieron cargar los datos lunares locales|Lokale Monddaten konnten nicht geladen werden|Impossible de charger les données lunaires locales
-553|모듈이 등록되지 않았습니다|モジュールが未登録です|Módulo no registrado|Modul nicht registriert|Module non enregistré
-554|역사 속 오늘|今日は何の日|Tal día como hoy|An diesem Tag|Ce jour dans l’histoire
-555|이 날짜의 로컬 역사 자료가 없습니다|この日付のローカル歴史資料がありません|Sin datos históricos locales para esta fecha|Keine lokalen Geschichtsdaten für dieses Datum|Aucune donnée historique locale pour cette date
-556|선택한 날짜 이전의 사건이 없습니다|選択日以前の出来事はありません|Sin eventos anteriores a la fecha seleccionada|Keine Ereignisse vor dem ausgewählten Datum|Aucun événement antérieur à la date sélectionnée
-557|중국어 위키백과 · CC BY-SA 4.0|中国語版ウィキペディア · CC BY-SA 4.0|Wikipedia en chino · CC BY-SA 4.0|Chinesische Wikipedia · CC BY-SA 4.0|Wikipédia en chinois · CC BY-SA 4.0
-558|명절 및 절기|祝祭日と二十四節気|Festividades y términos solares|Feste und Sonnenperioden|Fêtes et termes solaires
-559|섣달그믐|除夕（旧暦の大晦日）|Víspera del Año Nuevo lunar|Vorabend des Mondneujahrs|Veille du Nouvel An lunaire
-560|오늘|今日|Hoy|Heute|Aujourd’hui
-561|중국 명절|中国の祝祭日|Festividades chinas|Chinesische Feste|Fêtes chinoises
-562|기념일|記念日|Conmemoraciones|Gedenktage|Journées commémoratives
-563|명절|祝祭日|Festividades|Feste|Fêtes
-564|이 날짜에 등록된 명절이 없습니다|この日に登録された祝祭日はありません|No hay festividades para esta fecha|Keine Feste für dieses Datum eingetragen|Aucune fête répertoriée à cette date
-565|중국 황력|中国の暦注|Almanaque chino|Chinesischer Almanach|Almanach chinois
-566|윤|閏|Intercalar|Schaltmonat|Intercalaire
-567|수호신|守護神|Deidad guardiana|Schutzgottheit|Divinité protectrice
-568|십이직|十二直|Oficial del día|Tagesregent|Régent du jour
-569|희신|喜神|Deidad de la alegría|Freudengottheit|Divinité de la joie
-570|재신|財神|Deidad de la riqueza|Reichtumsgottheit|Divinité de la richesse
-571|간지|干支|Ciclo sexagenario|Sechzigjahreszyklus|Cycle sexagésimal
-572|년|年|año|Jahr|an
-573|띠|十二支|Zodiaco chino|Chinesisches Tierkreiszeichen|Signe chinois
-574|길함|吉|Favorable|Günstig|Favorable
-575|없음|なし|Ninguno|Keine|Aucun
-576|피할 일|凶|Evitar|Meiden|À éviter
-577|충|冲|Conflicto|Konflikt|Opposition
-578|· 방향:|・方角：|· Dirección:|· Richtung:|· Direction :
-579|· 전통 풍습|・伝統的な風習|· Costumbres tradicionales|· Traditionelle Bräuche|· Coutumes traditionnelles
-580|바이두 날씨|百度天気|Baidu Meteo|Baidu Wetter|Météo Baidu
-581|천둥|雷|Truenos|Donner|Tonnerre
-582|눈|雪|Nieve|Schnee|Neige
-583|흐림|曇り|Cubierto|Bedeckt|Couvert
-584|구름|雲|Nubes|Wolken|Nuages
-585|이 도시의 날씨 데이터가 불완전합니다|この都市の天気データが不完全です|Datos meteorológicos incompletos para esta ciudad|Unvollständige Wetterdaten für diese Stadt|Données météo incomplètes pour cette ville
-586|보퍼트|ボーフォート|Bft|Bft|Bft
-587|날씨 URL이 잘못되었습니다|天気URLが無効です|URL meteorológica no válida|Ungültige Wetter-URL|URL météo invalide
-588|날씨 데이터를 일시적으로 사용할 수 없습니다|天気データを一時的に利用できません|Datos meteorológicos temporalmente no disponibles|Wetterdaten vorübergehend nicht verfügbar|Données météo temporairement indisponibles
-589|예상치 못한 날씨 URL 리디렉션|天気URLの予期しない転送|Redirección inesperada de la URL meteorológica|Unerwartete Weiterleitung der Wetter-URL|Redirection inattendue de l’URL météo
-590|새로고침 실패. 캐시된 데이터를 표시합니다.|更新失敗。キャッシュデータを表示しています。|Error al actualizar. Se muestran datos en caché.|Aktualisierung fehlgeschlagen. Zwischengespeicherte Daten werden angezeigt.|Actualisation échouée. Données en cache affichées.
-591|날씨 요청 시간이 초과되었습니다. 다시 시도하세요.|天気情報の取得がタイムアウトしました。再試行してください。|La solicitud del tiempo ha caducado. Reintenta.|Zeitüberschreitung der Wetterabfrage. Erneut versuchen.|La requête météo a expiré. Réessayez.
-592|환경설정에서 근무 도시를 선택하세요|環境設定で勤務地の都市を選択してください|Elige una ciudad de trabajo en Preferencias|Arbeitsort in den Einstellungen wählen|Choisissez une ville de travail dans les préférences
-593|지원하지 않는 도시입니다. 환경설정에서 지원 도시를 선택하세요.|この都市は未対応です。環境設定で対応する都市を選択してください。|Ciudad no disponible. Elige una admitida en Preferencias.|Stadt nicht verfügbar. Unterstützte Stadt in den Einstellungen wählen.|Ville indisponible. Choisissez une ville prise en charge dans les préférences.
-594|날씨 정보 없음|天気不明|Tiempo desconocido|Unbekanntes Wetter|Météo inconnue
-595|대체로 맑음|おおむね晴れ|Mayormente despejado|Überwiegend klar|Plutôt dégagé
-596|구름 조금|晴れ時々曇り|Parcialmente nuboso|Teilweise bewölkt|Partiellement nuageux
-597|안개|霧|Niebla|Nebel|Brouillard
-598|이슬비|霧雨|Llovizna|Nieselregen|Bruine
-599|비|雨|Lluvia|Regen|Pluie
+400|일 월 화 수 목 금 토|日 月 火 水 木 金 土
+401|일|日
+402|: 요일이 맞지 않습니다. 연도를 확인하세요.|：曜日が一致しません。年を確認してください。
+403|타각이 2개를 초과합니다. 이 날짜는 가져오지 않았습니다. 직접 확인하세요.|打刻が3件以上あります。この日は取り込んでいません。手動で確認してください。
+404|: 타각 또는 --가 없어 가져오지 않았습니다.|：打刻も--もないため、この日は取り込んでいません。
+405|: 퇴근이 출근보다 빠릅니다. ‘익일 퇴근’을 켜고 직접 입력하세요.|：退勤が出勤より前です。「翌日退勤」を有効にして手動で入力してください。
+406|--와 타각이 함께 있습니다. 타각을 우선합니다.|--と打刻が両方あります。打刻を優先します。
+407|: MM/DD 날짜 기록을 찾지 못했습니다.|：MM/DD形式の日付記録が見つかりません。
+408|그린|グリーン
+409|블루|ブルー
+410|퍼플|パープル
+411|오렌지|オレンジ
+412|로즈|ローズ
+413|블루 그레이|ブルーグレー
+414|틸|ティール
+415|민트|ミント
+416|올리브|オリーブ
+417|앰버|アンバー
+418|레드|レッド
+419|브라운|ブラウン
+420|지원 범위 밖의 날짜입니다.|日付が対応範囲外です。
+421|근무 일정 형식이 잘못되었습니다.|勤務スケジュールの形式が無効です。
+422|예정 출근 시간이 잘못되었습니다.|勤務開始予定時刻が無効です。
+423|예정 퇴근은 출근보다 늦어야 합니다.|終了予定時刻は開始予定時刻より後にしてください。
+424|휴게 시간 형식이 잘못되었습니다.|休憩の形式が無効です。
+425|휴게 시작 시간이 잘못되었습니다.|休憩開始時刻が無効です。
+426|휴게 종료 시간이 잘못되었습니다.|休憩終了時刻が無効です。
+427|휴게를 제외한 기본 근무 시간은 0보다 커야 합니다.|休憩を除く所定労働時間は0より大きくしてください。
+428|기본 근무 시간이 일정과 일치하지 않습니다.|所定労働時間がスケジュールと一致しません。
+429|근무 일정 기간 형식이 잘못되었습니다.|スケジュール期間の形式が無効です。
+430|근무 일정 시작일이 잘못되었습니다.|スケジュール開始日が無効です。
+431|근무 일정 종료일이 잘못되었습니다.|スケジュール終了日が無効です。
+432|근무 일정 기간은 시간순이어야 하며 겹칠 수 없습니다.|スケジュール期間は日付順とし、重複しないようにしてください。
+433|올바른 시작일과 종료일을 선택하세요.|有効な開始日と終了日を選択してください。
+434|모든 날짜에는 종료일을 지정할 수 없습니다.|「すべての日付」には終了日を指定できません。
+435|다음 날짜의 휴가가 새 기본 근무 시간을 초과합니다. 먼저 수정하세요:|次の日付の休暇が新しい所定労働時間を超えています。先に修正してください：
+436|선택한 날짜가 잘못되었습니다.|選択した日付が無効です。
+437|HH:MM 형식으로 올바른 시간을 입력하세요.|HH:MM形式で有効な時刻を入力してください。
+438|백업의 텍스트 필드가 잘못되었습니다.|バックアップのテキスト項目が無効です。
+439|초과근무 5개 구간을 0~24시간으로 설정하세요. 기본 목표는 필수입니다.|5段階の残業区分を0～24時間で設定してください。基本目標は必須です。
+440|백업의 가져온 타각이 잘못되었습니다.|バックアップの取込打刻が無効です。
+441|백업의 가져온 날짜가 잘못되었습니다.|バックアップの取込日付が無効です。
+442|백업의 익일 표시가 잘못되었습니다.|バックアップの翌日フラグが無効です。
+443|백업의 가져온 타각 상태가 잘못되었습니다.|バックアップの取込打刻状態が無効です。
+444|가져온 근무 시간은 수동 기록으로 조정하세요.|取り込んだ労働時間は手入力で調整してください。
+445|백업의 완료된 가져오기 기록이 잘못되었습니다.|バックアップの完全な取込記録が無効です。
+446|템플릿 ID가 잘못되었습니다.|テンプレートIDが無効です。
+447|템플릿 이름은 1~30자여야 합니다.|テンプレート名は1～30文字にしてください。
+448|출근 또는 퇴근 시간을 입력하세요.|出勤または退勤時刻を入力してください。
+449|출근 및 퇴근 시간을 모두 입력하세요.|出勤と退勤の両時刻を入力してください。
+450|퇴근이 출근보다 빠릅니다. 자정을 넘기면 ‘익일 퇴근’을 켜세요.|退勤が出勤より前です。日をまたぐ場合は「翌日退勤」を有効にしてください。
+451|백업의 일일 기록이 잘못되었습니다.|バックアップの日別記録が無効です。
+452|: 날짜 유형이 잘못되었습니다.|：日区分が無効です。
+453|: 휴가는 기본 일일 근무 시간을 초과할 수 없습니다.|：休暇は1日の所定労働時間を超えられません。
+454|: 초과근무 계획 표시가 잘못되었습니다.|：残業予定フラグが無効です。
+455|메모 형식이 잘못되었습니다.|メモの形式が無効です。
+456|: 타각 기록이 잘못되었습니다.|：打刻記録が無効です。
+457|: 익일 표시가 잘못되었습니다.|：翌日フラグが無効です。
+458|: 조정 시간이 잘못되었습니다.|：調整時間が無効です。
+459|: OA 근무 시간은 수동 기록으로 조정하세요.|：OAの労働時間は手入力で調整してください。
+460|: OA 상태가 잘못되었습니다.|：OA状態が無効です。
+461|: 완료된 근무 기록이 잘못되었습니다.|：完全な勤務記録が無効です。
+462|OA 날짜가 일치하지 않습니다.|OAの日付が一致しません。
+463|지원하지 않는 WorkTime 백업 파일입니다.|未対応のWorkTimeバックアップです。
+464|복원 전에 tools/convert-backup.html에서 백업을 변환하세요.|復元前にtools/convert-backup.htmlでバックアップを変換してください。
+465|백업의 근무 일정이 잘못되었습니다.|バックアップの勤務スケジュールが無効です。
+466|백업의 가져오기 내역이 잘못되었습니다.|バックアップの取込履歴が無効です。
+467|백업의 기본 근무 시간이 잘못되었습니다.|バックアップの所定労働時間が無効です。
+468|백업의 개인 정보가 잘못되었습니다.|バックアップのプロフィールが無効です。
+469|백업의 입사일이 잘못되었습니다.|バックアップの入社日が無効です。
+470|근무 도시는 64자 이내의 텍스트여야 합니다.|勤務地の都市は64文字以内にしてください。
+471|백업의 테마가 잘못되었습니다.|バックアップのテーマが無効です。
+472|백업의 OA URL이 잘못되었습니다.|バックアップのOA URLが無効です。
+473|백업의 가져오기 ID가 잘못되었거나 중복됩니다.|バックアップの取込IDが無効か重複しています。
+474|백업의 가져오기 시각이 잘못되었습니다.|バックアップの取込日時が無効です。
+475|백업의 가져오기 연도가 잘못되었습니다.|バックアップの取込年が無効です。
+476|백업의 가져오기 출처가 잘못되었습니다.|バックアップの取込元が無効です。
+477|백업의 가져오기 개수가 잘못되었습니다.|バックアップの取込件数が無効です。
+478|백업의 시간 템플릿이 잘못되었습니다.|バックアップの時刻テンプレートが無効です。
+479|백업에 중복 템플릿 ID가 있습니다.|バックアップのテンプレートIDが重複しています。
+480|이 저장 자료를 열려면 앱을 업데이트하세요. 읽기 전용 모드입니다.|この保存データを開くには更新が必要です。読み取り専用モードです。
+481|복원 또는 일정 업데이트 중입니다. 완료 후 다시 시도하세요.|復元またはスケジュール更新中です。完了後に再試行してください。
+482|템플릿이 더 이상 없습니다.|テンプレートは存在しません。
+483|템플릿은 최대 6개까지 저장할 수 있습니다. 먼저 하나를 삭제하세요.|テンプレートは最大6件です。先に1件削除してください。
+484|백업 복원 전에 미저장 변경 사항을 내보내고 새로고침하세요.|復元前に未保存の変更を書き出し、再読み込みしてください。
+485|손상된 저장 자료만 초기화할 수 있습니다.|破損した保存データのみリセットできます。
+486|시작 실패:|起動失敗：
+487|. 페이지를 다시 열고 모든 프로젝트 파일이 있는지 확인하세요.|。ページを開き直し、必要なファイルがそろっているか確認してください。
+488|이 브라우저는 클립보드를 읽을 수 없습니다|このブラウザーはクリップボードを読み込めません
+489|이 브라우저는 클립보드에 쓸 수 없습니다|このブラウザーはクリップボードに書き込めません
+490|시계가 올바르지 않은 시간을 반환했습니다.|時計が無効な時刻を返しました。
+491|저장 자료가 아직 준비되지 않았습니다. 잠시 후 다시 시도하세요.|保存データの準備ができていません。しばらくして再試行してください。
+492|원본 저장 자료를 다시 열기 전에 임시 변경 사항의 백업을 다운로드하고 새로고침하세요.|元の保存データを開く前に、仮の変更のバックアップをダウンロードして再読み込みしてください。
+493|공유 코드는 시간 템플릿 1~6개를 포함해야 합니다.|共有コードには時刻テンプレートを1～6件含めてください。
+494|템플릿|テンプレート
+495|항목이 잘못되었습니다.|は無効です。
+496|개 템플릿|件のテンプレート
+497|템플릿 공유 코드가 16 KiB를 초과합니다.|テンプレート共有コードが16 KiBを超えています。
+498|템플릿 공유 코드를 붙여넣으세요.|テンプレート共有コードを貼り付けてください。
+499|지원하지 않는 템플릿 공유 코드입니다. 내용과 버전을 확인하세요.|未対応のテンプレート共有コードです。内容とバージョンを確認してください。
+500|템플릿 공유 코드가 손상되었습니다.|テンプレート共有コードが破損しています。
+501|템플릿 압축 해제를 위해 브라우저를 업데이트하세요.|テンプレートを展開するにはブラウザーを更新してください。
+502|크기 제한|サイズ上限
+503|손상된 템플릿 공유 코드의 압축을 풀 수 없습니다.|破損した共有コードを展開できません。
+504|손상된 템플릿 공유 코드를 분석할 수 없습니다.|破損した共有コードを解析できません。
+505|공유 코드에 시간 템플릿이 없습니다.|共有コードに時刻テンプレートが含まれていません。
+506|모듈 등록이 잘못되었습니다.|モジュール登録が無効です。
+507|저장 자료에 안전하지 않은 필드가 있습니다.|保存データに安全でない項目が含まれています。
+508|: OA 가져오기 링크를 찾지 못했습니다.|：OA取込リンクが見つかりません。
+509|지원하지 않는 WorkTime 저장 자료입니다.|未対応のWorkTime保存データです。
+510|지원하지 않는 저장 자료 버전입니다. 앱을 업데이트하세요.|未対応の保存データ形式です。アプリを更新してください。
+511|저장 자료 ID가 잘못되었습니다.|保存データIDが無効です。
+512|저장 자료 생성 시각이 잘못되었습니다.|保存データの作成日時が無効です。
+513|저장 자료의 모듈 목록이 잘못되었습니다.|保存データのモジュール一覧が無効です。
+514|모듈 ID가 잘못되었거나 중복됩니다.|モジュールIDが無効か重複しています。
+515|모듈 버전 또는 기록이 잘못되었습니다.|モジュールのバージョンまたは記録が無効です。
+516|모듈|モジュール
+517|더 최신 앱 버전이 필요합니다.|には新しいアプリが必要です。
+518|사용 가능한 마이그레이션이 없습니다.|には移行手段がありません。
+519|모듈 마이그레이션은 ID를 유지하며 한 버전씩 진행해야 합니다.|モジュール移行ではIDを保持し、1バージョンずつ更新してください。
+520|모듈 기록 ID 또는 내용이 잘못되었습니다.|モジュール記録のIDまたは内容が無効です。
+521|기록 순서가 잘못되었습니다.|記録の順序が無効です。
+522|모듈이 없거나 잘못되었습니다.|モジュールがないか無効です。
+523|필수 모듈 누락:|必須モジュールがありません：
+524|가져오기 참조가 잘못되었습니다.|取込参照が無効です。
+525|가져오기 순서 또는 ID가 잘못되었습니다.|取込順序またはIDが無効です。
+526|가져오기 기록 순서가 연속적이지 않습니다.|取込記録の順序が連続していません。
+527|근무 일정 ID가 잘못되었습니다.|スケジュールIDが無効です。
+528|날씨 설정이 잘못되었습니다.|天気の設定が無効です。
+529|IndexedDB를 사용할 수 없습니다. 변경 사항은 이 페이지에만 있습니다. 백업을 내보내세요.|IndexedDBを使用できません。変更はこのページにのみ残ります。バックアップを書き出してください。
+530|저장 시간이 초과되어 취소되었습니다. 원본은 유지됩니다. 변경 사항을 내보내고 새로고침하세요.|保存がタイムアウトで中止されました。元データは保持されています。変更を書き出して再読み込みしてください。
+531|트랜잭션이 취소되었습니다.|トランザクションが中止されました。
+532|이 브라우저는 IndexedDB를 지원하지 않습니다.|このブラウザーはIndexedDBに対応していません。
+533|페이지가 닫혔습니다.|ページが閉じられました。
+534|다른 탭이 데이터베이스 업데이트를 차단했습니다. 닫은 후 새로고침하세요.|別のタブがデータベースの更新を妨げています。そのタブを閉じて再読み込みしてください。
+535|저장 자료 메타데이터가 없습니다. 데이터베이스 기록은 유지됩니다. 복구 데이터를 내보내세요.|保存データのメタデータがありません。データベースの記録は保持されています。復旧データを書き出してください。
+536|다른 탭에서 저장 자료를 마이그레이션 중입니다. 닫은 후 다시 확인하세요.|別のタブでデータを移行中です。そのタブを閉じて再確認してください。
+537|마이그레이션 중 이전 자료가 변경되었습니다. 새로고침하세요.|移行中に旧データが変更されました。再読み込みしてください。
+538|마이그레이션된 저장 자료를 검증하지 못했습니다.|移行後の保存データを検証できませんでした。
+539|다른 탭에서 이전 자료를 변경했습니다. 복원 전에 현재 백업과 원본 데이터를 모두 내보내세요.|別のタブで旧データが変更されました。復元前に現在のバックアップと元データの両方を書き出してください。
+540|저장 모듈 업데이트가 필요합니다. 다른 편집 탭을 닫고 다시 시도하세요.|保存モジュールの更新が必要です。ほかの編集タブを閉じて再試行してください。
+541|다른 탭에서 편집 중입니다. 현재 변경 사항을 내보낼 수 있습니다.|別のタブで編集中です。現在の変更を書き出せます。
+542|저장 자료 검증에 실패했습니다. 변경 사항은 이 페이지에만 있습니다.|保存データの検証に失敗しました。変更はこのページにのみ残っています。
+543|이전 자료가 갱신되었습니다. 원본 데이터를 내보내고 새로고침하세요.|旧データが更新されました。元データを書き出して再読み込みしてください。
+544|다른 탭에서 저장 자료를 갱신했습니다. 변경 사항을 내보내고 새로고침하세요.|別のタブで保存データが更新されました。変更を書き出して再読み込みしてください。
+545|스냅샷이 100 MiB를 초과합니다. 먼저 데이터를 내보내고 정리하세요.|スナップショットが100 MiBを超えています。先にデータを書き出して整理してください。
+546|복원 전에 변경 사항을 저장하거나 내보내세요.|復元前に変更を保存するか書き出してください。
+547|가져오기 내역을 읽지 못했습니다. 원본 저장 자료를 다운로드하세요.|取込履歴を読み込めません。元の保存データをダウンロードしてください。
+548|다른 탭에서 편집 중입니다. 닫히면 저장을 다시 시도합니다. 현재 변경 사항을 내보낼 수 있습니다.|別のタブで編集中です。そのタブが閉じると保存を再試行します。現在の変更を書き出すこともできます。
+549|역사 자료를 불러오지 못했습니다. 다시 시도하세요.|歴史資料を読み込めませんでした。再試行してください。
+550|날짜 형식이 잘못되었습니다|日付形式が無効です
+551|음력과 절기는 1900~2100년을 지원합니다|旧暦と二十四節気は1900～2100年に対応しています
+552|로컬 음력 자료를 불러오지 못했습니다|ローカルの旧暦データを読み込めません
+553|모듈이 등록되지 않았습니다|モジュールが未登録です
+554|역사 속 오늘|今日は何の日
+555|이 날짜의 로컬 역사 자료가 없습니다|この日付のローカル歴史資料がありません
+556|선택한 날짜 이전의 사건이 없습니다|選択日以前の出来事はありません
+557|중국어 위키백과 · CC BY-SA 4.0|中国語版ウィキペディア · CC BY-SA 4.0
+558|명절 및 절기|祝祭日と二十四節気
+559|섣달그믐|除夕（旧暦の大晦日）
+560|오늘|今日
+561|중국 명절|中国の祝祭日
+562|기념일|記念日
+563|명절|祝祭日
+564|이 날짜에 등록된 명절이 없습니다|この日に登録された祝祭日はありません
+565|중국 황력|中国の暦注
+566|윤|閏
+567|수호신|守護神
+568|십이직|十二直
+569|희신|喜神
+570|재신|財神
+571|간지|干支
+572|년|年
+573|띠|十二支
+574|길함|吉
+575|없음|なし
+576|피할 일|凶
+577|충|冲
+578|· 방향:|・方角：
+579|· 전통 풍습|・伝統的な風習
+580|바이두 날씨|百度天気
+581|천둥|雷
+582|눈|雪
+583|흐림|曇り
+584|구름|雲
+585|이 도시의 날씨 데이터가 불완전합니다|この都市の天気データが不完全です
+586|보퍼트|ボーフォート
+587|날씨 URL이 잘못되었습니다|天気URLが無効です
+588|날씨 데이터를 일시적으로 사용할 수 없습니다|天気データを一時的に利用できません
+589|예상치 못한 날씨 URL 리디렉션|天気URLの予期しない転送
+590|새로고침 실패. 캐시된 데이터를 표시합니다.|更新失敗。キャッシュデータを表示しています。
+591|날씨 요청 시간이 초과되었습니다. 다시 시도하세요.|天気情報の取得がタイムアウトしました。再試行してください。
+592|환경설정에서 근무 도시를 선택하세요|環境設定で勤務地の都市を選択してください
+593|지원하지 않는 도시입니다. 환경설정에서 지원 도시를 선택하세요.|この都市は未対応です。環境設定で対応する都市を選択してください。
+594|날씨 정보 없음|天気不明
+595|대체로 맑음|おおむね晴れ
+596|구름 조금|晴れ時々曇り
+597|안개|霧
+598|이슬비|霧雨
+599|비|雨

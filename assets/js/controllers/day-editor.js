@@ -329,10 +329,17 @@ WorkTimeApp.ui.createDayController = function (options) {
     if (model.batchMode) return false;
     const day = model.state.days[model.selected] || {};
     const record = C.effectiveRecord(day, true) || day.oa || {};
+    // The form may still show a saved manual edit while the card prefers OA.
+    const matchesClocks = (candidate) =>
+      candidate &&
+      $("dayStart").value === (candidate.start || "") &&
+      $("dayEnd").value === (candidate.end || "") &&
+      $("dayNext").checked === !!candidate.nextDay;
     return (
-      $("dayStart").value !== (record.start || "") ||
-      $("dayEnd").value !== (record.end || "") ||
-      $("dayNext").checked !== !!record.nextDay ||
+      !(
+        matchesClocks(record) ||
+        matchesClocks(day.draft || day.actual || day.estimate)
+      ) ||
       $("dayLeave").validity.badInput ||
       Number($("dayLeave").value || 0) !==
         Number(C.hours(day.leaveMinutes || 0))

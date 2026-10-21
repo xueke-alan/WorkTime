@@ -43,6 +43,7 @@ __pycache__/
 /scripts/*
 !/scripts/check-site.cjs
 !/scripts/verify-offline.cjs
+!/scripts/verify-source-priority.cjs
 !/scripts/verify-theme.cjs
 !/scripts/verify-startup.cjs
 !/scripts/verify-i18n.cjs

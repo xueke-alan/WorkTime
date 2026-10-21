@@ -139,14 +139,14 @@ body .motion-sidebar-back {
 .motion-selection {
   animation: motion-selection 240ms ease-out;
 }
-body .calendar.is-batch-editing > button.day.batch-eligible[data-date] {
+body .calendar.is-batch-editing > .day.batch-eligible[data-date] {
   animation: motion-batch-wiggle 320ms ease-in-out -80ms infinite;
 }
-body .calendar.is-batch-editing > button.day.batch-eligible[data-date]:nth-child(3n) {
+body .calendar.is-batch-editing > .day.batch-eligible[data-date]:nth-child(3n) {
   animation-duration: 350ms;
   animation-delay: -170ms;
 }
-body .calendar.is-batch-editing > button.day.batch-eligible[data-date]:nth-child(3n + 1) {
+body .calendar.is-batch-editing > .day.batch-eligible[data-date]:nth-child(3n + 1) {
   animation-duration: 290ms;
   animation-delay: -230ms;
 }
@@ -155,7 +155,7 @@ body .calendar.is-batch-editing > button.day.batch-eligible[data-date]:nth-child
   50% { transform: rotate(0.65deg); }
 }
 @media (prefers-reduced-motion: reduce) {
-  body .calendar.is-batch-editing > button.day[data-date] { animation: none !important; }
+  body .calendar.is-batch-editing > .day[data-date] { animation: none !important; }
 }
 body dialog[open] {
   animation: motion-fade 180ms cubic-bezier(0.2, 0, 0, 1);

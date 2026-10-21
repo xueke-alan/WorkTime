@@ -126,6 +126,11 @@ WorkTimeApp.domain.validation = (() => {
         key + " 的请假时长无效，不能超过规范化后的标准工时。",
       );
     const clean = {};
+    if (day.sourcePriority !== undefined) {
+      if (!["oa", "manual"].includes(day.sourcePriority))
+        fail(path + ".sourcePriority", key + " 的数据优先级无效。");
+      clean.sourcePriority = day.sourcePriority;
+    }
     if (day.plannedOvertime !== undefined) {
       if (typeof day.plannedOvertime !== "boolean")
         fail(path + ".plannedOvertime", key + " 的计划加班标记无效。");
@@ -244,7 +249,12 @@ WorkTimeApp.domain.validation = (() => {
     const clean = defaultState();
     clean.settings = { configured: input.settings.configured, ...schedule };
     clean.personal = { employmentDate, workCity };
-    const language = input.preferences.language ?? "auto";
+    const storedLanguage = input.preferences.language ?? "auto";
+    // Retired UI languages are valid in archives written by v1.3.16.
+    // Resolve them through the normal language migration, preserving all work data.
+    const language = ["es", "de", "fr"].includes(storedLanguage)
+      ? "auto"
+      : storedLanguage;
     if (
       language !== "auto" &&
       !WorkTimeApp.data.languages.some((item) => item.id === language)

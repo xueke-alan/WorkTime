@@ -14,8 +14,6 @@ body .panel-head > .row {
 }
 .calendar-today {
   justify-self: center;
-  position: relative;
-  top: 2px;
   display: flex;
   align-items: center;
   height: var(--control-height);
@@ -110,6 +108,9 @@ body .panel-head > .row {
   padding: 0 12px 14px;
 }
 .day {
+  border: 1px solid var(--theme-border-soft, #e6ede8);
+  color: var(--ink);
+  font-weight: 500;
   min-height: 115px;
   padding: 9px 10px;
   text-align: left;
@@ -373,6 +374,56 @@ body .panel-head > .row {
 }
 .record-source-dot.oa.secondary {
   background: #78b9a8;
+}
+/* Separate card selection and source controls, with no nested buttons. */
+.calendar .day > .day-select,
+.calendar .day > .day-select:hover,
+.calendar .day > .day-select:active {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+  z-index: 2;
+}
+.calendar .day > div {
+  pointer-events: none;
+}
+.calendar .day > .daytime {
+  position: relative;
+  z-index: 3;
+}
+.calendar .day .source-toggle {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+  padding: 0;
+  border: 0;
+  box-shadow: 0 0 0 5px transparent;
+}
+.calendar .day .source-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+}
+.calendar .day .source-toggle.manual {
+  background: #e58a2b;
+}
+.calendar .day .source-toggle.oa {
+  background: #19876b;
+}
+.calendar .day:has(> .day-select:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.calendar .day .source-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 .dayhours {
   color: var(--theme-text-strong, #255d49);
@@ -1929,10 +1980,9 @@ body .calendar .day[data-festival] .daykind {
 }
 
 /* Unavailable batch dates stay dim and do not respond to pointer hover. */
-body .calendar.is-batch-editing > button.day[aria-disabled="true"] {
+body .calendar.is-batch-editing > .day[aria-disabled="true"] {
   --day-opacity: 0.55;
   opacity: var(--day-opacity);
-  pointer-events: none;
   cursor: default;
 }
 
@@ -1994,4 +2044,10 @@ body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
     width: 8px;
     height: 8px;
   }
+}
+/* Batch previews stay within the current month until confirmed or cancelled. */
+body #monthTitle[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
 }

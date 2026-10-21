@@ -14,6 +14,9 @@ WorkTimeApp.services.application = (() => {
       batchMode: false,
       batchDays: new Set(),
       batchAnchor: null,
+      batchDraft: null,
+      batchPreview: null,
+      batchSaving: false,
       yearMode: false,
       viewYear: Number(input.today.slice(0, 4)),
       returnMonth: input.today.slice(0, 7),
@@ -82,21 +85,8 @@ WorkTimeApp.services.application = (() => {
     function resetDate(days, date) {
       const old = days[date];
       if (!old) return;
-      const owned = [
-        "oa",
-        "actual",
-        "estimate",
-        "draft",
-        "kind",
-        "leaveMinutes",
-        "note",
-        "plannedOvertime",
-      ];
-      const extras = Object.fromEntries(
-        Object.entries(old).filter(([key]) => !owned.includes(key)),
-      );
-      if (old.oa) days[date] = { ...extras, oa: old.oa };
-      else if (Object.keys(extras).length) days[date] = extras;
+      const next = WorkTimeApp.domain.batch.resetBatchDay(old);
+      if (next) days[date] = next;
       else delete days[date];
     }
     function commit(
@@ -138,13 +128,19 @@ WorkTimeApp.services.application = (() => {
       if (!atomic) dirtyChanges = combine(dirtyChanges, patch);
       const generation = revision;
       pending++;
-      const work = restore
-        ? persistence.restore(candidate)
-        : persistence.commit(
-            candidate,
-            atomic ? combine(dirtyChanges, patch) : { ...dirtyChanges },
-          );
+      let work;
+      try {
+        work = restore
+          ? persistence.restore(candidate)
+          : persistence.commit(
+              candidate,
+              atomic ? combine(dirtyChanges, patch) : { ...dirtyChanges },
+            );
+      } catch (error) {
+        work = { persisted: false, error };
+      }
       return Promise.resolve(work)
+        .catch((error) => ({ persisted: false, error }))
         .then((saved) => {
           if (saved.persisted && atomic) {
             state = freeze(candidate);
@@ -211,6 +207,7 @@ WorkTimeApp.services.application = (() => {
           "leaveMinutes",
           "note",
           "plannedOvertime",
+          "sourcePriority",
         ];
         const extras = Object.fromEntries(
           Object.entries(previous).filter(([key]) => !known.includes(key)),
@@ -229,6 +226,15 @@ WorkTimeApp.services.application = (() => {
         if (day.plannedOvertime) delete day.plannedOvertime;
         else day.plannedOvertime = true;
         return service.saveDay(date, day);
+      },
+      toggleSourcePriority(date) {
+        const day = state.days[date];
+        if (!day?.oa || !(day.draft || day.actual || day.estimate))
+          return commit(state);
+        return service.saveDay(date, {
+          ...day,
+          sourcePriority: day.sourcePriority === "manual" ? "oa" : "manual",
+        });
       },
       resetDay(date) {
         if (!state.days[date]) return commit(state);
@@ -284,25 +290,17 @@ WorkTimeApp.services.application = (() => {
         return commit({ ...state, timeTemplates: clean }, { atomic: true });
       },
       saveBatch(dates, record) {
-        const days = { ...state.days };
-        for (const date of dates) {
-          if (!C.canBatchEditDate(state, date)) continue;
-          const day = { ...days[date] };
-          const field = day.oa || day.actual ? "actual" : "estimate";
-          const extensions = Object.fromEntries(
-            Object.entries(day[field] || {}).filter(
-              ([key]) =>
-                !["start", "end", "nextDay", "effectiveMinutes"].includes(key),
-            ),
-          );
-          if (day.oa || day.actual) {
-            day.actual = { ...extensions, ...record };
-            delete day.estimate;
-          } else day.estimate = { ...extensions, ...record };
-          delete day.draft;
-          days[date] = day;
-        }
-        return commit({ ...state, days });
+        return commit(
+          WorkTimeApp.domain.batch.applyBatchChanges(state, { dates, record }),
+        );
+      },
+      confirmBatch(draft) {
+        return commit(
+          WorkTimeApp.domain.batch.applyBatchChanges(state, draft),
+          {
+            atomic: true,
+          },
+        );
       },
       importRecords(log) {
         const candidate = {

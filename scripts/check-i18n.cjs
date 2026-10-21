@@ -21,17 +21,11 @@ function checkI18n() {
     "zh-HK",
     "ko",
     "ja",
-    "es",
-    "de",
-    "fr",
     "content-en",
     "content-zh-TW",
     "content-zh-HK",
     "content-ko",
     "content-ja",
-    "content-es",
-    "content-de",
-    "content-fr",
     "additions",
   ])
     run("assets/js/locales/" + locale + ".js");
@@ -172,7 +166,7 @@ function checkI18n() {
     });
   }
   console.log(
-    "Nine catalogs, parameters, markup, content coverage and 366 dates in each history variant verified.",
+    "Six catalogs, parameters, markup, content coverage and 366 dates in each history variant verified.",
   );
 }
 if (require.main === module) checkI18n();

@@ -1364,15 +1364,36 @@ body .editor .editor-actions.day-action-row button {
 body .editor #batchForm .batch-editor-actions {
   --control-height: var(--action-control-height);
   justify-content: flex-end;
-  align-items: flex-end;
-  gap: 0.285714rem;
+  align-items: center;
+  gap: 0.428571rem;
   flex-wrap: wrap;
+  padding-top: 0.857143rem;
+  padding-bottom: 0.857143rem;
+  border-top: 1px solid var(--line);
 }
+.batch-preview-status {
+  margin: 0.857143rem 0 0;
+  padding: 0.571429rem 0.714286rem;
+  border: 1px solid var(--line);
+  border-radius: var(--control-radius);
+  background: var(--accent-light);
+  color: var(--ink);
+  font-size: var(--text-small);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.batch-preview-status:empty { display: none; }
 body .editor #batchForm .batch-editor-actions button {
   flex: 0 0 auto;
   width: auto;
-  padding-inline: 0.142857rem;
+  min-width: 4.285714rem;
+  max-width: 100%;
+  padding-inline: 0.428571rem;
   white-space: nowrap;
+}
+body .editor #batchForm .batch-editor-actions .ui-icon {
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
 }
 body .editor #batchForm #batchReset {
   margin-inline-end: auto;

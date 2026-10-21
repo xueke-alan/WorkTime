@@ -222,7 +222,8 @@
       return node("span", text);
     }
   }
-  let visibleAlerts = new Map();
+  let visibleAlerts = new Map(),
+    translatingAlerts = false;
   function updateNotificationBadge() {
     const button = document.getElementById("date-tab-notifications");
     if (!button) return;
@@ -257,7 +258,12 @@
     const firstScreenReady =
       document.documentElement.dataset.appState === "ready" &&
       !document.documentElement.classList.contains("app-loading");
-    if (firstScreenReady && hasNewAlert && active !== "notifications") {
+    if (
+      firstScreenReady &&
+      hasNewAlert &&
+      !translatingAlerts &&
+      active !== "notifications"
+    ) {
       active = "notifications";
       render();
       notices.scrollTop = 0;
@@ -475,8 +481,10 @@
     if (active !== "countdown") exitCountdownFocus(false);
     synchronizeTimer();
     const view = active;
-    if (renderedView !== null && renderedView !== view)
+    if (renderedView !== null && renderedView !== view) {
+      WorkTimeApp.ui.motion?.stop(active === "notifications" ? panel : notices);
       WorkTimeApp.ui.motion?.play(active === "notifications" ? notices : panel);
+    }
     renderedView = view;
     for (const b of bar.children) {
       const on =
@@ -914,6 +922,14 @@
     refreshTabs();
   }
   function refreshLanguage() {
+    // Refresh the alert baseline after every synchronous language listener has
+    // translated its notices, including the following MutationObserver delivery.
+    translatingAlerts = true;
+    queueMicrotask(() => {
+      if (disposed) return;
+      updateNotificationBadge();
+      translatingAlerts = false;
+    });
     const hideAlmanac = !WorkTimeApp.i18n.config.almanac;
     bar.setAttribute("aria-label", WorkTimeApp.i18n.t("copy.b0f0d53b40"));
     dateSwitch.setAttribute(

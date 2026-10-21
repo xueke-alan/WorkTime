@@ -1,1 +1,1 @@
-1159|충돌 해결|競合を解決|Resolver conflicto|Konflikt lösen|Résoudre le conflit
+1159|충돌 해결|競合を解決

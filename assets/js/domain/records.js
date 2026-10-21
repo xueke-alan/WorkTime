@@ -4,29 +4,35 @@ WorkTimeApp.domain.records = (() => {
   const { pad, timeMin } = WorkTimeApp.domain.time;
   const { calendarInfo } = WorkTimeApp.domain.calendar;
   function actualRecord(day = {}) {
-    if (day.actual) return { ...day.actual, type: "actual", manual: true };
-    if (day.oa && day.oa.status === "complete")
-      return { ...day.oa, type: "actual", manual: false };
-    return null;
+    return effectiveRecord(day);
   }
   function effectiveRecord(day = {}, includeEstimate = false) {
-    if (day.draft)
-      return {
-        ...day.draft,
-        effectiveMinutes: null,
-        type: "actual",
-        manual: true,
-      };
-    const actual = actualRecord(day);
-    if (actual && complete(actual)) return actual;
-    if (includeEstimate && day.estimate)
-      return {
-        ...day.estimate,
-        start: (day.oa && day.oa.start) || day.estimate.start,
-        type: "estimate",
-        manual: true,
-      };
-    return actual;
+    const candidate = day.draft || day.actual || day.estimate,
+      manual =
+        candidate && (includeEstimate || candidate !== day.estimate)
+          ? {
+              ...candidate,
+              effectiveMinutes: day.draft ? null : candidate.effectiveMinutes,
+              type: candidate === day.estimate ? "estimate" : "actual",
+              manual: true,
+            }
+          : null;
+    if (day.sourcePriority === "manual") return manual;
+    const oa = day.oa;
+    if (!oa || (!oa.start && !oa.end)) return manual;
+    const filledStart = !oa.start && !!manual?.start,
+      filledEnd = !oa.end && !!manual?.end;
+    return {
+      ...oa,
+      start: oa.start || manual?.start || "",
+      end: oa.end || manual?.end || "",
+      nextDay: oa.end ? oa.nextDay : !!manual?.nextDay,
+      effectiveMinutes: null,
+      type: filledStart || filledEnd ? manual.type : "actual",
+      manual: false,
+      filledStart,
+      filledEnd,
+    };
   }
   function complete(r) {
     if (!r) return false;
@@ -46,13 +52,14 @@ WorkTimeApp.domain.records = (() => {
     const day = { ...old, leaveMinutes },
       record = { start, end, nextDay, effectiveMinutes: null },
       oa = old.oa;
-    const unchangedOA =
-      oa && start === oa.start && end === oa.end && nextDay === oa.nextDay;
-    if (unchangedOA) {
-      delete day.draft;
-      delete day.actual;
-      delete day.estimate;
-    } else if (complete(record)) {
+    const current = effectiveRecord(old, true) || {};
+    if (
+      start === (current.start || "") &&
+      end === (current.end || "") &&
+      nextDay === !!current.nextDay
+    )
+      return day;
+    if (complete(record)) {
       delete day.draft;
       if (
         (oa && (oa.status === "complete" || start !== oa.start)) ||

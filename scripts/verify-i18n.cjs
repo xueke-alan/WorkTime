@@ -67,7 +67,7 @@ async function verifyFixedLanguage(browser) {
         await page
           .locator("#languageOptions [data-value]")
           .evaluateAll((items) => items.map((item) => item.dataset.value)),
-        ["zh-CN", "zh-TW", "zh-HK", "en", "ko", "ja", "es", "de", "fr"],
+        ["zh-CN", "zh-TW", "zh-HK", "en", "ko", "ja"],
       );
       // System changes must neither switch the current page nor change a saved language on reload.
       await page.addInitScript(
@@ -97,7 +97,7 @@ async function verifyFixedLanguage(browser) {
       assert.equal(await page.locator("html").getAttribute("lang"), expected);
       const migrated = await page.evaluate(async () => {
         const results = [];
-        for (const legacy of ["auto", undefined]) {
+        for (const legacy of ["auto", undefined, "es", "de", "fr"]) {
           const owner = WorkTimeApp.services.preferences.create({
             getStorage: () => localStorage,
           });
@@ -129,10 +129,14 @@ async function verifyFixedLanguage(browser) {
         }
         return results;
       });
-      assert.deepEqual(migrated, [
-        { saved: expected, language: expected, dirty: false },
-        { saved: expected, language: expected, dirty: false },
-      ]);
+      assert.deepEqual(
+        migrated,
+        Array.from({ length: 5 }, () => ({
+          saved: expected,
+          language: expected,
+          dirty: false,
+        })),
+      );
       const failure = await page.evaluate(async () => {
         const owner = WorkTimeApp.services.preferences.create({
           getStorage: () => localStorage,
@@ -257,6 +261,11 @@ async function verifyLanguageMotion(browser) {
       document.addEventListener("animationstart", (event) => {
         window.languageAnimations.push(event.animationName);
       });
+      const animate = Element.prototype.animate;
+      Element.prototype.animate = function (...args) {
+        window.languageAnimations.push("web-animation");
+        return animate.apply(this, args);
+      };
     });
     const titleLayout = () =>
       page.evaluate(() =>
@@ -336,8 +345,15 @@ async function verifyLanguageMotion(browser) {
       () => !WorkTimeApp.services.preferences.page.dirty,
     );
     await page.locator("#personalSettingsCancel").click();
-    await page.waitForFunction(() =>
-      window.languageAnimations.includes("motion-sidebar-back"),
+    assert.ok(
+      await page
+        .locator(".editor-content")
+        .evaluate((element) =>
+          element
+            .getAnimations()
+            .some((animation) => animation.playState === "running"),
+        ),
+      "Normal navigation must animate after language refresh",
     );
     await context.close();
   }
@@ -441,6 +457,34 @@ async function verifyNotificationLanguage(browser) {
     await page.waitForFunction(
       () => !document.querySelector("#feedbackList").childElementCount,
     );
+    for (const language of ["zh-CN", "en"]) {
+      await page.locator("#date-tab-countdown").click();
+      await page.evaluate(
+        (language) => WorkTimeApp.i18n.setLanguage(language),
+        language,
+      );
+      assert.equal(
+        await page.locator("#date-tab-countdown").getAttribute("aria-selected"),
+        "true",
+        "Translating an existing warning must preserve the active tab",
+      );
+    }
+    await page.evaluate(() => {
+      const alert = document.createElement("div");
+      alert.id = "newWarningRegression";
+      alert.className = "info-notification tone-warning";
+      alert.innerHTML = '<div class="notification-body">New warning</div>';
+      document.getElementById("feedbackList").append(alert);
+    });
+    await page.waitForFunction(
+      () =>
+        document
+          .getElementById("date-tab-notifications")
+          .getAttribute("aria-selected") === "true",
+    );
+    await page.evaluate(() =>
+      document.getElementById("newWarningRegression").remove(),
+    );
     await page.evaluate(() =>
       document.querySelector("#backupBeforeRestore").click(),
     );
@@ -498,6 +542,109 @@ async function verify() {
     headless: true,
   });
   try {
+    for (const language of ["es", "de", "fr"]) {
+      const context = await browser.newContext({
+        locale: "en-GB",
+        reducedMotion: "reduce",
+      });
+      try {
+        const page = await context.newPage();
+        await page.route(/^https?:/, (route) => route.abort());
+        await page.goto(pathToFileURL(path.join(root, "index.html")).href);
+        await ready(page);
+        await page.waitForFunction(
+          () => !WorkTimeApp.services.preferences.page.dirty,
+        );
+        const result = await page.evaluate(async (language) => {
+          const D = WorkTimeApp.domain,
+            A = WorkTimeApp.services.archive;
+          const state = D.state.defaultState();
+          state.preferences.language = language;
+          state.days["2026-10-08"] = {
+            note: "Keep my work",
+            actual: {
+              start: "08:00",
+              end: "19:00",
+              nextDay: false,
+              effectiveMinutes: null,
+            },
+          };
+          const migrated = A.migrate(state);
+          const portable = A.decode(A.encode(state));
+          assertInvalidLanguage();
+          function assertInvalidLanguage() {
+            try {
+              A.migrate({
+                ...state,
+                preferences: { ...state.preferences, language: "invalid" },
+              });
+            } catch {
+              return;
+            }
+            throw Error("Unknown language must still fail validation");
+          }
+          // Inject a real v1.3.16 preference into the stored record before reload.
+          const request = indexedDB.open("worktime-archive");
+          const db = await new Promise((resolve, reject) => {
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+          });
+          try {
+            await new Promise((resolve, reject) => {
+              const tx = db.transaction("records", "readwrite");
+              tx.oncomplete = resolve;
+              tx.onabort = () => reject(tx.error);
+              const store = tx.objectStore("records");
+              const rows = store.getAll();
+              rows.onsuccess = () => {
+                const preference = rows.result.find(
+                  (row) => row.moduleId === A.ids.preferences,
+                );
+                preference.data.language = language;
+                store.put(preference);
+              };
+            });
+          } finally {
+            db.close();
+          }
+          return {
+            legacy: migrated.preferences.language,
+            portable: portable.preferences.language,
+            day: portable.days["2026-10-08"],
+          };
+        }, language);
+        assert.equal(result.legacy, "auto");
+        assert.equal(result.portable, "auto");
+        assert.equal(result.day.note, "Keep my work");
+        assert.equal(result.day.actual.end, "19:00");
+        await page.reload();
+        await ready(page);
+        await page.waitForFunction(
+          () => !WorkTimeApp.services.preferences.page.dirty,
+        );
+        assert.equal(await page.locator("html").getAttribute("lang"), "en");
+        assert.equal(
+          await page.locator("#initializeStorage").isVisible(),
+          false,
+        );
+        const loaded = await page.evaluate(async () => {
+          const D = WorkTimeApp.domain;
+          const storage = WorkTimeApp.services.indexedStorage.create({
+            key: D.state.KEY,
+            defaultState: D.state.defaultState,
+            getStorage: () => localStorage,
+          });
+          const result = await storage.load();
+          return {
+            issue: result.loadIssue,
+            language: result.state.preferences.language,
+          };
+        });
+        assert.deepEqual(loaded, { issue: null, language: "en" });
+      } finally {
+        await context.close();
+      }
+    }
     const yearContext = await browser.newContext({
       locale: "zh-CN",
       reducedMotion: "reduce",

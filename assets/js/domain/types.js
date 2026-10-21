@@ -5,7 +5,7 @@
  * @typedef {{start:number,end:number}} WorkBreak
  * @typedef {{configured:boolean,workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[]}} WorkSettings
  * @typedef {{employmentDate:string,workCity:string}} WorkPersonal
- * @typedef {{pageTheme:'green'|'blue'|'purple'|'orange'|'rose'|'slate'|'cyan'|'mint'|'olive'|'gold'|'red'|'brown',forecastMode?:'hourly'|'daily'}} WorkPreferences
+ * @typedef {{pageTheme:'green'|'blue'|'purple'|'orange'|'rose'|'slate'|'cyan'|'mint'|'olive'|'gold'|'red'|'brown',forecastMode?:'hourly'|'daily',language?:'auto'|'zh-CN'|'zh-TW'|'zh-HK'|'en'|'ko'|'ja',weatherDays?:0|3|5|7}} WorkPreferences
  * @typedef {{id:string,order?:number,data:Object}} ArchiveRecord
  * @typedef {{id:string,version:number,records:ArchiveRecord[]}} ArchiveModule
  * @typedef {{format:'worktime-archive',formatVersion:1,archive:{id:string,createdAt:string},modules:ArchiveModule[],exportedAt?:string}} WorkArchive
@@ -13,7 +13,7 @@
  * @typedef {{start:string,end:string,nextDay:boolean,effectiveMinutes:number|null}} WorkManualRecord
  * @typedef {{start:string,end:string,nextDay:boolean}} WorkDraft
  * @typedef {{date:string,start:string,end:string,nextDay:boolean,status:'complete'|'pending'|'off',source:string,raw:string,importId?:string}} WorkOAObservation
- * @typedef {{oa?:WorkOAObservation,actual?:WorkManualRecord,estimate?:WorkManualRecord,draft?:WorkDraft,kind?:'work'|'rest',leaveMinutes?:number,note?:string,plannedOvertime?:boolean}} WorkDay
+ * @typedef {{sourcePriority?:'oa'|'manual',oa?:WorkOAObservation,actual?:WorkManualRecord,estimate?:WorkManualRecord,draft?:WorkDraft,kind?:'work'|'rest',leaveMinutes?:number,note?:string,plannedOvertime?:boolean}} WorkDay
  * @typedef {{name:string,raw:string}} WorkImportSource
  * @typedef {{id:string,at:string,year:number,sources:WorkImportSource[],count:number,records:WorkOAObservation[]}} WorkImportLog
  * @typedef {'ADDED'|'DUPLICATE'|'KEEP_COMPLETE'|'COMPLETE_CONFLICT'|'COMPLETED'|'KEEP_START'|'UPDATED'} WorkImportMergeCode
@@ -22,15 +22,17 @@
  * @typedef {{workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[]}} WorkScheduleData
  * @typedef {{start:string,end:string|null,schedule:WorkScheduleData}} WorkScheduleRange
  * @typedef {{scheduleRanges:WorkScheduleRange[],schemaVersion:3,personal:WorkPersonal,preferences:WorkPreferences,overtimeRequirements:(number|null)[],oaUrl:string,settings:WorkSettings,timeTemplates:WorkTimeTemplate[],days:Object<string,WorkDay>,imports:WorkImportLog[]}} WorkStateData
- * @typedef {{today:string,month:string,selected:string,batchMode:boolean,batchDays:Set<string>,yearMode:boolean,viewYear:number}} WorkViewState
+ * @typedef {{reset:'none'|'selected'|'all',dates:string[],record:WorkManualRecord|null,valid:boolean,canConfirm:boolean}} WorkBatchDraft
+ * @typedef {{base:WorkStateData,state:WorkStateData}} WorkBatchPreview
+ * @typedef {{today:string,month:string,selected:string,batchMode:boolean,batchDays:Set<string>,batchDraft:WorkBatchDraft|null,batchSaving:boolean,yearMode:boolean,viewYear:number}} WorkViewState
  * @typedef {'unavailable'|'unsupported'|'corrupt'|null} WorkStorageLoadIssue
- * @typedef {WorkViewState & {state:WorkStateData,revision:number,storageFailed:boolean,loadCorrupt:boolean,loadIssue:WorkStorageLoadIssue,batchAnchor:string|null,returnMonth:string}} WorkApplicationModel
+ * @typedef {WorkViewState & {state:WorkStateData,revision:number,storageFailed:boolean,loadCorrupt:boolean,loadIssue:WorkStorageLoadIssue,batchAnchor:string|null,batchPreview:WorkBatchPreview|null,returnMonth:string}} WorkApplicationModel
  * @typedef {{core:Object,element:function(string):HTMLElement,escape:function(*):string,getState:function():WorkStateData,getView:function():WorkViewState,document:Document,window:Window}} WorkViewDependencies
  * @typedef {{changed:boolean,applied:boolean,persisted:boolean,dirty:boolean,code:string|null,message:string,error:Error|null}} WorkOperationResult
  *
  * OA status 'off' is an observation with no punches, not an implicit personal leave.
- * actual overrides OA; estimate is manual filling and may apply to past dates.
- * draft preserves incomplete edits and suppresses effective minutes until completed.
+ * sourcePriority defaults to OA, filling missing clocks from manual; manual priority uses manual alone.
+ * draft supersedes older manual data, including empty fields; estimate may apply to past dates.
  * Only manual records accept non-null effectiveMinutes; 0 is a valid correction.
  * Every import contains explicit accepted records; [] means no accepted records. Raw text is never replayed by the runtime.
  * Schema 3 is only the internal calculation projection. Persisted data uses WorkArchive.

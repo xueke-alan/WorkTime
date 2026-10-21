@@ -1,200 +1,200 @@
-0|백업은 텍스트여야 합니다.|バックアップはテキスト形式で指定してください。|La copia debe ser texto.|Die Sicherung muss Text enthalten.|La sauvegarde doit être au format texte.
-1|백업 크기 초과:|バックアップの上限超過：|La copia supera|Die Sicherung überschreitet|La sauvegarde dépasse
-2|MB 제한|MB の上限。|MB de límite.|MB Größenlimit.|Mo autorisés.
-3|날짜 정보|日付情報|Información de fecha|Datumsinformationen|Informations de date
-4|알림|通知|Notificaciones|Mitteilungen|Notifications
-5|역사|歴史|Historia|Geschichte|Histoire
-6|절기|二十四節気|Términos solares|Sonnenperioden|Termes solaires
-7|음력|旧暦|Calendario lunar|Mondkalender|Calendrier lunaire
-8|알림 (|通知（|Notificaciones (|Mitteilungen (|Notifications (
-9|오류|エラー|errores|Fehler|erreurs
-10|주의|注意|avisos|Hinweise|alertes
-11|집중 모드 종료|集中モードを終了|Salir del modo concentración|Fokusmodus beenden|Quitter le mode concentration
-12|카운트다운에 집중|カウントダウンに集中|Centrar la cuenta atrás|Countdown fokussieren|Afficher le compte à rebours seul
-13|이번 달 역사 자료 불러오는 중…|今月の出来事を読み込み中…|Cargando los eventos del mes…|Ereignisse dieses Monats werden geladen…|Chargement des événements du mois…
-14|다시 시도|再試行|Reintentar|Erneut versuchen|Réessayer
-15|로컬 날짜 정보를 불러오지 못했습니다|ローカルの日付情報を読み込めませんでした|No se pudo cargar la información local de fecha|Lokale Datumsinformationen konnten nicht geladen werden|Impossible de charger les informations de date locales
-16|기원전|紀元前|a. C.|v. Chr.|av. J.-C.
-17|· 띠:|・干支：|· Zodiaco:|· Tierkreis:|· Signe chinois :
-18|충:|冲：|Conflicto:|Konflikt:|Opposition :
-19|더 많은 사건:|その他の出来事：|Más eventos:|Weitere Ereignisse:|Autres événements :
-20|중국어 위키백과|中国語版ウィキペディア|Wikipedia en chino|Chinesische Wikipedia|Wikipédia en chinois
-21|역사, 명절 및 황력|歴史・祝祭日・中国暦|Historia, festividades y almanaque|Geschichte, Feste und Almanach|Histoire, fêtes et almanach
-22|유효하지 않은 날짜|無効な日付|Fecha no válida|Ungültiges Datum|Date invalide
-23|급여일 이전의 근무일을 찾을 수 없습니다|給料日より前の勤務日が見つかりません|No se encontró un día laborable anterior al cobro|Kein Arbeitstag vor dem Zahltag gefunden|Aucun jour travaillé trouvé avant la paie
-24|주|週|Semana|Woche|Semaine
-25|테마|テーマ|Tema|Design|Thème
-26|테마 저장 중…|テーマを保存中…|Guardando el tema…|Design wird gespeichert…|Enregistrement du thème…
-27|테마가 적용되었지만 저장되지 않았습니다. 새로고침하면 초기화될 수 있습니다.|テーマは適用されましたが、保存できませんでした。再読み込みすると元に戻る場合があります。|Tema aplicado, pero no guardado. Puede restablecerse al recargar.|Design angewendet, aber nicht gespeichert. Beim Neuladen kann es zurückgesetzt werden.|Thème appliqué, mais non enregistré. Il peut être réinitialisé au rechargement.
-28|정보 없음|該当なし|N/D|k. A.|N/D
-29|낮음|低い|Bajo|Niedrig|Faible
-30|보통|中程度|Moderado|Mäßig|Modéré
-31|높음|高い|Alto|Hoch|Élevé
-32|매우 높음|非常に高い|Muy alto|Sehr hoch|Très élevé
-33|위험|極端に高い|Extremo|Extrem|Extrême
-34|날씨|天気|Tiempo|Wetter|Météo
-35|날씨 불러오는 중…|天気を読み込み中…|Cargando el tiempo…|Wetter wird geladen…|Chargement de la météo…
-36|체감|体感|Sensación|Gefühlt|Ressenti
-37|습도|湿度|Humedad|Luftfeuchte|Humidité
-38|풍력|風力|Fuerza del viento|Windstärke|Force du vent
-39|풍향|風向|Dirección del viento|Windrichtung|Direction du vent
-40|바이두 날씨 · 중국 표준시|百度天気・中国標準時|Baidu Meteo · Hora de China|Baidu Wetter · Chinesische Standardzeit|Météo Baidu · Heure de Chine
-41|관측:|観測：|Observado:|Beobachtet:|Observation :
-42|· 수집:|・取得：|· Obtenido:|· Abgerufen:|· Récupération :
-43|캐시 ·|キャッシュ・|En caché ·|Zwischengespeichert ·|En cache ·
-44|예보 기간|予報期間|Periodo del pronóstico|Vorhersagezeitraum|Période de prévision
-45|강수 확률:|降水確率：|Prob. de lluvia:|Regenwahrscheinlichkeit:|Risque de pluie :
-46|최고:|最高：|Máx.:|Höchstwert:|Max. :
-47|최저:|最低：|Mín.:|Tiefstwert:|Min. :
-48|자외선 단계:|紫外線の強さ：|Nivel UV:|UV-Stufe:|Niveau UV :
-49|· 지수:|・指数：|· Índice:|· Index:|· Indice :
-50|최근 예보 없음|最近の予報はありません|Sin pronóstico reciente|Keine aktuelle Vorhersage|Aucune prévision récente
-51|예보 없음|予報なし|Sin pronóstico|Keine Vorhersage|Aucune prévision
-52|향후 12시간|今後12時間|Próximas 12 horas|Nächste 12 Stunden|12 prochaines heures
-53|향후 5일|今後5日間|Próximos 5 días|Nächste 5 Tage|5 prochains jours
-54|먼저 근무 일정을 설정하세요|先に勤務スケジュールを設定してください|Configura primero tu horario|Bitte zuerst den Arbeitsplan einrichten|Configurez d’abord vos horaires
-55|편안한 휴일 보내세요|よい休日を|Disfruta del día libre|Erholsamen freien Tag|Profitez de votre jour de repos
-56|오늘은 휴가입니다|今日は休暇です|Hoy estás de permiso|Heute Urlaub|En congé aujourd’hui
-57|올바른 근무 시간을 설정하세요|有効な勤務時刻を設定してください|Configura un horario válido|Gültige Arbeitszeiten festlegen|Définissez des horaires valides
-58|출근까지|勤務開始まで|Tu turno empieza en|Arbeitsbeginn in|Début du travail dans
-59|퇴근까지|勤務終了まで|Tu turno termina en|Feierabend in|Fin du travail dans
-60|근무가 종료되었습니다|勤務時間外です|Fuera del horario de trabajo|Außerhalb der Arbeitszeit|Vous avez terminé votre journée
-61|· 시작|・開始|· Inicio|· Beginn|· Début
-62|· 종료|・終了|· Fin|· Ende|· Fin
-63|수고하셨습니다. 편안한 시간 보내세요!|お疲れさまでした！|¡Todo listo! Disfruta de tu tiempo.|Geschafft. Schönen Feierabend!|C’est terminé. Profitez-en !
-64|예정 출근|開始予定|Inicio previsto|Geplanter Beginn|Début prévu
-65|예정 퇴근|終了予定|Fin previsto|Geplantes Ende|Fin prévue
-66|출퇴근 카운트다운|勤務カウントダウン|Cuenta atrás del turno|Arbeitszeit-Countdown|Compte à rebours du travail
-67|완료된 기록 없음|完全な記録はありません|Sin registros completos|Keine vollständigen Einträge|Aucune saisie complète
-68|부족|不足|Déficit|Fehlzeit|Déficit
-69|초과근무|残業|H. extra|Überstd.|H. sup.
-70|휴가|休暇|Permiso|Urlaub|Congé
-71|휴무|休み|Descanso|Frei|Repos
-72|초과근무 예정|残業予定|Prever h. extra|Überstd. planen|Prévoir h. sup.
-73|수동|手入力|Manual|Manuell|Manuel
-74|페이지 백업 다운로드|ページのバックアップをダウンロード|Descargar copia de la página|Seitensicherung herunterladen|Télécharger la sauvegarde de la page
-75|백업 다운로드|バックアップをダウンロード|Descargar copia|Sicherung herunterladen|Télécharger la sauvegarde
-76|백업을 복원했습니다|バックアップを復元しました|Copia restaurada|Sicherung wiederhergestellt|Sauvegarde restaurée
-77|백업을 다운로드했습니다|バックアップをダウンロードしました|Copia descargada|Sicherung heruntergeladen|Sauvegarde téléchargée
-78|백업 실패:|バックアップ失敗：|Error de copia:|Sicherung fehlgeschlagen:|Échec de la sauvegarde :
-79|백업을 복사했습니다|バックアップをコピーしました|Copia copiada|Sicherung kopiert|Sauvegarde copiée
-80|백업 복사 실패:|バックアップをコピーできません：|No se pudo copiar:|Sicherung konnte nicht kopiert werden:|Impossible de copier la sauvegarde :
-81|클립보드 접근을 허용하세요|クリップボードへのアクセスを許可してください|Permite el acceso al portapapeles|Zwischenablagezugriff erlauben|Autorisez l’accès au presse-papiers
-82|클립보드를 사용할 수 없습니다|クリップボードを使用できません|Portapapeles no disponible|Zwischenablage nicht verfügbar|Presse-papiers indisponible
-83|출처|取得元|Origen|Quelle|Origine
-84|: 백업 내용|：バックアップの内容|: la copia contiene|: Sicherungsinhalt| : contenu de la sauvegarde
-85|개 날짜,|日分、|fechas,|Daten,|dates,
-86|개 가져오기,|件の取込、|importaciones,|Importe,|importations,
-87|개 시간 템플릿,|件の時刻テンプレート、|plantillas horarias,|Zeitvorlagen,|modèles horaires,
-88|개 일정; 기본 일일 시간:|件のスケジュール、標準労働時間：|horarios; jornada base:|Arbeitspläne; tägliche Sollzeit:|horaires ; durée journalière de base :
-89|시간.|時間。|h.|Std.|h.
-90|테마:|テーマ：|Tema:|Design:|Thème :
-91|클립보드|クリップボード|Portapapeles|Zwischenablage|Presse-papiers
-92|백업 준비 완료. 확인하면 복원합니다.|バックアップの準備ができました。確認して復元してください。|Copia lista. Confirma para restaurar.|Sicherung bereit. Wiederherstellung bitte bestätigen.|Sauvegarde prête. Confirmez pour restaurer.
-93|클립보드의 백업을 읽지 못했습니다. 파일을 선택하세요.|クリップボードのバックアップを読み込めません。ファイルを選択してください。|No se pudo leer la copia del portapapeles. Elige un archivo.|Sicherung aus der Zwischenablage nicht lesbar. Bitte eine Datei wählen.|Impossible de lire la sauvegarde du presse-papiers. Choisissez un fichier.
-94|일일 스냅샷|日次スナップショット|Instantánea diaria|Tagessnapshot|Instantané quotidien
-95|변경 전 스냅샷|変更前のスナップショット|Instantánea anterior al cambio|Snapshot vor Änderung|Instantané avant modification
-96|스냅샷|スナップショット|Instantáneas|Snapshots|Instantanés
-97|이 스냅샷은 바로 복원할 수 없습니다. 복구 데이터를 다운로드하세요:|このスナップショットは直接復元できません。復旧データをダウンロードしてください：|No se puede restaurar directamente. Descarga los datos de recuperación:|Dieser Snapshot lässt sich nicht direkt wiederherstellen. Wiederherstellungsdaten herunterladen:|Cet instantané ne peut pas être restauré directement. Téléchargez les données de récupération :
-98|스냅샷이 없습니다.|スナップショットはまだありません。|Aún no hay instantáneas.|Noch keine Snapshots.|Aucun instantané pour le moment.
-99|복구 데이터를 읽지 못했습니다:|復旧データを読み込めません：|No se pudieron leer los datos de recuperación:|Wiederherstellungsdaten nicht lesbar:|Impossible de lire les données de récupération :
-100|스냅샷을 삭제하지 못했습니다:|スナップショットを削除できません：|No se pudieron eliminar las instantáneas:|Snapshots konnten nicht gelöscht werden:|Impossible de supprimer les instantanés :
-101|읽을 수 있는 이전 버전 저장 자료가 없습니다.|読み込める旧形式の保存データがありません。|No se encontraron datos antiguos legibles.|Keine lesbaren Altdaten gefunden.|Aucune ancienne archive lisible trouvée.
-102|이전 버전 저장 자료|旧形式の保存データ|Datos antiguos|Altdaten|Ancienne archive
-103|초기화를 저장하지 못했습니다:|リセットを保存できません：|Restablecimiento no guardado:|Zurücksetzen nicht gespeichert:|Réinitialisation non enregistrée :
-104|백업이 100 MiB를 초과합니다.|バックアップが100 MiBを超えています。|La copia supera los 100 MiB.|Die Sicherung überschreitet 100 MiB.|La sauvegarde dépasse 100 Mio.
-105|파일|ファイル|Archivo|Datei|Fichier
-106|복원 실패:|復元失敗：|Error al restaurar:|Wiederherstellung fehlgeschlagen:|Échec de la restauration :
-107|복원을 저장하지 못했습니다:|復元内容を保存できません：|Restauración no guardada:|Wiederherstellung nicht gespeichert:|Restauration non enregistrée :
-108|변경 사항이 저장되지 않았습니다. 알림을 확인하고 백업을 내보내세요.|変更は保存されていません。通知を確認し、バックアップを書き出してください。|Cambios sin guardar. Revisa las notificaciones y exporta una copia.|Änderungen nicht gespeichert. Mitteilungen prüfen und Sicherung exportieren.|Modifications non enregistrées. Consultez les notifications et exportez une sauvegarde.
-109|수동 기록을 초기화하고 OA 기록을 복원했습니다.|手入力をリセットし、OAの記録に戻しました。|Entrada manual restablecida. Se ha recuperado la de OA.|Manueller Eintrag zurückgesetzt. OA-Eintrag wiederhergestellt.|Saisie manuelle réinitialisée. Saisie OA restaurée.
-110|수동 기록을 지웠습니다|手入力の記録を削除しました|Entrada manual borrada|Manueller Eintrag gelöscht|Saisie manuelle effacée
-111|초기화가 저장되지 않았습니다. 알림을 확인하세요.|リセットを保存できませんでした。通知を確認してください。|Restablecimiento no guardado. Revisa las notificaciones.|Zurücksetzen nicht gespeichert. Mitteilungen prüfen.|Réinitialisation non enregistrée. Consultez les notifications.
-112|계획이 저장되지 않았습니다. 알림을 확인하세요.|予定を保存できませんでした。通知を確認してください。|Plan sin guardar. Revisa las notificaciones.|Plan nicht gespeichert. Mitteilungen prüfen.|Prévision non enregistrée. Consultez les notifications.
-113|휴가가 저장되지 않았습니다. 알림을 확인하세요.|休暇を保存できませんでした。通知を確認してください。|Permiso sin guardar. Revisa las notificaciones.|Urlaub nicht gespeichert. Mitteilungen prüfen.|Congé non enregistré. Consultez les notifications.
-114|종일 휴가를 저장했습니다|終日休暇を保存しました|Permiso de día completo guardado|Ganztägiger Urlaub gespeichert|Congé d’une journée enregistré
-115|기록 없음|記録なし|Sin registro|Kein Eintrag|Aucune saisie
-116|출근 기록 없음|出勤打刻なし|Falta la entrada|Arbeitsbeginn fehlt|Pointage d’arrivée manquant
-117|퇴근 기록 없음|退勤打刻なし|Falta la salida|Arbeitsende fehlt|Pointage de départ manquant
-118|올바르지 않은 시간|無効な時刻|Hora no válida|Ungültige Uhrzeit|Heure invalide
-119|퇴근이 출근보다 빠름|退勤が出勤より前|Salida anterior a la entrada|Ende vor Beginn|Départ avant l’arrivée
-120|(+1일)|（翌日）|(+1 día)|(+1 Tag)|(+1 jour)
-121|분석 중…|解析中…|Analizando…|Wird ausgewertet…|Analyse en cours…
-122|분석된 기록 없음|解析できた記録はありません|No se han detectado registros|Keine Einträge erkannt|Aucun enregistrement reconnu
-123|가져오기 내역|取込履歴|Historial de importación|Importverlauf|Historique des importations
-124|붙여넣은 텍스트|貼り付けたテキスト|Texto pegado|Eingefügter Text|Texte collé
-125|분석 결과:|解析結果：|Detectados:|Erkannt:|Résultat :
-126|개 기록 ·|件・|registros ·|Einträge ·|enregistrements ·
-127|개 경고 ·|件の警告・|avisos ·|Warnungen ·|avertissements ·
-128|충돌|競合|conflictos|Konflikte|conflits
-129|이 묶음에 중복 날짜가 있습니다. 선택은 순서대로 적용되며, 기존 기록을 유지하면 앞선 선택이 유지됩니다.|この取込に重複する日付があります。選択は順に適用され、既存の記録を残すと前の選択が維持されます。|Hay fechas duplicadas. Las decisiones se aplican en orden; conservar un registro mantiene la elección anterior.|Doppelte Daten in diesem Import. Entscheidungen gelten der Reihe nach; beim Behalten bleibt die frühere Auswahl erhalten.|Dates en double dans ce lot. Les choix s’appliquent dans l’ordre ; conserver une saisie préserve le choix précédent.
-130|기존:|既存：|Actual:|Bisher:|Existant :
-131|; 가져올 기록:|；取込：|; entrante:|; neu:| ; à importer :
-132|새 기록 사용|取り込む記録を使う|Usar entrada nueva|Neuen Eintrag verwenden|Utiliser la nouvelle saisie
-133|기존 기록 유지|既存の記録を残す|Conservar entrada actual|Bisherigen Eintrag behalten|Conserver la saisie existante
-134|수동 기록 유지|手入力を維持|Entrada manual conservada|Manueller Eintrag bleibt erhalten|Saisie manuelle conservée
-135|분석된 기록|解析した記録|Registros detectados|Erkannte Einträge|Enregistrements reconnus
-136|개 문제|件の問題|incidencias|Probleme|anomalies
-137|기록을 찾지 못했습니다. 붙여넣은 텍스트를 확인하세요.|記録が見つかりません。貼り付けたテキストを確認してください。|No se encontraron registros. Revisa el texto pegado.|Keine Einträge gefunden. Eingefügten Text prüfen.|Aucun enregistrement trouvé. Vérifiez le texte collé.
-138|OA 기록을 찾지 못했습니다. 붙여넣은 텍스트를 확인하세요.|OAの記録が見つかりません。貼り付けたテキストを確認してください。|No se encontraron registros de OA. Revisa el texto pegado.|Keine OA-Einträge gefunden. Eingefügten Text prüfen.|Aucun enregistrement OA trouvé. Vérifiez le texte collé.
-139|분석 실패|解析失敗|Error de análisis|Auswertung fehlgeschlagen|Échec de l’analyse
-140|기록을 분석하지 못했습니다. 입력 내용을 확인하세요.|記録を解析できません。入力内容を確認してください。|No se pudieron analizar los registros. Revisa el contenido.|Einträge konnten nicht ausgewertet werden. Eingabe prüfen.|Impossible d’analyser les enregistrements. Vérifiez la saisie.
-141|분석 실패:|解析失敗：|Error de análisis:|Auswertung fehlgeschlagen:|Échec de l’analyse :
-142|합계:|合計：|Total:|Gesamt:|Total :
-143|개 유효 일자|日分の有効な記録|días válidos|gültige Tage|jours valides
-144|알 수 없는 날짜|日付不明|Fecha desconocida|Unbekanntes Datum|Date inconnue
-145|가져오기 상세 보기|取込の詳細を表示|Ver detalles de importación|Importdetails anzeigen|Voir les détails de l’importation
-146|상세 보기|詳細を表示|Ver detalles|Details anzeigen|Voir les détails
-147|가져온 묶음 삭제|取込をまとめて削除|Eliminar lote importado|Import löschen|Supprimer le lot importé
-148|묶음 삭제|取込を削除|Eliminar lote|Import löschen|Supprimer le lot
-149|개 기록|件の記録|registros|Einträge|enregistrements
-150|가져오기 내역 없음|取込履歴はありません|Aún no hay importaciones|Noch keine Importe|Aucune importation pour le moment
-151|가져온 기록|取り込んだ記録|Registros importados|Importierte Einträge|Enregistrements importés
-152|반영된 기록이 없습니다. 아래 원본 근태 텍스트를 확인하세요.|反映された記録はありません。以下の元の勤怠テキストを確認してください。|No se aceptó ningún registro. Revisa el texto original de asistencia.|Keine Einträge übernommen. Ursprünglichen Anwesenheitstext unten prüfen.|Aucun enregistrement accepté. Consultez le texte de présence original ci-dessous.
-153|원본 근태 텍스트|元の勤怠テキスト|Texto original de asistencia|Ursprünglicher Anwesenheitstext|Texte de présence original
-154|근태 텍스트 없음|勤怠テキストがありません|No hay texto de asistencia|Kein Anwesenheitstext vorhanden|Aucun texte de présence trouvé
-155|이전 가져오기|前の取込|Importación anterior|Vorheriger Import|Importation précédente
-156|이전|前へ|Anterior|Zurück|Précédent
-157|다음 가져오기|次の取込|Importación siguiente|Nächster Import|Importation suivante
-158|다음|次へ|Siguiente|Weiter|Suivant
-159|기록을 찾지 못했습니다. 가져오기 내역을 확인하세요.|記録が見つかりません。取込履歴を確認してください。|No se encontró el registro. Revisa el historial de importación.|Eintrag nicht gefunden. Importverlauf prüfen.|Enregistrement introuvable. Consultez l’historique des importations.
-160|HTTP 또는 HTTPS URL을 사용하세요.|HTTPまたはHTTPSのURLを指定してください。|Usa una URL HTTP o HTTPS.|Eine HTTP- oder HTTPS-URL verwenden.|Utilisez une URL HTTP ou HTTPS.
-161|삭제|削除|Eliminar|Löschen|Supprimer
-162|가져온 날짜|取込日|importado el|importiert am|importé le
-163|? 업데이트되는 날짜 수:|を削除しますか？更新される日数：|? Se actualizarán|? Aktualisierte Daten:| ? Dates mises à jour :
-164|개, 그중|日、うち|fechas, incluidas|Daten, davon|dates, dont
-165|개는 다른 가져오기에서 복원되며,|日は別の取込から復元、|restauradas de otras importaciones y|aus anderen Importen wiederhergestellt und|restaurées depuis d’autres importations et
-166|개는 이 묶음에서 제거됩니다.|日はこの取込から削除されます。|eliminadas de este lote.|aus diesem Import entfernt.|supprimées de ce lot.
-167|이 가져오기 내역이 더 이상 없습니다|この取込は存在しません|Esta importación ya no existe|Dieser Import existiert nicht mehr|Cette importation n’existe plus
-168|가져오기 내역을 삭제하고 합계를 갱신했습니다.|取込を削除し、集計を更新しました。|Importación eliminada. Totales actualizados.|Import gelöscht. Summen aktualisiert.|Importation supprimée. Totaux actualisés.
-169|올바른 HTTP 또는 HTTPS URL을 입력하세요.|有効なHTTPまたはHTTPSのURLを入力してください。|Introduce una URL HTTP o HTTPS válida.|Gültige HTTP- oder HTTPS-URL eingeben.|Saisissez une URL HTTP ou HTTPS valide.
-170|OA 링크를 저장했습니다|OAリンクを保存しました|Enlace OA guardado|OA-Link gespeichert|Lien OA enregistré
-171|클립보드가 비어 있습니다. 먼저 OA 근태 기록을 복사하세요.|クリップボードが空です。先にOAの勤怠記録をコピーしてください。|El portapapeles está vacío. Copia primero los registros de OA.|Zwischenablage leer. Zuerst OA-Anwesenheitsdaten kopieren.|Le presse-papiers est vide. Copiez d’abord les relevés OA.
-172|클립보드 접근을 허용하거나 Ctrl+V로 붙여넣으세요.|クリップボードへのアクセスを許可するか、Ctrl+Vで貼り付けてください。|Permite el acceso al portapapeles o pega con Ctrl+V.|Zwischenablagezugriff erlauben oder mit Strg+V einfügen.|Autorisez le presse-papiers ou collez avec Ctrl+V.
-173|가져오기 완료. 처리된 기록:|取込完了。処理した記録：|Importación completada. Registros procesados:|Import abgeschlossen. Verarbeitete Einträge:|Importation terminée. Enregistrements traités :
-174|먼저 근무 일정을 설정하세요.|先に勤務スケジュールを設定してください。|Configura primero tu horario.|Bitte zuerst den Arbeitsplan einrichten.|Configurez d’abord vos horaires.
-175|먼저 계산할 날짜를 선택하세요.|先に計算する日付を選択してください。|Selecciona las fechas que quieras calcular.|Zuerst die zu berechnenden Tage auswählen.|Sélectionnez d’abord les dates à calculer.
-176|선택한 날짜의 근무 일정이 다릅니다. 일정별로 나누어 계산하세요.|選択した日付は勤務スケジュールが異なります。スケジュールごとに計算してください。|Las fechas usan horarios distintos. Calcula cada horario por separado.|Die Tage haben unterschiedliche Arbeitspläne. Bitte getrennt berechnen.|Les dates suivent des horaires différents. Calculez chaque horaire séparément.
-177|올바른 출근 시간을 입력하세요.|有効な出勤時刻を入力してください。|Introduce una hora de entrada válida.|Gültigen Arbeitsbeginn eingeben.|Saisissez une heure d’arrivée valide.
-178|평균 초과근무는 0 이상의 숫자여야 합니다.|平均残業時間は0以上の数値を入力してください。|La media de horas extra debe ser un número igual o mayor que 0.|Durchschnittliche Überstunden müssen mindestens 0 sein.|La moyenne d’heures supplémentaires doit être un nombre positif ou nul.
-179|기본 근무 시간과 평균 초과근무의 합은 24시간 미만이어야 합니다.|所定労働時間と平均残業時間の合計は24時間未満にしてください。|La jornada estándar más la media extra debe ser inferior a 24 horas.|Sollzeit und durchschnittliche Überstunden müssen zusammen unter 24 Stunden liegen.|La durée normale et la moyenne d’heures supplémentaires doivent totaliser moins de 24 heures.
-180|이 휴게 시간으로는 24시간 안에 목표를 달성할 수 없습니다.|この休憩時間では24時間以内に目標を達成できません。|Con estas pausas no se puede alcanzar el objetivo en 24 horas.|Mit diesen Pausen ist das Ziel innerhalb von 24 Stunden nicht erreichbar.|Ces pauses ne permettent pas d’atteindre l’objectif en 24 heures.
-181|입력 완료:|入力済み：|Rellenado:|Ausgefüllt:|Renseigné :
-182|먼저 초기화할 날짜를 선택하세요.|先にリセットする日付を選択してください。|Selecciona las fechas que quieras restablecer.|Zuerst die zurückzusetzenden Tage auswählen.|Sélectionnez d’abord les dates à réinitialiser.
-183|초기화를 저장하지 못했습니다. 알림을 확인하고 다시 시도하세요.|リセットを保存できませんでした。通知を確認して再試行してください。|No se guardó el restablecimiento. Revisa las notificaciones y reintenta.|Zurücksetzen konnte nicht gespeichert werden. Mitteilungen prüfen und erneut versuchen.|Réinitialisation non enregistrée. Consultez les notifications et réessayez.
-184|모든 수동 기록을 초기화했습니다. OA 기록은 유지됩니다.|すべての手入力をリセットしました。OAの記録は保持されています。|Todas las entradas manuales restablecidas. Se conservan las de OA.|Alle manuellen Einträge zurückgesetzt. OA-Einträge bleiben erhalten.|Toutes les saisies manuelles ont été réinitialisées. Les saisies OA sont conservées.
-185|초기화:|リセット：|Restablecidos:|Zurückgesetzt:|Réinitialisation :
-186|개 수동 기록 초기화. OA 기록 유지.|件の手入力をリセット。OAの記録は保持。|entradas manuales restablecidas. Se conservan las de OA.|manuelle Einträge zurückgesetzt. OA-Einträge bleiben erhalten.|saisies manuelles réinitialisées. Les saisies OA sont conservées.
-187|먼저 입력할 날짜를 선택하세요.|先に入力する日付を選択してください。|Selecciona las fechas que quieras rellenar.|Zuerst die auszufüllenden Tage auswählen.|Sélectionnez d’abord les dates à renseigner.
-188|출퇴근 시간을 모두 입력하세요. 자정을 넘기면 ‘익일 퇴근’을 켜세요.|出退勤の両時刻を入力してください。日をまたぐ場合は「翌日退勤」を有効にしてください。|Introduce ambas horas. Activa «Salida al día siguiente» para turnos nocturnos.|Beide Uhrzeiten eingeben. Bei Nachtschichten „Ende am Folgetag“ aktivieren.|Saisissez les deux heures. Activez « Départ le lendemain » si le travail se termine après minuit.
-189|업데이트:|更新：|Actualizados:|Aktualisiert:|Mise à jour :
-190|개 날짜 갱신|日分を更新|días actualizados|Tage aktualisiert|jours actualisés
-191|일치하는 도시 없음|該当する都市はありません|No hay ciudades coincidentes|Keine passenden Städte|Aucune ville correspondante
-192|올바른 입사일을 연월일까지 입력하세요.|有効な入社日を年月日すべて入力してください。|Introduce una fecha de incorporación completa y válida.|Vollständiges, gültiges Eintrittsdatum eingeben.|Saisissez une date d’embauche complète et valide.
-193|설정을 저장하지 못했습니다. 수정하여 다시 시도하거나 닫기 전에 백업을 내보내세요.|設定を保存できませんでした。編集して再試行するか、閉じる前にバックアップを書き出してください。|No se guardaron los ajustes. Modifícalos para reintentar o exporta una copia antes de cerrar.|Einstellungen nicht gespeichert. Zum Wiederholen bearbeiten oder vor dem Schließen eine Sicherung exportieren.|Réglages non enregistrés. Modifiez-les pour réessayer ou exportez une sauvegarde avant de fermer.
-194|환경설정을 업데이트했습니다|環境設定を更新しました|Preferencias actualizadas|Einstellungen aktualisiert|Préférences actualisées
-195|모든 날짜: 모든 근무 일정을 바꾸고 과거 합계를 다시 계산합니다.|すべての日付：全スケジュールを置き換え、過去の集計を再計算します。|Todas las fechas: sustituye todos los horarios y recalcula los totales históricos.|Alle Daten: Ersetzt sämtliche Arbeitspläne und berechnet bisherige Summen neu.|Toutes les dates : remplace tous les horaires et recalcule les totaux passés.
-196|~|～|a|bis|au
-197|(포함)|（両日を含む）|(incluidos)|(einschließlich)|(inclus)
-198|부터 이후의 모든 일정을 바꿉니다.|以降の全スケジュールを置き換えます。|en adelante, sustituyendo todos los horarios posteriores.|und danach; ersetzt alle späteren Arbeitspläne.|et au-delà, en remplaçant tous les horaires suivants.
-199|올바른 날짜 범위를 모두 입력하세요.|有効な期間をすべて入力してください。|Introduce un intervalo de fechas completo y válido.|Vollständigen, gültigen Datumsbereich eingeben.|Saisissez une période complète et valide.
+0|백업은 텍스트여야 합니다.|バックアップはテキスト形式で指定してください。
+1|백업 크기 초과:|バックアップの上限超過：
+2|MB 제한|MB の上限。
+3|날짜 정보|日付情報
+4|알림|通知
+5|역사|歴史
+6|절기|二十四節気
+7|음력|旧暦
+8|알림 (|通知（
+9|오류|エラー
+10|주의|注意
+11|집중 모드 종료|集中モードを終了
+12|카운트다운에 집중|カウントダウンに集中
+13|이번 달 역사 자료 불러오는 중…|今月の出来事を読み込み中…
+14|다시 시도|再試行
+15|로컬 날짜 정보를 불러오지 못했습니다|ローカルの日付情報を読み込めませんでした
+16|기원전|紀元前
+17|· 띠:|・干支：
+18|충:|冲：
+19|더 많은 사건:|その他の出来事：
+20|중국어 위키백과|中国語版ウィキペディア
+21|역사, 명절 및 황력|歴史・祝祭日・中国暦
+22|유효하지 않은 날짜|無効な日付
+23|급여일 이전의 근무일을 찾을 수 없습니다|給料日より前の勤務日が見つかりません
+24|주|週
+25|테마|テーマ
+26|테마 저장 중…|テーマを保存中…
+27|테마가 적용되었지만 저장되지 않았습니다. 새로고침하면 초기화될 수 있습니다.|テーマは適用されましたが、保存できませんでした。再読み込みすると元に戻る場合があります。
+28|정보 없음|該当なし
+29|낮음|低い
+30|보통|中程度
+31|높음|高い
+32|매우 높음|非常に高い
+33|위험|極端に高い
+34|날씨|天気
+35|날씨 불러오는 중…|天気を読み込み中…
+36|체감|体感
+37|습도|湿度
+38|풍력|風力
+39|풍향|風向
+40|바이두 날씨 · 중국 표준시|百度天気・中国標準時
+41|관측:|観測：
+42|· 수집:|・取得：
+43|캐시 ·|キャッシュ・
+44|예보 기간|予報期間
+45|강수 확률:|降水確率：
+46|최고:|最高：
+47|최저:|最低：
+48|자외선 단계:|紫外線の強さ：
+49|· 지수:|・指数：
+50|최근 예보 없음|最近の予報はありません
+51|예보 없음|予報なし
+52|향후 12시간|今後12時間
+53|향후 5일|今後5日間
+54|먼저 근무 일정을 설정하세요|先に勤務スケジュールを設定してください
+55|편안한 휴일 보내세요|よい休日を
+56|오늘은 휴가입니다|今日は休暇です
+57|올바른 근무 시간을 설정하세요|有効な勤務時刻を設定してください
+58|출근까지|勤務開始まで
+59|퇴근까지|勤務終了まで
+60|근무가 종료되었습니다|勤務時間外です
+61|· 시작|・開始
+62|· 종료|・終了
+63|수고하셨습니다. 편안한 시간 보내세요!|お疲れさまでした！
+64|예정 출근|開始予定
+65|예정 퇴근|終了予定
+66|출퇴근 카운트다운|勤務カウントダウン
+67|완료된 기록 없음|完全な記録はありません
+68|부족|不足
+69|초과근무|残業
+70|휴가|休暇
+71|휴무|休み
+72|초과근무 예정|残業予定
+73|수동|手入力
+74|페이지 백업 다운로드|ページのバックアップをダウンロード
+75|백업 다운로드|バックアップをダウンロード
+76|백업을 복원했습니다|バックアップを復元しました
+77|백업을 다운로드했습니다|バックアップをダウンロードしました
+78|백업 실패:|バックアップ失敗：
+79|백업을 복사했습니다|バックアップをコピーしました
+80|백업 복사 실패:|バックアップをコピーできません：
+81|클립보드 접근을 허용하세요|クリップボードへのアクセスを許可してください
+82|클립보드를 사용할 수 없습니다|クリップボードを使用できません
+83|출처|取得元
+84|: 백업 내용|：バックアップの内容
+85|개 날짜,|日分、
+86|개 가져오기,|件の取込、
+87|개 시간 템플릿,|件の時刻テンプレート、
+88|개 일정; 기본 일일 시간:|件のスケジュール、標準労働時間：
+89|시간.|時間。
+90|테마:|テーマ：
+91|클립보드|クリップボード
+92|백업 준비 완료. 확인하면 복원합니다.|バックアップの準備ができました。確認して復元してください。
+93|클립보드의 백업을 읽지 못했습니다. 파일을 선택하세요.|クリップボードのバックアップを読み込めません。ファイルを選択してください。
+94|일일 스냅샷|日次スナップショット
+95|변경 전 스냅샷|変更前のスナップショット
+96|스냅샷|スナップショット
+97|이 스냅샷은 바로 복원할 수 없습니다. 복구 데이터를 다운로드하세요:|このスナップショットは直接復元できません。復旧データをダウンロードしてください：
+98|스냅샷이 없습니다.|スナップショットはまだありません。
+99|복구 데이터를 읽지 못했습니다:|復旧データを読み込めません：
+100|스냅샷을 삭제하지 못했습니다:|スナップショットを削除できません：
+101|읽을 수 있는 이전 버전 저장 자료가 없습니다.|読み込める旧形式の保存データがありません。
+102|이전 버전 저장 자료|旧形式の保存データ
+103|초기화를 저장하지 못했습니다:|リセットを保存できません：
+104|백업이 100 MiB를 초과합니다.|バックアップが100 MiBを超えています。
+105|파일|ファイル
+106|복원 실패:|復元失敗：
+107|복원을 저장하지 못했습니다:|復元内容を保存できません：
+108|변경 사항이 저장되지 않았습니다. 알림을 확인하고 백업을 내보내세요.|変更は保存されていません。通知を確認し、バックアップを書き出してください。
+109|수동 기록을 초기화하고 OA 기록을 복원했습니다.|手入力をリセットし、OAの記録に戻しました。
+110|수동 기록을 지웠습니다|手入力の記録を削除しました
+111|초기화가 저장되지 않았습니다. 알림을 확인하세요.|リセットを保存できませんでした。通知を確認してください。
+112|계획이 저장되지 않았습니다. 알림을 확인하세요.|予定を保存できませんでした。通知を確認してください。
+113|휴가가 저장되지 않았습니다. 알림을 확인하세요.|休暇を保存できませんでした。通知を確認してください。
+114|종일 휴가를 저장했습니다|終日休暇を保存しました
+115|기록 없음|記録なし
+116|출근 기록 없음|出勤打刻なし
+117|퇴근 기록 없음|退勤打刻なし
+118|올바르지 않은 시간|無効な時刻
+119|퇴근이 출근보다 빠름|退勤が出勤より前
+120|(+1일)|（翌日）
+121|분석 중…|解析中…
+122|분석된 기록 없음|解析できた記録はありません
+123|가져오기 내역|取込履歴
+124|붙여넣은 텍스트|貼り付けたテキスト
+125|분석 결과:|解析結果：
+126|개 기록 ·|件・
+127|개 경고 ·|件の警告・
+128|충돌|競合
+129|이 묶음에 중복 날짜가 있습니다. 선택은 순서대로 적용되며, 기존 기록을 유지하면 앞선 선택이 유지됩니다.|この取込に重複する日付があります。選択は順に適用され、既存の記録を残すと前の選択が維持されます。
+130|기존:|既存：
+131|; 가져올 기록:|；取込：
+132|새 기록 사용|取り込む記録を使う
+133|기존 기록 유지|既存の記録を残す
+134|수동 기록 유지|手入力を維持
+135|분석된 기록|解析した記録
+136|개 문제|件の問題
+137|기록을 찾지 못했습니다. 붙여넣은 텍스트를 확인하세요.|記録が見つかりません。貼り付けたテキストを確認してください。
+138|OA 기록을 찾지 못했습니다. 붙여넣은 텍스트를 확인하세요.|OAの記録が見つかりません。貼り付けたテキストを確認してください。
+139|분석 실패|解析失敗
+140|기록을 분석하지 못했습니다. 입력 내용을 확인하세요.|記録を解析できません。入力内容を確認してください。
+141|분석 실패:|解析失敗：
+142|합계:|合計：
+143|개 유효 일자|日分の有効な記録
+144|알 수 없는 날짜|日付不明
+145|가져오기 상세 보기|取込の詳細を表示
+146|상세 보기|詳細を表示
+147|가져온 묶음 삭제|取込をまとめて削除
+148|묶음 삭제|取込を削除
+149|개 기록|件の記録
+150|가져오기 내역 없음|取込履歴はありません
+151|가져온 기록|取り込んだ記録
+152|반영된 기록이 없습니다. 아래 원본 근태 텍스트를 확인하세요.|反映された記録はありません。以下の元の勤怠テキストを確認してください。
+153|원본 근태 텍스트|元の勤怠テキスト
+154|근태 텍스트 없음|勤怠テキストがありません
+155|이전 가져오기|前の取込
+156|이전|前へ
+157|다음 가져오기|次の取込
+158|다음|次へ
+159|기록을 찾지 못했습니다. 가져오기 내역을 확인하세요.|記録が見つかりません。取込履歴を確認してください。
+160|HTTP 또는 HTTPS URL을 사용하세요.|HTTPまたはHTTPSのURLを指定してください。
+161|삭제|削除
+162|가져온 날짜|取込日
+163|? 업데이트되는 날짜 수:|を削除しますか？更新される日数：
+164|개, 그중|日、うち
+165|개는 다른 가져오기에서 복원되며,|日は別の取込から復元、
+166|개는 이 묶음에서 제거됩니다.|日はこの取込から削除されます。
+167|이 가져오기 내역이 더 이상 없습니다|この取込は存在しません
+168|가져오기 내역을 삭제하고 합계를 갱신했습니다.|取込を削除し、集計を更新しました。
+169|올바른 HTTP 또는 HTTPS URL을 입력하세요.|有効なHTTPまたはHTTPSのURLを入力してください。
+170|OA 링크를 저장했습니다|OAリンクを保存しました
+171|클립보드가 비어 있습니다. 먼저 OA 근태 기록을 복사하세요.|クリップボードが空です。先にOAの勤怠記録をコピーしてください。
+172|클립보드 접근을 허용하거나 Ctrl+V로 붙여넣으세요.|クリップボードへのアクセスを許可するか、Ctrl+Vで貼り付けてください。
+173|가져오기 완료. 처리된 기록:|取込完了。処理した記録：
+174|먼저 근무 일정을 설정하세요.|先に勤務スケジュールを設定してください。
+175|먼저 계산할 날짜를 선택하세요.|先に計算する日付を選択してください。
+176|선택한 날짜의 근무 일정이 다릅니다. 일정별로 나누어 계산하세요.|選択した日付は勤務スケジュールが異なります。スケジュールごとに計算してください。
+177|올바른 출근 시간을 입력하세요.|有効な出勤時刻を入力してください。
+178|평균 초과근무는 0 이상의 숫자여야 합니다.|平均残業時間は0以上の数値を入力してください。
+179|기본 근무 시간과 평균 초과근무의 합은 24시간 미만이어야 합니다.|所定労働時間と平均残業時間の合計は24時間未満にしてください。
+180|이 휴게 시간으로는 24시간 안에 목표를 달성할 수 없습니다.|この休憩時間では24時間以内に目標を達成できません。
+181|입력 완료:|入力済み：
+182|먼저 초기화할 날짜를 선택하세요.|先にリセットする日付を選択してください。
+183|초기화를 저장하지 못했습니다. 알림을 확인하고 다시 시도하세요.|リセットを保存できませんでした。通知を確認して再試行してください。
+184|모든 수동 기록을 초기화했습니다. OA 기록은 유지됩니다.|すべての手入力をリセットしました。OAの記録は保持されています。
+185|초기화:|リセット：
+186|개 수동 기록 초기화. OA 기록 유지.|件の手入力をリセット。OAの記録は保持。
+187|먼저 입력할 날짜를 선택하세요.|先に入力する日付を選択してください。
+188|출퇴근 시간을 모두 입력하세요. 자정을 넘기면 ‘익일 퇴근’을 켜세요.|出退勤の両時刻を入力してください。日をまたぐ場合は「翌日退勤」を有効にしてください。
+189|업데이트:|更新：
+190|개 날짜 갱신|日分を更新
+191|일치하는 도시 없음|該当する都市はありません
+192|올바른 입사일을 연월일까지 입력하세요.|有効な入社日を年月日すべて入力してください。
+193|설정을 저장하지 못했습니다. 수정하여 다시 시도하거나 닫기 전에 백업을 내보내세요.|設定を保存できませんでした。編集して再試行するか、閉じる前にバックアップを書き出してください。
+194|환경설정을 업데이트했습니다|環境設定を更新しました
+195|모든 날짜: 모든 근무 일정을 바꾸고 과거 합계를 다시 계산합니다.|すべての日付：全スケジュールを置き換え、過去の集計を再計算します。
+196|~|～
+197|(포함)|（両日を含む）
+198|부터 이후의 모든 일정을 바꿉니다.|以降の全スケジュールを置き換えます。
+199|올바른 날짜 범위를 모두 입력하세요.|有効な期間をすべて入力してください。

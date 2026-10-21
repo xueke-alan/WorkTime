@@ -12,17 +12,7 @@ async function verify() {
     headless: true,
   });
   try {
-    for (const language of [
-      "zh-CN",
-      "zh-TW",
-      "zh-HK",
-      "ja",
-      "ko",
-      "en",
-      "es",
-      "de",
-      "fr",
-    ]) {
+    for (const language of ["zh-CN", "zh-TW", "zh-HK", "ja", "ko", "en"]) {
       const context = await browser.newContext({
         locale: language,
         reducedMotion: "reduce",

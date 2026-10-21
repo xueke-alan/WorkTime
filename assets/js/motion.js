@@ -3,12 +3,20 @@
   "use strict";
   const reduced = WorkTimeApp.ui.animationCompat.preference();
   const running = new Map();
+  const contentMotions = new Set([
+    "motion-content",
+    "motion-sidebar-forward",
+    "motion-sidebar-back",
+    "motion-calendar-view",
+    "motion-calendar-year",
+  ]);
   let disposed = true,
     unlisten;
   function stop(element) {
     const entry = running.get(element);
     if (!entry) return;
     clearTimeout(entry.timer);
+    entry.animation?.cancel();
     element.classList.remove(entry.name);
     element.style.removeProperty("--motion-delay");
     running.delete(element);
@@ -16,13 +24,70 @@
   function play(element, name = "motion-content", delay = 0) {
     if (!element || disposed || document.hidden) return;
     const restarting = running.has(element);
+    // Continue from the painted state when a user changes tabs mid-transition.
+    const current = running.get(element)?.animation
+      ? getComputedStyle(element)
+      : null;
+    const start = current && {
+      opacity: current.opacity,
+      transform: current.transform,
+    };
     stop(element);
     if (reduced.matches || WorkTimeApp.i18n.changing) return;
+    if (contentMotions.has(name)) {
+      // A single surface owns the reveal; nested panes should not fade twice.
+      for (
+        let parent = element.parentElement;
+        parent;
+        parent = parent.parentElement
+      )
+        if (running.get(parent)?.animation) return;
+      for (const child of running.keys())
+        if (element.contains(child)) stop(child);
+      const style = getComputedStyle(element);
+      const distance = style
+        .getPropertyValue("--motion-direction")
+        .trim()
+        .startsWith("-")
+        ? "-6px"
+        : "6px";
+      const transform =
+        name === "motion-sidebar-forward"
+          ? "translateX(6px)"
+          : name === "motion-sidebar-back"
+            ? "translateX(-6px)"
+            : name === "motion-calendar-year"
+              ? `translateX(${distance})`
+              : "translateY(4px)";
+      const animation = WorkTimeApp.ui.animationCompat.animate(
+        element,
+        [
+          start || { opacity: 0.4, transform },
+          { opacity: 1, transform: "none" },
+        ],
+        {
+          duration: 240,
+          easing: "cubic-bezier(0.2, 0.65, 0.3, 1)",
+          fill: "backwards",
+        },
+      );
+      const entry = { name, animation };
+      running.set(element, entry);
+      animation.finished.then(() => {
+        if (running.get(element) === entry) stop(element);
+      });
+      return;
+    }
     // Only explicit user changes restart an animation; there is no subtree observer.
     if (restarting) void element.offsetWidth;
     element.style.setProperty("--motion-delay", delay + "ms");
     element.classList.add(name);
     running.set(element, { name, timer: setTimeout(() => stop(element), 700) });
+  }
+  function isAnimating(element) {
+    for (let node = element; node; node = node.parentElement)
+      if (running.has(node)) return true;
+    return false;
   }
   function initial() {
     document
@@ -54,6 +119,6 @@
     unlisten = WorkTimeApp.ui.animationCompat.listen(reduced, onPreference);
     document.addEventListener("visibilitychange", onVisibility);
   }
-  WorkTimeApp.ui.motion = { play, stop, initial, mount, dispose };
+  WorkTimeApp.ui.motion = { play, stop, isAnimating, initial, mount, dispose };
   mount();
 })();

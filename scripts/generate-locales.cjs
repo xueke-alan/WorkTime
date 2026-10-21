@@ -14,7 +14,7 @@ const data = readCatalogs();
 const source = JSON.parse(
   fs.readFileSync(path.join(__dirname, "i18n/source.json"), "utf8"),
 );
-const languages = ["ko", "ja", "es", "de", "fr"];
+const languages = ["ko", "ja"];
 const translations = new Map();
 for (const file of fs
   .readdirSync(path.join(__dirname, "i18n"))
@@ -234,5 +234,5 @@ for (const [language, target] of [
   }
 }
 console.log(
-  "Seven offline language catalogs and two traditional history variants generated.",
+  "Four offline language catalogs and two traditional history variants generated.",
 );

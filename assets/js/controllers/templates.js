@@ -519,6 +519,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       actions.updateBatchNextToggle();
       renderBatchTimeTemplates();
       $("batchError").textContent = "";
+      actions.refreshBatchPreview();
     });
     for (const id of ["batchStart", "batchEnd"])
       events.listen($(id), "input", renderBatchTimeTemplates);

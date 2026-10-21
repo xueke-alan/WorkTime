@@ -19,10 +19,7 @@ async function verify() {
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
-    assert.equal(
-      (await page.locator("button.day[data-date]").count()) >= 28,
-      true,
-    );
+    assert.equal((await page.locator(".day[data-date]").count()) >= 28, true);
     assert.deepEqual(errors, []);
     console.log("Offline startup and calendar rendering verified.");
   } finally {

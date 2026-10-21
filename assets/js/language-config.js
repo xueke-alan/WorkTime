@@ -8,9 +8,6 @@ WorkTimeApp.data.languages = Object.freeze(
     ["en", "English", "en-GB", false, "en"],
     ["ko", "한국어", "ko-KR", false, "en"],
     ["ja", "日本語", "ja-JP", false, "en"],
-    ["es", "Español", "es-ES", false, "en"],
-    ["de", "Deutsch", "de-DE", false, "en"],
-    ["fr", "Français", "fr-FR", false, "en"],
   ].map(([id, name, locale, almanac, history]) =>
     Object.freeze({
       id,

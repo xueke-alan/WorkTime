@@ -221,6 +221,12 @@ WorkTimeApp.ui.createImportController = function (options) {
     return saved;
   }
   let importToDelete = null;
+  function importHistoryByTime() {
+    return model.state.imports
+      .slice()
+      .reverse()
+      .sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+  }
   async function renderImportHistory() {
     try {
       await hydrateImports();
@@ -229,7 +235,7 @@ WorkTimeApp.ui.createImportController = function (options) {
       return;
     }
     if (disposed) return;
-    const logs = model.state.imports.slice().reverse();
+    const logs = importHistoryByTime();
     const dates = new Set(
       logs.flatMap((log) => importIndex.describe(log).acceptedDates),
     );
@@ -284,7 +290,7 @@ WorkTimeApp.ui.createImportController = function (options) {
       return;
     }
     if (disposed) return;
-    const logs = model.state.imports.slice().reverse(),
+    const logs = importHistoryByTime(),
       index = logs.findIndex((log) => log.id === id),
       log = logs[index];
     if (!log) return;
@@ -563,7 +569,7 @@ WorkTimeApp.ui.createImportController = function (options) {
     if (!$("sourceDialog").classList.contains("import-detail-view")) return;
     const step = event.target.closest("[data-detail-step]");
     if (step && !step.disabled) {
-      const logs = model.state.imports.slice().reverse(),
+      const logs = importHistoryByTime(),
         index = logs.findIndex((log) => log.id === detailId);
       const next = logs[index + Number(step.dataset.detailStep)];
       if (next) showImportDetail(next.id);

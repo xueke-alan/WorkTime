@@ -26,11 +26,8 @@ WorkTimeApp.ui.createSettingsController = function (options) {
       return;
     }
     if (model.batchMode) {
-      model.batchMode = false;
-      model.batchDays.clear();
-      model.batchAnchor = null;
-      actions.renderCalendar();
-      actions.renderEditor();
+      if (model.batchSaving) return;
+      actions.leaveBatch();
     }
     refreshSettings();
     actions.open("settingsDialog");
@@ -232,11 +229,11 @@ WorkTimeApp.ui.createSettingsController = function (options) {
   function guardNavigation(event) {
     if (!$("settingsDialog").open) return;
     const target = event.target.closest(
-      "#calendar button[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #batchToggle, #restore, #pageSettingsOpen",
+      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #batchToggle, #restore, #pageSettingsOpen",
     );
     if (!target) return;
     const keepSettings = target.matches(
-      "#calendar button[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle",
+      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle",
     );
     if (keepSettings && !hasScheduleDraft()) return;
     event.preventDefault();

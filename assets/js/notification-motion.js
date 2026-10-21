@@ -11,16 +11,17 @@
       !observer ||
       document.hidden ||
       reduced.matches ||
+      WorkTimeApp.ui.motion?.isAnimating(element) ||
       document.documentElement.classList.contains("app-loading")
     )
       return;
     const animation = WorkTimeApp.ui.animationCompat.animate(
       element,
       [
-        { opacity: 0, transform: "translateY(6px)" },
+        { opacity: 0.4, transform: "translateY(4px)" },
         { opacity: 1, transform: "translateY(0)" },
       ],
-      { duration: 260, easing: "cubic-bezier(.22,1,.36,1)" },
+      { duration: 240, easing: "cubic-bezier(0.2, 0.65, 0.3, 1)" },
     );
     animations.add(animation);
     animation.finished.then(() => animations.delete(animation));

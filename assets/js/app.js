@@ -80,6 +80,15 @@ WorkTimeApp.services.bootstrap.run(
       loadCorrupt: { get: () => stateOwner.loadCorrupt },
       loadIssue: { get: () => persistence.loadIssue },
     });
+    const getPreviewState = () => {
+      if (!model.batchMode || !model.batchDraft) return model.state;
+      if (model.batchPreview?.base !== model.state)
+        model.batchPreview = {
+          base: model.state,
+          state: D.batch.applyBatchChanges(model.state, model.batchDraft),
+        };
+      return model.batchPreview.state;
+    };
     const derived = WorkTimeApp.services.derived.create({
       core: {
         DEFAULT_START: D.state.DEFAULT_START,
@@ -100,7 +109,7 @@ WorkTimeApp.services.bootstrap.run(
         timeMin: D.time.timeMin,
         validDate: D.time.validDate,
       },
-      getState: () => model.state,
+      getState: getPreviewState,
       getRevision: () => model.revision,
       now: clock.now,
     });
@@ -117,6 +126,8 @@ WorkTimeApp.services.bootstrap.run(
       selected: model.selected,
       batchMode: model.batchMode,
       batchDays: model.batchDays,
+      batchDraft: model.batchDraft,
+      batchSaving: model.batchSaving,
       yearMode: model.yearMode,
       viewYear: model.viewYear,
     });
@@ -139,6 +150,7 @@ WorkTimeApp.services.bootstrap.run(
       statusTag,
     } = WorkTimeApp.ui.createDayPresentation({
       ...shared,
+      getState: getPreviewState,
       core: {
         calendarInfo: D.calendar.calendarInfo,
         complete: D.records.complete,
@@ -163,6 +175,7 @@ WorkTimeApp.services.bootstrap.run(
     } = notifications;
     const { renderStats } = WorkTimeApp.ui.createSummary({
       ...shared,
+      getState: getPreviewState,
       core: {
         pendingWorkdays: queries.pendingWorkdays,
         selectOvertimeRequirement: queries.selectOvertimeRequirement,
@@ -184,6 +197,8 @@ WorkTimeApp.services.bootstrap.run(
     WorkTimeApp.ui.calendarWeather = weatherLayer;
     const calendarUI = WorkTimeApp.ui.createCalendar({
       ...shared,
+      getState: getPreviewState,
+      getOriginalState: getState,
       core: {
         canBatchEditDate: D.schedule.canBatchEditDate,
         actualRecord: D.records.actualRecord,
@@ -295,12 +310,14 @@ WorkTimeApp.services.bootstrap.run(
       [
         "saveDay",
         "togglePlanned",
+        "toggleSourcePriority",
         "resetDay",
         "resetBatch",
         "saveTemplate",
         "removeTemplate",
         "replaceTemplates",
         "saveBatch",
+        "confirmBatch",
         "importRecords",
         "removeImport",
         "saveOAUrl",
@@ -354,6 +371,7 @@ WorkTimeApp.services.bootstrap.run(
       openLeavePanel,
       closeLeavePanel,
       renderEditor,
+      leaveBatch: workspace.leaveBatch,
     });
     const controllerOptions = {
       element: $,
@@ -460,7 +478,7 @@ WorkTimeApp.services.bootstrap.run(
       ],
       [
         WorkTimeApp.ui.createNavigationController,
-        ["saveBatch", "resetBatch"],
+        ["confirmBatch", "toggleSourcePriority"],
         {
           canBatchEditDate: D.schedule.canBatchEditDate,
           calendarInfo: D.calendar.calendarInfo,
@@ -511,6 +529,7 @@ WorkTimeApp.services.bootstrap.run(
       renderCalendar(true);
       renderEditor();
       notifications.refreshLanguage();
+      if (model.batchMode) actions.refreshBatchPreview();
       for (const { element, value, checked, start, end } of drafts) {
         if (!element.isConnected || element.id === "languageSelect") continue;
         element.value = value;

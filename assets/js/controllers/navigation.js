@@ -16,7 +16,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   function highlightToday() {
     stopTodayAttention();
     const card = $("calendar").querySelector(
-      "button.day[data-date=" + JSON.stringify(model.today) + "]",
+      ".day[data-date=" + JSON.stringify(model.today) + "]",
     );
     if (!card || document.hidden) return;
     // Read the final selected surface, rather than an in-flight hover/selection color.
@@ -56,7 +56,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   }
 
   function navigateMonth(v) {
-    if (resettingBatch) return;
+    if (resettingBatch || model.batchMode) return;
     stopTodayAttention();
     model.yearMode = false;
     if (!/^\d{4}-\d{2}$/.test(v) || !C.validDate(v + "-01")) return;
@@ -71,24 +71,55 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     if ($("settingsDialog").open) actions.refreshSettings();
   }
   function prepareBatchEditor() {
-    $("batchStart").value = C.scheduleForDate(
-      model.state,
-      model.selected,
-    ).workStart;
-    $("batchEnd").value = C.scheduleForDate(
-      model.state,
-      model.selected,
-    ).workEnd;
+    const schedule = C.scheduleForDate(model.state, model.selected);
+    model.batchDraft = { reset: "none" };
+    model.batchPreview = null;
+    $("batchStart").value = "";
+    $("batchEnd").value = "";
+    $("batchStart").placeholder = schedule.workStart;
+    $("batchEnd").placeholder = schedule.workEnd;
     $("batchNext").checked = false;
-    $("batchCalcStart").value = C.scheduleForDate(
-      model.state,
-      model.selected,
-    ).workStart;
+    $("batchCalcStart").value = schedule.workStart;
     $("batchCalcOvertime").value = "";
     $("batchError").textContent = "";
     $("batchCalcResult").textContent = "";
     updateBatchNextToggle();
     actions.renderBatchTimeTemplates();
+    refreshBatchPreview();
+  }
+  function refreshBatchPreview() {
+    if (!model.batchMode || model.batchSaving) return;
+    const record = {
+      start: $("batchStart").value,
+      end: $("batchEnd").value,
+      nextDay: $("batchNext").checked,
+      effectiveMinutes: null,
+    };
+    const reset = model.batchDraft?.reset || "none";
+    const empty = !record.start && !record.end;
+    const complete = C.complete(record);
+    const valid = complete || (reset !== "none" && empty);
+    const dates = [...model.batchDays].filter((date) =>
+      C.canBatchEditDate(model.state, date),
+    );
+    model.batchDraft = {
+      reset,
+      dates,
+      record: complete ? record : null,
+      valid,
+      canConfirm: valid && (reset === "all" || dates.length > 0),
+    };
+    model.batchPreview = {
+      base: model.state,
+      state: WorkTimeApp.domain.batch.applyBatchChanges(
+        model.state,
+        model.batchDraft,
+      ),
+    };
+    $("batchStart").required = $("batchEnd").required =
+      reset === "none" || !empty;
+    actions.renderStats();
+    actions.renderCalendar();
   }
   function updateBatchNextToggle() {
     $("batchNextToggle").setAttribute(
@@ -140,6 +171,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         " – " +
         match.end +
         (match.nextDay ? WorkTimeApp.i18n.t("copy.c751037c58") : "");
+      refreshBatchPreview();
     } catch (error) {
       result.textContent = WorkTimeApp.i18n.message(error.message);
     }
@@ -148,14 +180,49 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   function bind() {
     if (bound) return;
     bound = true;
+    for (const type of ["click", "keydown"])
+      events.listen(
+        document,
+        type,
+        (event) => {
+          if (!model.batchSaving) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        },
+        true,
+      );
+    for (const id of ["batchStart", "batchEnd"])
+      for (const type of ["input", "change"])
+        events.listen($(id), type, () => {
+          $("batchError").textContent = "";
+          refreshBatchPreview();
+        });
     unlistenMotion = animationCompat.listen(reducedMotion, stopTodayAttention);
     events.listen(document, "visibilitychange", () => {
       if (document.hidden) stopTodayAttention();
     });
     events.listen($("calendar"), "click", stopTodayAttention, true);
-    events.handler($("calendar"), "onclick", (e) => {
+    events.handler($("calendar"), "onclick", async (e) => {
       if (resettingBatch) return;
-      const b = e.target.closest("button.day[data-date]");
+      const source = e.target.closest("[data-source-date]");
+      if (source) {
+        if (model.batchMode) return;
+        const date = source.dataset.sourceDate;
+        const operation = application.toggleSourcePriority(date);
+        actions.renderStats();
+        actions.renderCalendar(true);
+        if (model.selected === date) actions.renderEditor();
+        const saved = (await operation).persisted;
+        if (!bound) return;
+        // Saving may finish after navigation or typing. Refresh saved status
+        // without replacing another date's editor or a newly entered draft.
+        actions.renderStats();
+        actions.renderCalendar(true);
+        if (!saved)
+          actions.toast(WorkTimeApp.i18n.t("copy.69bd4f5650"), "error");
+        return;
+      }
+      const b = e.target.closest(".day[data-date]");
       if (!b) return;
       const k = b.dataset.date;
       if (model.batchMode) {
@@ -163,7 +230,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         if (e.shiftKey && model.batchAnchor) {
           const [first, last] = [model.batchAnchor, k].sort();
           for (const card of $("calendar").querySelectorAll(
-            "button.day[data-date]",
+            ".day[data-date]",
           )) {
             const date = card.dataset.date;
             if (
@@ -179,7 +246,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
             : model.batchDays.add(k);
           model.batchAnchor = k;
         }
-        actions.renderCalendar();
+        refreshBatchPreview();
       } else {
         model.selected = k;
         actions.renderCalendar();
@@ -194,7 +261,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       }
     });
     events.handler($("monthTitle"), "onclick", () => {
-      if (resettingBatch) return;
+      if (resettingBatch || model.batchMode) return;
       stopTodayAttention();
       if (model.yearMode) {
         model.yearMode = false;
@@ -211,17 +278,20 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
     events.listen($("calendar"), "click", (e) => {
       const button = e.target.closest("[data-year-date]");
-      if (!button) return;
+      if (!button || model.batchMode) return;
       model.yearMode = false;
       model.month = button.dataset.yearDate.slice(0, 7);
       model.selected = button.dataset.yearDate;
       actions.render();
       if ($("settingsDialog").open) actions.refreshSettings();
       $("calendar")
-        .querySelector("[data-date=" + JSON.stringify(model.selected) + "]")
+        .querySelector(
+          "[data-date=" + JSON.stringify(model.selected) + "] .day-select",
+        )
         ?.focus();
     });
     events.handler($("prevMonth"), "onclick", () => {
+      if (model.batchMode) return;
       stopTodayAttention();
       if (model.yearMode) {
         if (model.viewYear > 1900) model.viewYear--;
@@ -233,6 +303,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       navigateMonth(C.dateKey(d).slice(0, 7));
     });
     events.handler($("nextMonth"), "onclick", () => {
+      if (model.batchMode) return;
       stopTodayAttention();
       if (model.yearMode) {
         if (model.viewYear < 9999) model.viewYear++;
@@ -244,6 +315,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       navigateMonth(C.dateKey(d).slice(0, 7));
     });
     events.handler($("todayButton"), "onclick", () => {
+      if (model.batchMode) return;
       model.today = clock.today();
       navigateMonth(model.today.slice(0, 7));
       highlightToday();
@@ -252,7 +324,11 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (resettingBatch) return;
       stopTodayAttention();
       if ($("settingsDialog").open) actions.closeSettings();
-      model.batchMode = !model.batchMode;
+      if (model.batchMode) {
+        actions.leaveBatch();
+        return;
+      }
+      model.batchMode = true;
       model.batchDays.clear();
       model.batchAnchor = null;
       if (model.batchMode) prepareBatchEditor();
@@ -261,60 +337,27 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     events.handler($("batchCancel"), "onclick", () => {
       if (resettingBatch) return;
       stopTodayAttention();
-      model.batchMode = false;
-      model.batchDays.clear();
-      model.batchAnchor = null;
-      actions.renderCalendar();
+      actions.leaveBatch();
       $("batchToggle").focus();
     });
-    events.handler($("batchReset"), "onclick", async () => {
-      if (resettingBatch || !model.batchMode) return;
-      const resetAll = !model.batchDays.size;
-      const dates = [...model.batchDays].filter((date) =>
-        C.canBatchEditDate(model.state, date),
-      );
-      if (!resetAll && !dates.length) {
-        $("batchError").textContent = WorkTimeApp.i18n.t("copy.f7ca66229c");
-        return;
-      }
-      resettingBatch = true;
-      $("batchForm").setAttribute("aria-busy", "true");
-      $("batchReset").disabled = true;
-      $("batchSave").disabled = true;
+    events.handler($("batchReset"), "onclick", () => {
+      if (model.batchSaving || !model.batchMode) return;
+      model.batchDraft = { reset: model.batchDays.size ? "selected" : "all" };
+      $("batchStart").value = "";
+      $("batchEnd").value = "";
+      $("batchNext").checked = false;
+      $("batchCalcOvertime").value = "";
       $("batchError").textContent = "";
-      try {
-        const saved = (await application.resetBatch(resetAll ? null : dates))
-          .persisted;
-        if (!saved) {
-          $("batchError").textContent = WorkTimeApp.i18n.t("copy.b81002effa");
-          actions.toast(WorkTimeApp.i18n.t("copy.77b0044d4f"), "error");
-          return;
-        }
-        model.batchMode = false;
-        model.batchDays.clear();
-        model.batchAnchor = null;
-        actions.saveFeedback(
-          true,
-          resetAll
-            ? WorkTimeApp.i18n.t("copy.dc56ca16ae")
-            : WorkTimeApp.i18n.t("copy.1a76ac076e") +
-                dates.length +
-                WorkTimeApp.i18n.t("copy.971430f3c6"),
-        );
-        $("batchToggle").focus();
-      } catch (error) {
-        $("batchError").textContent = WorkTimeApp.i18n.t("copy.b81002effa");
-        actions.toast(WorkTimeApp.i18n.t("copy.77b0044d4f"), "error");
-      } finally {
-        resettingBatch = false;
-        $("batchForm").removeAttribute("aria-busy");
-        actions.render();
-      }
+      $("batchCalcResult").textContent = "";
+      updateBatchNextToggle();
+      actions.renderBatchTimeTemplates();
+      refreshBatchPreview();
     });
     events.handler($("batchNextToggle"), "onclick", () => {
       $("batchNext").checked = !$("batchNext").checked;
       updateBatchNextToggle();
       actions.renderBatchTimeTemplates();
+      refreshBatchPreview();
     });
     events.handler($("batchCalculateEnd"), "onclick", calculateBatchEndTime);
     events.listen($("batchCalcOvertime"), "keydown", (event) => {
@@ -325,39 +368,49 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
     events.handler($("batchForm"), "onsubmit", async (e) => {
       e.preventDefault();
-      if (resettingBatch) return;
-      for (const date of model.batchDays)
-        if (!C.canBatchEditDate(model.state, date))
-          model.batchDays.delete(date);
-      if (!model.batchDays.size) {
-        $("batchError").textContent = WorkTimeApp.i18n.t("copy.03ee2fc8fc");
+      if (model.batchSaving || !model.batchMode) return;
+      refreshBatchPreview();
+      const draft = model.batchDraft;
+      if (!draft.canConfirm) {
+        $("batchError").textContent = WorkTimeApp.i18n.t(
+          draft.valid ? "copy.03ee2fc8fc" : "copy.f950d3ddc0",
+        );
         return;
       }
-      const record = {
-        start: $("batchStart").value,
-        end: $("batchEnd").value,
-        nextDay: $("batchNext").checked,
-        effectiveMinutes: null,
-      };
-      if (!C.complete(record)) {
-        $("batchError").textContent = WorkTimeApp.i18n.t("copy.f950d3ddc0");
-        return;
+      const count = draft.dates.length;
+      model.batchSaving = resettingBatch = true;
+      $("batchForm").setAttribute("aria-busy", "true");
+      $("batchForm").inert = true;
+      $("batchError").textContent = "";
+      actions.renderCalendar();
+      try {
+        const result = await application.confirmBatch(draft);
+        if (!result.persisted) throw result.error || Error("Save failed");
+        model.batchSaving = resettingBatch = false;
+        actions.leaveBatch();
+        actions.render();
+        actions.saveFeedback(
+          true,
+          draft.reset !== "none"
+            ? WorkTimeApp.i18n.t("batch.saved")
+            : WorkTimeApp.i18n.t("copy.f54a93c893") +
+                count +
+                WorkTimeApp.i18n.t("copy.a68e14c5a6"),
+        );
+        $("batchToggle").focus();
+      } catch {
+        $("batchError").textContent = WorkTimeApp.i18n.t("batch.saveFailed");
+        actions.toast(WorkTimeApp.i18n.t("copy.77b0044d4f"), "error");
+      } finally {
+        model.batchSaving = resettingBatch = false;
+        $("batchForm").removeAttribute("aria-busy");
+        $("batchForm").inert = false;
+        if (model.batchMode) refreshBatchPreview();
+        else actions.render();
       }
-      const count = model.batchDays.size;
-      const saved = (await application.saveBatch(model.batchDays, record))
-        .persisted;
-      model.batchMode = false;
-      model.batchDays.clear();
-      model.batchAnchor = null;
-      actions.render();
-      actions.saveFeedback(
-        saved,
-        WorkTimeApp.i18n.t("copy.f54a93c893") +
-          count +
-          WorkTimeApp.i18n.t("copy.a68e14c5a6"),
-      );
     });
   }
+
   function dispose() {
     stopTodayAttention();
     unlistenMotion?.();
@@ -366,5 +419,11 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     bound = false;
   }
   const hasDraft = () => model.batchMode;
-  return { bind, dispose, updateBatchNextToggle, hasDraft };
+  return {
+    bind,
+    dispose,
+    updateBatchNextToggle,
+    refreshBatchPreview,
+    hasDraft,
+  };
 };
