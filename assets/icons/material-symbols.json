@@ -328,6 +328,13 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/restart_alt/materialsymbolsrounded/restart_alt_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "f65d7758c26304fd29a5c15b3a6cf18377f26d9b4163f129d02095ef00e10ea3"
+    },
+    {
+      "id": "ms-nest-clock-farsight-analog",
+      "name": "nest_clock_farsight_analog",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/nest_clock_farsight_analog/materialsymbolsrounded/nest_clock_farsight_analog_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "d8effd2b897075a7232f7a67a3f07058436d7fb39fadb89653bef67c36ce08ca"
     }
   ]
 }
