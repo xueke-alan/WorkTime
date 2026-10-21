@@ -399,10 +399,19 @@ body .panel-head > .row {
 }
 .calendar .day .source-toggle {
   position: relative;
+  display: inline-block;
+  width: calc(1.8em + 3px);
+  height: 0.9em;
+  min-width: 0;
+  min-height: 0;
+  margin-left: 7px;
+  vertical-align: -0.08em;
   z-index: 3;
   pointer-events: auto;
   padding: 0;
   border: 0;
+  border-radius: 0;
+  background: transparent;
   box-shadow: 0 0 0 5px transparent;
 }
 .calendar .day .source-toggle::after {
@@ -411,11 +420,19 @@ body .panel-head > .row {
   inset: -5px;
   border-radius: 50%;
 }
-.calendar .day .source-toggle.manual {
-  background: #e58a2b;
+.calendar .day .source-toggle > .record-source-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
 }
-.calendar .day .source-toggle.oa {
-  background: #19876b;
+.calendar .day .source-toggle.oa > .manual,
+.calendar .day .source-toggle.manual > .oa {
+  transform: translateX(calc(100% + 3px));
+}
+.calendar .day .source-toggle.oa > .oa,
+.calendar .day .source-toggle.manual > .manual {
+  transform: translateX(0);
 }
 .calendar .day:has(> .day-select:focus-visible) {
   outline: 2px solid var(--accent);

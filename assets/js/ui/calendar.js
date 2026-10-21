@@ -51,7 +51,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
           priority === "oa" ? "source.switchManual" : "source.switchOA",
         );
     return both
-      ? '<button type="button" class="record-source-dot source-toggle ' +
+      ? '<button type="button" class="record-source-pair source-toggle ' +
           priority +
           '" data-source-date="' +
           day.oa.date +
@@ -63,7 +63,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
           (priority === "manual") +
           '"' +
           (getView().batchMode ? " disabled" : "") +
-          "></button>"
+          '><span class="record-source-dot oa" aria-hidden="true"></span><span class="record-source-dot manual" aria-hidden="true"></span></button>'
       : '<span class="record-source-dot ' +
           priority +
           '" title="' +
@@ -289,7 +289,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
         previous = calendarNodes.get(key),
         source = candidate.outerHTML,
         candidateContent = candidate.innerHTML;
-      let element = candidate;
+      let element = candidate,
+        sourceMotion;
       if (previous && previous.element.parentElement === container) {
         element = previous.element;
         if (previous.source !== source) {
@@ -309,6 +310,26 @@ WorkTimeApp.ui.createCalendar = function (options) {
               updateYearMonth(element, candidate)
             )
           ) {
+            // Keep the painted positions so redraws and rapid clicks stay smooth.
+            const sourceToggle = element.querySelector(".source-toggle"),
+              nextSourceToggle = candidate.querySelector(".source-toggle");
+            if (sourceToggle && nextSourceToggle) {
+              if (
+                sourceToggle.getAttribute("aria-pressed") !==
+                  nextSourceToggle.getAttribute("aria-pressed") &&
+                !WorkTimeApp.ui.animationCompat.preference().matches
+              )
+                sourceMotion = [...sourceToggle.children].map((dot) => ({
+                  dot,
+                  transform: getComputedStyle(dot).transform,
+                }));
+              for (const attribute of [...sourceToggle.attributes])
+                if (!nextSourceToggle.hasAttribute(attribute.name))
+                  sourceToggle.removeAttribute(attribute.name);
+              for (const attribute of nextSourceToggle.attributes)
+                sourceToggle.setAttribute(attribute.name, attribute.value);
+              nextSourceToggle.replaceWith(sourceToggle);
+            }
             const markers = element.querySelector(".date-markers"),
               nextMarkers = candidate.querySelector(".date-markers");
             if (
@@ -345,10 +366,18 @@ WorkTimeApp.ui.createCalendar = function (options) {
       });
       if (container.children[index] !== element)
         container.insertBefore(element, container.children[index] || null);
+      for (const { dot, transform } of sourceMotion || []) {
+        for (const animation of dot.getAnimations?.() || []) animation.cancel();
+        WorkTimeApp.ui.animationCompat.animate(
+          dot,
+          [{ transform }, { transform: getComputedStyle(dot).transform }],
+          { duration: 260, easing: "cubic-bezier(0.2, 0.65, 0.3, 1)" },
+        );
+      }
     });
     for (const [key, previous] of calendarNodes)
       if (!next.has(key)) previous.element.remove();
-    if (focusDate && !focused.isConnected)
+    if (focusDate && document.activeElement !== focused)
       container
         .querySelector(
           '[data-date="' +

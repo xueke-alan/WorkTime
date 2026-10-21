@@ -318,6 +318,14 @@ async function verify() {
     const selected = await view
       .locator(".day.selected")
       .getAttribute("data-date");
+    await view.emulateMedia({ reducedMotion: "no-preference" });
+    const dots = toggle.locator(".record-source-dot");
+    assert.equal(await dots.count(), 2);
+    for (const dot of await dots.all())
+      assert.equal(await dot.isVisible(), true);
+    const oaBefore = await toggle.locator(".oa").boundingBox();
+    const manualBefore = await toggle.locator(".manual").boundingBox();
+    assert.ok(oaBefore.x < manualBefore.x);
     await toggle.click();
     await view.waitForFunction(
       () =>
@@ -325,6 +333,44 @@ async function verify() {
           .querySelector('[data-source-date="2026-10-08"]')
           .getAttribute("aria-pressed") === "true",
     );
+    assert.equal(
+      await toggle.evaluate((node) =>
+        [...node.querySelectorAll(".record-source-dot")].every(
+          (dot) => dot.getAnimations().length > 0,
+        ),
+      ),
+      true,
+      "Both dots animate when the source priority changes",
+    );
+    await toggle.evaluate((node) =>
+      Promise.all(node.getAnimations({ subtree: true }).map((a) => a.finished)),
+    );
+    assert.equal(await dots.count(), 2);
+    const oaAfter = await toggle.locator(".oa").boundingBox();
+    const manualAfter = await toggle.locator(".manual").boundingBox();
+    assert.ok(manualAfter.x < oaAfter.x);
+    const rapidSwitch = await toggle.evaluate(async (node) => {
+      node.click();
+      await new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      );
+      const dots = [...node.children],
+        positions = dots.map((dot) => getComputedStyle(dot).transform);
+      node.click();
+      const continuous = dots.every(
+        (dot, index) =>
+          dot.getAnimations()[0]?.effect.getKeyframes()[0].transform ===
+          positions[index],
+      );
+      await Promise.all(
+        node
+          .getAnimations({ subtree: true })
+          .map((animation) => animation.finished),
+      );
+      return { continuous, priority: node.getAttribute("aria-pressed") };
+    });
+    assert.deepEqual(rapidSwitch, { continuous: true, priority: "true" });
+    await view.emulateMedia({ reducedMotion: "reduce" });
     assert.match(await first.locator(".daytime").textContent(), /09:00.*20:00/);
     assert.equal(
       await view.locator(".day.selected").getAttribute("data-date"),
@@ -345,6 +391,13 @@ async function verify() {
     assert.equal(
       await toggle.evaluate((node) => node === document.activeElement),
       true,
+    );
+    assert.equal(
+      await toggle.evaluate(
+        (node) => node.getAnimations({ subtree: true }).length,
+      ),
+      0,
+      "Reduced motion switches order without animation",
     );
     await view.keyboard.press("Space");
     await view.waitForFunction(
