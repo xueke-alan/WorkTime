@@ -4,13 +4,14 @@
   const { validDate, localDate, dateKey } = WorkTimeApp.domain.time;
   const { calendarInfo, calendarKnown } = WorkTimeApp.domain.calendar;
   function calculate(referenceDate) {
-    if (!validDate(referenceDate)) throw Error("日期无效");
+    if (!validDate(referenceDate))
+      throw Error(WorkTimeApp.i18n.t("copy.52a119a93b"));
     const scheduled = referenceDate.slice(0, 7) + "-15",
       candidate = localDate(scheduled);
     let date = scheduled,
       shiftedDays = 0;
     while (!calendarInfo(date).work) {
-      if (shiftedDays >= 31) throw Error("未找到发薪日前的工作日");
+      if (shiftedDays >= 31) throw Error(WorkTimeApp.i18n.t("copy.91620d214e"));
       candidate.setDate(candidate.getDate() - 1);
       date = dateKey(candidate);
       shiftedDays++;
@@ -19,7 +20,7 @@
       date,
       scheduled,
       shiftedDays,
-      weekday: "周" + "日一二三四五六"[candidate.getDay()],
+      weekday: WorkTimeApp.i18n.weekday(dateKey(candidate)),
       calendarKnown: calendarKnown(referenceDate),
     };
   }

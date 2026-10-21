@@ -31,6 +31,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
   let calendarMarkup = "";
   const calendarNodes = new Map();
   const markup = new WeakMap();
+  const monthSlotWidths = new Map();
+  let monthMeasureContext;
   const dateDivider =
     '<svg class="month-title-divider" viewBox="0 0 12 24" aria-hidden="true" focusable="false"><path d="M9 4 3 20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>';
   function attributeValue(element, attribute) {
@@ -51,17 +53,21 @@ WorkTimeApp.ui.createCalendar = function (options) {
           : monthDay;
     if (C.validDate(start) && date >= start && date.slice(5) === anniversary) {
       const years = Number(date.slice(0, 4)) - Number(start.slice(0, 4)),
-        label = years ? "入职 " + years + " 周年纪念日" : "入职日";
+        label = years
+          ? WorkTimeApp.i18n.t("copy.c4c111ae99") +
+            years +
+            WorkTimeApp.i18n.t("copy.f863e74bcf")
+          : WorkTimeApp.i18n.t("copy.847b185d92");
       markers.push({
         label,
-        hint: label + "；入职日期：" + start,
+        hint: label + WorkTimeApp.i18n.t("copy.3a2fd0b35a") + start,
         className: " employment-icon",
         icon: '<g transform="translate(11 11) scale(3.25)" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2.5c0-3.6 3.1-6 7-6s7 2.4 7 6V21Z"/></g>',
       });
     }
     if (date === payday.date)
       markers.push({
-        label: "发薪日",
+        label: WorkTimeApp.i18n.t("copy.85b0268523"),
         hint: paydayHint,
         className: "",
         icon: '<use href="#ms-currency-yen" x="11" y="11" width="78" height="78" fill="currentColor"/>',
@@ -98,18 +104,62 @@ WorkTimeApp.ui.createCalendar = function (options) {
   }
   function updateMonthTitle(year, month, yearMode) {
     const title = $("monthTitle");
+    const wordMonth = !WorkTimeApp.i18n.config.cjk;
     if (!title.querySelector(".month-title-divider")) {
       title.innerHTML =
         '<span id="monthTitleYear" class="month-title-year" data-number-motion></span>' +
         dateDivider +
         '<span id="monthTitleMonth" class="month-title-month" data-number-motion></span>';
     }
+    if (wordMonth) {
+      const style = getComputedStyle(title.querySelector(".month-title-month"));
+      const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const key = WorkTimeApp.i18n.locale + ":" + font;
+      if (!monthSlotWidths.has(key)) {
+        monthMeasureContext ||= document
+          .createElement("canvas")
+          .getContext("2d");
+        if (monthMeasureContext) {
+          monthMeasureContext.font = font;
+          const width = Math.max(
+            ...Array.from(
+              { length: 12 },
+              (_, index) =>
+                monthMeasureContext.measureText(
+                  WorkTimeApp.i18n.monthName(
+                    year + "-" + String(index + 1).padStart(2, "0") + "-01",
+                  ),
+                ).width,
+            ),
+          );
+          // Keep one stable slot for all months, with only a small ink allowance.
+          monthSlotWidths.set(
+            key,
+            (width / parseFloat(style.fontSize) + 0.1).toFixed(3) + "em",
+          );
+        }
+      }
+      title.style.setProperty(
+        "--month-label-width",
+        monthSlotWidths.get(key) || "2.4em",
+      );
+    } else title.style.setProperty("--month-label-width", "2ch");
     for (const [selector, value] of [
       [".month-title-year", String(year)],
-      [".month-title-month", String(month)],
+      [
+        ".month-title-month",
+        wordMonth
+          ? WorkTimeApp.i18n.monthName(
+              year + "-" + String(month).padStart(2, "0") + "-01",
+            )
+          : String(month),
+      ],
     ]) {
       const number = title.querySelector(selector);
-      numbers.set(number, Number(value));
+      numbers.set(number, value, {
+        animateInitial: !(wordMonth && selector === ".month-title-month"),
+        animateWhole: wordMonth && selector === ".month-title-month",
+      });
     }
     title.classList.toggle("is-year-title", yearMode);
     title
@@ -134,6 +184,10 @@ WorkTimeApp.ui.createCalendar = function (options) {
     updateHTML(
       element.querySelector(".year-month-stats"),
       candidate.querySelector(".year-month-stats").innerHTML,
+    );
+    updateText(
+      element.querySelector(".year-month-number"),
+      candidate.querySelector(".year-month-number").textContent,
     );
     for (const next of nextButtons) {
       const button = buttons.get(next.dataset.yearDate);
@@ -161,6 +215,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         ":" +
         (candidate.dataset.date ||
           candidate.dataset.previewDate ||
+          candidate.dataset.yearMonth ||
           candidate.getAttribute("aria-label") ||
           index);
     if (
@@ -268,10 +323,23 @@ WorkTimeApp.ui.createCalendar = function (options) {
   }
   function scheduleChangeTag() {
     return (
-      '<div class="schedule-change-tag" title="作息较前一天发生变化">' +
-      tag("工时变更", "blue") +
+      WorkTimeApp.i18n.t("copy.b3d0a0f476") +
+      tag(WorkTimeApp.i18n.t("copy.7b74743705"), "blue") +
       "</div>"
     );
+  }
+  function calendarKind(info) {
+    const label = info.label.replace(" · 手动", "");
+    const key = {
+      工作日: "work",
+      休息日: "off",
+      调休日: "makeup",
+      奋斗日: "extra",
+      周末: "off",
+    }[label];
+    return key
+      ? WorkTimeApp.i18n.t("calendar.kind." + key)
+      : WorkTimeApp.i18n.message(label);
   }
   function adjacentDayCard(k) {
     const state = getState();
@@ -279,8 +347,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
       date = C.localDate(k),
       scheduleChanged = hasScheduleChange(state, k),
       kind =
-        info.label.replace(" · 手动", "") +
-        (info.work ? " " + monthWorkdayNumber(k) : "");
+        calendarKind(info) + (info.work ? " " + monthWorkdayNumber(k) : "");
     const classes = [
       "day",
       "adjacent",
@@ -301,12 +368,12 @@ WorkTimeApp.ui.createCalendar = function (options) {
       k +
       " " +
       esc(kind) +
-      (scheduleChanged ? " 工时变更" : "") +
+      (scheduleChanged ? WorkTimeApp.i18n.t("copy.591a8a36f9") : "") +
       '"><div class="daytop"><span class="daynum">' +
       date.getDate() +
       "<small>" +
-      Number(k.slice(5, 7)) +
-      '月</small></span><span class="daykind">' +
+      esc(WorkTimeApp.i18n.monthName(k)) +
+      '</small></span><span class="daykind">' +
       esc(kind) +
       "</span></div>" +
       (scheduleChanged
@@ -321,24 +388,31 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const state = getState();
     const { today, month, selected, batchMode, batchDays, yearMode, viewYear } =
       getView();
-    const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
-      C.localDate(today).getDay()
-    ];
+    const weekday = WorkTimeApp.i18n.weekday(today);
+    const dateLabel = WorkTimeApp.i18n.date(today).replace(/\s*\/\s*/g, " / ");
+    const dateParts = dateLabel.split(/\s*\/\s*/);
+    const dateMarkup = dateParts
+      .map(
+        (part) =>
+          '<span class="calendar-today-number">' + esc(part) + "</span>",
+      )
+      .join(
+        dateDivider.replace(
+          'class="month-title-divider"',
+          'class="calendar-date-divider"',
+        ),
+      );
     updateHTML(
       $("calendarToday"),
-      today
-        .split("-")
-        .map(
-          (part) => '<span class="calendar-today-number">' + part + "</span>",
-        )
-        .join(dateDivider) +
-        '<span class="calendar-today-weekday">' +
-        weekday +
+      '<span class="calendar-today-date">' +
+        dateMarkup +
+        '</span><span class="calendar-today-separator" aria-hidden="true"></span><span class="calendar-today-weekday">' +
+        esc(weekday) +
         "</span>",
     );
     $("calendarToday").setAttribute(
       "aria-label",
-      "今天日期：" + today.replaceAll("-", "/") + " " + weekday,
+      WorkTimeApp.i18n.t("copy.723d1e7f20") + dateLabel + " " + weekday,
     );
     $("calendarToday").dateTime = today;
     for (const date of batchDays)
@@ -360,10 +434,22 @@ WorkTimeApp.ui.createCalendar = function (options) {
     $("monthTitle").setAttribute("aria-pressed", String(yearMode));
     $("monthTitle").setAttribute(
       "aria-label",
-      yearMode ? "返回月视图" : "切换到年视图",
+      yearMode
+        ? WorkTimeApp.i18n.t("copy.ae8e82c4fe")
+        : WorkTimeApp.i18n.t("copy.d298e51191"),
     );
-    $("prevMonth").setAttribute("aria-label", yearMode ? "上一年" : "上个月");
-    $("nextMonth").setAttribute("aria-label", yearMode ? "下一年" : "下个月");
+    $("prevMonth").setAttribute(
+      "aria-label",
+      yearMode
+        ? WorkTimeApp.i18n.t("copy.cbd823c1d8")
+        : WorkTimeApp.i18n.t("copy.69bb1687b5"),
+    );
+    $("nextMonth").setAttribute(
+      "aria-label",
+      yearMode
+        ? WorkTimeApp.i18n.t("copy.743fc07e03")
+        : WorkTimeApp.i18n.t("copy.8c9b38e26d"),
+    );
     if (yearMode) {
       const yearChanged =
           renderedViewYear !== null && renderedViewYear !== viewYear,
@@ -391,7 +477,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     updateMonthTitle(Number(monthViewYear), Number(month.slice(5)), false);
     updateText(
       yearNotice.querySelector(".notification-body"),
-      monthViewYear + "年放假安排未内置，暂按周末及节日当天休息统计。",
+      monthViewYear + WorkTimeApp.i18n.t("copy.29c9747e36"),
     );
     yearNotice.classList.toggle("hidden", C.calendarKnown(month + "-01"));
     const [first, last] = monthBounds(),
@@ -410,18 +496,16 @@ WorkTimeApp.ui.createCalendar = function (options) {
       dailyAverages = C.cumulativeAverageOvertime(state, first, last);
     const payday = C.payday(first),
       paydayHint =
-        "发薪日：" +
+        WorkTimeApp.i18n.t("copy.15c1a8dfb5") +
         payday.date +
         (payday.shiftedDays
-          ? "；原定 " +
+          ? WorkTimeApp.i18n.t("copy.b1480c35fe") +
             payday.scheduled +
-            "，提前 " +
+            WorkTimeApp.i18n.t("copy.842a40aa88") +
             payday.shiftedDays +
-            " 天"
-          : "；每月15日发薪") +
-        (!payday.calendarKnown
-          ? "；该年份放假安排未内置，暂按周末及节日当天休息推算"
-          : "");
+            WorkTimeApp.i18n.t("copy.f8bb0516cc")
+          : WorkTimeApp.i18n.t("copy.f0fe1c4624")) +
+        (!payday.calendarKnown ? WorkTimeApp.i18n.t("copy.2c2643b936") : "");
     for (let i = offset; i > 0; i--) {
       const preview = C.localDate(first);
       preview.setDate(preview.getDate() - i);
@@ -434,20 +518,13 @@ WorkTimeApp.ui.createCalendar = function (options) {
         info = C.calendarInfo(k, day),
         r = C.effectiveRecord(day, true),
         sourceRecord = r || day.oa,
-        punch = C.actualRecord(day) || day.draft || day.oa,
-        hasPunch =
-          !!punch &&
-          (!!punch.start ||
-            !!punch.end ||
-            Number.isFinite(punch.effectiveMinutes)),
         schedule = C.scheduleForDate(state, k),
         scheduleChanged = hasScheduleChange(state, k, schedule),
         calc = C.calculate(k, day, schedule, true),
         label = stateLabel(day, r, k),
         markers = dateMarkers(k, payday, paydayHint),
         kindLabel =
-          info.label.replace(" · 手动", "") +
-          (info.work ? " " + ++workdayNumber : "");
+          calendarKind(info) + (info.work ? " " + ++workdayNumber : "");
       if (r && C.complete(r)) {
         counts[r.type === "estimate" ? "estimate" : "actual"]++;
       } else if (day.oa && day.oa.status === "pending") counts.pending++;
@@ -470,13 +547,13 @@ WorkTimeApp.ui.createCalendar = function (options) {
       const average = dailyAverages[k]?.averageMinutes,
         showAverage =
           calc.minutes !== null &&
-          (info.work || calc.minutes > 0) &&
+          info.work &&
           (k <= today || (r && r.manual && C.complete(r))),
         averageText = !showAverage
           ? ""
           : average === null
             ? "—"
-            : (average / 60).toFixed(2) + " h";
+            : WorkTimeApp.i18n.duration(average);
       const previous = C.localDate(k);
       previous.setDate(previous.getDate() - 1);
       const previousAverage =
@@ -497,34 +574,32 @@ WorkTimeApp.ui.createCalendar = function (options) {
                   : "flat",
         trendLabel =
           trend === "up"
-            ? "较前一日上升"
+            ? WorkTimeApp.i18n.t("copy.d37c9f22e9")
             : trend === "down"
-              ? "较前一日下降"
+              ? WorkTimeApp.i18n.t("copy.7723588f37")
               : trend === "flat"
                 ? previousAverage === null
-                  ? "平均加班起始基准"
-                  : "与前一日持平"
+                  ? WorkTimeApp.i18n.t("copy.c12b114307")
+                  : WorkTimeApp.i18n.t("copy.c00f2c4258")
                 : "";
       const time =
           r && C.complete(r)
-            ? (r.start || "修正工时") +
+            ? (r.start || WorkTimeApp.i18n.t("copy.e7909cfbfe")) +
               (r.end ? " – " + r.end + (r.nextDay ? "⁺¹" : "") : "")
             : day.draft
-              ? (day.draft.start || "待填写") +
+              ? (day.draft.start || WorkTimeApp.i18n.t("copy.7c8d65e331")) +
                 " – " +
-                (day.draft.end || "待填写")
+                (day.draft.end || WorkTimeApp.i18n.t("copy.7c8d65e331"))
               : day.oa && day.oa.start
-                ? day.oa.start + " – 待更新"
+                ? day.oa.start + WorkTimeApp.i18n.t("copy.a73dd6d86d")
                 : "",
         sourceDot =
           sourceRecord &&
           (C.complete(sourceRecord) || sourceRecord.start || sourceRecord.end)
             ? sourceRecord.manual
-              ? '<span class="record-source-dot manual" title="手动填写" aria-hidden="true"></span>' +
-                (day.oa
-                  ? '<span class="record-source-dot oa secondary" title="同时保留 OA 导入数据" aria-hidden="true"></span>'
-                  : "")
-              : '<span class="record-source-dot oa" title="OA 导入" aria-hidden="true"></span>'
+              ? WorkTimeApp.i18n.t("copy.6439fe575a") +
+                (day.oa ? WorkTimeApp.i18n.t("copy.932f850a42") : "")
+              : WorkTimeApp.i18n.t("copy.84059d0fb3")
             : "";
       html +=
         '<button class="' +
@@ -543,17 +618,25 @@ WorkTimeApp.ui.createCalendar = function (options) {
         esc(kindLabel) +
         " " +
         visibleStatus(label, info) +
-        (scheduleChanged ? " 工时变更" : "") +
-        (calc.overtime !== null
-          ? " 当天加班 " + C.formatMinutes(calc.overtime)
+        (scheduleChanged ? WorkTimeApp.i18n.t("copy.591a8a36f9") : "") +
+        (calc.minutes !== null
+          ? info.work
+            ? WorkTimeApp.i18n.t("copy.5322471ae6") +
+              WorkTimeApp.i18n.duration(calc.overtime)
+            : WorkTimeApp.i18n.t("copy.6d645904e4") +
+              WorkTimeApp.i18n.duration(calc.minutes)
           : "") +
         (averageText
-          ? " 日均加班 " + averageText + (trendLabel ? "，" + trendLabel : "")
+          ? WorkTimeApp.i18n.t("copy.dc516fa88c") +
+            averageText +
+            (trendLabel ? "，" + trendLabel : "")
           : "") +
         (isFullLeave(day, k)
-          ? " 全天请假"
+          ? WorkTimeApp.i18n.t("copy.732f79dc36")
           : day.leaveMinutes
-            ? " 请假 " + C.hours(day.leaveMinutes) + "h"
+            ? WorkTimeApp.i18n.t("copy.1ee7ecb783") +
+              C.hours(day.leaveMinutes) +
+              "h"
             : "") +
         markers.label +
         '"><div class="daytop"><span class="day-date"><span class="daynum"><span class="daynum-text">' +
@@ -568,17 +651,22 @@ WorkTimeApp.ui.createCalendar = function (options) {
         '</div><div class="dayhours">' +
         (calc.minutes !== null
           ? '<span class="day-total-hours">' +
-            C.formatMinutes(calc.minutes) +
-            '</span><span class="day-overtime' +
-            (calc.overtime < 0 ? " negative" : "") +
-            '" title="当天加班时长">' +
-            C.formatMinutes(calc.overtime) +
-            "</span>"
+            WorkTimeApp.i18n.duration(calc.minutes) +
+            "</span>" +
+            (info.work
+              ? '<span class="day-overtime' +
+                (calc.overtime < 0 ? " negative" : "") +
+                WorkTimeApp.i18n.t("copy.886690f618") +
+                WorkTimeApp.i18n.duration(calc.overtime) +
+                "</span>"
+              : "")
           : "") +
         '</div><div class="day-footer"><div class="day-average" title="' +
         esc(
-          "本月截至当日：累计工作日加班 ÷ 已完成记录的折算出勤" +
-            (dailyAverages[k].pending ? "；打卡未完成，暂不显示平均加班" : "") +
+          WorkTimeApp.i18n.t("copy.1e6a453ebc") +
+            (dailyAverages[k].pending
+              ? WorkTimeApp.i18n.t("copy.809f2ba84f")
+              : "") +
             (trendLabel ? "；" + trendLabel : ""),
         ) +
         '">' +
@@ -595,35 +683,39 @@ WorkTimeApp.ui.createCalendar = function (options) {
             (trend ? trendIcon(trend) : "")
           : "") +
         '</div><div class="daystatus">' +
-        (["未填写", "手动填写", "OA导入"].includes(label)
+        (["empty", "manual", "oa"].includes(label)
           ? ""
           : statusTag(
               label,
               info,
-              label === "异常"
+              label === "anomaly"
                 ? "red"
-                : label === "待录入"
+                : label === "pending"
                   ? "amber"
                   : r && r.manual
                     ? "blue"
-                    : label === "无出勤记录"
+                    : label === "absent"
                       ? ""
                       : "green",
             )) +
         (!info.work && day.plannedOvertime
           ? "<div>" +
-            tag(
-              hasPunch ? "加班" : "计划加班",
-              hasPunch ? "amber" : "overtime-plan",
-            ) +
+            tag(WorkTimeApp.i18n.t("copy.3cf2307526"), "overtime-plan") +
             "</div>"
           : "") +
         (scheduleChanged ? scheduleChangeTag() : "") +
         (day.leaveMinutes
           ? isFullLeave(day, k)
-            ? "<div>" + tag("全天请假", "leave") + "</div>"
+            ? "<div>" +
+              tag(WorkTimeApp.i18n.t("copy.0c09c38655"), "leave") +
+              "</div>"
             : "<div>" +
-              tag("请假 " + C.hours(day.leaveMinutes) + "h", "leave") +
+              tag(
+                WorkTimeApp.i18n.t("copy.326f400f75") +
+                  C.hours(day.leaveMinutes) +
+                  "h",
+                "leave",
+              ) +
               "</div>"
           : "") +
         "</div></div></button>";
@@ -637,28 +729,56 @@ WorkTimeApp.ui.createCalendar = function (options) {
     updateCalendar(html);
     updateText(
       $("calendarFoot"),
-      "本月 " +
+      WorkTimeApp.i18n.t("copy.222e6cef7c") +
         (counts.actual + counts.estimate) +
-        " 天完整记录 · " +
+        WorkTimeApp.i18n.t("copy.8d46bff7bf") +
         C.pendingWorkdays(state, first, last, today) +
-        " 天待录入",
+        WorkTimeApp.i18n.t("copy.85bd9f454a"),
     );
     renderTimeAnomalyNotice();
     $("batchBar").classList.toggle("hidden", !batchMode);
     $("dayEditor").classList.toggle("hidden", batchMode);
     $("batchToggle").setAttribute("aria-pressed", String(batchMode));
-    $("batchToggle").title = batchMode ? "取消批量填写" : "批量填写";
+    $("batchToggle").title = batchMode
+      ? WorkTimeApp.i18n.t("copy.03b15bbfb8")
+      : WorkTimeApp.i18n.t("copy.3f712eac83");
     $("batchToggle")
       .querySelector("use")
       .setAttribute("href", batchMode ? "#ms-close" : "#ms-stacks");
     $("batchToggle").setAttribute(
       "aria-label",
-      batchMode ? "取消批量填写" : "批量填写",
+      batchMode
+        ? WorkTimeApp.i18n.t("copy.03b15bbfb8")
+        : WorkTimeApp.i18n.t("copy.3f712eac83"),
     );
-    $("batchSave").disabled = !batchDays.size;
+    $("batchSave").disabled =
+      !batchDays.size || $("batchForm").getAttribute("aria-busy") === "true";
+    const resetAll = !batchDays.size;
+    $("batchReset").disabled =
+      $("batchForm").getAttribute("aria-busy") === "true";
+    updateText(
+      $("batchReset").querySelector(".button-label"),
+      resetAll
+        ? WorkTimeApp.i18n.t("short.batchReset")
+        : WorkTimeApp.i18n.t("short.batchResetSelected"),
+    );
+    $("batchReset").setAttribute(
+      "aria-label",
+      resetAll
+        ? WorkTimeApp.i18n.t("copy.ee5bb614c4")
+        : WorkTimeApp.i18n.t("copy.2455259fc5"),
+    );
+    $("batchReset").title =
+      WorkTimeApp.i18n.t("copy.7b15e5e8e7") +
+      (resetAll
+        ? WorkTimeApp.i18n.t("copy.78e45ac995")
+        : WorkTimeApp.i18n.t("copy.26139f522b")) +
+      WorkTimeApp.i18n.t("copy.32ed29d7b7");
     updateText(
       $("batchSelectionCount"),
-      "当前已选择 " + batchDays.size + " 天",
+      WorkTimeApp.i18n.t("copy.d31313dabc") +
+        batchDays.size +
+        WorkTimeApp.i18n.t("copy.f8bb0516cc"),
     );
     $("batchToggle").classList.toggle("primary", batchMode);
     if (monthChanged) {
@@ -691,7 +811,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const notice = $("yearNotice");
     updateText(
       notice.querySelector(".notification-body"),
-      viewYear + "年放假安排未内置，暂按周末及节日当天休息统计。",
+      viewYear + WorkTimeApp.i18n.t("copy.29c9747e36"),
     );
     notice.classList.toggle("hidden", C.calendarKnown(viewYear + "-01-01"));
     const months = WorkYear.months(state, viewYear, today);
@@ -700,22 +820,31 @@ WorkTimeApp.ui.createCalendar = function (options) {
       months
         .map(
           (m) =>
-            '<section class="year-month" aria-label="' +
+            '<section class="year-month" data-year-month="' +
             viewYear +
-            "年" +
-            m.month +
-            '月"><h3><span class="year-month-number">' +
-            m.month +
-            '</span><span class="year-month-stats"><span title="总加班时长（工作日与休息日合计）" aria-label="总加班时长">' +
-            Number(
-              ((m.summary.workOvertime + m.summary.restOvertime) / 60).toFixed(
-                2,
-              ),
+            "-" +
+            C.pad(m.month) +
+            '" aria-label="' +
+            WorkTimeApp.i18n.month(
+              viewYear + "-" + String(m.month).padStart(2, "0"),
             ) +
-            'h</span><span title="平均加班工时（工作日加班 ÷ 折算出勤）" aria-label="平均加班工时">' +
+            '"><h3><span class="year-month-number">' +
+            WorkTimeApp.i18n.monthName(
+              viewYear + "-" + String(m.month).padStart(2, "0") + "-01",
+            ) +
+            WorkTimeApp.i18n.t("copy.2b3cbb76bd").replace(/^月/, "") +
+            WorkTimeApp.i18n.number(
+              (m.summary.workOvertime + m.summary.restOvertime) / 60,
+              { useGrouping: false, maximumFractionDigits: 2 },
+            ) +
+            WorkTimeApp.i18n.t("copy.42b92eadd3") +
             (m.summary.average === null
               ? "—"
-              : (m.summary.average / 60).toFixed(2)) +
+              : WorkTimeApp.i18n.number(m.summary.average / 60, {
+                  useGrouping: false,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })) +
             'h/d</span></span></h3><div class="year-days">' +
             '<span aria-hidden="true"></span>'.repeat(m.offset) +
             m.days
@@ -747,12 +876,12 @@ WorkTimeApp.ui.createCalendar = function (options) {
     updateText(
       $("calendarFoot"),
       viewYear +
-        "年 · " +
+        WorkTimeApp.i18n.t("copy.6d332ee4da") +
         months.reduce(
           (sum, m) => sum + m.days.filter((d) => d.complete).length,
           0,
         ) +
-        " 天完整记录",
+        WorkTimeApp.i18n.t("copy.06ce537cae"),
     );
     const maximum = WorkYear.scaleMaximum(months),
       minimum = WorkYear.scaleMinimum(months);
@@ -781,8 +910,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
     $("dayEditor").classList.remove("hidden");
     $("batchToggle").setAttribute("aria-pressed", "false");
     $("batchToggle").classList.remove("primary");
-    $("batchToggle").title = "批量填写";
-    $("batchToggle").setAttribute("aria-label", "批量填写");
+    $("batchToggle").title = WorkTimeApp.i18n.t("copy.3f712eac83");
+    $("batchToggle").setAttribute(
+      "aria-label",
+      WorkTimeApp.i18n.t("copy.3f712eac83"),
+    );
     $("batchToggle").querySelector("use").setAttribute("href", "#ms-stacks");
     renderedMonth = null;
     renderedMode = false;

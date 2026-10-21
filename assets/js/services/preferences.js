@@ -9,7 +9,8 @@ WorkTimeApp.services.preferences = (() => {
       revision = 0,
       dirty = false,
       mountedWindow = null,
-      archive = null;
+      archive = null,
+      pendingPreferences = {};
     function read() {
       try {
         return rules.normalize(
@@ -19,7 +20,10 @@ WorkTimeApp.services.preferences = (() => {
         return "green";
       }
     }
-    state = Object.freeze({ pageTheme: read() });
+    state = Object.freeze({
+      pageTheme: read(),
+      language: WorkTimeApp.i18n.preference,
+    });
     const result = (changed, persisted, error = null) => ({
       changed,
       applied: changed,
@@ -34,34 +38,55 @@ WorkTimeApp.services.preferences = (() => {
       return operation;
     }
     async function savePreference(preferences) {
+      const patch = { ...pendingPreferences, ...preferences };
+      const operationResult = (...args) => ({
+        ...result(...args),
+        preferenceNames: Object.keys(patch),
+      });
       const changed = Object.entries(preferences).some(
         ([name, value]) => state[name] !== value,
       );
-      if (!changed && !dirty) return result(false, true);
+      if (!changed && !dirty) return operationResult(false, true);
+      pendingPreferences = patch;
       state = Object.freeze({ ...state, ...preferences });
+      WorkTimeApp.i18n.setLanguage(state.language || "auto");
       const generation = ++revision;
       let error = null;
       dirty = true;
-      publish({ ...result(changed, false), pending: true });
+      publish({ ...operationResult(changed, false), pending: true });
       try {
         if (!archive) throw Error("存档尚未准备完成，请稍后重试。");
-        const saved = await archive.save(preferences);
-        if (!saved.persisted) throw saved.error;
+        const saved = await archive.save(patch);
+        if (!saved.persisted)
+          throw saved.error || Error("Preference write did not persist");
       } catch (failure) {
         error = failure;
       }
       // Older completions must not clear a newer pending/failed preference.
       if (generation !== revision) return result(changed, !error, error);
       dirty = !!error;
+      if (!error) pendingPreferences = {};
       if (!error)
         try {
           getStorage().setItem("worktime.themePaintCache", state.pageTheme);
         } catch {}
-      return publish(result(changed, !error, error));
+      return publish(operationResult(changed, !error, error));
     }
     function saveTheme(id) {
       if (!rules.isTheme(id)) throw Error("Invalid theme identity");
       return savePreference({ pageTheme: id });
+    }
+    function adopt(preferences) {
+      state = Object.freeze({ ...preferences });
+      const language = WorkTimeApp.i18n.normalize(state.language);
+      WorkTimeApp.i18n.setLanguage(language);
+      revision++;
+      dirty = false;
+      pendingPreferences = {};
+      if (state.language !== language) {
+        // Save through the archive owner so old backups and fresh stores migrate alike.
+        void savePreference({ language });
+      } else publish(result(true, true));
     }
     function storage(event) {
       let store;
@@ -79,7 +104,7 @@ WorkTimeApp.services.preferences = (() => {
       const id = read(),
         changed = id !== state.pageTheme;
       if (changed) {
-        state = Object.freeze({ pageTheme: id });
+        state = Object.freeze({ ...state, pageTheme: id });
         revision++;
       }
       dirty = false;
@@ -96,19 +121,23 @@ WorkTimeApp.services.preferences = (() => {
         return dirty;
       },
       saveTheme,
+      saveWeatherDays(days) {
+        if (![0, 3, 5, 7].includes(days))
+          throw Error("Invalid weather display range");
+        return savePreference({ weatherDays: days });
+      },
+      saveLanguage(language) {
+        return savePreference({
+          language: WorkTimeApp.i18n.normalize(language),
+        });
+      },
       attach(adapter) {
         archive = adapter;
-        state = Object.freeze({ ...adapter.state });
-        revision++;
-        dirty = false;
-        publish(result(true, true));
+        adopt(adapter.state);
       },
       synchronize() {
         if (!archive) return;
-        state = Object.freeze({ ...archive.getState() });
-        revision++;
-        dirty = false;
-        publish(result(true, true));
+        adopt(archive.getState());
       },
       async saveForecastMode(mode) {
         if (!archive || !["hourly", "daily"].includes(mode)) return;

@@ -302,7 +302,7 @@ async function verifyCalendar(page) {
   assert.equal(await today.getAttribute("datetime"), "2026-10-10");
   assert.equal(
     await today.locator(".calendar-today-weekday").textContent(),
-    "Sat",
+    "周六",
   );
   await page.locator("#prevMonth").click();
   assert.equal(await today.getAttribute("datetime"), "2026-10-10");
@@ -463,7 +463,7 @@ async function verify() {
       "http://127.0.0.1:" + server.address().port + "/index.html",
       pathToFileURL(path.join(root, "index.html")).href,
     ]) {
-      const context = await browser.newContext();
+      const context = await browser.newContext({ locale: "zh-CN" });
       const page = await context.newPage();
       await page.clock.setFixedTime(new Date("2026-10-10T04:00:00Z"));
       const errors = [],

@@ -10,6 +10,22 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
 }) {
   const events = WorkTimeApp.ui.createEventScope();
   const directory = WorkTimeApp.data.weatherCities?.cities || [];
+  function resolveCity(value) {
+    const text = String(value || "").trim();
+    return directory.find((city) =>
+      [
+        city.id,
+        city.name,
+        city.label,
+        city.name.replace(/市$/, "") + "市",
+        WorkTimeApp.data.contentEnglish?.[city.name],
+        ...Object.values(WorkTimeApp.data.contentLocales || {}).map(
+          (catalog) => catalog[city.name],
+        ),
+        WorkTimeApp.i18n.city(city.name),
+      ].includes(text),
+    );
+  }
   const cities = directory.map((city) =>
     directory.filter((candidate) => candidate.name === city.name).length === 1
       ? city.name
@@ -80,17 +96,13 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
       option.setAttribute("role", "option");
       option.setAttribute("aria-selected", "false");
       option.tabIndex = -1;
-      const details = directory.find(
-        (item) => item.name === city || item.label === city,
-      );
+      const details = resolveCity(city);
       const name = document.createElement("strong");
       name.className = "work-city-name";
-      name.textContent = details
-        ? details.name.replace(/市$/, "") + "市"
-        : city;
+      name.textContent = details ? WorkTimeApp.i18n.city(details.name) : city;
       const office = document.createElement("small");
       office.className = "work-city-office";
-      office.textContent = details?.office || "";
+      office.textContent = WorkTimeApp.i18n.message(details?.office || "");
       option.title = name.textContent + " · " + office.textContent;
       option.append(name, office);
       list.append(option);
@@ -98,7 +110,7 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
     if (!cityMatches.length) {
       const empty = document.createElement("div");
       empty.className = "work-city-empty";
-      empty.textContent = "无匹配城市";
+      empty.textContent = WorkTimeApp.i18n.t("copy.152de8c5d8");
       list.append(empty);
     }
     list.hidden = false;
@@ -107,12 +119,8 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
     positionCities();
   }
   function selectCity(city) {
-    const details = directory.find(
-      (item) => item.name === city || item.label === city,
-    );
-    $("workCity").value = details
-      ? details.name.replace(/市$/, "") + "市"
-      : city;
+    const details = resolveCity(city);
+    $("workCity").value = details ? WorkTimeApp.i18n.city(details.name) : city;
     $("workCity").dispatchEvent(new Event("input", { bubbles: true }));
     closeCities();
   }
@@ -317,12 +325,9 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
     readDateText();
     dateValidationShown = false;
     $("workCity").value = model.state.personal.workCity;
-    const selectedCity = directory.find(
-      (item) =>
-        item.name === $("workCity").value || item.label === $("workCity").value,
-    );
+    const selectedCity = resolveCity(model.state.personal.workCity);
     if (selectedCity)
-      $("workCity").value = selectedCity.name.replace(/市$/, "") + "市";
+      $("workCity").value = WorkTimeApp.i18n.city(selectedCity.name);
     closeCities();
     WorkTimeApp.ui.fieldErrors.clear($("personalSettingsError"));
   }
@@ -332,7 +337,7 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
       let employmentDate = dateValue();
       const invalidDate = employmentDate && !C.validDate(employmentDate);
       if (invalidDate) {
-        if (validate) throw Error("请填写完整且有效的入职日期。");
+        if (validate) throw Error(WorkTimeApp.i18n.t("copy.63fba7648e"));
         if (!cityOnly) {
           if (dateValidationShown)
             WorkTimeApp.ui.fieldErrors.clear(errorElement);
@@ -343,7 +348,11 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
       }
       const result = await application.savePersonal({
         employmentDate,
-        workCity: $("workCity").value.trim(),
+        workCity: (() => {
+          const value = $("workCity").value.trim();
+          const city = resolveCity(value);
+          return city ? city.name + "市" : value;
+        })(),
       });
       WorkTimeApp.ui.fieldErrors.show(
         errorElement,
@@ -351,17 +360,18 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
           ? null
           : {
               code: "UNSAVED",
-              message: "设置尚未保存，请再次编辑重试或关闭后备份。",
+              message: WorkTimeApp.i18n.t("copy.3b3b385082"),
             },
       );
       if (result.persisted && invalidDate && dateValidationShown)
         WorkTimeApp.ui.fieldErrors.show(errorElement, {
           code: "VALIDATION",
-          message: "请填写完整且有效的入职日期。",
+          message: WorkTimeApp.i18n.t("copy.63fba7648e"),
         });
       if (!invalidDate || !result.persisted) dateValidationShown = false;
       if (result.changed) actions.render();
-      if (!result.persisted) actions.saveFeedback(false, "我的设置已更新");
+      if (!result.persisted)
+        actions.saveFeedback(false, WorkTimeApp.i18n.t("copy.656eca0076"));
     } catch (error) {
       dateValidationShown = true;
       WorkTimeApp.ui.fieldErrors.show(errorElement, {
@@ -378,16 +388,22 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
     events.listen(document, "scroll", positionCities, true);
     events.listen($("settingsDialog"), "close", closeCities);
     events.listen(
-      $("pageSettingsPane"),
+      $("personalSettingsPane"),
       "personal-settings-close",
       closeCities,
     );
     events.listen(
-      $("pageSettingsPane"),
+      $("personalSettingsPane"),
       "personal-settings-open",
       refreshPersonalSettings,
     );
     refreshPersonalSettings();
+    events.listen(document, "worktime:languagechange", () => {
+      const value = $("workCity").value;
+      const city = resolveCity(value);
+      if (city) $("workCity").value = WorkTimeApp.i18n.city(city.name);
+      if (!$("workCityOptions").hidden) showCities();
+    });
     bindDateInput();
     events.handler($("workCity"), "onfocus", () => showCities());
     events.handler($("workCity"), "onclick", () => {
@@ -457,14 +473,11 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
     closeCities();
   }
   function hasDraft() {
-    if ($("pageSettingsPane").hidden) return false;
+    if ($("personalSettingsPane").hidden) return false;
     const personal = model.state.personal;
-    const city = directory.find(
-      (item) =>
-        item.name === personal.workCity || item.label === personal.workCity,
-    );
+    const city = resolveCity(personal.workCity);
     const displayCity = city
-      ? city.name.replace(/市$/, "") + "市"
+      ? WorkTimeApp.i18n.city(city.name)
       : personal.workCity;
     return (
       dateValue() !== personal.employmentDate ||

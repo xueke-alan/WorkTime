@@ -37,14 +37,16 @@ WorkTimeApp.ui.createBackupController = function (options) {
     $("initializeStorage").hidden = issue !== "corrupt";
     $("convertStorage").hidden = issue !== "unsupported";
     $("backupBeforeRestore").querySelector(".button-label").textContent =
-      model.loadCorrupt ? "下载当前页面备份" : "下载当前备份";
+      model.loadCorrupt
+        ? WorkTimeApp.i18n.t("copy.4b5a44d0fd")
+        : WorkTimeApp.i18n.t("copy.02ffd2393f");
     $("backupScopeNote").hidden = !model.loadCorrupt;
   }
   function exportOriginal() {
     const text = getOriginalStorageText();
     if (text !== null && text !== undefined)
       download(
-        "工作记录原始数据-" + model.today + ".txt",
+        WorkTimeApp.i18n.t("copy.0f14276a72") + model.today + ".txt",
         text,
         "text/plain;charset=utf-8",
       );
@@ -53,18 +55,22 @@ WorkTimeApp.ui.createBackupController = function (options) {
     WorkTimeApp.services.preferences.page.synchronize();
     pendingTheme = null;
     $("restoreDialog").close();
-    actions.toast("备份已恢复", "countdown");
+    actions.toast(WorkTimeApp.i18n.t("copy.8e990e61b4"), "countdown");
   }
   async function backup() {
     try {
       download(
-        "工作记录备份-" + model.today + ".json",
+        WorkTimeApp.i18n.t("copy.35c89c4491") + model.today + ".json",
         JSON.stringify(await exportArchive(), null, 2),
         "application/json;charset=utf-8",
       );
-      actions.toast("备份已下载", "countdown");
+      actions.toast(WorkTimeApp.i18n.t("copy.5091362c8b"), "countdown");
     } catch (error) {
-      actions.toast("备份失败：" + error.message, "error");
+      actions.toast(
+        WorkTimeApp.i18n.t("copy.d09d00bfdf") +
+          WorkTimeApp.i18n.message(error.message),
+        "error",
+      );
     }
   }
   let backupCopying = false;
@@ -89,14 +95,15 @@ WorkTimeApp.ui.createBackupController = function (options) {
         () => button.classList.remove("is-copying"),
         450,
       );
-      actions.toast("备份已复制到剪贴板", "countdown");
+      actions.toast(WorkTimeApp.i18n.t("copy.1af51f35b9"), "countdown");
     } catch (error) {
       if (disposed || lifetime !== generation) return;
       actions.toast(
-        "备份复制失败：" +
+        WorkTimeApp.i18n.t("copy.ee57d577cd") +
           (error?.name === "NotAllowedError"
-            ? "请允许剪贴板访问"
-            : error?.message || "无法访问剪贴板"),
+            ? WorkTimeApp.i18n.t("copy.f9a447f192")
+            : WorkTimeApp.i18n.message(error?.message) ||
+              WorkTimeApp.i18n.t("copy.91aaca6374")),
         "error",
       );
     } finally {
@@ -111,24 +118,26 @@ WorkTimeApp.ui.createBackupController = function (options) {
     $("confirmRestore").disabled = false;
     $("retryRestoreTheme").hidden = true;
     $("restoreSummary").textContent =
-      "来自" +
+      WorkTimeApp.i18n.t("copy.16593aa84d") +
       source +
-      "的备份包含 " +
+      WorkTimeApp.i18n.t("copy.d00504a2b1") +
       Object.keys(data.days).length +
-      " 个日期、" +
+      WorkTimeApp.i18n.t("copy.a85bcb6937") +
       data.imports.length +
-      " 次导入、" +
+      WorkTimeApp.i18n.t("copy.aec4ccf1cc") +
       data.timeTemplates.length +
-      " 个时间模板、" +
+      WorkTimeApp.i18n.t("copy.a59c403e93") +
       data.scheduleRanges.length +
-      " 个作息区间，基础标准日工时 " +
+      WorkTimeApp.i18n.t("copy.f0874e5ebf") +
       C.hours(data.settings.standardMinutes) +
-      " 小时。" +
+      WorkTimeApp.i18n.t("copy.5345ffe2c2") +
       (data.preferences.pageTheme
-        ? "页面主题：" +
-          WorkTimeApp.domain.preferences.themes.find(
-            (theme) => theme.id === data.preferences.pageTheme,
-          ).name +
+        ? WorkTimeApp.i18n.t("copy.2b4a7a895b") +
+          WorkTimeApp.i18n.message(
+            WorkTimeApp.domain.preferences.themes.find(
+              (theme) => theme.id === data.preferences.pageTheme,
+            ).name,
+          ) +
           "。"
         : "");
     actions.open("restoreDialog");
@@ -144,11 +153,11 @@ WorkTimeApp.ui.createBackupController = function (options) {
       if (disposed || lifetime !== generation) return;
       const decoded = await readBackupText(text);
       if (disposed || lifetime !== generation) return;
-      previewRestore(decoded, "剪贴板");
-      actions.toast("备份已解析，请确认恢复");
+      previewRestore(decoded, WorkTimeApp.i18n.t("copy.c4eb94d079"));
+      actions.toast(WorkTimeApp.i18n.t("copy.32936d1ceb"));
     } catch (error) {
       if (disposed || lifetime !== generation) return;
-      actions.toast("剪贴板备份读取失败，请选择文件", "error");
+      actions.toast(WorkTimeApp.i18n.t("copy.9f71e85dd5"), "error");
       $("backupFile").click();
     } finally {
       if (lifetime === generation) button.disabled = false;
@@ -170,36 +179,46 @@ WorkTimeApp.ui.createBackupController = function (options) {
           const button = document.createElement("button");
           button.className = "ui-button";
           button.textContent =
-            (row.type === "daily" ? "日常快照 " : "操作前快照 ") +
-            new Date(row.at).toLocaleString("zh-CN");
+            (row.type === "daily"
+              ? WorkTimeApp.i18n.t("copy.8110f0f8ff")
+              : WorkTimeApp.i18n.t("copy.9d53968411")) +
+            new Date(row.at).toLocaleString(WorkTimeApp.i18n.locale);
           button.onclick = () => {
             try {
               const data = WorkTimeApp.services.archive.migrate(row.document);
               $("recoveryDialog").close();
-              previewRestore(data, "历史快照");
+              previewRestore(data, WorkTimeApp.i18n.t("copy.7f928d3f63"));
             } catch (error) {
               $("recoveryError").textContent =
-                "此快照无法直接恢复，请下载恢复资料保留原文：" + error.message;
+                WorkTimeApp.i18n.t("copy.19d1b9b4a4") +
+                WorkTimeApp.i18n.message(error.message);
             }
           };
           list.append(button);
         }
-        if (!rows.length) list.textContent = "暂无历史快照。";
+        if (!rows.length)
+          list.textContent = WorkTimeApp.i18n.t("copy.2901f95580");
         $("recoveryError").textContent = "";
         actions.open("recoveryDialog");
       } catch (error) {
-        actions.toast("恢复资料读取失败：" + error.message, "error");
+        actions.toast(
+          WorkTimeApp.i18n.t("copy.1e79e236e5") +
+            WorkTimeApp.i18n.message(error.message),
+          "error",
+        );
       }
     });
     events.handler($("downloadRecovery"), "onclick", async () => {
       try {
         download(
-          "工作记录恢复资料-" + model.today + ".json",
+          WorkTimeApp.i18n.t("copy.3a8bf199c6") + model.today + ".json",
           JSON.stringify(await persistence.recoveryData(), null, 2),
           "application/json;charset=utf-8",
         );
       } catch (error) {
-        $("recoveryError").textContent = error.message;
+        $("recoveryError").textContent = WorkTimeApp.i18n.message(
+          error.message,
+        );
       }
     });
     events.handler($("clearSnapshots"), "onclick", () =>
@@ -209,22 +228,29 @@ WorkTimeApp.ui.createBackupController = function (options) {
       try {
         await persistence.clearSnapshots();
         $("clearSnapshotsDialog").close();
-        $("snapshotList").textContent = "暂无历史快照。";
+        $("snapshotList").textContent = WorkTimeApp.i18n.t("copy.2901f95580");
       } catch (error) {
-        actions.toast("快照清理失败：" + error.message, "error");
+        actions.toast(
+          WorkTimeApp.i18n.t("copy.47a732ee5e") +
+            WorkTimeApp.i18n.message(error.message),
+          "error",
+        );
       }
     });
     events.handler($("restoreLegacy"), "onclick", async () => {
       try {
         const data = await persistence.recoveryData();
-        if (!data.legacyText) throw Error("没有可读取的旧存档。");
+        if (!data.legacyText)
+          throw Error(WorkTimeApp.i18n.t("copy.fe1afd4a86"));
         previewRestore(
           WorkTimeApp.services.archive.migrate(JSON.parse(data.legacyText)),
-          "遗留旧存档",
+          WorkTimeApp.i18n.t("copy.a02ab93291"),
         );
         $("recoveryDialog").close();
       } catch (error) {
-        $("recoveryError").textContent = error.message;
+        $("recoveryError").textContent = WorkTimeApp.i18n.message(
+          error.message,
+        );
       }
     });
     events.handler($("exportCorruptStorage"), "onclick", exportOriginal);
@@ -242,14 +268,17 @@ WorkTimeApp.ui.createBackupController = function (options) {
         );
         if (!result.persisted) {
           $("initializeError").textContent =
-            "初始化未保存：" + result.error.message;
+            WorkTimeApp.i18n.t("copy.d3ca375f67") +
+            WorkTimeApp.i18n.message(result.error.message);
           return;
         }
         // A fresh page clears every editor/controller draft and batch selection.
         actions.refreshSettings();
         window.location.reload();
       } catch (error) {
-        $("initializeError").textContent = error.message;
+        $("initializeError").textContent = WorkTimeApp.i18n.message(
+          error.message,
+        );
       }
     });
     events.listen($("restoreDialog"), "close", () => {
@@ -273,14 +302,19 @@ WorkTimeApp.ui.createBackupController = function (options) {
       if (!f) return;
       restoreData = null;
       try {
-        if (f.size > BACKUP_MAX_BYTES) throw Error("备份超过 100 MiB。");
+        if (f.size > BACKUP_MAX_BYTES)
+          throw Error(WorkTimeApp.i18n.t("copy.c3b5086f19"));
         const decoded = await readBackupText(await f.text());
         if (disposed || lifetime !== generation) return;
-        previewRestore(decoded, "文件");
-        actions.toast("备份已解析，请确认恢复");
+        previewRestore(decoded, WorkTimeApp.i18n.t("copy.49deaf7da2"));
+        actions.toast(WorkTimeApp.i18n.t("copy.32936d1ceb"));
       } catch (err) {
         if (disposed || lifetime !== generation) return;
-        actions.toast("恢复失败：" + err.message, "error");
+        actions.toast(
+          WorkTimeApp.i18n.t("copy.08c8ed5980") +
+            WorkTimeApp.i18n.message(err.message),
+          "error",
+        );
       }
       e.target.value = "";
     });
@@ -295,7 +329,9 @@ WorkTimeApp.ui.createBackupController = function (options) {
         result = { persisted: false, error };
       }
       if (!result.persisted) {
-        $("restoreError").textContent = "恢复未保存：" + result.error.message;
+        $("restoreError").textContent =
+          WorkTimeApp.i18n.t("copy.3bf46b1e59") +
+          WorkTimeApp.i18n.message(result.error.message);
         $("confirmRestore").disabled = false;
         return;
       }

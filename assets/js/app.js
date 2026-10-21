@@ -221,6 +221,7 @@ WorkTimeApp.services.bootstrap.run(
     const { renderCalendar } = calendarUI;
     const {
       updateResetDayButton,
+      updatePlannedOvertime,
       renderEditor,
       formDay,
       previewDay,
@@ -295,6 +296,7 @@ WorkTimeApp.services.bootstrap.run(
         "saveDay",
         "togglePlanned",
         "resetDay",
+        "resetBatch",
         "saveTemplate",
         "removeTemplate",
         "replaceTemplates",
@@ -348,6 +350,7 @@ WorkTimeApp.services.bootstrap.run(
       renderStats,
       renderCalendar,
       updateResetDayButton,
+      updatePlannedOvertime,
       openLeavePanel,
       closeLeavePanel,
       renderEditor,
@@ -457,7 +460,7 @@ WorkTimeApp.services.bootstrap.run(
       ],
       [
         WorkTimeApp.ui.createNavigationController,
-        ["saveBatch"],
+        ["saveBatch", "resetBatch"],
         {
           canBatchEditDate: D.schedule.canBatchEditDate,
           calendarInfo: D.calendar.calendarInfo,
@@ -490,6 +493,42 @@ WorkTimeApp.services.bootstrap.run(
     }
     for (const controller of controllers) controller.bind();
     workspace.mount();
+    function refreshLanguage() {
+      const errors = WorkTimeApp.ui.fieldErrors.snapshot();
+      const focusId = document.activeElement?.id;
+      const leaveOpen =
+        $("dayLeaveToggle").getAttribute("aria-expanded") === "true";
+      const drafts = [
+        ...document.querySelectorAll("input,textarea,select"),
+      ].map((element) => ({
+        element,
+        value: element.value,
+        checked: element.checked,
+        start: element.selectionStart,
+        end: element.selectionEnd,
+      }));
+      renderStats();
+      renderCalendar(true);
+      renderEditor();
+      notifications.refreshLanguage();
+      for (const { element, value, checked, start, end } of drafts) {
+        if (!element.isConnected || element.id === "languageSelect") continue;
+        element.value = value;
+        if ("checked" in element) element.checked = checked;
+        if (start !== null) element.setSelectionRange?.(start, end);
+      }
+      if (leaveOpen) openLeavePanel();
+      previewDay();
+      for (const [element, error] of errors)
+        if (element.isConnected)
+          WorkTimeApp.ui.fieldErrors.show(element, error);
+      if (focusId) $(focusId)?.focus({ preventScroll: true });
+      WorkTimeApp.ui.alignment?.refresh();
+    }
+    document.addEventListener("worktime:languagechange", refreshLanguage);
+    lifecycle.defer(() =>
+      document.removeEventListener("worktime:languagechange", refreshLanguage),
+    );
     if (model.loadIssue === "unsupported") {
       const allowed = new Set([
         "prevMonth",

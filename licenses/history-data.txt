@@ -5,3 +5,14 @@
 许可证：https://creativecommons.org/licenses/by-sa/4.0/
 法律文本：https://creativecommons.org/licenses/by-sa/4.0/legalcode.zh-hans
 摘要经 OpenCC 转为简体中文。转载请保留每条来源及修改说明，并按相同许可证分发改编资料。
+
+English history data: English Wikipedia day-of-year Events sections.
+Snapshot retrieved 2026-10-21; includes events through 2025 and all 366 dates.
+Each entry preserves its source name and exact revision URL. Local changes:
+remove wiki markup, deduplicate, sort by year, and package by month and language.
+Distributed under CC BY-SA 4.0: https://creativecommons.org/licenses/by-sa/4.0/
+Preserve source attribution and modification notices when redistributing.
+
+Traditional Chinese variants (zh-TW and zh-HK): generated from the same Chinese
+event summaries with OpenCC regional dictionaries. Event identities, years and
+source revision URLs are preserved. These adaptations are also CC BY-SA 4.0.

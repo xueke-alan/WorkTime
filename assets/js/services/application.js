@@ -79,6 +79,26 @@ WorkTimeApp.services.application = (() => {
           ];
       return result;
     }
+    function resetDate(days, date) {
+      const old = days[date];
+      if (!old) return;
+      const owned = [
+        "oa",
+        "actual",
+        "estimate",
+        "draft",
+        "kind",
+        "leaveMinutes",
+        "note",
+        "plannedOvertime",
+      ];
+      const extras = Object.fromEntries(
+        Object.entries(old).filter(([key]) => !owned.includes(key)),
+      );
+      if (old.oa) days[date] = { ...extras, oa: old.oa };
+      else if (Object.keys(extras).length) days[date] = extras;
+      else delete days[date];
+    }
     function commit(
       candidate,
       { atomic = false, restore = false, changes = {} } = {},
@@ -211,26 +231,26 @@ WorkTimeApp.services.application = (() => {
         return service.saveDay(date, day);
       },
       resetDay(date) {
-        const days = { ...state.days },
-          old = days[date];
-        if (!old) return commit(state);
-        const owned = [
-          "oa",
-          "actual",
-          "estimate",
-          "draft",
-          "kind",
-          "leaveMinutes",
-          "note",
-          "plannedOvertime",
-        ];
-        const extras = Object.fromEntries(
-          Object.entries(old).filter(([key]) => !owned.includes(key)),
-        );
-        if (old.oa) days[date] = { ...extras, oa: old.oa };
-        else if (Object.keys(extras).length) days[date] = extras;
-        else delete days[date];
+        if (!state.days[date]) return commit(state);
+        const days = { ...state.days };
+        resetDate(days, date);
         return commit({ ...state, days }, { changes: { days: [date] } });
+      },
+      // null resets every stored date, including dates outside batch selection rules.
+      resetBatch(dates) {
+        const selected =
+          dates === null
+            ? Object.keys(state.days)
+            : [...new Set(dates)].filter((date) =>
+                C.canBatchEditDate(state, date),
+              );
+        if (!selected.length) return commit(state);
+        const days = { ...state.days };
+        for (const date of selected) resetDate(days, date);
+        return commit(
+          { ...state, days },
+          { atomic: true, changes: { days: selected } },
+        );
       },
       saveTemplate(template, editing) {
         const clean = C.validateTimeTemplate(template),

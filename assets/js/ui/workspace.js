@@ -67,7 +67,7 @@ WorkTimeApp.ui.createWorkspace = function ({
     saveFeedback(saved, message) {
       if (disposed) return;
       notifications.toast(
-        saved ? message : "未能保存，请备份；修改暂留本页",
+        saved ? message : WorkTimeApp.i18n.t("copy.571aab1f15"),
         saved ? "countdown" : "error",
       );
     },

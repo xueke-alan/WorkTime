@@ -17,7 +17,7 @@
     if (!element || disposed || document.hidden) return;
     const restarting = running.has(element);
     stop(element);
-    if (reduced.matches) return;
+    if (reduced.matches || WorkTimeApp.i18n.changing) return;
     // Only explicit user changes restart an animation; there is no subtree observer.
     if (restarting) void element.offsetWidth;
     element.style.setProperty("--motion-delay", delay + "ms");

@@ -260,6 +260,13 @@
       "sha256": "b17728fb9d768c22b34f0e4c3ec10b3185a26d03a707898130aad750c861dcf0"
     },
     {
+      "id": "ms-article-person",
+      "name": "article_person",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/article_person/materialsymbolsrounded/article_person_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "6f49d263e4cd6cb539929d8a6af316a1000c61d2661feba3b0184617f3b98bc5"
+    },
+    {
       "id": "ms-person-add",
       "name": "person_add",
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/person_add/materialsymbolsrounded/person_add_24px.svg",
@@ -314,6 +321,13 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/hide/materialsymbolsrounded/hide_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "a7c56d28af1afdc4403bea9aba78735b635f656585122c0897ca55b779a14ee6"
+    },
+    {
+      "id": "ms-restart-alt",
+      "name": "restart_alt",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/restart_alt/materialsymbolsrounded/restart_alt_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "f65d7758c26304fd29a5c15b3a6cf18377f26d9b4163f129d02095ef00e10ea3"
     }
   ]
 }

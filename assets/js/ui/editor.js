@@ -77,14 +77,19 @@ WorkTimeApp.ui.createEditor = function (options) {
       !day.plannedOvertime;
   }
   function updatePlannedOvertime(day, info) {
+    const planned = !info.work && !!day.plannedOvertime,
+      label = planned
+        ? WorkTimeApp.i18n.t("copy.cd4a0376cd")
+        : WorkTimeApp.i18n.t("copy.3cf2307526"),
+      button = $("plannedOvertimeToggle");
     $("plannedOvertimeArea").classList.toggle("hidden", info.work);
-    $("plannedOvertimeToggle").setAttribute(
-      "aria-pressed",
-      String(!!day.plannedOvertime),
-    );
-    $("plannedOvertimeToggle")
+    $("clearManual").classList.toggle("is-planned-reset", planned);
+    button.setAttribute("aria-pressed", String(planned));
+    button.setAttribute("aria-label", label);
+    button.querySelector(".button-label").textContent = label;
+    button
       .querySelector("use")
-      .setAttribute("href", day.plannedOvertime ? "#ms-check" : "#ms-today");
+      .setAttribute("href", planned ? "#ms-close" : "#ms-today");
   }
   function renderEditor() {
     const state = getState();
@@ -93,8 +98,51 @@ WorkTimeApp.ui.createEditor = function (options) {
     const day = state.days[selected] || {},
       r = C.effectiveRecord(day, true) || day.oa || {},
       info = C.calendarInfo(selected, day);
-    $("editorDate").textContent =
-      selected + " · 周" + "日一二三四五六"[C.localDate(selected).getDay()];
+    const editorDate = $("editorDate"),
+      localizedDate = WorkTimeApp.i18n.language !== "zh-CN";
+    if (localizedDate) {
+      const parts = new Intl.DateTimeFormat(WorkTimeApp.i18n.locale, {
+        year: "numeric",
+        month: WorkTimeApp.i18n.config.cjk ? "numeric" : "short",
+        day: "numeric",
+        timeZone: "Asia/Shanghai",
+      }).formatToParts(new Date(selected + "T12:00:00+08:00"));
+      if (editorDate.dataset.locale !== WorkTimeApp.i18n.locale) {
+        numbers.set(editorDate, null);
+        editorDate.replaceChildren();
+        for (const part of parts) {
+          if (part.type === "literal") {
+            editorDate.append(part.value);
+            continue;
+          }
+          const span = document.createElement("span");
+          span.className = "editor-date-" + part.type;
+          editorDate.append(span);
+        }
+        editorDate.append(" · ");
+        const weekday = document.createElement("span");
+        weekday.className = "editor-date-weekday";
+        editorDate.append(weekday);
+        editorDate.dataset.locale = WorkTimeApp.i18n.locale;
+      }
+      numbers.set(
+        editorDate.querySelector(".editor-date-day"),
+        Number(selected.slice(8)),
+      );
+      editorDate.querySelector(".editor-date-month").textContent =
+        WorkTimeApp.i18n.monthName(selected);
+      numbers.set(
+        editorDate.querySelector(".editor-date-year"),
+        selected.slice(0, 4),
+      );
+      editorDate.querySelector(".editor-date-weekday").textContent =
+        WorkTimeApp.i18n.weekday(selected);
+    } else {
+      delete editorDate.dataset.locale;
+      numbers.set(editorDate, selected, {
+        suffix: " · 周" + "日一二三四五六"[C.localDate(selected).getDay()],
+      });
+    }
     $("dayStart").placeholder = C.scheduleForDate(state, selected).workStart;
     $("dayEnd").placeholder = C.scheduleForDate(state, selected).workEnd;
     const clock = (minutes) =>
@@ -104,14 +152,15 @@ WorkTimeApp.ui.createEditor = function (options) {
     const breaks = C.scheduleForDate(state, selected).breaks.map(
       (rest) => clock(rest.start) + "–" + clock(rest.end),
     );
-    const schedule =
-      '<span class="schedule-work" title="排班时间">' +
-      esc(C.scheduleForDate(state, selected).workStart) +
-      "–" +
-      esc(C.scheduleForDate(state, selected).workEnd) +
-      '</span><span class="schedule-break" title="休息时间">' +
-      breaks.join("、") +
-      "</span>";
+    const schedule = esc(
+      WorkTimeApp.i18n.t("schedule.description", {
+        start: C.scheduleForDate(state, selected).workStart,
+        end: C.scheduleForDate(state, selected).workEnd,
+        breaks:
+          breaks.join(WorkTimeApp.i18n.config.cjk ? "、" : ", ") ||
+          WorkTimeApp.i18n.t("copy.1a8b4ad549"),
+      }),
+    );
     if ($("daySchedule").innerHTML !== schedule)
       $("daySchedule").innerHTML = schedule;
     $("dayStart").value = r.start || "";
@@ -145,7 +194,7 @@ WorkTimeApp.ui.createEditor = function (options) {
         (time) => time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time),
       )
     )
-      throw Error("时间请填写为 HH:MM，例如 08:30。");
+      throw Error(WorkTimeApp.i18n.t("copy.f311d6abc7"));
     if (
       $("dayLeave").validity.badInput ||
       !Number.isFinite(leaveHours) ||
@@ -153,7 +202,7 @@ WorkTimeApp.ui.createEditor = function (options) {
       Math.round(leaveHours * 60) >
         C.scheduleForDate(state, selected).standardMinutes
     )
-      throw Error("请假时长必须在 0 与每日标准工时之间。");
+      throw Error(WorkTimeApp.i18n.t("copy.dfb8e4501a"));
     return C.editedDay(state.days[selected] || {}, {
       start,
       end,
@@ -194,39 +243,52 @@ WorkTimeApp.ui.createEditor = function (options) {
       const hasDailyMetrics =
         !anomaly && state.settings.configured && c.minutes !== null;
       const daily = anomaly
-        ? "时间异常：下班时间 " +
-          esc(anomaly.end) +
-          " 早于上班时间 " +
-          esc(anomaly.start) +
-          "，暂不计入工时。" +
-          (c.work && !isFullLeave(day) ? " 打卡未完成，暂不计入平均加班" : "")
+        ? WorkTimeApp.i18n.t("editor.timeIssue", {
+            end: esc(anomaly.end),
+            start: esc(anomaly.start),
+          }) +
+          (c.work && !isFullLeave(day)
+            ? WorkTimeApp.i18n.t("copy.bed1305fb6")
+            : "")
         : !c.work && c.minutes === null
-          ? "休息日"
+          ? WorkTimeApp.i18n.t("copy.743a4ad0dd")
           : !state.settings.configured
-            ? "请先设置休息时段与标准工时。"
+            ? WorkTimeApp.i18n.t("copy.dd61e8801a")
             : c.minutes === null
               ? isFullLeave(day)
-                ? "全天请假 <strong>" +
-                  C.formatMinutes(day.leaveMinutes) +
-                  "</strong> · 出勤 <strong>0 天</strong>"
-                : "打卡未完成，暂不计入平均加班"
-              : '<span title="有效工时">工时 <strong>' +
-                C.formatMinutes(c.minutes) +
-                "</strong></span><span>加班 <strong>" +
-                C.formatMinutes(c.overtime) +
-                '</strong></span><span title="折算出勤">出勤 <strong>' +
-                Number(c.attendance.toFixed(4)) +
-                " 天</strong></span>";
+                ? WorkTimeApp.i18n.t("copy.feb728221b") +
+                  WorkTimeApp.i18n.duration(day.leaveMinutes) +
+                  WorkTimeApp.i18n.t("copy.47fb6325b4")
+                : WorkTimeApp.i18n.t("copy.f8d57c4f0d")
+              : '<span class="preview-attendance" title="' +
+                esc(WorkTimeApp.i18n.t("copy.7a26926ed7")) +
+                '">' +
+                esc(WorkTimeApp.i18n.t("copy.7a26926ed7")) +
+                "<strong>" +
+                WorkTimeApp.i18n.number(Number(c.attendance.toFixed(4))) +
+                " d</strong></span>";
       let employment = "",
         employmentDays = null;
       const progress = C.employmentDay(state.personal.employmentDate, selected);
       if (progress) {
         employmentDays = progress.days;
         employment =
-          '<span class="preview-employment">' +
-          (progress.started
-            ? '入职第 <strong id="employmentDays" data-number-motion></strong> 天'
-            : '距离入职还有 <strong id="employmentDays" data-number-motion></strong> 天') +
+          '<span class="preview-employment" title="' +
+          esc(
+            WorkTimeApp.i18n.t(
+              progress.started ? "editor.anniversary" : "editor.startsIn",
+              { count: WorkTimeApp.i18n.number(employmentDays) },
+            ),
+          ) +
+          '">' +
+          WorkTimeApp.i18n.t(
+            progress.started
+              ? "short.preview.employment"
+              : "short.preview.starts",
+            {
+              count: '<strong id="employmentDays" data-number-motion></strong>',
+            },
+          ) +
           "</span>";
       }
       const html =
@@ -240,13 +302,21 @@ WorkTimeApp.ui.createEditor = function (options) {
         esc(daily.replace(/<[^>]*>/g, "")) +
         '">' +
         daily +
-        '</div><div class="preview-period"><span>本月截至 ' +
-        Number(selected.slice(5, 7)) +
-        " 月 " +
-        Number(selected.slice(8)) +
-        " 日</span>" +
+        '</div><div class="preview-period"><span title="' +
+        esc(
+          WorkTimeApp.i18n.t("editor.through", {
+            date: WorkTimeApp.i18n.date(selected),
+          }),
+        ) +
+        '">' +
+        esc(
+          WorkTimeApp.i18n.t("short.preview.through", {
+            date: WorkTimeApp.i18n.date(selected, { year: undefined }),
+          }),
+        ) +
+        "</span>" +
         employment +
-        '</div><div class="preview-totals"><span>应出勤<span class="preview-values"><strong id="expectedHours" data-number-motion></strong></span></span><span>已出勤<span class="preview-values"><strong id="workedHours" data-number-motion></strong></span></span><span>平均加班<strong id="previewAverage" data-number-motion></strong></span></div>';
+        WorkTimeApp.i18n.t("copy.6b11e50b8e");
       if (previewMarkup !== html) {
         updatePreview(html);
         previewMarkup = html;
@@ -276,7 +346,7 @@ WorkTimeApp.ui.createEditor = function (options) {
       }
     } catch (e) {
       previewMarkup = null;
-      updateText("dayPreview", e.message);
+      updateText("dayPreview", WorkTimeApp.i18n.message(e.message));
     }
   }
   function setLeavePanel(open, focus = false) {
@@ -324,7 +394,11 @@ WorkTimeApp.ui.createEditor = function (options) {
         C.scheduleForDate(state, selected).standardMinutes;
     updateText(
       "dayLeaveLabel",
-      hasLeave ? (fullDay ? "全天休假" : "请假" + hours + "h") : "计划请假",
+      hasLeave
+        ? fullDay
+          ? WorkTimeApp.i18n.t("copy.8912376175")
+          : WorkTimeApp.i18n.t("copy.326f400f75") + hours + "h"
+        : WorkTimeApp.i18n.t("copy.7697b2ac1b"),
     );
     $("dayLeaveToggle").disabled = !canLeave;
     $("dayLeave").disabled = !canLeave;
@@ -339,9 +413,11 @@ WorkTimeApp.ui.createEditor = function (options) {
       "aria-label",
       canLeave
         ? hasLeave
-          ? "请假 " + hours + " 小时，点击修改"
-          : "填写请假时长"
-        : "休息日无需请假",
+          ? WorkTimeApp.i18n.t("copy.326f400f75") +
+            hours +
+            WorkTimeApp.i18n.t("copy.8ba84f76ec")
+          : WorkTimeApp.i18n.t("copy.c8dda684c7")
+        : WorkTimeApp.i18n.t("copy.54d81347ae"),
     );
   }
   return {

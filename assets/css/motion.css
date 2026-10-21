@@ -1,3 +1,10 @@
+/* Short native color transitions keep palette switching simple. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.app-loading) :where(body, .panel, .card, .calendar > .day, .panel-head, .editor-mode-header, .weekdays, .calendar-footer, .card-label, .card-foot, .metric, .ui-button) {
+    transition: color 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
+  }
+}
+
 /* Residual shared-file rules restored to their component owner. */
 body .sidebar-actions > #importOpen {
   position: relative;
@@ -294,26 +301,24 @@ body .leave-popover:not(.hidden) {
 
 /* Odometer transitions animate digit strips while the final value stays accessible. */
 .number-roll-up {
-  transform: translate3d(0, calc(-1 * var(--number-row-height, 1.3em)), 0);
-  animation: number-roll-up 400ms var(--motion-ease) var(--number-delay, 0ms)
+  animation: number-roll-up 400ms cubic-bezier(0.4, 0, 0.2, 1) var(--number-delay, 0ms)
     both;
 }
 .number-roll-down {
-  transform: translate3d(0, 0, 0);
-  animation: number-roll-down 400ms var(--motion-ease) var(--number-delay, 0ms)
+  animation: number-roll-down 400ms cubic-bezier(0.4, 0, 0.2, 1) var(--number-delay, 0ms)
     both;
 }
 @keyframes number-roll-up {
   from {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 100%, 0);
   }
   to {
-    transform: translate3d(0, calc(-1 * var(--number-row-height, 1.3em)), 0);
+    transform: translate3d(0, 0, 0);
   }
 }
 @keyframes number-roll-down {
   from {
-    transform: translate3d(0, calc(-1 * var(--number-row-height, 1.3em)), 0);
+    transform: translate3d(0, -100%, 0);
   }
   to {
     transform: translate3d(0, 0, 0);

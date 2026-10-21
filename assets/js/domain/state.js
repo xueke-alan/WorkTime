@@ -18,7 +18,7 @@ WorkTimeApp.domain.state = (() => {
       overtimeRequirements: [60, 90, 90, 120, 120],
       oaUrl: "https://hr.huawei.com/apps/servicetimeflow/#/myServicetime",
       personal: { employmentDate: "", workCity: "" },
-      preferences: { pageTheme: "green" },
+      preferences: { pageTheme: "green", language: "auto" },
       settings: {
         configured: true,
         workStart: DEFAULT_START,

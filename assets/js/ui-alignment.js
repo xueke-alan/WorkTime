@@ -4,7 +4,8 @@
   const metricSelector =
     ".summary-sidebar .card:not(.average-card):not(.surplus-card) .metric";
   const selectors = [
-    "button.ui-button",
+    "button.ui-button:not(.notification-tab) .button-label",
+    "#importOpen .import-main > span",
     ".month-title-year",
     ".month-title-month",
     ".calendar-today-number",
@@ -173,27 +174,42 @@
     const measurements = [];
     for (const element of visible) {
       const style = getComputedStyle(element);
+      // Ink offsets describe one baseline. Apply no offset to wrapped labels,
+      // headings or footers; measuring their combined text as one canvas line
+      // would move the whole paragraph and can clip the first/last line.
       if (
-        element.matches(".calendar .daystatus .pill-text,.calendar .daykind")
+        !element.matches(metricSelector) &&
+        !element.querySelector(".summary-number-accessible")
       ) {
         const range = document.createRange();
         range.selectNodeContents(element);
-        if (range.getClientRects().length > 1) continue;
+        const rects = [...range.getClientRects()].filter(
+          (rect) => rect.width && rect.height,
+        );
+        if (
+          rects.some((rect) =>
+            rects.some((other) => other.top >= rect.bottom - 1),
+          )
+        )
+          continue;
       }
       context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
       if ("fontStretch" in context)
         context.fontStretch = canvasFontStretch(style.fontStretch);
       // Date changes must retain one baseline, regardless of weekday glyph bounds.
       const metric = element.matches(metricSelector);
-      const number = metric
-        ? element.querySelector(".summary-number-accessible")
-        : null;
+      const number = element.querySelector(".summary-number-accessible");
       const text = element.matches(".editor-day-header .editor-date")
         ? "0123456789 · 周日一二三四五六"
-        : (number || element).textContent.trim();
-      const baselineHost = metric ? document.createElement("span") : element;
-      if (metric) {
-        // Measure a stationary digit so rolling tracks cannot move the baseline.
+        : number ||
+            element.matches(".calendar-today-number,.calendar-today-weekday")
+          ? "0123456789"
+          : element.textContent.trim();
+      const baselineHost =
+        metric || number ? document.createElement("span") : element;
+      if (baselineHost !== element) {
+        // Numeric views share one reference baseline, independent of their value
+        // and of outgoing animation glyphs. Never measure the visual subtree.
         baselineHost.style.cssText =
           "position:absolute;top:0;left:0;visibility:hidden;line-height:1.3";
         baselineHost.textContent = "0";
@@ -203,7 +219,7 @@
         metrics: cachedMetrics(style, text),
         // Mixed Latin/CJK legends also need hinted pixel bounds, not outline metrics.
         dateBounds: element.matches(
-          ".day-date .daynum-text,.calendar .daykind,.calendar-footer .legend-label,.day-average-value",
+          ".day-date .daynum-text,.calendar .daykind,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span",
         )
           ? dateInkHeight(style, text)
           : null,
@@ -317,10 +333,6 @@
         .forEach((element) => candidates.add(element));
     }
     candidates.forEach((element) => {
-      if (element.tagName === "BUTTON") {
-        // Ordinary controls share a baseline. Per-string ink corrections break that contract.
-        return;
-      }
       // These cards align the complete metric, including its placeholder.
       if (
         element.hasAttribute("data-number-ink") &&
@@ -330,17 +342,6 @@
       // Components declare text layers; alignment never changes their structure.
       targets.add(element);
     });
-    // Font profiles share a baseline; label structure belongs to each component.
-    const buttonProfiles = [...candidates]
-      .filter((element) => element.tagName === "BUTTON")
-      .map((element) => {
-        const size = parseFloat(getComputedStyle(element).fontSize);
-        return { element, thirteen: size === 13, larger: size >= 14 };
-      });
-    for (const { element, thirteen, larger } of buttonProfiles) {
-      element.classList.toggle("ui-font-13", thirteen);
-      element.classList.toggle("ui-font-14-plus", larger);
-    }
     alignTexts(targets);
     observe();
   }

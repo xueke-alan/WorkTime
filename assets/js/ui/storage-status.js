@@ -11,6 +11,15 @@ WorkTimeApp.ui.createStorageStatus = function ({
     usageGeneration = 0,
     retryButton = null,
     recoveryOptions = null;
+  let noticeRenderer = null;
+  function setNotice(render) {
+    noticeRenderer = render;
+    $("storageNoticeText").textContent = render();
+  }
+  function languageChanged() {
+    updateUsage();
+    if (noticeRenderer) $("storageNoticeText").textContent = noticeRenderer();
+  }
   function updateRecovery() {
     if (!retryButton || !recoveryOptions) return;
     const issue = recoveryOptions.getLoadIssue?.();
@@ -23,7 +32,7 @@ WorkTimeApp.ui.createStorageStatus = function ({
   function updateUsage() {
     const requestVersion = ++usageGeneration;
     if (typeof window.navigator.storage?.estimate !== "function") {
-      $("storageUsage").textContent = "当前占用：浏览器不提供估算";
+      $("storageUsage").textContent = WorkTimeApp.i18n.t("copy.5995444c57");
       return;
     }
     void window.navigator.storage
@@ -36,11 +45,12 @@ WorkTimeApp.ui.createStorageStatus = function ({
             : bytes < 1024 * 1024
               ? (bytes / 1024).toFixed(2) + " KB"
               : (bytes / (1024 * 1024)).toFixed(2) + " MB";
-        $("storageUsage").textContent = "浏览器存储估算：" + size;
+        $("storageUsage").textContent =
+          WorkTimeApp.i18n.t("copy.78ad5b8e55") + size;
       })
       .catch(() => {
         if (requestVersion !== usageGeneration) return;
-        $("storageUsage").textContent = "当前占用：无法读取";
+        $("storageUsage").textContent = WorkTimeApp.i18n.t("copy.80793445c6");
       });
   }
   function storageChanged(event) {
@@ -55,30 +65,39 @@ WorkTimeApp.ui.createStorageStatus = function ({
     mounted = true;
     updateUsage();
     if (readError)
-      $("storageNoticeText").textContent =
-        "浏览器数据无法读取：" +
-        readError.message +
-        (loadIssue === "unavailable"
-          ? "。请允许浏览器存储访问后重新检查；当前页面显示临时数据。"
-          : loadIssue === "unsupported"
-            ? "。请使用支持此存档版本的新版本应用；可先导出原始数据。"
-            : loadIssue === null
-              ? "。已保留当前存档，可导出恢复资料并选择恢复。"
-              : "。当前页面显示临时默认数据；可导出原始数据、恢复有效备份或初始化存档。");
+      setNotice(
+        () =>
+          WorkTimeApp.i18n.t("copy.d2e1522b40") +
+          WorkTimeApp.i18n.message(readError.message) +
+          (loadIssue === "unavailable"
+            ? WorkTimeApp.i18n.t("copy.72b45c7054")
+            : loadIssue === "unsupported"
+              ? WorkTimeApp.i18n.t("copy.3320011973")
+              : loadIssue === null
+                ? WorkTimeApp.i18n.t("copy.c957bee3d1")
+                : WorkTimeApp.i18n.t("copy.e758cbee14")),
+      );
     else if (accessError)
-      $("storageNoticeText").textContent =
-        "当前页面无法保存：" + accessError.message + "。";
+      setNotice(
+        () =>
+          WorkTimeApp.i18n.t("copy.f9843c1f65") +
+          WorkTimeApp.i18n.message(accessError.message) +
+          "。",
+      );
     window.addEventListener("storage", storageChanged);
+    window.document.addEventListener(
+      "worktime:languagechange",
+      languageChanged,
+    );
   }
   return {
     saving() {
       usageGeneration++;
-      $("storageUsage").textContent = "正在保存…";
+      $("storageUsage").textContent = WorkTimeApp.i18n.t("copy.9ca32f988d");
     },
     externalUpdate() {
       $("storageNotice").classList.remove("hidden");
-      $("storageNoticeText").textContent =
-        "其他页面已更新存档，请保留本页草稿并重新检查。";
+      setNotice(() => WorkTimeApp.i18n.t("copy.dfbddf642a"));
     },
     mount,
     updateRecovery,
@@ -99,20 +118,30 @@ WorkTimeApp.ui.createStorageStatus = function ({
       updateUsage();
       $("storageNotice").classList.toggle("hidden", !failed);
       if (!result.persisted)
-        $("storageNoticeText").textContent =
-          "更改未保存：" + result.error.message + "；关闭页面前请备份。";
+        setNotice(
+          () =>
+            WorkTimeApp.i18n.t("copy.6b1e0578cf") +
+            WorkTimeApp.i18n.message(result.error.message) +
+            WorkTimeApp.i18n.t("copy.41781161e3"),
+        );
     },
     recoveryFailed(error) {
-      $("storageNoticeText").textContent =
-        "重新检查失败：" + error.message + "；当前修改仍保留。";
+      setNotice(
+        () =>
+          WorkTimeApp.i18n.t("copy.1e84e9bf60") +
+          WorkTimeApp.i18n.message(error.message) +
+          WorkTimeApp.i18n.t("copy.116af10da7"),
+      );
     },
     accessFailed(error) {
-      $("storageNoticeText").textContent =
-        "重新检查结果：" +
-        error.message +
-        (error.code === "LOCK_BUSY"
-          ? "。浏览器仍检测到占用保存权限的页面，可能位于后台。"
-          : "。当前修改仍保留。");
+      setNotice(
+        () =>
+          WorkTimeApp.i18n.t("copy.1b7a127a55") +
+          WorkTimeApp.i18n.message(error.message) +
+          (error.code === "LOCK_BUSY"
+            ? WorkTimeApp.i18n.t("copy.02569c6fb4")
+            : WorkTimeApp.i18n.t("copy.deafa0e2d2")),
+      );
     },
     dispose() {
       if (!mounted) return;
@@ -121,6 +150,10 @@ WorkTimeApp.ui.createStorageStatus = function ({
       if (retryButton) retryButton.onclick = null;
       retryButton = null;
       window.removeEventListener("storage", storageChanged);
+      window.document.removeEventListener(
+        "worktime:languagechange",
+        languageChanged,
+      );
     },
   };
 };

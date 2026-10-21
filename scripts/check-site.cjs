@@ -44,3 +44,4 @@ for (const entryPath of ["index.html", "tools/convert-backup.html"])
 console.log(
   "JavaScript/CSS syntax, release versions and offline page dependencies verified.",
 );
+require("./check-i18n.cjs").checkI18n();

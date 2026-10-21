@@ -1,0 +1,170 @@
+/* Keep the established grid and type scale; let English prose use natural wraps. */
+.settings-select-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0.857143rem; row-gap: 0.428571rem; }
+body .editor .settings-select-row > .field { display: grid; grid-row: span 3; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+body .editor .settings-select-row > .field > label { min-width: 0; white-space: normal; overflow-wrap: anywhere; align-self: end; }
+body #pageSettingsPane .language-trigger .button-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.language-settings {
+  --language-control-inset: 0.857143rem;
+  --language-menu-padding: 0.285714rem;
+  position: relative;
+  margin-bottom: 0;
+}
+.language-settings select { position: absolute; width: 1px; opacity: 0; pointer-events: none; }
+body #pageSettingsPane .language-trigger {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  justify-content: space-between;
+  padding-inline: var(--language-control-inset);
+  font-size: var(--text-small);
+  font-weight: 500;
+  text-align: left;
+  color: var(--ink);
+  background: var(--theme-surface-paper, var(--paper));
+  border: 1px solid var(--control-border);
+  box-shadow: var(--control-shadow);
+}
+body #pageSettingsPane .language-trigger:is(:hover, :focus-visible, [aria-expanded="true"]) {
+  border-color: var(--accent);
+  background: var(--control-hover);
+}
+body .language-settings :is(.language-chevron, .language-selected-icon) {
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
+}
+.language-chevron { color: var(--muted); transform: rotate(90deg); }
+[aria-expanded="true"] > .language-chevron { transform: rotate(-90deg); }
+.language-selected-icon { visibility: hidden; }
+[aria-selected="true"] > .language-selected-icon { visibility: visible; }
+body .settings-select-options {
+  position: fixed;
+  z-index: 100;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--language-menu-padding);
+  border: 1px solid var(--theme-border-soft, var(--line));
+  border-radius: var(--control-radius);
+  background: var(--theme-surface-paper, var(--paper));
+  box-shadow: 0 8px 24px rgba(var(--theme-rgb, 32, 59, 54), 0.14);
+}
+body .settings-select-options[hidden] { display: none; }
+body .settings-select-options:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.285714rem; }
+body #pageSettingsPane :is(#weatherOptions, #languageOptions) > button {
+  width: 100%;
+  max-width: 100%;
+  height: auto !important;
+  max-height: none !important;
+  padding-block: 0.5rem !important;
+  justify-content: space-between;
+  box-sizing: border-box;
+  min-width: 0;
+  padding-inline: calc(var(--language-control-inset) - var(--language-menu-padding));
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-small);
+  font-weight: 500;
+  box-shadow: none;
+}
+body #pageSettingsPane .settings-select-options > button > .button-label {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: start;
+  line-height: 1.4;
+  transform: none;
+}
+body #pageSettingsPane .settings-select-options > button > .language-selected-icon { flex: 0 0 var(--icon-size-small); }
+body #pageSettingsPane .settings-select-options > button:is(:hover, :focus-visible) { background: var(--control-hover); }
+body #pageSettingsPane .settings-select-options > button[aria-selected="true"] { color: var(--accent); background: var(--accent-light); }
+body .date-context-header .date-context-switch button[hidden] { display: none; }
+body .calendar-today-weekday { margin-left: 0; width: auto; flex: 0 0 auto; }
+html:not([lang="zh-CN"]) .button-label,
+html:not([lang="zh-CN"]) .card-label,
+html:not([lang="zh-CN"]) .target-result,
+html:not([lang="zh-CN"]) .target-total-label,
+html:not([lang="zh-CN"]) .daykind { letter-spacing: 0; }
+html:not([lang="zh-CN"]) .daykind { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+html:not([lang="zh-CN"]) .target-counts,
+html:not([lang="zh-CN"]) .target-total-label { white-space: normal; }
+html:not([lang="zh-CN"]) .preview-period { flex-wrap: wrap; }
+html:not([lang="zh-CN"]) .preview-totals > span { min-width: 0; }
+html:not([lang="zh-CN"]) .date-context-switch { gap: 8px; }
+/* Calendar measures the widest localized month so navigation stays compact and stable. */
+html:not([lang="zh-CN"]) .month-title { white-space: nowrap; }
+html:not([lang="zh-CN"]) .day-overtime { white-space: nowrap; }
+html:not([lang="zh-CN"]) .calendar .pending-entry .pill-text { white-space: normal; overflow-wrap: normal; }
+/* Solar-term labels size to the whole word rather than the Chinese 2em slot. */
+html:not([lang="zh-CN"]) body #dateInfoPanel.festivals-panel .date-info-rows {
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+html:not([lang="zh-CN"]) body #dateInfoPanel.festivals-panel .date-info-rows dt {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+/* Reserve each date field independently so changing dates cannot shift neighbors. */
+html:not([lang="zh-CN"]) .editor-date {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.14em;
+  white-space: nowrap;
+}
+html:not([lang="zh-CN"]) .editor-date > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 1.3em;
+  text-align: center;
+}
+html:not([lang="zh-CN"]) .editor-date-day { width: 1.2em; }
+html:not([lang="zh-CN"]) .editor-date-month { width: 1.75em; }
+html:not([lang="zh-CN"]) .editor-date-year { width: 2.4em; }
+html:not([lang="zh-CN"]) .editor-date-separator { width: 0.2em; }
+html:not([lang="zh-CN"]) .editor-date-weekday { width: 2em; }
+
+/* Localized labels keep the same components and grid. */
+@container calendar-panel (max-width: 619px) {
+  html:not([lang^="zh-"]):not([lang="ja"]):not([lang="ko"]) body .panel-head > .row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+  }
+  html:not([lang^="zh-"]):not([lang="ja"]):not([lang="ko"]) .calendar-toolbar-actions {
+    margin-left: 0;
+    justify-self: start;
+  }
+}
+html:not([lang="zh-CN"]) .editor-date-month { width: auto; min-width: 1.75em; }
+html:not([lang="zh-CN"]) .editor-date-weekday { width: auto; min-width: 2em; }
+html:not([lang="zh-CN"]) .editor-date { gap: 0.05em; }
+html:not([lang="zh-CN"]) .button-label { min-width: 0; }
+html[lang="ko"] { word-break: keep-all; }
+
+html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row { --day-action-columns: minmax(0, 1fr) max-content max-content; }
+html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row :is(#clearManual, #sourceOpen) { width: auto; }
+
+html:not([lang="zh-CN"]) .calendar .daykind { hyphens: auto; }
+
+/* Keep short labels beside figures; explanations retain the full text on hover. */
+html:not([lang="zh-CN"]) .sidebar-brand-subtitle { white-space: nowrap; flex: none; }
+html:not([lang="zh-CN"]) body .summary-sidebar .card-foot { letter-spacing: 0; }
+html:not([lang="zh-CN"]) body .summary-sidebar .card-label { overflow-wrap: normal; }
+html:not([lang="zh-CN"]) body #dayPreview .preview-period {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: 0.75rem;
+  row-gap: 0.15rem;
+}
+html:not([lang="zh-CN"]) body #dayPreview .preview-period > span { min-width: 0; white-space: normal; }
+/* Tiny seven-column calendars may need to break a Korean word or abbreviation. */
+@container calendar-panel (max-width: 359px) {
+  html:not([lang="zh-CN"]) .calendar .pending-entry .pill-text {
+    overflow-wrap: anywhere;
+  }
+}

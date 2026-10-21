@@ -6,7 +6,8 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   const animationCompat = WorkTimeApp.ui.animationCompat;
   const reducedMotion = animationCompat.preference();
   let todayAttention = null,
-    unlistenMotion;
+    unlistenMotion,
+    resettingBatch = false;
 
   function stopTodayAttention() {
     todayAttention?.cancel();
@@ -55,6 +56,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   }
 
   function navigateMonth(v) {
+    if (resettingBatch) return;
     stopTodayAttention();
     model.yearMode = false;
     if (!/^\d{4}-\d{2}$/.test(v) || !C.validDate(v + "-01")) return;
@@ -99,8 +101,9 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     result.textContent = "";
     try {
       if (!model.state.settings.configured)
-        throw Error("请先完成工作时间设置。");
-      if (!model.batchDays.size) throw Error("请先选择需要计算的日期。");
+        throw Error(WorkTimeApp.i18n.t("copy.99d09d1bd5"));
+      if (!model.batchDays.size)
+        throw Error(WorkTimeApp.i18n.t("copy.23568bd4b2"));
       const schedules = [...model.batchDays].map((date) =>
         C.scheduleForDate(model.state, date),
       );
@@ -110,20 +113,21 @@ WorkTimeApp.ui.createNavigationController = function (options) {
           (item) => C.scheduleSignature(item) !== C.scheduleSignature(schedule),
         )
       )
-        throw Error("所选日期包含不同作息，请按作息分批选择后计算。");
+        throw Error(WorkTimeApp.i18n.t("copy.33d9bb36a9"));
       const start = $("batchCalcStart").value,
         startMinutes = C.timeMin(start),
         value = $("batchCalcOvertime").value,
         overtimeHours = Number(value);
-      if (startMinutes === null) throw Error("请填写有效的上班时间。");
+      if (startMinutes === null)
+        throw Error(WorkTimeApp.i18n.t("copy.abc132bd4b"));
       if (value === "" || !Number.isFinite(overtimeHours) || overtimeHours < 0)
-        throw Error("平均加班工时须为不小于 0 的数字。");
+        throw Error(WorkTimeApp.i18n.t("copy.b5694f41a7"));
       const targetMinutes =
         schedule.standardMinutes + Math.round(overtimeHours * 60);
       if (targetMinutes >= 1440)
-        throw Error("标准工时与平均加班合计须小于 24 小时。");
+        throw Error(WorkTimeApp.i18n.t("copy.0e1112168e"));
       const match = C.endForDuration(start, targetMinutes, schedule);
-      if (!match) throw Error("当前休息时段下无法在 24 小时内达到目标工时。");
+      if (!match) throw Error(WorkTimeApp.i18n.t("copy.c63cf259af"));
       $("batchStart").value = start;
       $("batchEnd").value = match.end;
       $("batchNext").checked = match.nextDay;
@@ -131,13 +135,13 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       actions.renderBatchTimeTemplates();
       $("batchError").textContent = "";
       result.textContent =
-        "已填入 " +
+        WorkTimeApp.i18n.t("copy.72393b4192") +
         start +
         " – " +
         match.end +
-        (match.nextDay ? "（次日）" : "");
+        (match.nextDay ? WorkTimeApp.i18n.t("copy.c751037c58") : "");
     } catch (error) {
-      result.textContent = error.message;
+      result.textContent = WorkTimeApp.i18n.message(error.message);
     }
   }
   let bound = false;
@@ -150,6 +154,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
     events.listen($("calendar"), "click", stopTodayAttention, true);
     events.handler($("calendar"), "onclick", (e) => {
+      if (resettingBatch) return;
       const b = e.target.closest("button.day[data-date]");
       if (!b) return;
       const k = b.dataset.date;
@@ -189,6 +194,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       }
     });
     events.handler($("monthTitle"), "onclick", () => {
+      if (resettingBatch) return;
       stopTodayAttention();
       if (model.yearMode) {
         model.yearMode = false;
@@ -243,6 +249,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       highlightToday();
     });
     events.handler($("batchToggle"), "onclick", () => {
+      if (resettingBatch) return;
       stopTodayAttention();
       if ($("settingsDialog").open) actions.closeSettings();
       model.batchMode = !model.batchMode;
@@ -252,12 +259,57 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       actions.renderCalendar();
     });
     events.handler($("batchCancel"), "onclick", () => {
+      if (resettingBatch) return;
       stopTodayAttention();
       model.batchMode = false;
       model.batchDays.clear();
       model.batchAnchor = null;
       actions.renderCalendar();
       $("batchToggle").focus();
+    });
+    events.handler($("batchReset"), "onclick", async () => {
+      if (resettingBatch || !model.batchMode) return;
+      const resetAll = !model.batchDays.size;
+      const dates = [...model.batchDays].filter((date) =>
+        C.canBatchEditDate(model.state, date),
+      );
+      if (!resetAll && !dates.length) {
+        $("batchError").textContent = WorkTimeApp.i18n.t("copy.f7ca66229c");
+        return;
+      }
+      resettingBatch = true;
+      $("batchForm").setAttribute("aria-busy", "true");
+      $("batchReset").disabled = true;
+      $("batchSave").disabled = true;
+      $("batchError").textContent = "";
+      try {
+        const saved = (await application.resetBatch(resetAll ? null : dates))
+          .persisted;
+        if (!saved) {
+          $("batchError").textContent = WorkTimeApp.i18n.t("copy.b81002effa");
+          actions.toast(WorkTimeApp.i18n.t("copy.77b0044d4f"), "error");
+          return;
+        }
+        model.batchMode = false;
+        model.batchDays.clear();
+        model.batchAnchor = null;
+        actions.saveFeedback(
+          true,
+          resetAll
+            ? WorkTimeApp.i18n.t("copy.dc56ca16ae")
+            : WorkTimeApp.i18n.t("copy.1a76ac076e") +
+                dates.length +
+                WorkTimeApp.i18n.t("copy.971430f3c6"),
+        );
+        $("batchToggle").focus();
+      } catch (error) {
+        $("batchError").textContent = WorkTimeApp.i18n.t("copy.b81002effa");
+        actions.toast(WorkTimeApp.i18n.t("copy.77b0044d4f"), "error");
+      } finally {
+        resettingBatch = false;
+        $("batchForm").removeAttribute("aria-busy");
+        actions.render();
+      }
     });
     events.handler($("batchNextToggle"), "onclick", () => {
       $("batchNext").checked = !$("batchNext").checked;
@@ -273,11 +325,12 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
     events.handler($("batchForm"), "onsubmit", async (e) => {
       e.preventDefault();
+      if (resettingBatch) return;
       for (const date of model.batchDays)
         if (!C.canBatchEditDate(model.state, date))
           model.batchDays.delete(date);
       if (!model.batchDays.size) {
-        $("batchError").textContent = "请先选择需要填写的日期。";
+        $("batchError").textContent = WorkTimeApp.i18n.t("copy.03ee2fc8fc");
         return;
       }
       const record = {
@@ -287,8 +340,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         effectiveMinutes: null,
       };
       if (!C.complete(record)) {
-        $("batchError").textContent =
-          "请填写完整上下班时间；跨午夜请开启“次日下班”。";
+        $("batchError").textContent = WorkTimeApp.i18n.t("copy.f950d3ddc0");
         return;
       }
       const count = model.batchDays.size;
@@ -298,7 +350,12 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       model.batchDays.clear();
       model.batchAnchor = null;
       actions.render();
-      actions.saveFeedback(saved, "已更新 " + count + " 天时间");
+      actions.saveFeedback(
+        saved,
+        WorkTimeApp.i18n.t("copy.f54a93c893") +
+          count +
+          WorkTimeApp.i18n.t("copy.a68e14c5a6"),
+      );
     });
   }
   function dispose() {

@@ -292,6 +292,78 @@ body .editor > .notification-tabs .notification-tab svg {
   padding: 1rem 0;
   text-align: center;
 }
+.countdown-scenery {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.countdown-panel.countdown-done {
+  isolation: isolate;
+  overflow: hidden;
+}
+.countdown-panel.countdown-done .countdown-scenery {
+  display: block;
+  z-index: -1;
+}
+.countdown-panel.countdown-done .countdown-message {
+  color: #286b5d;
+  text-wrap: balance;
+}
+.countdown-panel.countdown-done .countdown-end {
+  color: #4c7269;
+  margin-top: 0.8rem;
+  text-wrap: balance;
+}
+.countdown-clouds {
+  animation: countdown-cloud-drift 18s ease-in-out infinite alternate;
+}
+.countdown-sunset {
+  animation: countdown-sunset-glow 8s ease-in-out infinite alternate;
+  transform-origin: 620px 285px;
+}
+.countdown-stars {
+  animation: countdown-starlight 5s ease-in-out infinite alternate;
+}
+.countdown-paused .countdown-scenery *,
+.countdown-paused .countdown-rest-icon,
+.countdown-paused .countdown-rest-steam {
+  animation-play-state: paused;
+}
+@keyframes countdown-cloud-drift {
+  from {
+    transform: translateX(-18px);
+  }
+  to {
+    transform: translateX(18px);
+  }
+}
+@keyframes countdown-sunset-glow {
+  from {
+    opacity: 0.7;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+@keyframes countdown-starlight {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 0.65;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .countdown-scenery * {
+    animation: none;
+  }
+}
 body #countdownFocusToggle {
   position: absolute;
   top: 0.75rem;
@@ -442,6 +514,21 @@ body.is-countdown-focused .countdown-end {
 .countdown-end {
   color: var(--muted);
   font-size: var(--text-small);
+}
+.countdown-time .summary-number {
+  display: block;
+  --number-row-height: 1.15em;
+  letter-spacing: inherit;
+  line-height: 1.15;
+}
+.countdown-time .summary-number-visual,
+.countdown-time .summary-number-column,
+.countdown-time .summary-number-digit {
+  height: var(--number-row-height);
+  line-height: 1.15;
+}
+.countdown-time .summary-number-track {
+  line-height: 1.15;
 }
 
 body .editor > .notification-tabs .notification-badge {

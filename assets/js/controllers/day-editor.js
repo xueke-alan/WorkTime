@@ -5,12 +5,18 @@ WorkTimeApp.ui.createDayController = function (options) {
   const { core: C, element: $, model, actions, application } = options;
   let saveGeneration = 0;
 
-  async function saveDayEdit() {
+  async function saveDayEdit({ markTime = true } = {}) {
     const date = model.selected,
       generation = ++saveGeneration;
     actions.previewDay();
     try {
       const day = actions.formDay();
+      if (
+        markTime &&
+        !C.calendarInfo(date, day).work &&
+        ($("dayStart").value || $("dayEnd").value)
+      )
+        day.plannedOvertime = true;
       const changed =
         JSON.stringify(day) !== JSON.stringify(model.state.days[date] || {});
       let saved = true;
@@ -23,9 +29,10 @@ WorkTimeApp.ui.createDayController = function (options) {
       if (date !== model.selected || generation !== saveGeneration)
         return saved;
       actions.updateResetDayButton(day);
+      actions.updatePlannedOvertime(day, C.calendarInfo(date, day));
       const error = saved
         ? null
-        : { code: "UNSAVED", message: "当前修改未保存，请查看提醒并备份。" };
+        : { code: "UNSAVED", message: WorkTimeApp.i18n.t("copy.1270ebb67b") };
       WorkTimeApp.ui.fieldErrors.show($("dayError"), error);
       WorkTimeApp.ui.fieldErrors.show($("dayLeaveError"), error);
       return saved;
@@ -46,6 +53,22 @@ WorkTimeApp.ui.createDayController = function (options) {
       ? C.pad(Number(match[1])) + ":" + match[2]
       : null;
   }
+  async function resetSelectedDay() {
+    const date = model.selected,
+      day = model.state.days[date];
+    if (!day) return;
+    saveGeneration++;
+    const saved = (await application.resetDay(date)).persisted;
+    actions.render();
+    actions.toast(
+      saved
+        ? day.oa
+          ? WorkTimeApp.i18n.t("copy.a4c5a3e99c")
+          : WorkTimeApp.i18n.t("copy.c67abeaa23")
+        : WorkTimeApp.i18n.t("copy.77b0044d4f"),
+      saved ? "countdown" : "error",
+    );
+  }
   let bound = false;
   function bind() {
     if (bound) return;
@@ -53,9 +76,13 @@ WorkTimeApp.ui.createDayController = function (options) {
     events.handler($("plannedOvertimeToggle"), "onclick", async () => {
       const day = model.state.days[model.selected] || {};
       if (C.calendarInfo(model.selected, day).work) return;
+      if (day.plannedOvertime) {
+        await resetSelectedDay();
+        return;
+      }
       const saved = (await application.togglePlanned(model.selected)).persisted;
       actions.render();
-      if (!saved) actions.toast("计划标记未能保存，请查看提醒", "error");
+      if (!saved) actions.toast(WorkTimeApp.i18n.t("copy.69bd4f5650"), "error");
     });
     events.handler($("dayForm"), "onsubmit", async (e) => {
       e.preventDefault();
@@ -94,17 +121,17 @@ WorkTimeApp.ui.createDayController = function (options) {
         C.scheduleForDate(model.state, model.selected).standardMinutes,
       );
       WorkTimeApp.ui.fieldErrors.clear($("dayLeaveError"));
-      if (await saveDayEdit()) {
+      if (await saveDayEdit({ markTime: false })) {
         actions.closeLeavePanel(true);
         actions.toast(
           model.storageFailed
-            ? "全天请假保存异常，请查看提醒"
-            : "全天请假已保存",
+            ? WorkTimeApp.i18n.t("copy.b23100a3cd")
+            : WorkTimeApp.i18n.t("copy.279076eeef"),
         );
       }
     });
     events.handler($("dayLeaveDone"), "onclick", async () => {
-      if (await saveDayEdit()) actions.closeLeavePanel(true);
+      if (await saveDayEdit({ markTime: false })) actions.closeLeavePanel(true);
       else $("dayLeave").focus();
     });
     events.listen(document, "click", (e) => {
@@ -291,20 +318,7 @@ WorkTimeApp.ui.createDayController = function (options) {
     events.listen($("dayLeave"), "input", () => {
       WorkTimeApp.ui.fieldErrors.clear($("dayLeaveError"));
     });
-    events.handler($("clearManual"), "onclick", async () => {
-      const d = model.state.days[model.selected];
-      if (!d) return;
-      const saved = (await application.resetDay(model.selected)).persisted;
-      actions.render();
-      actions.toast(
-        saved
-          ? d.oa
-            ? "当天手动填写已重置，已恢复 OA 数据"
-            : "当天手动填写已清空"
-          : "重置未能保存，请查看提醒",
-        saved ? "countdown" : "error",
-      );
-    });
+    events.handler($("clearManual"), "onclick", resetSelectedDay);
   }
   function dispose() {
     saveGeneration++;

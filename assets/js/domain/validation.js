@@ -244,7 +244,17 @@ WorkTimeApp.domain.validation = (() => {
     const clean = defaultState();
     clean.settings = { configured: input.settings.configured, ...schedule };
     clean.personal = { employmentDate, workCity };
-    clean.preferences = { pageTheme: input.preferences.pageTheme };
+    const language = input.preferences.language ?? "auto";
+    if (
+      language !== "auto" &&
+      !WorkTimeApp.data.languages.some((item) => item.id === language)
+    )
+      fail("preferences.language", "备份中的语言设置无效。");
+    clean.preferences = { pageTheme: input.preferences.pageTheme, language };
+    const weatherDays = input.preferences.weatherDays ?? 5;
+    if (![0, 3, 5, 7].includes(weatherDays))
+      fail("preferences.weatherDays", "备份中的天气显示天数无效。");
+    clean.preferences.weatherDays = weatherDays;
     clean.scheduleRanges = WorkTimeApp.domain.schedule.validateScheduleRanges(
       input.scheduleRanges,
     );

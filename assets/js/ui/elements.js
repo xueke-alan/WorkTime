@@ -1,14 +1,21 @@
 "use strict";
 /** Field errors retain their cause independently of translated display text. */
 WorkTimeApp.ui.fieldErrors = (() => {
-  const errors = new WeakMap();
+  const errors = new Map();
+  const sources = new WeakMap();
   function show(element, error) {
-    if (error) errors.set(element, error);
-    else errors.delete(element);
-    element.textContent = error?.message || "";
+    if (error) {
+      if (!sources.has(error))
+        sources.set(error, WorkTimeApp.i18n.canonical(error.message));
+      errors.set(element, error);
+    } else errors.delete(element);
+    element.textContent = WorkTimeApp.i18n.message(
+      error ? sources.get(error) : "",
+    );
   }
   return {
     show,
+    snapshot: () => [...errors.entries()],
     clear: (element) => show(element, null),
     saved(element) {
       if (errors.get(element)?.code === "UNSAVED") show(element, null);

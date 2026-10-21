@@ -43,7 +43,15 @@ __pycache__/
 /scripts/*
 !/scripts/check-site.cjs
 !/scripts/verify-offline.cjs
+!/scripts/verify-theme.cjs
 !/scripts/verify-startup.cjs
+!/scripts/verify-i18n.cjs
+!/scripts/check-i18n.cjs
+!/scripts/generate-locales.cjs
+!/scripts/verify-languages.cjs
+!/scripts/verify-compact-layout.cjs
+!/scripts/verify-calendar-date.cjs
+!/scripts/i18n/
 !/scripts/clean-css.cjs
 !/scripts/data-update.cjs
 !/scripts/fetch_weather.py
@@ -51,6 +59,7 @@ __pycache__/
 !/scripts/sync-material-icons.cjs
 !/scripts/sync-weather-cities.cjs
 !/scripts/update-history.cjs
+!/scripts/update-history-en.cjs
 !/scripts/update-international-festivals.cjs
 !/scripts/version-site.cjs
 !/scripts/bundle-site.cjs
@@ -58,6 +67,7 @@ __pycache__/
 !/scripts/vendor/
 /scripts/lib/*
 !/scripts/lib/wiki-source.cjs
+!/scripts/lib/locale-source.cjs
 
 # Local configuration, credentials and editor files
 .env

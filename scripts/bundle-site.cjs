@@ -27,6 +27,22 @@ function bundleSite(root) {
       return [month, hash];
     }),
   );
+  for (const language of ["en", "zh-TW", "zh-HK"])
+    versions[language] = Object.fromEntries(
+      Array.from({ length: 12 }, (_, index) => {
+        const month = String(index + 1).padStart(2, "0");
+        return [
+          month,
+          crypto
+            .createHash("sha256")
+            .update(
+              read("assets/data/history/" + language + "/" + month + ".js"),
+            )
+            .digest("hex")
+            .slice(0, 16),
+        ];
+      }),
+    );
   // Keep CSS in the same directory so relative image URLs retain their meaning.
   fs.writeFileSync(
     path.join(root, "assets/css/site.css"),

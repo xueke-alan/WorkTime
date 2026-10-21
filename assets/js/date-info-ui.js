@@ -27,12 +27,12 @@
     panel = document.getElementById("dateInfoPanel");
   bar.replaceChildren();
   bar.setAttribute("role", "tablist");
-  bar.setAttribute("aria-label", "日期资讯");
+  bar.setAttribute("aria-label", WorkTimeApp.i18n.t("copy.b0f0d53b40"));
   WorkTimeApp.services.dateInfo.register({
     id: "notifications",
-    label: "通知",
+    label: WorkTimeApp.i18n.t("copy.7a66c0d036"),
     icon: "notifications",
-    getContent: () => ({ title: "通知" }),
+    getContent: () => ({ title: WorkTimeApp.i18n.t("copy.7a66c0d036") }),
   });
   function node(tag, text, cls) {
     const e = document.createElement(tag);
@@ -46,11 +46,11 @@
   const dateHeading = node("time", "", "date-context-date");
   const dateSwitch = node("div", undefined, "date-context-switch");
   dateSwitch.setAttribute("role", "tablist");
-  dateSwitch.setAttribute("aria-label", "日期资讯内容");
+  dateSwitch.setAttribute("aria-label", WorkTimeApp.i18n.t("copy.15245b56da"));
   for (const [id, label] of [
-    ["history", "历史"],
-    ["festivals", "节气"],
-    ["almanac", "农历"],
+    ["history", WorkTimeApp.i18n.t("copy.be78b20585")],
+    ["festivals", WorkTimeApp.i18n.t("copy.860caf9fd7")],
+    ["almanac", WorkTimeApp.i18n.t("copy.e393811f90")],
   ]) {
     const button = node("button", undefined, "ui-text-action");
     button.append(node("span", label, "button-label"));
@@ -278,7 +278,13 @@
     } else badge?.remove();
     button.setAttribute(
       "aria-label",
-      tone ? "通知（有" + (tone === "error" ? "错误" : "提醒") + "）" : "通知",
+      tone
+        ? WorkTimeApp.i18n.t("copy.c08754e8f2") +
+            (tone === "error"
+              ? WorkTimeApp.i18n.t("copy.b859c7be75")
+              : WorkTimeApp.i18n.t("copy.81944e48a3")) +
+            "）"
+        : WorkTimeApp.i18n.t("copy.7a66c0d036"),
     );
   }
   const badgeObserver = new MutationObserver(updateNotificationBadge);
@@ -314,7 +320,9 @@
   focusButton.type = "button";
   focusButton.id = "countdownFocusToggle";
   function updateFocusButton() {
-    const label = countdownFocus ? "退出倒计时专注模式" : "专注显示倒计时";
+    const label = countdownFocus
+      ? WorkTimeApp.i18n.t("copy.f4489cd631")
+      : WorkTimeApp.i18n.t("copy.a34e15168a");
     focusButton.title = label;
     focusButton.setAttribute("aria-label", label);
     focusButton.setAttribute("aria-pressed", String(!!countdownFocus));
@@ -380,8 +388,12 @@
   function synchronizeTimer() {
     clearTimeout(timer);
     timer = null;
+    panel.classList.toggle(
+      "countdown-paused",
+      disposed || active !== "countdown" || document.hidden,
+    );
     if (!disposed && date && active === "countdown" && !document.hidden)
-      timer = setTimeout(tickCountdown, 1000);
+      timer = setTimeout(tickCountdown, 1000 - (Date.now() % 1000));
   }
   function tickCountdown() {
     if (disposed || document.hidden || active !== "countdown") {
@@ -410,28 +422,56 @@
       restIcon.setAttribute("focusable", "false");
       restIcon.innerHTML =
         '<g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M70 44h7a11 11 0 0 1 0 22H67"/><path d="M22 43h48l-3 23a18 18 0 0 1-18 16h-6a18 18 0 0 1-18-16Z" fill="currentColor" fill-opacity=".2"/><ellipse cx="46" cy="43" rx="24" ry="5"/><path d="M15 86h63"/><g class="countdown-rest-steam"><path d="M34 30c-10-10 10-13 0-24M48 28c-10-10 10-13 0-24M62 30c-10-10 10-13 0-24"/></g></g>';
+      const scenery = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+      );
+      scenery.classList.add("countdown-scenery");
+      scenery.setAttribute("viewBox", "0 0 800 500");
+      scenery.setAttribute("preserveAspectRatio", "xMidYMid slice");
+      scenery.setAttribute("aria-hidden", "true");
+      scenery.setAttribute("focusable", "false");
+      scenery.innerHTML =
+        '<defs><linearGradient id="countdown-sky" x2="0" y2="1"><stop stop-color="#e1f1ee"/><stop offset="1" stop-color="#fff0dc"/></linearGradient><linearGradient id="countdown-hills" x2="0" y2="1"><stop stop-color="#93bdb0"/><stop offset="1" stop-color="#d5e7df"/></linearGradient></defs>' +
+        '<path fill="url(#countdown-sky)" d="M0 0h800v500H0z"/>' +
+        '<g class="countdown-sunset"><circle cx="620" cy="285" r="82" fill="#efc995" opacity=".12"/><circle cx="620" cy="285" r="58" fill="#edbb84" opacity=".2"/><circle cx="620" cy="285" r="37" fill="#eab483" opacity=".7"/></g>' +
+        '<g class="countdown-clouds" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".55"><path d="M60 130h80m-55 15h100M510 100h100m-65 16h110"/></g>' +
+        '<g class="countdown-stars" fill="#6c9c92"><circle cx="120" cy="76" r="2"/><circle cx="690" cy="155" r="2.5"/><circle cx="440" cy="58" r="2"/><path d="m235 130 2-6 2 6 6 2-6 2-2 6-2-6-6-2zM735 63l2-6 2 6 6 2-6 2-2 6-2-6-6-2z"/></g>' +
+        '<path fill="url(#countdown-hills)" opacity=".5" d="M0 360Q90 265 210 356T430 365T650 330T850 355V500H0Z"/>' +
+        '<path fill="#80ad9e" opacity=".25" d="M0 410Q130 330 280 405T540 415T800 365V500H0Z"/>' +
+        '<path fill="#629b8d" opacity=".18" d="M0 450Q160 380 350 448T800 420V500H0Z"/>';
+      panel.replaceChildren(focusButton, scenery, box);
       box.append(restIcon);
       box.append(message, time, end);
-      panel.replaceChildren(focusButton, box);
       countdownNodes = { box, message, time, end };
     }
     const { box, message, time, end } = countdownNodes;
     box.classList.toggle("is-rest", value.status === "rest");
+    panel.classList.toggle("countdown-done", value.status === "done");
     for (const [element, text] of [
       [message, value.message],
-      [time, value.time || ""],
-      [end, value.time ? value.end + " 下班" : ""],
+      [end, value.detail || ""],
     ]) {
       if (element.textContent !== text) element.textContent = text;
     }
-    for (const element of [time, end]) {
-      if (element.hidden !== !value.time) element.hidden = !value.time;
-      if (element.classList.contains("hidden") !== !value.time)
-        element.classList.toggle("hidden", !value.time);
+    WorkTimeApp.ui.numbers.set(time, value.time || null, {
+      placeholder: "",
+      animateInitial: false,
+    });
+    for (const [element, visible] of [
+      [time, !!value.time],
+      [end, !!value.detail],
+    ]) {
+      element.hidden = !visible;
+      element.classList.toggle("hidden", !visible);
     }
   }
   function render() {
-    if (disposed) return;
+    // Restored weather/countdown tabs can notify before the editor supplies its
+    // first selected date. Wait for setDate rather than formatting an empty date.
+    if (disposed || !date) return;
+    if (active === "almanac" && !WorkTimeApp.i18n.config.almanac)
+      active = selectedDateView = "history";
     if (active !== "countdown") exitCountdownFocus(false);
     synchronizeTimer();
     const view = active;
@@ -450,7 +490,10 @@
     const grouped = dateViews.includes(active);
     dateHeader.hidden = !grouped;
     area.classList.toggle("has-date-context", grouped);
-    dateHeading.textContent = date;
+    dateHeading.textContent =
+      WorkTimeApp.i18n.language !== "zh-CN"
+        ? WorkTimeApp.i18n.date(date)
+        : date;
     dateHeading.dateTime = date;
     for (const button of dateSwitch.children) {
       const on = button.dataset.view === active;
@@ -470,25 +513,44 @@
     panel.classList.toggle("weather-panel", active === "weather");
     if (
       active === "history" &&
-      !WorkTimeApp.data.dateInfo.history[date.slice(5)]
+      !WorkTimeApp.services.dateInfo.historyData()[date.slice(5)]
     ) {
       const requestedDate = date;
+      const requestedLanguage = WorkTimeApp.i18n.language;
       panel.replaceChildren(
-        node("p", "正在加载本月历史资料…", "date-info-empty"),
+        node("p", WorkTimeApp.i18n.t("copy.087b32dc6e"), "date-info-empty"),
       );
       WorkTimeApp.services.dateInfo.loadHistory(date).then(
         () => {
-          if (!disposed && active === "history" && date === requestedDate)
+          if (
+            !disposed &&
+            active === "history" &&
+            date === requestedDate &&
+            WorkTimeApp.i18n.language === requestedLanguage
+          )
             render();
         },
         (error) => {
-          if (disposed || active !== "history" || date !== requestedDate)
+          if (
+            disposed ||
+            active !== "history" ||
+            date !== requestedDate ||
+            WorkTimeApp.i18n.language !== requestedLanguage
+          )
             return;
-          const retry = node("button", "重试", "ui-button");
+          const retry = node(
+            "button",
+            WorkTimeApp.i18n.t("copy.e2d53a6d3a"),
+            "ui-button",
+          );
           retry.type = "button";
           retry.addEventListener("click", render, { once: true });
           panel.replaceChildren(
-            node("p", error.message, "date-info-empty"),
+            node(
+              "p",
+              WorkTimeApp.i18n.message(error.message),
+              "date-info-empty",
+            ),
             retry,
           );
         },
@@ -497,8 +559,8 @@
     }
     const c = WorkTimeApp.services.dateInfo.getContent(active, date) || {
       ok: false,
-      title: "日期资讯",
-      message: "本地资讯模块未能加载",
+      title: WorkTimeApp.i18n.t("copy.b0f0d53b40"),
+      message: WorkTimeApp.i18n.t("copy.e275fbb4fd"),
     };
     if (c.ok && c.weather) {
       countdownNodes = null;
@@ -525,7 +587,9 @@
         entry.append(
           node(
             "strong",
-            (e.year < 0 ? "公元前" + Math.abs(e.year) : e.year) + "年",
+            e.year < 0
+              ? WorkTimeApp.i18n.t("history.bce", { year: Math.abs(e.year) })
+              : String(e.year),
           ),
           node("p", e.text),
         );
@@ -543,10 +607,17 @@
         node("span", c.almanac.day, "almanac-date-text"),
       );
       const cycle = node("p", undefined, "almanac-cycle"),
-        cycleParts = values["干支"].trim().split(/\s+/);
+        cycleParts = values[WorkTimeApp.i18n.message("干支")]
+          .trim()
+          .split(/\s+/);
       cycle.append(
         node("span", cycleParts.slice(0, 2).join(" ")),
-        node("span", cycleParts.slice(2).join(" ") + " · 属" + values["生肖"]),
+        node(
+          "span",
+          cycleParts.slice(2).join(" ") +
+            WorkTimeApp.i18n.t("copy.da73db7bf1") +
+            values[WorkTimeApp.i18n.message("生肖")],
+        ),
       );
       header.append(head, cycle);
       sheet.append(header);
@@ -557,12 +628,14 @@
           undefined,
           "almanac-column " + (key === "宜" ? "auspicious" : "avoid"),
         );
-        column.setAttribute("aria-label", key);
+        column.setAttribute("aria-label", WorkTimeApp.i18n.message(key));
         const watermark = node("span", undefined, "almanac-watermark");
-        watermark.append(node("span", key, "almanac-watermark-text"));
+        watermark.append(
+          node("span", WorkTimeApp.i18n.message(key), "almanac-watermark-text"),
+        );
         watermark.setAttribute("aria-hidden", "true");
         const activities = node("p", undefined, "almanac-activities");
-        for (const text of values[key].split("、"))
+        for (const text of values[WorkTimeApp.i18n.message(key)].split("、"))
           activities.append(
             node(
               "span",
@@ -574,7 +647,14 @@
         grid.append(column);
       }
       const footer = node("div", undefined, "almanac-footer");
-      footer.append(node("p", "冲" + values["冲煞"], "almanac-clash"));
+      footer.append(
+        node(
+          "p",
+          WorkTimeApp.i18n.t("copy.e429a897c5") +
+            values[WorkTimeApp.i18n.message("冲煞")],
+          "almanac-clash",
+        ),
+      );
       const details = node("div", undefined, "almanac-details");
       for (const [label, value] of c.almanac.details || [])
         details.append(node("span", label + " " + value));
@@ -611,13 +691,33 @@
       panel.append(dl);
     }
     if (c.events) {
-      const source = node("p", "更多历史上的今天：", "date-info-source");
-      const parts = date.split("-").map(Number);
+      if (
+        WorkTimeApp.i18n.config.history === "en" &&
+        WorkTimeApp.i18n.language !== "en"
+      ) {
+        panel.prepend(
+          node(
+            "p",
+            WorkTimeApp.i18n.t("history.languageNote"),
+            "date-info-empty history-language-note",
+          ),
+        );
+        for (const text of panel.querySelectorAll(".history-event p"))
+          text.lang = "en";
+      }
+      const source = node(
+        "p",
+        WorkTimeApp.i18n.t("copy.a3b4f3262f"),
+        "date-info-source",
+      );
       source.append(
         link(
-          "中文维基百科",
-          "https://zh.wikipedia.org/zh-cn/" +
-            encodeURIComponent(parts[1] + "月" + parts[2] + "日"),
+          WorkTimeApp.i18n.t(
+            WorkTimeApp.i18n.config.history === "en"
+              ? "history.english"
+              : "history.chinese",
+          ),
+          c.sourceUrl,
         ),
         document.createTextNode(" · CC BY-SA 4.0"),
       );
@@ -662,7 +762,11 @@
     const current = active;
     bar.replaceChildren();
     const providers = WorkTimeApp.services.dateInfo.list() || [
-      { id: "notifications", label: "通知", icon: "notifications" },
+      {
+        id: "notifications",
+        label: WorkTimeApp.i18n.t("copy.7a66c0d036"),
+        icon: "notifications",
+      },
     ];
     const independentTabs = ["notifications", "countdown", "weather"];
     const tabOrder = (provider) => {
@@ -681,7 +785,10 @@
         b.classList.add("date-tab-group-start");
         firstDateTab = false;
       }
-      b.title = p.id === "history" ? "日期资讯：历史、节气、农历" : p.label;
+      b.title =
+        p.id === "history" ? WorkTimeApp.i18n.t("copy.45eecb5cfb") : p.label;
+      if (p.id === "history" && !WorkTimeApp.i18n.config.almanac)
+        b.title = WorkTimeApp.i18n.t("date.tabs");
       b.setAttribute("aria-label", b.title);
       b.setAttribute("role", "tab");
       b.setAttribute(
@@ -773,15 +880,20 @@
         if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
           return;
         event.preventDefault();
+        const available = [...dateSwitch.children].filter(
+          (button) => !button.hidden,
+        );
+        const position = available.indexOf(button);
         const index =
           event.key === "Home"
             ? 0
             : event.key === "End"
-              ? 2
-              : (dateViews.indexOf(id) + (event.key === "ArrowRight" ? 1 : 2)) %
-                3;
-        dateSwitch.children[index].click();
-        dateSwitch.children[index].focus();
+              ? available.length - 1
+              : (position +
+                  (event.key === "ArrowRight" ? 1 : available.length - 1)) %
+                available.length;
+        available[index].click();
+        available[index].focus();
       });
     }
     badgeObserver.observe(notices, {
@@ -793,6 +905,7 @@
     });
     almanacResize.observe(panel);
     events.listen(document, "visibilitychange", onVisibility);
+    events.listen(document, "worktime:languagechange", refreshLanguage);
     events.listen(focusButton, "click", toggleCountdownFocus);
     events.listen(document, "keydown", onFocusKeydown, true);
     events.listen(document, "worktime:failed", dispose);
@@ -800,7 +913,32 @@
     unsubscribeWeather = WorkTimeApp.services.weather.subscribe(onWeather);
     refreshTabs();
   }
+  function refreshLanguage() {
+    const hideAlmanac = !WorkTimeApp.i18n.config.almanac;
+    bar.setAttribute("aria-label", WorkTimeApp.i18n.t("copy.b0f0d53b40"));
+    dateSwitch.setAttribute(
+      "aria-label",
+      WorkTimeApp.i18n.t("copy.15245b56da"),
+    );
+    if (hideAlmanac && active === "almanac")
+      active = selectedDateView = "history";
+    for (const button of dateSwitch.children) {
+      const id = button.dataset.view;
+      button.hidden = hideAlmanac && id === "almanac";
+      button.querySelector("span").textContent = WorkTimeApp.i18n.t(
+        {
+          history: "copy.be78b20585",
+          festivals: "copy.860caf9fd7",
+          almanac: "copy.e393811f90",
+        }[id],
+      );
+    }
+    updateFocusButton();
+    refreshTabs();
+    rememberTab();
+  }
   WorkTimeApp.ui.dateInfo = {
+    refreshLanguage,
     setDate(value) {
       date = value;
       // These panels use live application data rather than the selected date.
@@ -816,4 +954,5 @@
     dispose,
   };
   mount();
+  refreshLanguage();
 })(window);

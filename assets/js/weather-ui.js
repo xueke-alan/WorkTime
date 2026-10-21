@@ -8,8 +8,22 @@
   }
   const number = (v, unit = "") =>
     typeof v === "number" && Number.isFinite(v)
-      ? Math.round(v * 10) / 10 + unit
-      : "暂无";
+      ? WorkTimeApp.i18n.number(Math.round(v * 10) / 10, {
+          useGrouping: false,
+          maximumFractionDigits: 1,
+        }) + unit
+      : WorkTimeApp.i18n.t("copy.5dbd015496");
+  // Missing values occupy numeric slots, not prose columns. Keep their meaning
+  // localized for assistive technology and hover without crowding adjacent hours.
+  function valueNode(tag, text, className) {
+    const missing = text === WorkTimeApp.i18n.t("copy.5dbd015496");
+    const element = node(tag, missing ? "—" : text, className);
+    if (missing) {
+      element.title = text;
+      element.setAttribute("aria-label", text);
+    }
+    return element;
+  }
   // Global UV Index categories: <3, <6, <8, <11 and 11+.
   function uvLevel(value) {
     if (
@@ -18,15 +32,15 @@
       value < 0 ||
       value === 999999
     )
-      return "暂无";
-    if (value < 3) return "弱";
-    if (value < 6) return "中等";
-    if (value < 8) return "强";
-    if (value < 11) return "很强";
-    return "极强";
+      return WorkTimeApp.i18n.t("copy.5dbd015496");
+    if (value < 3) return WorkTimeApp.i18n.t("copy.d47963399c");
+    if (value < 6) return WorkTimeApp.i18n.t("copy.839de24a0c");
+    if (value < 8) return WorkTimeApp.i18n.t("copy.2756809b4d");
+    if (value < 11) return WorkTimeApp.i18n.t("copy.34989e860e");
+    return WorkTimeApp.i18n.t("copy.bf92a75326");
   }
   function time(value) {
-    return new Date(value).toLocaleString("zh-CN", {
+    return new Date(value).toLocaleString(WorkTimeApp.i18n.locale, {
       timeZone: "Asia/Shanghai",
       hour12: false,
     });
@@ -108,7 +122,9 @@
   }
   function weatherIcon(code) {
     const icon = iconFor(code);
-    const description = WorkTimeApp.services.weather.weatherText(code);
+    const description = WorkTimeApp.i18n.message(
+      WorkTimeApp.services.weather.weatherText(code),
+    );
     if (!icon) {
       const empty = node("span", "—", "weather-day-icon");
       empty.setAttribute("aria-label", description);
@@ -139,18 +155,24 @@
     forecastState.set(panel, saved);
     panel.replaceChildren();
     const head = node("div", undefined, "weather-heading");
-    head.append(
-      node(
-        "strong",
-        value.city ? value.city.name.replace(/市$/, "") + "市" : "天气",
-      ),
+    const cityName = node(
+      "strong",
+      value.city
+        ? WorkTimeApp.i18n.city(value.city.name)
+        : WorkTimeApp.i18n.t("copy.6055fe4b90"),
     );
+    cityName.title = cityName.textContent;
+    head.append(cityName);
     panel.append(head);
     if (value.message)
-      panel.append(node("p", value.message, "date-info-empty"));
+      panel.append(
+        node("p", WorkTimeApp.i18n.message(value.message), "date-info-empty"),
+      );
     if (!value.record) {
       if (value.loading)
-        panel.append(node("p", "正在加载天气…", "date-info-empty"));
+        panel.append(
+          node("p", WorkTimeApp.i18n.t("copy.d0148374a9"), "date-info-empty"),
+        );
       return;
     }
     const r = value.record;
@@ -160,7 +182,7 @@
     const dailyRows = r.daily.filter((row) => row.date >= today);
     const now = r.current;
     const overview = node("div", undefined, "weather-current");
-    const temperature = node(
+    const temperature = valueNode(
       "strong",
       number(now.temperature, "°C"),
       "weather-temperature",
@@ -172,20 +194,38 @@
     head.append(overview);
     panel.append(condition);
     const dl = node("dl", undefined, "weather-details");
-    for (const [label, text] of [
-      ["体感", number(now.apparentTemperature, "°C")],
-      ["湿度", number(now.humidity, "%")],
-      ["风力", now.windClass || "暂无"],
-      ["风向", now.windDirectionText || "暂无"],
+    for (const [label, text, fullLabel = label] of [
+      [
+        WorkTimeApp.i18n.t("copy.0e4b9c6d11"),
+        number(now.apparentTemperature, "°C"),
+      ],
+      [WorkTimeApp.i18n.t("copy.dee19da50f"), number(now.humidity, "%")],
+      [
+        WorkTimeApp.i18n.t("weather.wind.label"),
+        String(now.windClass || "").replaceAll(
+          "级",
+          WorkTimeApp.i18n.t("copy.27e4026a54"),
+        ) || WorkTimeApp.i18n.t("copy.5dbd015496"),
+        WorkTimeApp.i18n.t("copy.c56fd6a049"),
+      ],
+      [
+        WorkTimeApp.i18n.t("weather.direction.label"),
+        WorkTimeApp.i18n.message(now.windDirectionText) ||
+          WorkTimeApp.i18n.t("copy.5dbd015496"),
+        WorkTimeApp.i18n.t("copy.b24c63c80a"),
+      ],
     ]) {
       const item = node("div", undefined, "weather-detail");
-      item.append(node("dt", label), node("dd", text));
+      const term = node("dt", label);
+      term.title = fullLabel;
+      term.setAttribute("aria-label", fullLabel);
+      item.append(term, valueNode("dd", text));
       dl.append(item);
     }
     panel.append(dl);
     const age = node(
       "p",
-      new Date(r.validAt).toLocaleString("zh-CN", {
+      new Date(r.validAt).toLocaleString(WorkTimeApp.i18n.locale, {
         timeZone: "Asia/Shanghai",
         month: "2-digit",
         day: "2-digit",
@@ -196,20 +236,20 @@
       "date-info-source weather-time",
     );
     age.title =
-      "百度地图天气 · 北京时间" +
-      "\n天气时间 " +
+      WorkTimeApp.i18n.t("copy.35024cc449") +
+      WorkTimeApp.i18n.t("copy.504862fd0c") +
       time(r.validAt) +
-      " · 获取 " +
+      WorkTimeApp.i18n.t("copy.2868f768f7") +
       time(r.fetchedAt);
     age.setAttribute(
       "aria-label",
-      (value.stale ? "旧数据 · " : "") + age.title,
+      (value.stale ? WorkTimeApp.i18n.t("copy.00c4c43cec") : "") + age.title,
     );
     if (value.stale) age.classList.add("weather-stale");
     const forecast = node("div", undefined, "weather-forecast");
     const tabs = node("div", undefined, "weather-forecast-tabs");
     tabs.setAttribute("role", "tablist");
-    tabs.setAttribute("aria-label", "预报范围");
+    tabs.setAttribute("aria-label", WorkTimeApp.i18n.t("copy.21d226ca4b"));
     const hourly = node("div", undefined, "weather-hourly");
     const hourMs = 60 * 60 * 1000;
     const firstHour = Math.floor(Date.now() / hourMs) * hourMs;
@@ -229,7 +269,7 @@
       const card = node("div", undefined, "weather-hour");
       const hourTime = node(
         "time",
-        new Date(hour).toLocaleTimeString("zh-CN", {
+        new Date(hour).toLocaleTimeString(WorkTimeApp.i18n.locale, {
           timeZone: "Asia/Shanghai",
           hour: "2-digit",
           minute: "2-digit",
@@ -240,12 +280,13 @@
       card.title = time(hour);
       card.append(
         hourTime,
-        node("strong", number(row.temperature, "°")),
-        node("span", number(row.precipitationProbability, "%")),
+        valueNode("strong", number(row.temperature, "°")),
+        valueNode("span", number(row.precipitationProbability, "%")),
       );
       card.lastElementChild.setAttribute(
         "aria-label",
-        "降水概率 " + number(row.precipitationProbability, "%"),
+        WorkTimeApp.i18n.t("copy.27c5f1167d") +
+          number(row.precipitationProbability, "%"),
       );
       hourly.append(card);
     }
@@ -254,26 +295,42 @@
       for (const row of dailyRows.slice(0, 5)) {
         const line = node("div", undefined, "weather-day");
         const temperatures = node("div", undefined, "weather-day-temperatures");
-        const high = node("strong", number(row.high, "°"));
-        const low = node("span", number(row.low, "°"), "weather-day-low");
+        const high = valueNode("strong", number(row.high, "°"));
+        const low = valueNode("span", number(row.low, "°"), "weather-day-low");
         high.setAttribute(
           "aria-label",
-          "最高温度 " + number(row.high, "摄氏度"),
+          WorkTimeApp.i18n.t("copy.d787b8fad4") +
+            number(row.high, WorkTimeApp.i18n.t("copy.b3a2ab7764")),
         );
-        low.setAttribute("aria-label", "最低温度 " + number(row.low, "摄氏度"));
+        low.setAttribute(
+          "aria-label",
+          WorkTimeApp.i18n.t("copy.b438c0f1cd") +
+            number(row.low, WorkTimeApp.i18n.t("copy.b3a2ab7764")),
+        );
         temperatures.append(high, low);
         const uv = node("span", "UVI ", "weather-day-uv");
         const uvValue = node(
           "span",
-          uvLevel(row.uvIndex) === "暂无" ? "—" : number(row.uvIndex),
+          uvLevel(row.uvIndex) === WorkTimeApp.i18n.t("copy.5dbd015496")
+            ? "—"
+            : number(row.uvIndex),
           "weather-uv-value",
         );
-        uvValue.dataset.level = uvLevel(row.uvIndex);
+        uvValue.dataset.level =
+          typeof row.uvIndex === "number" &&
+          row.uvIndex >= 0 &&
+          row.uvIndex !== 999999
+            ? ["low", "moderate", "high", "very-high", "extreme"][
+                [3, 6, 8, 11, Infinity].findIndex(
+                  (limit) => row.uvIndex < limit,
+                )
+              ]
+            : "unknown";
         uv.append(uvValue);
         uv.title =
-          "紫外线等级 " +
+          WorkTimeApp.i18n.t("copy.7cf9e381d1") +
           uvLevel(row.uvIndex) +
-          " · 指数 " +
+          WorkTimeApp.i18n.t("copy.fdedbc09b8") +
           number(row.uvIndex);
         uv.setAttribute("aria-label", uv.title);
         line.append(
@@ -285,7 +342,9 @@
         daily.append(line);
       }
       if (!dailyRows.length)
-        daily.append(node("p", "暂无最新预报", "date-info-empty"));
+        daily.append(
+          node("p", WorkTimeApp.i18n.t("copy.a2face0835"), "date-info-empty"),
+        );
       return daily;
     }
     const daily = dailyView();
@@ -317,7 +376,9 @@
       ["hourly", "12h"],
       [
         "daily",
-        dailyRows.length ? Math.min(5, dailyRows.length) + "d" : "暂无预报",
+        dailyRows.length
+          ? Math.min(5, dailyRows.length) + "d"
+          : WorkTimeApp.i18n.t("copy.d852f0593c"),
       ],
     ]) {
       const button = node("button");
@@ -326,7 +387,9 @@
       button.type = "button";
       button.setAttribute(
         "aria-label",
-        mode === "hourly" ? "未来12小时" : "未来5天",
+        mode === "hourly"
+          ? WorkTimeApp.i18n.t("copy.c3651dbfc9")
+          : WorkTimeApp.i18n.t("copy.29c372da5d"),
       );
       button.id = "weather-forecast-tab-" + mode;
       button.setAttribute("role", "tab");

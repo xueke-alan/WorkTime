@@ -111,8 +111,8 @@
   transform: translateY(-0.08em);
 }
 #editorInfo .notification-body {
-  white-space: nowrap;
-  overflow-wrap: normal;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 #editorInfo #timeAnomalyNotice .notification-body {
   white-space: normal;
@@ -1365,13 +1365,17 @@ body .editor #batchForm .batch-editor-actions {
   --control-height: var(--action-control-height);
   justify-content: flex-end;
   align-items: flex-end;
-  gap: 0.571429rem;
+  gap: 0.285714rem;
+  flex-wrap: wrap;
 }
 body .editor #batchForm .batch-editor-actions button {
   flex: 0 0 auto;
   width: auto;
-  padding-inline: 0.857143rem;
+  padding-inline: 0.142857rem;
   white-space: nowrap;
+}
+body .editor #batchForm #batchReset {
+  margin-inline-end: auto;
 }
 @media (min-width: 1151px) {
   body .editor #batchBar {
@@ -1420,11 +1424,10 @@ body #dayPreview .preview-day {
   text-overflow: ellipsis;
 }
 body #dayPreview .preview-period {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: baseline;
-  justify-content: space-between;
-  gap: 0.2rem 0.5rem;
+  gap: 0;
   font-size: var(--text-small);
   line-height: 1.5rem;
   margin-top: 0.571429rem;
@@ -1569,8 +1572,9 @@ body .editor .batch-editor-header h2 {
   transform: translateY(calc(var(--ui-ink-offset, 0px) + 0.142857rem));
 }
 #dayPreview .preview-employment {
-  margin-inline-start: auto;
-  text-align: right;
+  grid-column: 3;
+  margin-inline-start: 0;
+  text-align: left;
   font-size: var(--text-small);
   color: var(--muted);
 }
@@ -1589,6 +1593,7 @@ body #dayPreview .preview-employment strong {
   align-items: center;
 }
 body #dayPreview .preview-period > span { white-space: nowrap; }
+body #dayPreview .preview-period > span:first-child { grid-column: span 2; }
 
 /* Leave and planned overtime share a fixed icon slot and centered label slot. */
 body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle) {
@@ -1861,7 +1866,7 @@ body .editor .settings-pane-actions button {
 }
 
 /* Equal-width expected attendance, recorded attendance and average overtime. */
-body #dayPreview .preview-day.has-daily-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: 0; font-size: 0.75rem; line-height: 1.4; }
+body #dayPreview .preview-day.has-daily-metrics { display: flex; align-items: baseline; justify-content: flex-start; gap: 0; font-size: 0.75rem; line-height: 1.4; text-align: left; }
 body #dayPreview .preview-day.has-daily-metrics > span { display: inline-flex; align-items: baseline; justify-content: flex-start; min-width: 0; padding-inline: 0; gap: 0.428571rem; white-space: nowrap; }
 body #dayPreview .preview-day.has-daily-metrics strong { font-size: 0.9rem; font-weight: 650; font-variant-numeric: tabular-nums; }
 body #dayPreview .preview-totals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -2094,10 +2099,9 @@ body .editor #dayForm .day-action-row {
 body .editor #dayForm #dayPreview { margin-bottom: var(--section-spacing); }
 
 body .editor #personalSettingsForm {
-  --section-spacing: 1rem;
-  margin-top: var(--section-spacing);
-  padding-top: var(--section-spacing);
-  border-top: 1px solid var(--line);
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 body .editor #personalSettingsForm .settings-employment {
   display: grid;
@@ -2120,12 +2124,16 @@ body .editor #personalSettingsForm #workCity {
 }
 #personalSettingsError:empty { display: none; }
 
-/* Shared 2:1:1 action slots; leave editing only swaps their contents. */
+/* Shared language-independent action slots; leave editing swaps their contents. */
 body .editor #dayForm .day-action-row {
+  --day-action-columns: minmax(0, 1fr) 5.357143rem 5.357143rem;
   --control-height: var(--action-control-height);
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--row-spacing, 0.571429rem);
+  grid-template-columns: var(--day-action-columns);
+  gap: 0.357143rem;
+}
+body .editor #dayForm .day-action-row :is(#clearManual, #sourceOpen) {
+  padding-inline: 0.285714rem;
 }
 body .editor #dayForm .day-action-row :is(#dayLeaveArea, #plannedOvertimeArea) {
   grid-column: 1;
@@ -2139,6 +2147,7 @@ body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggl
 /* Keep planning actions compact while reserving the row for inline leave editing. */
 body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle) {
   width: min(7.142857rem, 100%);
+  padding-inline: 0.357143rem;
 }
 body .editor #dayForm .day-action-row #dayLeaveToggle[aria-expanded="true"] {
   width: 100%;
@@ -2170,7 +2179,7 @@ body .editor #dayForm #dayLeaveToggle[aria-pressed="true"][aria-expanded="true"]
 }
 body .editor #dayForm #dayLeaveToggle > .ui-icon {
   position: absolute;
-  left: 0.4rem;
+  left: 0.357143rem;
   opacity: 1;
   transform: none;
 }
@@ -2206,8 +2215,8 @@ body .editor #dayForm .leave-inline {
 }
 body .editor #dayForm .leave-inline-content {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--row-spacing, 0.571429rem);
+  grid-template-columns: var(--day-action-columns);
+  gap: 0.357143rem;
   height: var(--control-height) !important;
   padding: 0;
   align-items: center;
@@ -2257,13 +2266,31 @@ body #dayPreview .preview-totals strong small { display: inline; margin: 0; font
 body #dayPreview #previewAverage { margin-top: 0.15rem; }
 
 /* Accessible appearance picker, using the existing sidebar's scrolling body. */
+body .editor #dayForm #plannedOvertimeToggle {
+  width: min(7.142857rem, 100%);
+  white-space: nowrap;
+}
+body .editor #dayForm #clearManual.is-planned-reset {
+  color: var(--muted);
+  background: transparent;
+  border-color: var(--line);
+}
+body .editor #dayForm #clearManual.is-planned-reset:hover {
+  background: color-mix(in srgb, var(--muted) 8%, var(--paper));
+  border-color: var(--muted);
+}
+body .editor #dayForm #clearManual.is-planned-reset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .theme-settings { border: 0; margin: 0; padding: 0; min-width: 0; }
 .theme-settings legend { padding-block: 0; padding-inline-end: 0; }
 .theme-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 2px; margin-top: 0.428571rem; }
 .theme-card { display: grid; place-items: center; height: var(--control-height); min-width: 0; position: relative; padding: 0; border: 0; border-radius: var(--control-radius); background: transparent; cursor: pointer; }
 .theme-card input { position: absolute; width: 1px; height: 1px; opacity: 0; padding: 0; margin: 0; }
 .theme-card:has(input:focus-visible) { outline: 2px solid var(--theme-option-color); outline-offset: -2px; }
-.theme-swatch { width: min(16px, calc(100% - 8px)); aspect-ratio: 1; background: var(--theme-option-color); border-radius: 50%; }
+.theme-swatch { width: min(16px, calc(100% - 8px)); aspect-ratio: 1; background: var(--theme-option-color); border-radius: 4px; }
 .theme-card:has(input:checked) .theme-swatch { outline: 2px solid var(--theme-option-color); outline-offset: 2px; }
 .theme-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .theme-save-notice { margin-top: 0.85rem; color: var(--ink); }

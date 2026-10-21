@@ -46,43 +46,43 @@ WorkTimeApp.ui.createSummary = function (options) {
       surplusNegative = surplus < 0 && surplusMinutes > 0;
     const data = [
       [
-        "平均加班",
+        WorkTimeApp.i18n.t("copy.cc954e610b"),
         ready && valid && actual.average !== null ? actual.average / 60 : 0,
-        "工作日加班 ÷ 折算出勤",
+        WorkTimeApp.i18n.t("short.averageFormula"),
         { decimals: 3, unit: "h" },
       ],
       [
-        "工时盈余",
+        WorkTimeApp.i18n.t("copy.fa91c92797"),
         surplusMinutes,
-        "累计加班 − 加班要求 × 折算出勤",
+        WorkTimeApp.i18n.t("short.balanceFormula"),
         { unit: "" },
       ],
       [
-        "折算出勤",
+        WorkTimeApp.i18n.t("copy.7a26926ed7"),
         ready && valid ? Number(actual.attendance.toFixed(4)) : null,
         "",
         { unit: "d" },
       ],
       [
-        "工作日加班",
+        WorkTimeApp.i18n.t("short.workOT"),
         ready && valid ? actual.workOvertime / 60 : null,
         "",
         { decimals: 2, unit: " h" },
       ],
       [
-        "休息日加班",
+        WorkTimeApp.i18n.t("short.restOT"),
         ready && valid ? actual.restOvertime / 60 : null,
         "",
         { decimals: 2, unit: " h" },
       ],
       [
-        "总工时",
+        WorkTimeApp.i18n.t("copy.016315b388"),
         ready && valid ? actual.total / 60 : null,
         "",
         { decimals: 2, unit: " h" },
       ],
       [
-        "待录入",
+        WorkTimeApp.i18n.t("copy.eb87bec8ca"),
         valid ? C.pendingWorkdays(state, a, b, today) : null,
         "",
         { unit: "d" },
@@ -92,8 +92,13 @@ WorkTimeApp.ui.createSummary = function (options) {
     if (!cards.length) {
       cards = data.map(([label, , description]) => {
         const card = document.createElement("article");
-        card.className = "card" + (label === "平均加班" ? " average-card" : "");
-        if (label === "工时盈余") card.classList.add("surplus-card");
+        card.className =
+          "card" +
+          (label === WorkTimeApp.i18n.t("copy.cc954e610b")
+            ? " average-card"
+            : "");
+        if (label === WorkTimeApp.i18n.t("copy.fa91c92797"))
+          card.classList.add("surplus-card");
         card.innerHTML =
           '<div class="card-label"></div><div class="metric"></div>' +
           (description ? '<div class="card-foot"></div>' : "");
@@ -108,8 +113,27 @@ WorkTimeApp.ui.createSummary = function (options) {
       cards[1].after(divider);
     }
     data.forEach((item, index) => {
+      cards[index].querySelector(".card-label").textContent = item[0];
+      const fullLabel = [
+        "copy.cc954e610b",
+        "copy.fa91c92797",
+        "copy.7a26926ed7",
+        "copy.04fd5a186c",
+        "copy.2db287963f",
+        "copy.016315b388",
+        "copy.eb87bec8ca",
+      ][index];
+      cards[index].querySelector(".card-label").title =
+        WorkTimeApp.i18n.t(fullLabel);
+      cards[index]
+        .querySelector(".card-label")
+        .setAttribute("aria-label", WorkTimeApp.i18n.t(fullLabel));
+      if (index < 2)
+        cards[index].querySelector(".card-foot").title = WorkTimeApp.i18n.t(
+          index === 0 ? "copy.ae47f5dfb5" : "copy.2e0e43d0d6",
+        );
       const metric = cards[index].querySelector(".metric");
-      if (item[0] === "工时盈余") {
+      if (item[0] === WorkTimeApp.i18n.t("copy.fa91c92797")) {
         if (surplusMinutes === null) updateHTML(metric, "—");
         else {
           updateHTML(
@@ -148,14 +172,14 @@ WorkTimeApp.ui.createSummary = function (options) {
     const { today } = getView();
     const display = {
       message: "",
-      totalLabel: "剩余合计",
-      dailyLabel: "平均每天",
+      totalLabel: WorkTimeApp.i18n.t("copy.f84810dcd6"),
+      dailyLabel: WorkTimeApp.i18n.t("copy.b0bcecf530"),
       total: null,
       daily: 0,
       target: null,
       counts: "",
       remaining: null,
-      remainingPrefix: "后续",
+      remainingPrefix: WorkTimeApp.i18n.t("copy.068c69578d"),
     };
     buildTarget(display, state, today);
     for (const [id, value] of [
@@ -164,14 +188,40 @@ WorkTimeApp.ui.createSummary = function (options) {
       ["targetDailyLabel", display.dailyLabel],
     ])
       if ($(id).textContent !== value) $(id).textContent = value;
+    let shortLabel = display.totalLabel;
+    if (
+      ["copy.df5cb65034", "copy.bc4e75d700"].some(
+        (key) => WorkTimeApp.i18n.t(key) === display.totalLabel,
+      )
+    )
+      shortLabel = WorkTimeApp.i18n.t("short.needed");
+    if (WorkTimeApp.i18n.t("copy.d58b3b54dd") === display.totalLabel)
+      shortLabel = WorkTimeApp.i18n.t("short.available");
+    $("targetTotalLabel").title =
+      display.remaining === null
+        ? display.totalLabel
+        : WorkTimeApp.i18n.t("summary.remaining", {
+            label: display.totalLabel,
+            days: WorkTimeApp.i18n.plural(
+              display.remaining,
+              "unit.day.one",
+              "unit.day.other",
+            ),
+          });
+    $("targetTotalLabel").setAttribute(
+      "aria-label",
+      $("targetTotalLabel").title,
+    );
     const label =
       display.remaining === null
         ? esc(display.totalLabel)
-        : esc(display.remainingPrefix) +
-          '<span class="fixed-remaining-count">' +
-          display.remaining +
-          "</span>天" +
-          esc(display.totalLabel);
+        : WorkTimeApp.i18n.t("short.target.remaining", {
+            label: esc(shortLabel),
+            count:
+              '<span class="fixed-remaining-count">' +
+              esc(WorkTimeApp.i18n.number(display.remaining)) +
+              "</span>",
+          });
     if (display.remaining === null) {
       const element = $("targetTotalLabel");
       if (element.textContent !== display.totalLabel)
@@ -180,7 +230,7 @@ WorkTimeApp.ui.createSummary = function (options) {
     } else updateHTML($("targetTotalLabel"), label);
     for (const [id, value, unit, decimals] of [
       ["targetMetric", display.total, "h", null],
-      ["targetDailyMetric", display.daily, "h/d", 1],
+      ["targetDailyMetric", display.daily, "h/d", 2],
       ["targetValue", display.target, "h", 1],
     ])
       numbers.set($(id), value, {
@@ -192,22 +242,24 @@ WorkTimeApp.ui.createSummary = function (options) {
   }
   function buildTarget(display, state, today) {
     if (!state.settings.configured) {
-      display.message = "请先完成工作时间设置";
+      display.message = WorkTimeApp.i18n.t("copy.4561283ba2");
       return;
     }
     const [start, end] = monthBounds(),
       condition = C.selectOvertimeRequirement(state, start, end),
       tierLabel =
         condition.tier === 0
-          ? "最低要求"
+          ? WorkTimeApp.i18n.t("copy.e69fe8710f")
           : condition.tier === 4
-            ? "4天及以上"
-            : condition.tier + "天档";
-    display.counts = "计划本月加班 " + condition.plannedDays + " 天";
+            ? WorkTimeApp.i18n.t("copy.fea703e117")
+            : condition.tier + WorkTimeApp.i18n.t("copy.77e1d94d23");
+    display.counts = WorkTimeApp.i18n.t("short.planned", {
+      count: condition.plannedDays,
+    });
     display.target =
       condition.targetMinutes === null ? null : condition.targetMinutes / 60;
     if (condition.targetMinutes === null) {
-      display.message = "请在工作时间设置中配置" + tierLabel;
+      display.message = WorkTimeApp.i18n.t("copy.5300e06359") + tierLabel;
       return;
     }
     const pace = C.targetPace(
@@ -218,7 +270,7 @@ WorkTimeApp.ui.createSummary = function (options) {
       condition.targetMinutes,
     );
     if (!pace || !pace.plannedDays) {
-      display.message = "本月没有应上班日";
+      display.message = WorkTimeApp.i18n.t("copy.04a4021608");
       return;
     }
     const remaining = Number(pace.remainingDays.toFixed(2)),
@@ -227,35 +279,35 @@ WorkTimeApp.ui.createSummary = function (options) {
       const missing = C.pendingWorkdays(state, start, end, today);
       display.totalLabel =
         Math.abs(pace.difference) < 0.005
-          ? "已达标"
+          ? WorkTimeApp.i18n.t("copy.573a35fdda")
           : pace.difference > 0
             ? missing
-              ? "记录内差额"
-              : "未达标差额"
-            : "超出目标";
+              ? WorkTimeApp.i18n.t("copy.a4216d720e")
+              : WorkTimeApp.i18n.t("copy.ca615d13ae")
+            : WorkTimeApp.i18n.t("copy.8d327bd444");
       display.total =
         Math.abs(pace.difference) < 0.005 ? 0 : formatHours(pace.difference);
       return;
     }
     if (start <= today && today <= end)
       display.remainingPrefix = pace.startsTomorrow
-        ? "明日起后续"
-        : "含今日后续";
+        ? WorkTimeApp.i18n.t("copy.6d6e5b6490")
+        : WorkTimeApp.i18n.t("copy.4c8ca6cf6a");
     if (Math.abs(pace.difference) < 0.005) {
-      display.totalLabel = "合计差额";
-      display.dailyLabel = "日均差额";
+      display.totalLabel = WorkTimeApp.i18n.t("copy.67692532ab");
+      display.dailyLabel = WorkTimeApp.i18n.t("copy.ff1b93c871");
       display.total = display.daily = 0;
     } else if (pace.difference < 0) {
-      display.totalLabel = "合计可少上";
-      display.dailyLabel = "平均可少上";
+      display.totalLabel = WorkTimeApp.i18n.t("copy.d58b3b54dd");
+      display.dailyLabel = WorkTimeApp.i18n.t("copy.24ac6da480");
       display.total = formatHours(pace.difference);
       display.daily = formatHours(pace.requiredPerDay);
     } else {
       display.totalLabel =
         pace.startsTomorrow && start <= today && today <= end
-          ? "需要加班"
-          : "需加班";
-      display.dailyLabel = "平均仍需加班";
+          ? WorkTimeApp.i18n.t("copy.df5cb65034")
+          : WorkTimeApp.i18n.t("copy.bc4e75d700");
+      display.dailyLabel = WorkTimeApp.i18n.t("copy.2deb6d7455");
       display.total = formatHours(pace.difference);
       display.daily = formatHours(pace.requiredPerDay);
     }

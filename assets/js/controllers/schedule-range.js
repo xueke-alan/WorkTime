@@ -64,14 +64,16 @@ WorkTimeApp.ui.createScheduleRangeController = function ({
       const range = readRange();
       $("scheduleRangeDescription").textContent =
         range.start === null
-          ? "全部日期：将替换全部作息安排，并重新计算历史统计。"
+          ? WorkTimeApp.i18n.t("copy.f744940ad8")
           : range.start +
             (range.end
-              ? " 至 " + range.end + "（包含首尾两天）"
-              : " 起持续生效，覆盖此后全部作息。");
+              ? WorkTimeApp.i18n.t("copy.9f96f7e891") +
+                range.end +
+                WorkTimeApp.i18n.t("copy.9648425bb8")
+              : WorkTimeApp.i18n.t("copy.1d2c74f862"));
     } catch (error) {
       $("scheduleRangeDescription").textContent =
-        "请填写完整且有效的日期范围。";
+        WorkTimeApp.i18n.t("copy.3325b59fdd");
     }
   }
 
@@ -88,6 +90,15 @@ WorkTimeApp.ui.createScheduleRangeController = function ({
   function bind() {
     if (bound) return;
     bound = true;
+    events.listen(document, "worktime:languagechange", () => {
+      for (const option of $("scheduleRangeOptions").children) {
+        option.querySelector(".button-label").textContent = [
+          ...$("scheduleRangeChoice").options,
+        ].find((item) => item.value === option.dataset.range).textContent;
+      }
+      syncRangePicker();
+      if (rangeToday) updateRangeDescription();
+    });
     $("scheduleRangeOptions").replaceChildren();
     for (const item of $("scheduleRangeChoice").options) {
       const option = document.createElement("button");

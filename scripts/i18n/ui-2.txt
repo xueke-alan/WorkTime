@@ -1,0 +1,200 @@
+200|휴게 시간은 HH:MM으로 입력하고, 종료는 시작보다 늦어야 합니다.|休憩はHH:MM形式で入力し、終了を開始より後にしてください。|Usa HH:MM para las pausas; el fin debe ser posterior al inicio.|Pausen im Format HH:MM eingeben. Das Ende muss nach dem Beginn liegen.|Utilisez HH:MM pour les pauses ; la fin doit suivre le début.
+201|휴게 시작|休憩開始|Inicio de pausa|Pausenbeginn|Début de pause
+202|휴게 종료|休憩終了|Fin de pausa|Pausenende|Fin de pause
+203|휴게 삭제|休憩を削除|Borrar pausa|Pause löschen|Effacer la pause
+204|일정 편집:|編集中のスケジュール：|Editando horario:|Arbeitsplan bearbeiten:|Horaire en cours de modification :
+205|· 미적용|・未適用|· Sin aplicar|· Nicht angewendet|· Non appliqué
+206|; 기본 근무 시간|；所定労働時間|; jornada estándar|; Sollzeit| ; durée normale
+207|시간; 휴게|時間；休憩|h; pausas|Std.; Pausen|h ; pauses
+208|고정 휴게 없음|固定休憩なし|Sin pausas fijas|Keine festen Pausen|Aucune pause fixe
+209|근무 시간|勤務時間|Horario|Arbeitszeit|Horaires de travail
+210|기본 근무 시간|所定労働時間|Jornada estándar|Sollstunden|Durée normale
+211|휴게 시간|休憩|Pausas|Pausen|Pauses
+212|이후 모든 날짜|以降のすべての日付|Todas las fechas futuras|Alle künftigen Tage|Toutes les dates à venir
+213|기본 일정|基本スケジュール|Horario base|Basisarbeitsplan|Horaire de base
+214|휴게|休憩|Pausa|Pause|Pause
+215|초과근무 목표는 0~24시간, 소수점 한 자리까지 입력하세요.|残業目標は0～24時間、小数第1位まで入力できます。|Los objetivos extra deben estar entre 0 y 24 h, con un decimal como máximo.|Überstundenziele müssen zwischen 0 und 24 Stunden liegen, mit höchstens einer Nachkommastelle.|Les objectifs doivent être compris entre 0 et 24 h, avec une décimale au maximum.
+216|근무 일정을 업데이트했습니다|勤務スケジュールを更新しました|Horario actualizado|Arbeitsplan aktualisiert|Horaires actualisés
+217|일정 미적용:|スケジュール未適用：|Horario sin aplicar:|Arbeitsplan nicht angewendet:|Horaire non appliqué :
+218|. 초안을 유지하고 다시 시도하세요.|。下書きを保持して再試行してください。|. Conserva el borrador y reintenta.|. Entwurf behalten und erneut versuchen.|. Conservez votre brouillon et réessayez.
+219|일정을 적용했습니다|スケジュールを適用しました|Horario aplicado|Arbeitsplan angewendet|Horaire appliqué
+220|템플릿은 최대 6개입니다. 먼저 하나를 삭제하세요.|テンプレートは最大6件です。先に1件削除してください。|Límite de 6 plantillas. Elimina una primero.|Maximal 6 Vorlagen. Zuerst eine löschen.|Limite de 6 modèles atteinte. Supprimez-en un d’abord.
+221|새 시간 템플릿|新しい時刻テンプレート|Nueva plantilla horaria|Neue Zeitvorlage|Nouveau modèle horaire
+222|템플릿을 복사했습니다|テンプレートをコピーしました|Plantillas copiadas|Vorlagen kopiert|Modèles copiés
+223|전체 선택 후 직접 복사하세요.|すべて選択して手動でコピーしてください。|Selecciona todo y copia manualmente.|Alles auswählen und manuell kopieren.|Sélectionnez tout et copiez manuellement.
+224|이름|名前|Nombre|Name|Nom
+225|출근|出勤|Entrada|Beginn|Arrivée
+226|퇴근|退勤|Salida|Ende|Départ
+227|출근 시간 없음|出勤時刻なし|Sin entrada|Kein Beginn|Aucune arrivée
+228|퇴근 시간 없음|退勤時刻なし|Sin salida|Kein Ende|Aucun départ
+229|가져오기를 저장하지 못했습니다. 기존 템플릿은 유지됩니다. 다시 시도하세요.|取込を保存できませんでした。元のテンプレートは保持されています。再試行してください。|Importación sin guardar. Se conservan las plantillas originales. Reintenta.|Import nicht gespeichert. Ursprüngliche Vorlagen bleiben erhalten. Bitte erneut versuchen.|Importation non enregistrée. Les modèles d’origine sont conservés. Réessayez.
+230|템플릿을 가져왔습니다|テンプレートを取り込みました|Plantillas importadas|Vorlagen importiert|Modèles importés
+231|템플릿 편집|テンプレートを編集|Editar plantilla|Vorlage bearbeiten|Modifier le modèle
+232|시간 템플릿 편집|時刻テンプレートを編集|Editar plantilla horaria|Zeitvorlage bearbeiten|Modifier le modèle horaire
+233|템플릿 없음|テンプレートなし|Sin plantillas|Keine Vorlagen|Aucun modèle
+234|복사 실패. 전체 선택 후 직접 복사하세요.|コピーできませんでした。すべて選択して手動でコピーしてください。|No se pudo copiar. Selecciona todo y copia manualmente.|Kopieren fehlgeschlagen. Alles auswählen und manuell kopieren.|Échec de la copie. Sélectionnez tout et copiez manuellement.
+235|템플릿을 적용했습니다. 저장 문제는 알림을 확인하세요.|テンプレートを適用しました。保存の問題は通知を確認してください。|Plantilla aplicada. Revisa las notificaciones por si no se guardó.|Vorlage angewendet. Mitteilungen auf Speicherprobleme prüfen.|Modèle appliqué. Consultez les notifications en cas de problème d’enregistrement.
+236|적용 및 저장 완료:|適用・保存済み：|Aplicado y guardado:|Angewendet und gespeichert:|Appliqué et enregistré :
+237|템플릿을 저장하지 못했습니다. 다시 시도하거나 닫기 전에 백업을 내보내세요.|テンプレートを保存できませんでした。再試行するか、閉じる前にバックアップを書き出してください。|Plantilla sin guardar. Reintenta o exporta una copia antes de cerrar.|Vorlage nicht gespeichert. Erneut versuchen oder vor dem Schließen eine Sicherung exportieren.|Modèle non enregistré. Réessayez ou exportez une sauvegarde avant de fermer.
+238|템플릿을 저장했습니다|テンプレートを保存しました|Plantilla guardada|Vorlage gespeichert|Modèle enregistré
+239|템플릿을 삭제했습니다|テンプレートを削除しました|Plantilla eliminada|Vorlage gelöscht|Modèle supprimé
+240|입사 기념일:|勤続記念日：|Aniversario laboral:|Betriebsjubiläum:|Anniversaire d’embauche :
+241|년|年|años|Jahre|ans
+242|입사 첫날|入社初日|Primer día|Erster Tag|Premier jour
+243|; 입사일:|；入社日：|; incorporación:|; Eintritt:| ; embauche :
+244|급여일|給料日|Día de cobro|Zahltag|Jour de paie
+245|이전 날짜와 근무 일정이 다릅니다|前日と勤務スケジュールが異なります|Horario distinto al día anterior|Arbeitsplan weicht vom Vortag ab|Horaire différent de la veille
+246|일정 변경|時間変更|Nuevo horario|Neue Zeiten|Nouvel horaire
+247|· 수동|・手入力|· Manual|· Manuell|· Manuel
+248|일정 변경|スケジュール変更|Cambio de horario|Planänderung|Changement d’horaire
+249|오늘:|今日：|Hoy:|Heute:|Aujourd’hui :
+250|월 보기|月表示|Vista mensual|Monatsansicht|Vue mensuelle
+251|연 보기|年表示|Vista anual|Jahresansicht|Vue annuelle
+252|이전 연도|前年|Año anterior|Vorheriges Jahr|Année précédente
+253|이전 달|前月|Mes anterior|Vorheriger Monat|Mois précédent
+254|다음 연도|翌年|Año siguiente|Nächstes Jahr|Année suivante
+255|다음 달|翌月|Mes siguiente|Nächster Monat|Mois suivant
+256|공휴일 일정이 없습니다. 주말과 명절은 휴무로 처리됩니다.|の休日予定がありません。週末と祝祭日を休日として扱います。|sin calendario festivo. Se consideran de descanso los fines de semana y las festividades.|Feiertagsplan nicht verfügbar. Wochenenden und Festtage gelten als Ruhetage.|calendrier des jours fériés indisponible. Les week-ends et fêtes sont considérés comme des jours de repos.
+257|급여일:|給料日：|Cobro:|Zahltag:|Paie :
+258|; 예정일:|；予定日：|; previsto:|; geplant:| ; prévu :
+259|; 앞당긴 일수:|；前倒し日数：|; días de adelanto:|; Tage früher:| ; jours d’avance :
+260|일|日|días|Tage|jours
+261|; 급여일은 15일|；給料日は15日|; el cobro es el día 15|; Zahltag ist der 15.| ; paie le 15
+262|; 공휴일 일정이 없어 주말과 명절을 휴무로 처리|；休日予定がないため週末と祝祭日を休日として処理|; sin calendario festivo: fines de semana y festividades se consideran de descanso|; kein Feiertagsplan; Wochenenden und Festtage gelten als Ruhetage| ; calendrier férié indisponible ; week-ends et fêtes considérés comme repos
+263|이전 날짜보다 높음|前日より多い|Mayor que el día anterior|Höher als am Vortag|Plus élevé que la veille
+264|이전 날짜보다 낮음|前日より少ない|Menor que el día anterior|Niedriger als am Vortag|Plus faible que la veille
+265|평균 초과근무 기준|平均残業の基準|Referencia de media extra|Referenz für Ø Überstd.|Référence de moyenne d’h. sup.
+266|이전 날짜와 같음|前日と同じ|Igual que el día anterior|Gleich wie am Vortag|Identique à la veille
+267|조정 시간|調整後の時間|Horas ajustadas|Angepasste Stunden|Heures ajustées
+268|미설정|未設定|Sin definir|Nicht festgelegt|Non défini
+269|– 미완료|– 未完了|– Pendiente|– Offen|– À compléter
+270|OA 기록도 유지됨|OAの記録も保持|También se conservan las entradas OA|OA-Einträge ebenfalls erhalten|Saisies OA également conservées
+271|OA 가져오기|OA取込|Importado de OA|OA-Import|Import OA
+272|· 일일 초과근무|・当日の残業|· H. extra del día|· Überstd. am Tag|· H. sup. du jour
+273|· 일일 근무|・当日の労働時間|· Horas del día|· Tagesstunden|· Heures du jour
+274|· 평균 초과근무|・平均残業|· Media extra|· Ø Überstd.|· Moy. h. sup.
+275|종일 휴가|終日休暇|Permiso de día completo|Ganztägiger Urlaub|Congé d’une journée
+276|일일 초과근무|当日の残業時間|Horas extra del día|Tägliche Überstunden|Heures supplémentaires du jour
+277|이달 누계: 완료된 기록의 평일 초과근무 ÷ 출근일수|月初からの累計：完全な記録の平日残業 ÷ 出勤日数|Acumulado del mes: horas extra laborables ÷ asistencia de registros completos|Monat bisher: Überstunden an Arbeitstagen ÷ Anwesenheit aus vollständigen Einträgen|Cumul du mois : h. sup. en jours travaillés ÷ présence des saisies complètes
+278|; 미완료 기록으로 평균 초과근무 계산 불가|；記録が不完全のため平均残業を計算できません|; entrada incompleta: media extra no disponible|; unvollständiger Eintrag, kein Überstundendurchschnitt verfügbar| ; saisie incomplète, moyenne d’h. sup. indisponible
+279|문제|要確認|Incidencia|Problem|Anomalie
+280|미완료|未完了|Pendiente|Offen|À compléter
+281|출근 없음|勤務なし|Sin asistencia|Keine Anwesenheit|Absence
+282|이번 달:|今月：|Este mes:|Dieser Monat:|Ce mois-ci :
+283|일 완료 ·|日完了・|días completos ·|Tage vollständig ·|jours complets ·
+284|미완료|未完了|pendientes|offen|à compléter
+285|일괄 편집 종료|一括編集を終了|Salir de edición múltiple|Mehrfachbearbeitung beenden|Quitter la modification groupée
+286|일괄 편집|一括編集|Edición múltiple|Mehrfachbearbeitung|Modification groupée
+287|모두 초기화|すべてリセット|Restablecer todo|Alle zurücksetzen|Tout réinitialiser
+288|선택 초기화|選択分をリセット|Restablecer selección|Auswahl zurücksetzen|Réinitialiser la sélection
+289|모든 수동 기록 초기화|すべての手入力をリセット|Restablecer todas las entradas manuales|Alle manuellen Einträge zurücksetzen|Réinitialiser toutes les saisies manuelles
+290|선택 기록 초기화|選択した記録をリセット|Restablecer entradas seleccionadas|Ausgewählte Einträge zurücksetzen|Réinitialiser les saisies sélectionnées
+291|지우기|消去|Borrar|Leeren|Effacer
+292|모든 날짜|すべての日付|todas las fechas|alle Tage|toutes les dates
+293|선택 날짜|選択した日付|las fechas seleccionadas|ausgewählte Tage|les dates sélectionnées
+294|: 수동 근무 시간, 휴가, 메모, 날짜 유형 및 초과근무 계획을 지웁니다. OA 기록과 시간 템플릿은 유지됩니다.|：手入力の時間・休暇・メモ・日区分・残業予定を消去します。OAの記録と時刻テンプレートは保持されます。|: borra horas manuales, permisos, notas, tipos de día y previsión extra. Conserva entradas OA y plantillas.|: Löscht manuelle Stunden, Urlaub, Notizen, Tagesarten und geplante Überstunden. OA-Einträge und Zeitvorlagen bleiben erhalten.| : efface heures manuelles, congés, notes, types de jour et prévisions d’h. sup. Les saisies OA et modèles sont conservés.
+295|선택:|選択中：|Selección:|Ausgewählt:|Sélection :
+296|근무일 및 휴무일의 초과근무 합계|勤務日と休日の残業合計|Horas extra totales en días laborables y de descanso|Gesamte Überstunden an Arbeits- und Ruhetagen|Total des h. sup. en jours travaillés et de repos
+297|초과근무 합계|残業合計|Total de horas extra|Gesamte Überstunden|Total des heures supplémentaires
+298|평균 초과근무 (평일 초과근무 ÷ 출근일수)|平均残業（平日残業 ÷ 出勤日数）|Media extra (extra laborable ÷ asistencia)|Durchschnittliche Überstunden (Arbeitstagsüberstunden ÷ Anwesenheit)|Moyenne d’h. sup. (h. sup. en jours travaillés ÷ présence)
+299|평균 초과근무|平均残業時間|Media de horas extra|Durchschnittliche Überstunden|Moyenne d’heures supplémentaires
+300|일 완료|日完了|días completos|vollständige Tage|jours complets
+301|계획 취소|予定を取消|Cancelar previsión|Planung aufheben|Annuler la prévision
+302|· 주|・週|· Semana|· Woche|· Semaine
+303|예정 근무 시간|予定勤務時間|Horario previsto|Geplante Arbeitszeit|Horaires prévus
+304|HH:MM 형식으로 입력하세요. 예: 08:30.|HH:MM形式で入力してください（例：08:30）。|Introduce la hora en formato HH:MM, p. ej., 08:30.|Uhrzeit im Format HH:MM eingeben, z. B. 08:30.|Saisissez une heure au format HH:MM, par ex. 08:30.
+305|휴가 시간은 0부터 일일 예정 근무 시간까지 입력할 수 있습니다.|休暇時間は0から1日の所定労働時間までの範囲にしてください。|El permiso debe estar entre 0 y las horas previstas del día.|Urlaub muss zwischen 0 und der täglichen Sollzeit liegen.|Le congé doit être compris entre 0 et la durée de travail prévue du jour.
+306|시간 오류: 퇴근|時刻の問題：退勤|Error horario: la salida|Zeitproblem: Arbeitsende|Anomalie horaire : le départ
+307|출근보다 빠름|が出勤より前|es anterior a la entrada|liegt vor dem Arbeitsbeginn|précède l’arrivée
+308|. 근무 시간에서 제외됩니다.|。労働時間には含めません。|. Se excluye del tiempo trabajado.|. Wird nicht als Arbeitszeit gezählt.|. Exclu du temps de travail.
+309|미완료 기록입니다. 평균 초과근무에서 제외됩니다.|不完全な記録です。平均残業の計算から除外します。|Entrada incompleta. Se excluye de la media extra.|Unvollständiger Eintrag. Nicht im Überstundendurchschnitt enthalten.|Saisie incomplète. Exclue de la moyenne d’h. sup.
+310|휴무일|休日|Día de descanso|Ruhetag|Jour de repos
+311|먼저 휴게 및 기본 근무 시간을 설정하세요.|先に休憩と所定労働時間を設定してください。|Configura primero las pausas y la jornada estándar.|Zuerst Pausen und Sollstunden festlegen.|Définissez d’abord les pauses et la durée normale de travail.
+312|· 출근|・出勤|· Asistencia|· Anwesenheit|· Présence
+313|0일|0日|0 días|0 Tage|0 jour
+314|근무|労働時間|Horas|Stunden|Heures
+315|출근일수|出勤日数|Asistencia|Anwesenheit|Présence
+316|입사|勤続|Día|Tag|Jour
+317|일째|日目|en la empresa|im Betrieb|dans l’entreprise
+318|입사까지|勤務開始まで|Empieza en|Beginn in|Début dans
+319|이달 누계:|月初からの累計：|Acumulado del mes:|Monat bisher:|Cumul du mois :
+320|월|月|mes|Monat|mois
+321|예정|予定|Previstas|Soll|Prévu
+322|실제|実績|Trabajadas|Ist|Effectué
+323|평균 초과|平均残業|Media extra|Ø Überstd.|Moy. h. sup.
+324|휴가 추가|休暇を追加|Permiso|Urlaub|Congé
+325|시간. 클릭하여 편집.|時間。クリックして編集。|h. Haz clic para editar.|Std. Zum Bearbeiten klicken.|h. Cliquez pour modifier.
+326|휴가 시간 입력|休暇時間を入力|Introduce las horas de permiso|Urlaubsstunden eingeben|Saisissez les heures de congé
+327|휴무일에는 휴가가 필요하지 않습니다|休日に休暇の入力は不要です|No se necesita permiso en días de descanso|An Ruhetagen ist kein Urlaub nötig|Aucun congé nécessaire un jour de repos
+328|발견:|検出：|Detectadas|Gefunden:|Détection :
+329|개 시간 오류|件の時刻の問題|incidencias horarias|Zeitprobleme|anomalies horaires
+330|자정을 넘기면 ‘익일 퇴근’을 켜세요.|日をまたぐ勤務は「翌日退勤」を有効にしてください。|Activa «Salida al día siguiente» para turnos nocturnos.|Bei Nachtschichten „Ende am Folgetag“ aktivieren.|Activez « Départ le lendemain » si le travail se termine après minuit.
+331|최근 OA 기록:|最新のOA記録：|Última entrada OA:|Letzter OA-Eintrag:|Dernière saisie OA :
+332|OA 기록 경과 일수:|OA記録の経過日数：|Antigüedad de registros OA:|Alter der OA-Einträge:|Ancienneté des relevés OA :
+333|일. 최신 자료를 가져오세요.|日。最新の記録を取り込んでください。|días. Importa una actualización.|Tage. Aktuelle Daten importieren.|jours. Importez les données récentes.
+334|환경설정|環境設定|Preferencias|Einstellungen|Préférences
+335|환경설정 닫기|環境設定を閉じる|Cerrar preferencias|Einstellungen schließen|Fermer les préférences
+336|근무 일정 닫기|勤務スケジュールを閉じる|Cerrar horario|Arbeitsplan schließen|Fermer les horaires
+337|근무 일정|勤務スケジュール|Horario laboral|Arbeitsplan|Horaires de travail
+338|가져오기로 돌아가기|取込に戻る|Volver a importar|Zurück zum Import|Retour à l’importation
+339|개요로 돌아가기|概要に戻る|Volver al resumen|Zurück zur Übersicht|Retour à la vue d’ensemble
+340|OA 가져오기|OA取込|Importar OA|OA importieren|Importer OA
+341|OA 기록 가져오기|OA記録を取込|Importar registros OA|OA-Einträge importieren|Importer les relevés OA
+342|뒤로|戻る|Volver|Zurück|Retour
+343|취소|キャンセル|Cancelar|Abbrechen|Annuler
+344|저장 공간 추정 불가|ストレージ使用量を推定できません|Estimación de espacio no disponible|Speicherbedarf nicht schätzbar|Estimation du stockage indisponible
+345|예상 저장 공간:|推定使用量：|Espacio estimado:|Geschätzter Speicherbedarf:|Stockage estimé :
+346|저장 공간 사용량 확인 불가|ストレージ使用量を取得できません|Uso del espacio no disponible|Speichernutzung nicht verfügbar|Utilisation du stockage indisponible
+347|브라우저 데이터를 읽을 수 없습니다:|ブラウザーのデータを読み込めません：|No se pueden leer los datos del navegador:|Browserdaten können nicht gelesen werden:|Impossible de lire les données du navigateur :
+348|. 브라우저 저장소 접근을 허용한 후 다시 확인하세요. 임시 데이터를 표시합니다.|。ブラウザーのストレージへのアクセスを許可して再確認してください。仮データを表示しています。|. Permite el almacenamiento del navegador y comprueba de nuevo. Se muestran datos temporales.|. Browserspeicher erlauben und erneut prüfen. Temporäre Daten werden angezeigt.|. Autorisez le stockage du navigateur et revérifiez. Des données temporaires sont affichées.
+349|. 앱을 업데이트하세요. 먼저 원본 데이터를 내보낼 수 있습니다.|。アプリを更新してください。先に元データを書き出すこともできます。|. Actualiza la aplicación para abrir los datos. Puedes exportar primero los datos originales.|. App aktualisieren, um die Daten zu öffnen. Rohdaten können vorher exportiert werden.|. Mettez l’application à jour pour ouvrir l’archive. Vous pouvez d’abord exporter les données brutes.
+350|. 저장 자료는 유지됩니다. 복구 데이터를 내보내거나 백업을 복원하세요.|。保存データは保持されています。復旧データを書き出すかバックアップを復元してください。|. Los datos se conservan. Exporta datos de recuperación o restaura una copia.|. Daten bleiben erhalten. Wiederherstellungsdaten exportieren oder eine Sicherung wiederherstellen.|. Archive conservée. Exportez les données de récupération ou restaurez une sauvegarde.
+351|. 임시 기본값을 표시합니다. 원본 내보내기, 백업 복원 또는 저장 자료 초기화를 선택하세요.|。仮の初期設定を表示しています。元データの書出し、バックアップの復元、または保存データのリセットを行ってください。|. Se muestran valores temporales. Exporta los originales, restaura una copia o restablece los datos.|. Temporäre Standardwerte werden angezeigt. Rohdaten exportieren, Sicherung wiederherstellen oder Daten zurücksetzen.|. Valeurs temporaires affichées. Exportez les données brutes, restaurez une sauvegarde ou réinitialisez l’archive.
+352|이 페이지를 저장할 수 없습니다:|このページを保存できません：|No se puede guardar esta página:|Diese Seite kann nicht gespeichert werden:|Impossible d’enregistrer cette page :
+353|저장 중…|保存中…|Guardando…|Wird gespeichert…|Enregistrement…
+354|다른 탭에서 저장 자료를 갱신했습니다. 초안을 유지하고 다시 확인하세요.|別のタブで保存データが更新されました。下書きを保持して再確認してください。|Otra pestaña actualizó los datos. Conserva el borrador y comprueba de nuevo.|Ein anderer Tab hat die Daten aktualisiert. Entwurf behalten und erneut prüfen.|Un autre onglet a actualisé l’archive. Conservez le brouillon et revérifiez.
+355|변경 사항 저장 실패:|変更の保存失敗：|Cambios sin guardar:|Änderungen nicht gespeichert:|Modifications non enregistrées :
+356|. 닫기 전에 백업을 내보내세요.|。閉じる前にバックアップを書き出してください。|. Exporta una copia antes de cerrar.|. Vor dem Schließen eine Sicherung exportieren.|. Exportez une sauvegarde avant de fermer.
+357|확인 실패:|確認失敗：|Error de comprobación:|Prüfung fehlgeschlagen:|Échec de la vérification :
+358|. 변경 사항은 현재 페이지에 유지됩니다.|。変更内容はこのページに残っています。|. Los cambios siguen en esta página.|. Die Änderungen sind auf dieser Seite weiterhin vorhanden.|. Vos modifications sont toujours sur cette page.
+359|확인 결과:|確認結果：|Resultado:|Prüfergebnis:|Résultat :
+360|. 다른 탭이 쓰기 권한을 보유 중입니다. 백그라운드 탭을 확인하세요.|。別のタブが書込権限を保持しています。バックグラウンドのタブも確認してください。|. Otra pestaña mantiene el permiso de escritura; puede estar en segundo plano.|. Ein anderer Tab besitzt noch Schreibzugriff, möglicherweise im Hintergrund.|. Un autre onglet détient encore l’accès en écriture, peut-être en arrière-plan.
+361|평일 초과근무 ÷ 출근일수|平日残業 ÷ 出勤日数|Extra laborable ÷ asistencia|Arbeitstagsüberstunden ÷ Anwesenheit|H. sup. en jours travaillés ÷ présence
+362|초과근무 잔여|残業差分|Saldo extra|Überstundensaldo|Solde h. sup.
+363|평일 초과근무 − 목표 × 출근일수|平日残業 − 目標 × 出勤日数|Extra laborable − objetivo × asistencia|Arbeitstagsüberstunden − Ziel × Anwesenheit|H. sup. en jours travaillés − objectif × présence
+364|평일 초과|平日残業|Extra laborable|Überstd. Arbeitstage|H. sup. jours travaillés
+365|휴일 초과|休日残業|Extra en descanso|Überstd. Ruhetage|H. sup. jours de repos
+366|총 근무|総労働時間|Horas totales|Gesamtstunden|Total d’heures
+367|남은 기간|残り|Restantes|Verbleibend|Restant
+368|일평균|1日あたり|Por día|Pro Tag|Par jour
+369|기본 목표|基本目標|Objetivo base|Basisziel|Objectif de base
+370|4일 이상|4日以上|4 días o más|Ab 4 Tagen|4 jours ou plus
+371|일 구간|日区分|días: nivel|Tage: Stufe|jours : palier
+372|초과근무 예정일:|残業予定日数：|Días con extra prevista:|Geplante Überstundentage:|Jours d’h. sup. prévus :
+373|근무 일정에서 초과근무 구간을 설정하세요:|勤務スケジュールで残業区分を設定してください：|Define el nivel extra en Horario laboral:|Überstundenstufe im Arbeitsplan festlegen:|Définissez le palier d’h. sup. dans les horaires :
+374|이번 달 예정 근무일이 없습니다|今月の勤務予定日はありません|Este mes no hay días laborables previstos|Keine geplanten Arbeitstage in diesem Monat|Aucun jour travaillé prévu ce mois-ci
+375|목표 달성|目標達成|Objetivo cumplido|Ziel erreicht|Objectif atteint
+376|기록된 부족 시간|記録上の不足時間|Déficit registrado|Erfasste Fehlzeit|Déficit constaté
+377|목표 초과|目標超過|Por encima del objetivo|Über dem Ziel|Au-dessus de l’objectif
+378|내일부터:|明日から：|Desde mañana:|Ab morgen:|À partir de demain :
+379|오늘 포함:|今日を含む：|Incluido hoy:|Heute eingeschlossen:|Aujourd’hui inclus :
+380|잔여|差分|Saldo|Saldo|Solde
+381|일평균 잔여|1日あたりの差分|Saldo diario|Tagessaldo|Solde quotidien
+382|가능 시간|余裕時間|Horas disponibles|Verfügbare Stunden|Heures disponibles
+383|일평균 가능|1日あたりの余裕|Disponible al día|Pro Tag verfügbar|Disponible par jour
+384|필요 초과근무|必要な残業|Extra necesaria|Nötige Überstd.|H. sup. nécessaires
+385|일평균 초과|1日あたりの残業|Extra por día|Überstd. pro Tag|H. sup. par jour
+386|저장하지 못했습니다. 변경 사항은 이 페이지에만 있습니다. 백업을 내보내세요.|保存できませんでした。変更はこのページにのみ残っています。バックアップを書き出してください。|No se pudo guardar. Los cambios solo están en esta página. Exporta una copia.|Speichern fehlgeschlagen. Änderungen sind nur auf dieser Seite vorhanden. Sicherung exportieren.|Enregistrement impossible. Les modifications restent sur cette page uniquement. Exportez une sauvegarde.
+387|파일이 백업 크기 제한을 초과합니다.|ファイルがバックアップのサイズ上限を超えています。|El archivo supera el límite de la copia.|Datei überschreitet das Größenlimit für Sicherungen.|Le fichier dépasse la taille limite des sauvegardes.
+388|변환 실패:|変換失敗：|Error de conversión:|Konvertierung fehlgeschlagen:|Échec de la conversion :
+389|명절|祝祭日|Festividad|Festtag|Fête
+390|주말|週末|Fin de semana|Wochenende|Week-end
+391|근무일|勤務日|Día laborable|Arbeitstag|Jour travaillé
+392|대체 근무일|振替出勤日|Día de recuperación|Ausgleichsarbeitstag|Jour de travail compensatoire
+393|추가 근무일|追加勤務日|Día de trabajo adicional|Zusätzlicher Arbeitstag|Jour de travail supplémentaire
+394|근무일 · 수동|勤務日・手入力|Laborable · Manual|Arbeitstag · Manuell|Jour travaillé · Manuel
+395|휴무일 · 수동|休日・手入力|Descanso · Manual|Ruhetag · Manuell|Repos · Manuel
+396|연도는 1900~9999의 정수여야 합니다.|年は1900～9999の整数にしてください。|El año debe ser un entero entre 1900 y 9999.|Das Jahr muss eine ganze Zahl von 1900 bis 9999 sein.|L’année doit être un entier compris entre 1900 et 9999.
+397|: 최근 기록에서 연도를 추정했습니다. 확인하세요.|：最近の記録から年を推定しました。確認してください。|: año deducido de registros recientes. Confírmalo.|: Jahr aus jüngsten Einträgen abgeleitet. Bitte bestätigen.| : année déduite des relevés récents. Veuillez confirmer.
+398|가져온 날짜 이후입니다. 추정 연도를 확인하세요.|は取込日より後です。推定した年を確認してください。|es posterior a la importación. Comprueba el año deducido.|liegt nach dem Importdatum. Abgeleitetes Jahr prüfen.|est postérieur à l’importation. Vérifiez l’année déduite.
+399|: 올바르지 않은 날짜|：無効な日付|: fecha no válida|: ungültiges Datum| : date invalide

@@ -2,17 +2,30 @@
   "use strict";
   const providers = new Map();
   const historyLoads = new Map();
+  const historyData = () =>
+    WorkTimeApp.i18n.config.history === "en"
+      ? (WorkTimeApp.data.dateInfo.historyEn ||= {})
+      : WorkTimeApp.i18n.config.history === "zh-CN"
+        ? WorkTimeApp.data.dateInfo.history
+        : WorkTimeApp.data.dateInfo.historyLocales?.[
+            WorkTimeApp.i18n.config.history
+          ] || {};
   function loadHistory(date) {
     validDate(date);
     const month = date.slice(5, 7);
-    if (WorkTimeApp.data.dateInfo.history[date.slice(5)])
-      return Promise.resolve();
-    if (historyLoads.has(month)) return historyLoads.get(month);
+    const language = WorkTimeApp.i18n.config.history;
+    const cacheKey = language + ":" + month;
+    if (historyData()[date.slice(5)]) return Promise.resolve();
+    if (historyLoads.has(cacheKey)) return historyLoads.get(cacheKey);
     const pending = new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      const version = WorkTimeApp.data.historyVersions?.[month];
+      const version =
+        language !== "zh-CN"
+          ? WorkTimeApp.data.historyVersions?.[language]?.[month]
+          : WorkTimeApp.data.historyVersions?.[month];
       script.src = new URL(
         "assets/data/history/" +
+          (language !== "zh-CN" ? language + "/" : "") +
           month +
           ".js" +
           (version ? "?v=" + version : ""),
@@ -24,12 +37,12 @@
       };
       script.onerror = () => {
         script.remove();
-        historyLoads.delete(month);
+        historyLoads.delete(cacheKey);
         reject(Error("历史资料加载失败，请重试"));
       };
       document.head.append(script);
     });
-    historyLoads.set(month, pending);
+    historyLoads.set(cacheKey, pending);
     return pending;
   }
   function register(p) {
@@ -63,12 +76,28 @@
       validDate(date);
       const p = providers.get(id);
       if (!p) throw Error("模块未注册");
-      return { ok: true, ...p.getContent(date) };
+      if (id === "almanac" && !WorkTimeApp.i18n.config.almanac)
+        return { ok: false, title: "Date information", message: "" };
+      const localize = (value, key = "") => {
+        if (key === "events") return value;
+        if (typeof value === "string")
+          return /url/i.test(key) ? value : WorkTimeApp.i18n.message(value);
+        if (Array.isArray(value)) return value.map((item) => localize(item));
+        if (value && typeof value === "object")
+          return Object.fromEntries(
+            Object.entries(value).map(([name, item]) => [
+              name,
+              localize(item, name),
+            ]),
+          );
+        return value;
+      };
+      return localize({ ok: true, ...p.getContent(date) });
     } catch (e) {
       return {
         ok: false,
         title: providers.get(id)?.label || "日期资讯",
-        message: e.message,
+        message: WorkTimeApp.i18n.message(e.message),
       };
     }
   }
@@ -78,7 +107,7 @@
     icon: "history",
     getContent(date) {
       const [year] = validDate(date),
-        rows = WorkTimeApp.data.dateInfo.history[date.slice(5)];
+        rows = historyData()[date.slice(5)];
       if (!rows) throw Error("该日期的本地历史资料未能加载");
       return {
         title: "历史上的今天",
@@ -86,7 +115,28 @@
           .filter((e) => e.year <= year)
           .sort((a, b) => a.year - b.year),
         empty: "选中日期之前没有已收录的事件",
-        source: "中文维基百科 · CC BY-SA 4.0",
+        source:
+          WorkTimeApp.i18n.t(
+            WorkTimeApp.i18n.config.history === "en"
+              ? "history.english"
+              : "history.chinese",
+          ) + " · CC BY-SA 4.0",
+        sourceUrl:
+          WorkTimeApp.i18n.config.history === "en"
+            ? "https://en.wikipedia.org/wiki/" +
+              new Intl.DateTimeFormat("en", {
+                month: "long",
+                day: "numeric",
+                timeZone: "UTC",
+              })
+                .format(new Date(date + "T12:00:00Z"))
+                .replace(" ", "_")
+            : "https://zh.wikipedia.org/" +
+              WorkTimeApp.i18n.config.history.toLowerCase() +
+              "/" +
+              encodeURIComponent(
+                Number(date.slice(5, 7)) + "月" + Number(date.slice(8)) + "日",
+              ),
       };
     },
   });
@@ -232,7 +282,21 @@
     register,
     loadHistory,
     getContent,
-    list: () => [...providers.values()],
+    list: () =>
+      [...providers.values()]
+        .filter(
+          (provider) =>
+            provider.id !== "almanac" || WorkTimeApp.i18n.config.almanac,
+        )
+        .map((provider) => ({
+          ...provider,
+          label: WorkTimeApp.i18n.message(
+            { notifications: "通知", countdown: "下班倒计时", weather: "天气" }[
+              provider.id
+            ] || provider.label,
+          ),
+        })),
+    historyData,
     lunar,
   };
 })(typeof window === "undefined" ? globalThis : window);

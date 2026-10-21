@@ -50,6 +50,7 @@ WorkTimeApp.services.bootstrap = (() => {
       document.dispatchEvent(new Event("worktime:ready"));
       return { ok: true };
     } catch (error) {
+      console.error("WorkTime startup failed", error);
       dispose();
       document.documentElement.dataset.appState = "failed";
       for (const element of document.querySelectorAll(
@@ -60,10 +61,11 @@ WorkTimeApp.services.bootstrap = (() => {
       notice.id = "startupFailure";
       notice.className = "notice";
       notice.setAttribute("role", "alert");
+      const translate = WorkTimeApp.i18n?.message || ((value) => value);
       notice.textContent =
-        "页面初始化失败：" +
+        translate("页面初始化失败：") +
         (error?.message || String(error)) +
-        "。请关闭页面后重新打开，并检查项目文件是否完整。";
+        translate("。请关闭页面后重新打开，并检查项目文件是否完整。");
       (document.querySelector("main") || document.body).prepend(notice);
       document.documentElement.classList.remove("app-loading");
       clearTimeout(document.defaultView.appRevealFallback);

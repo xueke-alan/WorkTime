@@ -106,16 +106,24 @@ WorkTimeApp.ui.year = (() => {
             !day.plannedOvertime;
           const description = [
             date,
-            info.label,
+            WorkTimeApp.i18n.message(info.label),
             calc.overtime === null
-              ? "无完整工时记录"
-              : (calc.overtime < 0 ? "欠工时 " : "加班 ") +
+              ? WorkTimeApp.i18n.t("copy.28ddea9e64")
+              : (calc.overtime < 0
+                  ? WorkTimeApp.i18n.t("copy.78352e961f")
+                  : WorkTimeApp.i18n.t("copy.7bdea8bd81")) +
                 hours(Math.abs(calc.overtime)) +
-                " 小时",
-            leave ? "请假 " + hours(leave) + " 小时" : "",
-            rest ? "休息" : "",
-            day.plannedOvertime ? "计划加班" : "",
-            calc.record?.type === "estimate" ? "手动填写" : "",
+                WorkTimeApp.i18n.t("copy.8d383e56ac"),
+            leave
+              ? WorkTimeApp.i18n.t("copy.326f400f75") +
+                hours(leave) +
+                WorkTimeApp.i18n.t("copy.8d383e56ac")
+              : "",
+            rest ? WorkTimeApp.i18n.t("copy.da11d57634") : "",
+            day.plannedOvertime ? WorkTimeApp.i18n.t("copy.3cf2307526") : "",
+            calc.record?.type === "estimate"
+              ? WorkTimeApp.i18n.t("copy.85f1f8dfaf")
+              : "",
           ]
             .filter(Boolean)
             .join(" · ");

@@ -7,7 +7,7 @@ const project = path.resolve(__dirname, "..");
 const hash = (value) => crypto.createHash("sha256").update(value).digest("hex");
 function target(root, relative) {
   if (
-    !/^assets\/data\/(?:sources\.js|international-festivals\.js|history\/(?:0[1-9]|1[0-2])\.js)$/.test(
+    !/^assets\/data\/(?:sources\.js|international-festivals\.js|history\/(?:en\/)?(?:0[1-9]|1[0-2])\.js)$/.test(
       relative,
     )
   )
@@ -33,7 +33,7 @@ function withLock(root, action) {
     fs.unlinkSync(lock);
   }
 }
-function validateDates(days, kind) {
+function validateDates(days, kind, { minTextLength = 12 } = {}) {
   const expected = [];
   for (let month = 1; month <= 12; month++)
     for (let day = 1; day <= new Date(2024, month, 0).getDate(); day++)
@@ -43,19 +43,22 @@ function validateDates(days, kind) {
   if (JSON.stringify(Object.keys(days).sort()) !== JSON.stringify(expected))
     throw Error("Data must cover exactly all 366 calendar dates");
   for (const [date, items] of Object.entries(days)) {
-    if (!Array.isArray(items) || (kind === "history" && items.length < 3))
+    if (
+      !Array.isArray(items) ||
+      (["history", "historyEn"].includes(kind) && items.length < 3)
+    )
       throw Error("Invalid records at " + date);
     const ids = new Set();
     for (const item of items) {
       if (!item.id || ids.has(item.id) || !item.sourceName)
         throw Error("Invalid identity at " + date);
       ids.add(item.id);
-      if (kind === "history") {
+      if (["history", "historyEn"].includes(kind)) {
         if (
           !Number.isInteger(item.year) ||
           item.year > 2025 ||
           typeof item.text !== "string" ||
-          item.text.length < 12
+          item.text.length < minTextLength
         )
           throw Error("Invalid history event at " + date);
       } else if (
@@ -67,11 +70,15 @@ function validateDates(days, kind) {
       const source = new URL(item.sourceUrl);
       if (
         source.protocol !== "https:" ||
-        source.hostname !== "zh.wikipedia.org" ||
+        source.hostname !==
+          (kind === "historyEn" ? "en.wikipedia.org" : "zh.wikipedia.org") ||
         !/^\d+$/.test(source.searchParams.get("oldid") || "")
       )
         throw Error("Missing revision source at " + date);
-      if (kind !== "history" && new URL(item.url).protocol !== "https:")
+      if (
+        !["history", "historyEn"].includes(kind) &&
+        new URL(item.url).protocol !== "https:"
+      )
         throw Error("Invalid observance URL");
     }
   }
@@ -79,10 +86,14 @@ function validateDates(days, kind) {
 function rollback(root, directory, manifest) {
   for (const entry of [...manifest.files].reverse()) {
     const file = target(root, entry.path),
-      current = hash(fs.readFileSync(file));
+      current = fs.existsSync(file) ? hash(fs.readFileSync(file)) : null;
     if (current === entry.before) continue;
     if (current !== entry.after)
       throw Error("External change prevents rollback: " + entry.path);
+    if (entry.before === null) {
+      fs.unlinkSync(file);
+      continue;
+    }
     if (!/^before-\d+\.js$/.test(entry.backup))
       throw Error("Invalid backup path");
     const backup = path.join(directory, entry.backup);
@@ -99,7 +110,7 @@ function rollback(root, directory, manifest) {
   journal(directory, manifest);
 }
 function create({ kind, root = project, now = new Date() }) {
-  if (!["history", "internationalFestivals"].includes(kind))
+  if (!["history", "historyEn", "internationalFestivals"].includes(kind))
     throw Error("Unknown data kind");
   root = path.resolve(root);
   const storage = path.join(root, ".refactor-data-updates");
@@ -128,17 +139,24 @@ function create({ kind, root = project, now = new Date() }) {
     manifest = { id, kind, date, status: "downloading", files: [] },
     originals = new Map();
   fs.mkdirSync(directory);
-  const targets =
-    kind === "history"
-      ? Array.from(
-          { length: 12 },
-          (_, i) =>
-            "assets/data/history/" + String(i + 1).padStart(2, "0") + ".js",
-        )
-      : ["assets/data/international-festivals.js"];
+  const targets = ["history", "historyEn"].includes(kind)
+    ? Array.from(
+        { length: 12 },
+        (_, i) =>
+          "assets/data/history/" +
+          (kind === "historyEn" ? "en/" : "") +
+          String(i + 1).padStart(2, "0") +
+          ".js",
+      )
+    : ["assets/data/international-festivals.js"];
   targets.push("assets/data/sources.js");
   for (const relative of targets)
-    originals.set(relative, fs.readFileSync(target(root, relative)));
+    originals.set(
+      relative,
+      fs.existsSync(target(root, relative))
+        ? fs.readFileSync(target(root, relative))
+        : null,
+    );
   journal(directory, manifest);
   function write(relative, content) {
     if (!originals.has(relative))
@@ -150,19 +168,25 @@ function create({ kind, root = project, now = new Date() }) {
     if (manifest.files.some((entry) => entry.path === relative))
       throw Error("Duplicate update file");
     fs.writeFileSync(path.join(directory, staged), content);
-    fs.writeFileSync(path.join(directory, backup), originals.get(relative));
+    fs.writeFileSync(
+      path.join(directory, backup),
+      originals.get(relative) || "",
+    );
     manifest.files.push({
       path: relative,
       staged,
       backup,
-      before: hash(originals.get(relative)),
+      before:
+        originals.get(relative) === null ? null : hash(originals.get(relative)),
       after: hash(content),
     });
     journal(directory, manifest);
   }
   function commit({ dryRun = false } = {}) {
     const stagedContext = vm.createContext({
-      WorkTimeApp: { data: { dateInfo: { history: {}, festivals: [] } } },
+      WorkTimeApp: {
+        data: { dateInfo: { history: {}, historyEn: {}, festivals: [] } },
+      },
     });
     stagedContext.window = stagedContext;
     for (const entry of manifest.files)
@@ -172,8 +196,10 @@ function create({ kind, root = project, now = new Date() }) {
         { timeout: 1000 },
       );
     validateDates(
-      kind === "history"
-        ? stagedContext.WorkTimeApp.data.dateInfo.history
+      ["history", "historyEn"].includes(kind)
+        ? stagedContext.WorkTimeApp.data.dateInfo[
+            kind === "historyEn" ? "historyEn" : "history"
+          ]
         : stagedContext.WorkTimeApp.data.dateInfo.internationalByDate,
       kind,
     );
@@ -191,16 +217,32 @@ function create({ kind, root = project, now = new Date() }) {
     );
     sources.updated = date;
     sources[kind] = {
+      ...(kind === "historyEn"
+        ? {
+            name: "English Wikipedia",
+            url: "https://en.wikipedia.org/",
+            license: "CC BY-SA 4.0",
+            api: "https://en.wikipedia.org/w/api.php?action=query&prop=revisions",
+          }
+        : {}),
       ...(sources[kind] || {
-        name: sources.history.name,
-        url: sources.history.url,
+        name: kind === "historyEn" ? "English Wikipedia" : sources.history.name,
+        url:
+          kind === "historyEn"
+            ? "https://en.wikipedia.org/"
+            : sources.history.url,
         license: sources.history.license,
-        api: sources.history.api,
+        api:
+          kind === "historyEn"
+            ? "https://en.wikipedia.org/w/api.php?action=query&prop=revisions"
+            : sources.history.api,
       }),
       version: (sources[kind]?.version || 0) + 1,
       updated: date,
       coverageDays: 366,
-      ...(kind === "history" ? { eventThroughYear: 2025 } : {}),
+      ...(["history", "historyEn"].includes(kind)
+        ? { eventThroughYear: 2025 }
+        : {}),
       artifacts: manifest.files.map((entry) => ({
         path: entry.path,
         sha256: entry.after,
@@ -217,7 +259,11 @@ function create({ kind, root = project, now = new Date() }) {
     if (dryRun) return { directory, committed: false };
     return withLock(root, () => {
       for (const entry of manifest.files)
-        if (hash(fs.readFileSync(target(root, entry.path))) !== entry.before)
+        if (
+          (fs.existsSync(target(root, entry.path))
+            ? hash(fs.readFileSync(target(root, entry.path)))
+            : null) !== entry.before
+        )
           throw Error("Data changed during download: " + entry.path);
       for (const entry of manifest.files)
         if (
@@ -232,6 +278,7 @@ function create({ kind, root = project, now = new Date() }) {
           const file = target(root, entry.path),
             temporary = path.join(directory, "commit-" + entry.staged);
           fs.copyFileSync(path.join(directory, entry.staged), temporary);
+          fs.mkdirSync(path.dirname(file), { recursive: true });
           fs.renameSync(temporary, file);
         }
         manifest.status = "committed";

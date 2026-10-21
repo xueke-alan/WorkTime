@@ -90,7 +90,9 @@ WorkTimeApp.ui.createCalendarWeather = function ({
       if (!picture.isConnected) cancel(picture);
     const value = weather.snapshot();
     const today = businessDate(now());
-    const end = Date.parse(today + "T00:00:00+08:00") + 5 * 86400000;
+    const weatherDays =
+      WorkTimeApp.services.preferences.page.state.weatherDays ?? 5;
+    const end = Date.parse(today + "T00:00:00+08:00") + weatherDays * 86400000;
     const days = new Map(
       (value.record?.daily || [])
         .filter(
@@ -111,7 +113,9 @@ WorkTimeApp.ui.createCalendarWeather = function ({
         continue;
       }
       const description =
-        value.city.name + " · " + weather.weatherText(row.weatherCode);
+        WorkTimeApp.i18n.city(value.city.name) +
+        " · " +
+        WorkTimeApp.i18n.message(weather.weatherText(row.weatherCode));
       const key = value.city.name + ":" + icon;
       let departure = Promise.all(
         [...cell.querySelectorAll(".calendar-weather-outgoing")].flatMap(
@@ -152,6 +156,14 @@ WorkTimeApp.ui.createCalendarWeather = function ({
     }
   }
   const unsubscribe = weather.subscribe(refresh);
+  const unsubscribePreferences =
+    WorkTimeApp.services.preferences.page.subscribe(() => {
+      weather.setDemand(
+        "calendar",
+        (WorkTimeApp.services.preferences.page.state.weatherDays ?? 5) > 0,
+      );
+      refresh();
+    });
   function settle() {
     for (const picture of new Set([
       ...animations.keys(),
@@ -175,11 +187,15 @@ WorkTimeApp.ui.createCalendarWeather = function ({
     weatherUI.resumeImages(calendar);
   }
   document.addEventListener("visibilitychange", visibilityChanged);
-  weather.setDemand("calendar", true);
+  weather.setDemand(
+    "calendar",
+    (WorkTimeApp.services.preferences.page.state.weatherDays ?? 5) > 0,
+  );
   function dispose() {
     if (disposed) return;
     disposed = true;
     unsubscribe();
+    unsubscribePreferences();
     unlisten();
     document.removeEventListener("visibilitychange", visibilityChanged);
     weather.setDemand("calendar", false);

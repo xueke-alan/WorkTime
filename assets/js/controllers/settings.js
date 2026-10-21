@@ -55,7 +55,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
       const a = C.breakMin(start),
         b = C.breakMin(end);
       if (a === null || b === null || a >= b || a === 1440)
-        throw Error("休息时段请使用 HH:MM，结束必须晚于开始。");
+        throw Error(WorkTimeApp.i18n.t("copy.4e08bf2cca"));
       breaks.push({ start: a, end: b });
     }
     return breaks;
@@ -65,11 +65,11 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     row.className = "breakrow";
     const fmt = (m) => C.pad(Math.floor(m / 60)) + ":" + C.pad(m % 60);
     row.innerHTML =
-      '<input class="breakstart clock-input" type="text" maxlength="5" autocomplete="off" inputmode="numeric" placeholder="12:00" aria-label="休息开始时间" value="' +
+      WorkTimeApp.i18n.t("copy.4beeb6588b") +
       (b ? fmt(b.start) : "") +
-      '"><input class="breakend clock-input" type="text" maxlength="5" autocomplete="off" inputmode="numeric" placeholder="13:00" aria-label="休息结束时间" value="' +
+      WorkTimeApp.i18n.t("copy.b32b652361") +
       (b ? fmt(b.end) : "") +
-      '"><button class="ui-button icon-only" type="button" aria-label="清空休息时段" title="清空休息时段">' +
+      WorkTimeApp.i18n.t("copy.ab28b7393b") +
       actions.controlIcon("trash") +
       "</button>";
 
@@ -113,10 +113,10 @@ WorkTimeApp.ui.createSettingsController = function (options) {
   }
   function updateSchedulePreview() {
     $("scheduleEditingDate").textContent =
-      "正在编辑 " +
+      WorkTimeApp.i18n.t("copy.b5b41e6754") +
       editingDate +
-      " 的作息" +
-      (hasScheduleDraft() ? " · 未应用" : "");
+      WorkTimeApp.i18n.t("copy.47cbad548a") +
+      (hasScheduleDraft() ? WorkTimeApp.i18n.t("copy.5db8ce7daa") : "");
     try {
       readSchedule();
       WorkTimeApp.ui.fieldErrors.clear($("settingsError"));
@@ -133,11 +133,11 @@ WorkTimeApp.ui.createSettingsController = function (options) {
       schedule.workStart +
       "–" +
       schedule.workEnd +
-      "，标准工时 " +
+      WorkTimeApp.i18n.t("copy.33bc47eea7") +
       C.hours(schedule.standardMinutes) +
-      " h，休息 " +
+      WorkTimeApp.i18n.t("copy.7f5ae7de18") +
       (schedule.breaks.map((r) => fmt(r.start) + "–" + fmt(r.end)).join("、") ||
-        "无固定时段")
+        WorkTimeApp.i18n.t("copy.1a8b4ad549"))
     );
   }
   function requestSettingsLeave(continuation) {
@@ -153,11 +153,11 @@ WorkTimeApp.ui.createSettingsController = function (options) {
       const schedule = readSchedule();
       const fmt = (m) => C.pad(Math.floor(m / 60)) + ":" + C.pad(m % 60);
       $("scheduleDraftSummary").innerHTML =
-        '<div class="schedule-summary-main"><div><span>上下班时间</span><strong>' +
+        WorkTimeApp.i18n.t("copy.2d6cb608fd") +
         esc(schedule.workStart + "–" + schedule.workEnd) +
-        "</strong></div><div><span>标准工时</span><strong>" +
+        WorkTimeApp.i18n.t("copy.6582dde62a") +
         esc(C.hours(schedule.standardMinutes)) +
-        ' <small>h</small></strong></div></div><div class="schedule-summary-breaks"><span>休息时段</span><div>' +
+        WorkTimeApp.i18n.t("copy.67bce3b1e9") +
         (schedule.breaks.length
           ? schedule.breaks
               .map(
@@ -169,7 +169,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
                   "</span>",
               )
               .join("")
-          : '<span class="schedule-break-chip">无固定时段</span>') +
+          : WorkTimeApp.i18n.t("copy.7e233e4c7e")) +
         "</div></div>";
     } catch (error) {
       WorkTimeApp.ui.fieldErrors.show($("settingsError"), {
@@ -192,8 +192,10 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     $("scheduleList").innerHTML = items
       .map((r, i) => {
         const title = r.start
-          ? r.start + " 至 " + (r.end || "未来全部")
-          : "基础作息";
+          ? r.start +
+            WorkTimeApp.i18n.t("copy.9f96f7e891") +
+            (r.end || WorkTimeApp.i18n.t("copy.5971bd41a3"))
+          : WorkTimeApp.i18n.t("copy.32fdb2d9ea");
         const selected =
           !!preferredRange &&
           preferredRange.start === r.start &&
@@ -211,11 +213,11 @@ WorkTimeApp.ui.createSettingsController = function (options) {
           esc(C.hours(r.schedule.standardMinutes)) +
           ' h</span></span><small class="schedule-card-details"><span>' +
           esc(r.schedule.workStart + "–" + r.schedule.workEnd) +
-          '</span><span class="schedule-card-breaks">休息 ' +
+          WorkTimeApp.i18n.t("copy.846ab5a883") +
           esc(
             r.schedule.breaks
               .map((b) => fmt(b.start) + "–" + fmt(b.end))
-              .join("、") || "无固定时段",
+              .join("、") || WorkTimeApp.i18n.t("copy.1a8b4ad549"),
           ) +
           "</span></small></button>"
         );
@@ -287,6 +289,10 @@ WorkTimeApp.ui.createSettingsController = function (options) {
   function bind() {
     if (bound) return;
     bound = true;
+    events.listen(document, "worktime:languagechange", () => {
+      updateSchedulePreview();
+      renderScheduleList();
+    });
     rangeController.bind();
     originalDraft = rawDraft();
     events.handler($("settingsOpen"), "onclick", showSettings);
@@ -311,7 +317,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
           Array.from({ length: 5 }, (_, i) => {
             const input = $("overtimeRequirement" + i);
             if (input.validity.badInput || !input.validity.valid)
-              throw Error("加班条件须为 0–24 小时，保留一位小数。");
+              throw Error(WorkTimeApp.i18n.t("copy.1c37af8ae2"));
             return input.value === ""
               ? null
               : Number((Number(input.value) * 60).toFixed(2));
@@ -325,11 +331,11 @@ WorkTimeApp.ui.createSettingsController = function (options) {
         if (!result.persisted)
           WorkTimeApp.ui.fieldErrors.show($("settingsError"), {
             code: "UNSAVED",
-            message: "设置尚未保存，请再次编辑重试或关闭后备份。",
+            message: WorkTimeApp.i18n.t("copy.3b3b385082"),
           });
         if (result.changed) actions.render();
         if (!result.persisted)
-          actions.saveFeedback(false, "工作时间设置已更新");
+          actions.saveFeedback(false, WorkTimeApp.i18n.t("copy.594854becd"));
       } catch (error) {
         WorkTimeApp.ui.fieldErrors.show($("settingsError"), {
           code: "VALIDATION",
@@ -364,7 +370,9 @@ WorkTimeApp.ui.createSettingsController = function (options) {
         const result = await application.applySchedule(candidate);
         if (!result.persisted)
           throw Error(
-            "作息未应用：" + result.error.message + "。请保留草稿并重试。",
+            WorkTimeApp.i18n.t("copy.53e34e04b0") +
+              WorkTimeApp.i18n.message(result.error.message) +
+              WorkTimeApp.i18n.t("copy.2ee102ceda"),
           );
         const continuation = pendingLeave;
         pendingLeave = null;
@@ -374,10 +382,12 @@ WorkTimeApp.ui.createSettingsController = function (options) {
         loadSchedule(C.scheduleForDate(model.state, editingDate));
         WorkTimeApp.ui.fieldErrors.clear($("settingsError"));
         actions.render();
-        actions.toast("作息已应用");
+        actions.toast(WorkTimeApp.i18n.t("copy.68847eebb3"));
         continuation?.();
       } catch (error) {
-        $("scheduleRangeError").textContent = error.message;
+        $("scheduleRangeError").textContent = WorkTimeApp.i18n.message(
+          error.message,
+        );
       }
     });
     events.listen($("scheduleRangeDialog"), "close", () => {

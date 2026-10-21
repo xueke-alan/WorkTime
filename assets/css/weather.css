@@ -3,6 +3,8 @@ body .editor #dateInfoPanel.weather-panel { position: relative; padding: 1rem 1.
 .weather-heading { display: flex; align-items: baseline; gap: 1rem; min-height: 0; height: auto; padding-inline-end: 5rem; font-size: 1.65rem; line-height: 1.3; color: var(--theme-text-strong, #374746); }
 .weather-heading strong { font-size: inherit; font-weight: 700; }
 .weather-heading > strong { color: var(--theme-text-strong, #202727); }
+.weather-heading > strong { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.weather-current { flex-shrink: 0; }
 .weather-current { display: flex; gap: 0.4rem; align-items: flex-end; font-size: inherit; }
 .weather-panel > .weather-condition { position: absolute; top: 1rem; right: 1.1rem; width: 5rem; height: 5rem; margin: 0; font-size: 1rem; line-height: 1.4; padding: 0; }
 /* Compensate for the Latin digits' shallower descent beside Chinese city names. */
@@ -10,10 +12,10 @@ body .editor #dateInfoPanel.weather-panel { position: relative; padding: 1rem 1.
 .weather-temperature[data-tone="comfortable"] { color: #168269; }
 .weather-temperature[data-tone="warm"] { color: #b96a16; }
 .weather-temperature[data-tone="hot"] { color: #c04438; }
-.weather-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem 0.6rem; margin: 0; padding-inline-end: 5rem; }
-.weather-detail { display: flex; align-items: baseline; gap: 0.45rem; }
-.weather-detail dt { color: var(--muted); }
-.weather-detail dd { margin: 0; font-variant-numeric: tabular-nums; }
+.weather-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.3rem 0.7rem; margin: 0; padding-inline-end: 5rem; }
+.weather-detail { display: flex; align-items: baseline; gap: 0.35rem; min-width: 0; line-height: 1.3; }
+.weather-detail dt { color: var(--muted); white-space: nowrap; }
+.weather-detail dd { margin: 0; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .weather-details { padding-bottom: 0.35rem; border-bottom: 1px solid var(--line); }
 .weather-panel > .weather-forecast { display: flex; flex-direction: column; gap: 0.35rem; flex: 1 1 auto; min-height: 0; margin-inline: -0.7rem; }
 .weather-footer { display: flex; align-items: baseline; justify-content: space-between; gap: 0.4rem; min-width: 0; }
@@ -42,11 +44,13 @@ body #dateInfoPanel .weather-forecast-tabs button .button-label { translate: non
 .weather-day-low { color: var(--theme-text-strong, #526b66); }
 .weather-day time, .weather-day span:last-child { color: var(--theme-text-strong, #526b66); font-size: inherit; }
 .weather-day > .weather-day-uv:last-child { font-size: 0.8em; line-height: 1.3; }
-.weather-day .weather-day-uv .weather-uv-value[data-level="弱"] { color: #3ea72d; }
-.weather-day .weather-day-uv .weather-uv-value[data-level="中等"] { color: #fff300; }
-.weather-day .weather-day-uv .weather-uv-value[data-level="强"] { color: #f18b00; }
-.weather-day .weather-day-uv .weather-uv-value[data-level="很强"] { color: #e53210; }
-.weather-day .weather-day-uv .weather-uv-value[data-level="极强"] { color: #b567a4; }
+/* Darker category colors keep the small UV digits legible on pale panel surfaces. */
+.weather-day .weather-day-uv .weather-uv-value { font-weight: 700; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="low"] { color: #237a32; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="moderate"] { color: #8a6500; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="high"] { color: #b45309; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="very-high"] { color: #c22d1a; }
+.weather-day .weather-day-uv .weather-uv-value[data-level="extreme"] { color: #8a3e85; }
 body #dateInfoPanel.weather-panel .date-info-source { margin: 0; font-size: 0.75rem; line-height: 1.3; }
 .weather-panel .weather-stale { color: #95631b; }
 .weather-panel .weather-time { margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

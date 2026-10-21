@@ -13,7 +13,7 @@ WorkTimeApp.ui.createNotifications = function (options) {
     document,
   } = options;
   const timers = new Set(),
-    feedback = new Set();
+    feedback = new Map();
   let mounted = true;
   function later(action, delay) {
     const timer = setTimeout(() => {
@@ -29,7 +29,7 @@ WorkTimeApp.ui.createNotifications = function (options) {
     mounted = false;
     for (const timer of timers) clearTimeout(timer);
     timers.clear();
-    for (const item of feedback) item.remove();
+    for (const item of feedback.keys()) item.remove();
     feedback.clear();
     updateNotificationEmptyState();
   }
@@ -56,6 +56,10 @@ WorkTimeApp.ui.createNotifications = function (options) {
         body = document.createElement("div");
       if (item.querySelector(".notification-body")) continue;
       body.className = "notification-body";
+      if (item.dataset.i18nText) {
+        body.dataset.i18nText = item.dataset.i18nText;
+        delete item.dataset.i18nText;
+      }
       while (item.firstChild) body.append(item.firstChild);
       item.classList.add("info-notification", "tone-" + type);
       item.insertAdjacentHTML("afterbegin", notificationIcon(type));
@@ -81,9 +85,11 @@ WorkTimeApp.ui.createNotifications = function (options) {
       (tone === "error" ? " tone-error" : "");
     item.innerHTML =
       notificationIcon("countdown") + '<div class="notification-body"></div>';
-    item.querySelector(".notification-body").textContent = message;
+    const source = WorkTimeApp.i18n.canonical(message);
+    item.querySelector(".notification-body").textContent =
+      WorkTimeApp.i18n.message(source);
     $("feedbackList").prepend(item);
-    feedback.add(item);
+    feedback.set(item, source);
     const count = item.querySelector(".ring-count");
     later(() => {
       if (item.isConnected) count.textContent = "2";
@@ -115,9 +121,9 @@ WorkTimeApp.ui.createNotifications = function (options) {
       body = notice.querySelector(".notification-body");
     notice.classList.toggle("hidden", !issues.length);
     body.innerHTML = issues.length
-      ? "<strong>发现 " +
+      ? WorkTimeApp.i18n.t("copy.026a4db6a7") +
         issues.length +
-        ' 处时间异常</strong><ul class="anomaly-list">' +
+        WorkTimeApp.i18n.t("copy.234cec8ef6") +
         issues
           .map(
             ({ date, detail }) =>
@@ -130,7 +136,7 @@ WorkTimeApp.ui.createNotifications = function (options) {
               "</li>",
           )
           .join("") +
-        '</ul><div class="anomaly-hint">跨午夜请开启“次日下班”。</div>'
+        WorkTimeApp.i18n.t("copy.ca379f9b92")
       : "";
     $("dayEnd").setAttribute(
       "aria-invalid",
@@ -143,11 +149,25 @@ WorkTimeApp.ui.createNotifications = function (options) {
     const status = C.oaStaleness(state),
       notice = $("oaStaleNotice");
     notice.classList.toggle("hidden", !status || !status.stale);
-    notice.title = status && status.stale ? "最新 OA 工时：" + status.date : "";
+    notice.title =
+      status && status.stale
+        ? WorkTimeApp.i18n.t("copy.5910db2783") + status.date
+        : "";
     notice.querySelector(".notification-body").textContent =
       status && status.stale
-        ? "OA 工时已 " + status.days + " 天未更新，请导入"
+        ? WorkTimeApp.i18n.t("copy.a591f889fc") +
+          status.days +
+          WorkTimeApp.i18n.t("copy.078898f2ff")
         : "";
+  }
+  function refreshLanguage() {
+    if (!mounted) return;
+    renderOAStaleNotice();
+    renderTimeAnomalyNotice();
+    for (const [item, source] of feedback)
+      item.querySelector(".notification-body").textContent =
+        WorkTimeApp.i18n.message(source);
+    updateNotificationEmptyState();
   }
   return {
     mount,
@@ -157,5 +177,6 @@ WorkTimeApp.ui.createNotifications = function (options) {
     toast,
     renderTimeAnomalyNotice,
     renderOAStaleNotice,
+    refreshLanguage,
   };
 };

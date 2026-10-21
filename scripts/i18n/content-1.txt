@@ -1,0 +1,155 @@
+786|새해 첫날|元日|Año Nuevo|Neujahr|Jour de l’An
+787|세계 여성의 날|国際女性デー|Día Internacional de la Mujer|Internationaler Frauentag|Journée internationale des droits des femmes
+788|노동절|労働節|Día del Trabajo|Tag der Arbeit|Fête du Travail
+789|어린이날|こどもの日|Día del Niño|Kindertag|Fête des enfants
+790|스승의 날|教師の日|Día del Profesor|Tag der Lehrkräfte|Fête des enseignants
+791|국경절|国慶節|Fiesta Nacional|Nationalfeiertag|Fête nationale
+792|춘절|春節|Año Nuevo lunar|Mondneujahr|Nouvel An lunaire
+793|원소절|元宵節|Fiesta de los Faroles|Laternenfest|Fête des lanternes
+794|단오절|端午節|Fiesta del Barco del Dragón|Drachenbootfest|Fête des bateaux-dragons
+795|칠석|七夕|Qixi|Qixi-Fest|Fête de Qixi
+796|중추절|中秋節|Fiesta del Medio Otoño|Mondfest|Fête de la mi-automne
+797|중양절|重陽節|Fiesta del Doble Nueve|Doppelneunfest|Fête du double neuf
+798|어머니의 날|母の日|Día de la Madre|Muttertag|Fête des Mères
+799|아버지의 날|父の日|Día del Padre|Vatertag|Fête des Pères
+800|세계 소비자 권리의 날|世界消費者権利デー|Día Mundial de los Derechos del Consumidor|Weltverbrauchertag|Journée mondiale des droits des consommateurs
+801|밸런타인데이|バレンタインデー|San Valentín|Valentinstag|Saint-Valentin
+802|만우절|エイプリルフール|Día de las Bromas|Aprilscherztag|Poisson d’avril
+803|세계 주거의 날|世界ハビタット・デー|Día Mundial del Hábitat|Welttag des Wohn- und Siedlungswesens|Journée mondiale de l’habitat
+804|추수감사절|感謝祭|Acción de Gracias|Erntedankfest|Action de grâce
+805|핼러윈|ハロウィン|Halloween|Halloween|Halloween
+806|모든 성인의 날|諸聖人の日|Todos los Santos|Allerheiligen|Toussaint
+807|크리스마스이브|クリスマスイブ|Nochebuena|Heiligabend|Veille de Noël
+808|크리스마스|クリスマス|Navidad|Weihnachten|Noël
+809|식목일|植樹の日|Día del Árbol|Tag des Baumes|Journée de l’arbre
+810|청년절|青年の日|Día de la Juventud|Tag der Jugend|Fête de la jeunesse
+811|중국공산당 창당 기념일|中国共産党創立記念日|Fundación del Partido Comunista de China|Gründungstag der Kommunistischen Partei Chinas|Anniversaire du Parti communiste chinois
+812|중국 건군절|中国の建軍節|Día del Ejército de China|Tag der chinesischen Armee|Fête de l’armée chinoise
+813|중국 학생 안전교육의 날|中国の児童生徒安全教育の日|Día de la Educación en Seguridad Escolar de China|Chinesischer Tag der Schulsicherheit|Journée chinoise de l’éducation à la sécurité scolaire
+814|중국 장애인 돕기의 날|中国の障害者支援の日|Día Nacional de Apoyo a las Personas con Discapacidad de China|Chinesischer Tag zur Unterstützung von Menschen mit Behinderungen|Journée chinoise de soutien aux personnes handicapées
+815|중국 국방교육의 날|中国の国防教育の日|Día de la Educación para la Defensa Nacional de China|Chinesischer Tag der Landesverteidigungserziehung|Journée chinoise de l’éducation à la défense nationale
+816|용대두|龍抬頭|Fiesta del Dragón que Alza la Cabeza|Fest des Drachenkopfhebens|Fête du dragon qui lève la tête
+817|납팔절|臘八節|Fiesta de Laba|Laba-Fest|Fête de Laba
+818|청명|清明|Qingming|Qingming|Qingming
+819|동지|冬至|Solsticio de invierno|Wintersonnenwende|Solstice d’hiver
+820|소한|小寒|Frío menor|Kleine Kälte|Petit froid
+821|대한|大寒|Frío mayor|Große Kälte|Grand froid
+822|입춘|立春|Inicio de la primavera|Frühlingsanfang|Début du printemps
+823|우수|雨水|Agua de lluvia|Regenwasser|Eaux de pluie
+824|경칩|啓蟄|Despertar de los insectos|Erwachen der Insekten|Réveil des insectes
+825|춘분|春分|Equinoccio de primavera|Frühlings-Tagundnachtgleiche|Équinoxe de printemps
+826|곡우|穀雨|Lluvia de granos|Getreideregen|Pluie des céréales
+827|입하|立夏|Inicio del verano|Sommeranfang|Début de l’été
+828|소만|小満|Granos en formación|Kleine Fülle|Petite plénitude
+829|망종|芒種|Grano en espiga|Ährenzeit|Grain en épi
+830|하지|夏至|Solsticio de verano|Sommersonnenwende|Solstice d’été
+831|소서|小暑|Calor menor|Kleine Hitze|Petite chaleur
+832|대서|大暑|Calor mayor|Große Hitze|Grande chaleur
+833|입추|立秋|Inicio del otoño|Herbstanfang|Début de l’automne
+834|처서|処暑|Fin del calor|Ende der Hitze|Fin de la chaleur
+835|백로|白露|Rocío blanco|Weißer Tau|Rosée blanche
+836|추분|秋分|Equinoccio de otoño|Herbst-Tagundnachtgleiche|Équinoxe d’automne
+837|한로|寒露|Rocío frío|Kalter Tau|Rosée froide
+838|상강|霜降|Descenso de la escarcha|Erster Frost|Descente du givre
+839|입동|立冬|Inicio del invierno|Winteranfang|Début de l’hiver
+840|소설|小雪|Nieve menor|Kleiner Schnee|Petite neige
+841|대설|大雪|Nieve mayor|Großer Schnee|Grande neige
+842|세계 안무가의 날|国際振付家の日|Día Internacional del Coreógrafo|Internationaler Tag der Choreografie|Journée internationale des chorégraphes
+843|비거뉴어리의 날|ヴィーガニュアリーの日|Día de Veganuary|Veganuary-Tag|Journée du Veganuary
+844|세계 논리의 날|世界論理デー|Día Mundial de la Lógica|Welttag der Logik|Journée mondiale de la logique
+845|세계 매운 음식의 날|国際辛い料理の日|Día Internacional de la Comida Picante|Internationaler Tag der scharfen Speisen|Journée internationale de la cuisine épicée
+846|곰돌이 푸의 날|くまのプーさんの日|Día de Winnie the Pooh|Winnie-Puuh-Tag|Journée de Winnie l’ourson
+847|치즈 애호가의 날|チーズ愛好家の日|Día de los Amantes del Queso|Tag der Käseliebhaber|Journée des amateurs de fromage
+848|세계 포옹의 날|国際ハグの日|Día Internacional del Abrazo|Weltknuddeltag|Journée internationale des câlins
+849|위기에 처한 변호사의 날|危機に瀕する弁護士の日|Día de la Abogacía Amenazada|Tag des bedrohten Anwalts|Journée de l’avocat en danger
+850|세계 관세의 날|国際税関デー|Día Internacional de las Aduanas|Weltzolltag|Journée internationale de la douane
+851|홀로코스트 희생자 추모의 날|ホロコースト犠牲者を想起する国際デー|Día de Conmemoración de las Víctimas del Holocausto|Internationaler Holocaust-Gedenktag|Journée de commémoration des victimes de l’Holocauste
+852|개인정보 보호의 날|データプライバシーの日|Día de la Protección de Datos|Europäischer Datenschutztag|Journée de la protection des données
+853|세계 얼룩말의 날|国際シマウマの日|Día Internacional de la Cebra|Internationaler Tag des Zebras|Journée internationale du zèbre
+854|세계 습지의 날|世界湿地の日|Día Mundial de los Humedales|Welttag der Feuchtgebiete|Journée mondiale des zones humides
+855|세계 고슴도치의 날|国際ハリネズミの日|Día Internacional del Erizo|Internationaler Tag des Igels|Journée internationale du hérisson
+856|세계 암의 날|世界対がんデー|Día Mundial contra el Cáncer|Weltkrebstag|Journée mondiale contre le cancer
+857|세계 인류 형제애의 날|人間の友愛国際デー|Día Internacional de la Fraternidad Humana|Internationaler Tag der Geschwisterlichkeit aller Menschen|Journée internationale de la fraternité humaine
+858|세계 피자의 날|世界ピザの日|Día Mundial de la Pizza|Weltpizzatag|Journée mondiale de la pizza
+859|세계 기상인의 날|国際気象予報士の日|Día Internacional del Meteorólogo|Internationaler Tag der Meteorologen|Journée internationale des météorologues
+860|세계 하마의 날|世界カバの日|Día Mundial del Hipopótamo|Welttag des Flusspferds|Journée mondiale de l’hippopotame
+861|고수 싫어하는 날|パクチー嫌いの日|Día de los que Odian el Cilantro|Tag der Koriandergegner|Journée contre la coriandre
+862|세계 희귀질환의 날|世界希少・難治性疾患の日|Día de las Enfermedades Raras|Tag der seltenen Erkrankungen|Journée des maladies rares
+863|세계 청각의 날|世界耳の日|Día Mundial de la Audición|Welttag des Hörens|Journée mondiale de l’audition
+864|세계 비만의 날|世界肥満デー|Día Mundial de la Obesidad|Welt-Adipositas-Tag|Journée mondiale de l’obésité
+865|세계 공학의 날|世界エンジニアリングデー|Día Mundial de la Ingeniería|Welttag des Ingenieurwesens|Journée mondiale de l’ingénierie
+866|세계 사이버 검열 반대의 날|世界反サイバー検閲デー|Día Mundial contra la Censura en Internet|Welttag gegen Internetzensur|Journée mondiale contre la cybercensure
+867|세계 행복의 날|国際幸福デー|Día Internacional de la Felicidad|Internationaler Tag des Glücks|Journée internationale du bonheur
+868|유엔 프랑스어의 날|国連フランス語デー|Día de la Lengua Francesa de la ONU|UN-Tag der französischen Sprache|Journée de la langue française à l’ONU
+869|세계 색의 날|国際カラーデー|Día Internacional del Color|Internationaler Tag der Farbe|Journée internationale de la couleur
+870|세계 시의 날|世界詩歌記念日|Día Mundial de la Poesía|Welttag der Poesie|Journée mondiale de la poésie
+871|세계 인종차별 철폐의 날|人種差別撤廃のための国際デー|Día Internacional de la Eliminación de la Discriminación Racial|Internationaler Tag gegen Rassismus|Journée internationale pour l’élimination de la discrimination raciale
+872|세계 다운증후군의 날|世界ダウン症の日|Día Mundial del Síndrome de Down|Welt-Down-Syndrom-Tag|Journée mondiale de la trisomie 21
+873|세계 물의 날|世界水の日|Día Mundial del Agua|Weltwassertag|Journée mondiale de l’eau
+874|세계 곰의 날|世界クマの日|Día Mundial del Oso|Welttag des Bären|Journée mondiale de l’ours
+875|세계 기상의 날|世界気象デー|Día Meteorológico Mundial|Welttag der Meteorologie|Journée météorologique mondiale
+876|세계 결핵의 날|世界結核デー|Día Mundial de la Tuberculosis|Welttuberkulosetag|Journée mondiale de lutte contre la tuberculose
+877|세계 연극의 날|世界演劇の日|Día Mundial del Teatro|Welttheatertag|Journée mondiale du théâtre
+878|세계 백업의 날|世界バックアップデー|Día Mundial de la Copia de Seguridad|Welt-Backup-Tag|Journée mondiale de la sauvegarde
+879|트랜스젠더 가시화의 날|トランスジェンダー可視化の日|Día de la Visibilidad Trans|Internationaler Tag der Trans-Sichtbarkeit|Journée de la visibilité transgenre
+880|세계 고수의 날|国際パクチーの日|Día Internacional del Cilantro|Internationaler Tag des Korianders|Journée internationale de la coriandre
+881|세계 어린이책의 날|国際子どもの本の日|Día Internacional del Libro Infantil|Internationaler Kinderbuchtag|Journée internationale du livre pour enfants
+882|세계 자폐인의 날|世界自閉症啓発デー|Día Mundial de Concienciación sobre el Autismo|Welt-Autismus-Tag|Journée mondiale de sensibilisation à l’autisme
+883|세계 팩트체크의 날|国際ファクトチェックデー|Día Internacional de la Verificación de Datos|Internationaler Faktencheck-Tag|Journée internationale du fact-checking
+884|세계 유기동물의 날|世界野良動物の日|Día Mundial de los Animales Callejeros|Welttag der Straßentiere|Journée mondiale des animaux errants
+885|세계 양심의 날|良心の国際デー|Día Internacional de la Conciencia|Internationaler Tag des Gewissens|Journée internationale de la conscience
+886|딥디시 피자의 날|ディープディッシュピザの日|Día de la Pizza de Masa Gruesa|Tag der Deep-Dish-Pizza|Journée de la pizza à pâte épaisse
+887|세계 무성애의 날|国際アセクシュアルデー|Día Internacional de la Asexualidad|Internationaler Tag der Asexualität|Journée internationale de l’asexualité
+888|세계 보건의 날|世界保健デー|Día Mundial de la Salud|Weltgesundheitstag|Journée mondiale de la santé
+889|세계 로마인의 날|国際ロマの日|Día Internacional del Pueblo Gitano|Internationaler Tag der Roma|Journée internationale des Roms
+890|반려동물의 날|ペットの日|Día de las Mascotas|Tag der Haustiere|Journée des animaux de compagnie
+891|세계 양자의 날|世界量子デー|Día Mundial de la Cuántica|Weltquantentag|Journée mondiale de la physique quantique
+892|세계 예술의 날|世界芸術の日|Día Mundial del Arte|Welttag der Kunst|Journée mondiale de l’art
+893|세계 임상병리사의 날|世界臨床検査デー|Día de las Ciencias de Laboratorio Biomédico|Welttag der biomedizinischen Labordiagnostik|Journée des sciences de laboratoire biomédical
+894|세계 혈우병의 날|世界血友病デー|Día Mundial de la Hemofilia|Welthämophilietag|Journée mondiale de l’hémophilie
+895|세계 아마추어 무선의 날|世界アマチュア無線の日|Día Mundial del Radioaficionado|Weltamateurfunktag|Journée mondiale de la radio amateur
+896|세계 유산의 날|国際記念物遺跡デー|Día Internacional de los Monumentos y Sitios|Internationaler Denkmaltag|Journée internationale des monuments et des sites
+897|유엔 중국어의 날|国連中国語デー|Día de la Lengua China de la ONU|UN-Tag der chinesischen Sprache|Journée de la langue chinoise à l’ONU
+898|지구의 날|地球の日|Día de la Tierra|Tag der Erde|Journée de la Terre
+899|세계 법의 날|世界法の日|Día Mundial del Derecho|Welttag des Rechts|Journée mondiale du droit
+900|유엔 영어의 날|国連英語デー|Día de la Lengua Inglesa de la ONU|UN-Tag der englischen Sprache|Journée de la langue anglaise à l’ONU
+901|세계 책과 저작권의 날|世界図書・著作権デー|Día Mundial del Libro y del Derecho de Autor|Welttag des Buches und des Urheberrechts|Journée mondiale du livre et du droit d’auteur
+902|세계 말라리아의 날|世界マラリアデー|Día Mundial del Paludismo|Weltmalariatag|Journée mondiale de lutte contre le paludisme
+903|세계 펭귄의 날|世界ペンギンの日|Día Mundial del Pingüino|Weltpinguintag|Journée mondiale des manchots
+904|세계 지식재산의 날|世界知的所有権の日|Día Mundial de la Propiedad Intelectual|Welttag des geistigen Eigentums|Journée mondiale de la propriété intellectuelle
+905|세계 맥의 날|世界バクの日|Día Mundial del Tapir|Welttag des Tapirs|Journée mondiale du tapir
+906|세계 디자인의 날|国際デザインデー|Día Internacional del Diseño|Internationaler Tag des Designs|Journée internationale du design
+907|세계 춤의 날|国際ダンスデー|Día Internacional de la Danza|Welttanztag|Journée internationale de la danse
+908|버블티의 날|タピオカティーの日|Día del Té de Burbujas|Bubble-Tea-Tag|Journée du thé aux perles
+909|세계 아동 체벌 반대의 날|国際子どもを叩かない日|Día Internacional contra el Castigo Físico Infantil|Internationaler Tag der gewaltfreien Erziehung|Journée internationale de la non-violence éducative
+910|세계 노동절|メーデー|Día Internacional de los Trabajadores|Internationaler Tag der Arbeit|Journée internationale des travailleurs
+911|세계 참치의 날|世界マグロ・デー|Día Mundial del Atún|Welttag des Thunfischs|Journée mondiale du thon
+912|세계 해리 포터의 날|国際ハリー・ポッターの日|Día Internacional de Harry Potter|Internationaler Harry-Potter-Tag|Journée internationale de Harry Potter
+913|세계 언론 자유의 날|世界報道自由デー|Día Mundial de la Libertad de Prensa|Internationaler Tag der Pressefreiheit|Journée mondiale de la liberté de la presse
+914|세계 손 위생의 날|世界手指衛生の日|Día Mundial de la Higiene de las Manos|Welttag der Händehygiene|Journée mondiale de l’hygiène des mains
+915|세계 에이즈 고아의 날|世界エイズ孤児デー|Día Mundial de los Huérfanos del Sida|Welttag der Aids-Waisen|Journée mondiale des orphelins du sida
+916|세계 적십자·적신월의 날|世界赤十字・赤新月デー|Día Mundial de la Cruz Roja y de la Media Luna Roja|Weltrotkreuz- und Rothalbmondtag|Journée mondiale de la Croix-Rouge et du Croissant-Rouge
+917|세계 당나귀의 날|世界ロバの日|Día Mundial del Burro|Welttag des Esels|Journée mondiale de l’âne
+918|세계 아르간의 날|国際アルガニアの日|Día Internacional de la Argania|Internationaler Tag der Arganie|Journée internationale de l’arganier
+919|세계 간호사의 날|国際看護師の日|Día Internacional de la Enfermería|Internationaler Tag der Pflegenden|Journée internationale des infirmières
+920|세계 가정의 날|国際家族デー|Día Internacional de las Familias|Internationaler Tag der Familie|Journée internationale des familles
+921|세계 빛의 날|国際光デー|Día Internacional de la Luz|Internationaler Tag des Lichts|Journée internationale de la lumière
+922|세계 평화 공존의 날|平和に共存する国際デー|Día Internacional de la Convivencia en Paz|Internationaler Tag des friedlichen Zusammenlebens|Journée internationale du vivre-ensemble en paix
+923|세계 전기통신과 정보사회의 날|世界電気通信情報社会デー|Día Mundial de las Telecomunicaciones y de la Sociedad de la Información|Welttag der Telekommunikation und Informationsgesellschaft|Journée mondiale des télécommunications et de la société de l’information
+924|세계 고혈압의 날|世界高血圧デー|Día Mundial de la Hipertensión|Welthypertonietag|Journée mondiale de l’hypertension
+925|세계 성소수자 혐오 반대의 날|国際反ホモフォビア・バイフォビア・トランスフォビアの日|Día Internacional contra la Homofobia, la Transfobia y la Bifobia|Internationaler Tag gegen Homo-, Bi- und Transphobie|Journée internationale contre l’homophobie, la transphobie et la biphobie
+926|세계 박물관의 날|国際博物館の日|Día Internacional de los Museos|Internationaler Museumstag|Journée internationale des musées
+927|세계 벌의 날|世界ミツバチの日|Día Mundial de las Abejas|Weltbienentag|Journée mondiale des abeilles
+928|세계 측정의 날|世界計量記念日|Día Mundial de la Metrología|Weltmetrologietag|Journée mondiale de la métrologie
+929|세계 강직성 척추염의 날|世界強直性脊椎炎デー|Día Mundial de la Espondilitis Anquilosante|Welttag der axialen Spondyloarthritis|Journée mondiale de la spondylarthrite ankylosante
+930|세계 차의 날|国際お茶の日|Día Internacional del Té|Internationaler Tag des Tees|Journée internationale du thé
+931|세계 문화다양성의 날|対話と発展のための世界文化多様性デー|Día Mundial de la Diversidad Cultural para el Diálogo y el Desarrollo|Welttag der kulturellen Vielfalt für Dialog und Entwicklung|Journée mondiale de la diversité culturelle pour le dialogue et le développement
+932|세계 고스의 날|世界ゴスの日|Día Mundial del Gótico|Welt-Goth-Tag|Journée mondiale du mouvement gothique
+933|세계 거북이의 날|世界カメの日|Día Mundial de las Tortugas|Weltschildkrötentag|Journée mondiale des tortues
+934|세계 축구의 날|世界サッカーの日|Día Mundial del Fútbol|Weltfußballtag|Journée mondiale du football
+935|세계 뇌졸중 예방의 날|世界脳卒中予防デー|Día Mundial de la Prevención del Ictus|Welttag der Schlaganfallprävention|Journée mondiale de prévention des AVC
+936|세계 실종 아동의 날|国際行方不明の子どもの日|Día Internacional de los Niños Desaparecidos|Internationaler Tag der vermissten Kinder|Journée internationale des enfants disparus
+937|세계 도전의 날|世界チャレンジデー|Día Mundial del Desafío|Welt-Challenge-Tag|Journée mondiale du défi
+938|세계 햄버거의 날|国際ハンバーガーの日|Día Internacional de la Hamburguesa|Internationaler Tag des Hamburgers|Journée internationale du hamburger
+939|유엔 평화유지군의 날|国連平和維持要員の国際デー|Día Internacional del Personal de Paz de la ONU|Internationaler Tag der UN-Friedenskräfte|Journée internationale des Casques bleus
+940|세계 소화기 건강의 날|世界消化器病の日|Día Mundial de la Salud Digestiva|Welttag der Verdauungsgesundheit|Journée mondiale de la santé digestive

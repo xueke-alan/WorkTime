@@ -14,7 +14,9 @@
     track.removeEventListener("animationcancel", entry.end);
     clearTimeout(entry.timer);
     track.style.removeProperty("animation-play-state");
-    track.replaceChildren(entry.finalRow);
+    // The final digit always occupies its resting line. Only the absolutely
+    // positioned outgoing digit is removed; layout and paint origin stay fixed.
+    entry.outgoing.remove();
     track.classList.remove("number-roll-up", "number-roll-down");
     active.delete(track);
   }
@@ -34,6 +36,8 @@
       placeholder = "—",
       key,
       alignInk = false,
+      animateInitial = true,
+      animateWhole = false,
     } = {},
   ) {
     if (disposed) return;
@@ -42,11 +46,20 @@
       value === null
         ? null
         : decimals === null
-          ? String(value)
-          : value.toFixed(decimals);
+          ? typeof value === "number"
+            ? WorkTimeApp.i18n.number(value, {
+                useGrouping: false,
+                maximumFractionDigits: 20,
+              })
+            : String(value)
+          : WorkTimeApp.i18n.number(value, {
+              useGrouping: false,
+              minimumFractionDigits: decimals,
+              maximumFractionDigits: decimals,
+            });
     const raw = number === null ? placeholder : number + suffix;
     const old = previous.get(element);
-    const signature = JSON.stringify([raw, unit, alignInk]);
+    const signature = JSON.stringify([raw, unit, alignInk, animateWhole]);
     if (old?.signature === signature) return;
     for (const track of element.querySelectorAll(".summary-number-track"))
       finish(track);
@@ -69,18 +82,34 @@
       const visual = document.createElement("span");
       visual.className = "summary-number-visual";
       visual.setAttribute("aria-hidden", "true");
-      const oldDot = oldValue.includes(".")
-        ? oldValue.indexOf(".")
+      const decimal = WorkTimeApp.i18n.decimalSeparator;
+      const oldDot = oldValue.includes(decimal)
+        ? oldValue.indexOf(decimal)
         : oldValue.length;
-      const newDot = number.includes(".") ? number.indexOf(".") : number.length;
-      const decreasing = Number(number) < Number(oldValue);
+      const newDot = number.includes(decimal)
+        ? number.indexOf(decimal)
+        : number.length;
+      // ISO dates sort chronologically as strings; ordinary values sort numerically.
+      const decreasing =
+        Number.isNaN(Number(number.replace(decimal, "."))) ||
+        Number.isNaN(Number(oldValue.replace(decimal, ".")))
+          ? number < oldValue
+          : Number(number.replace(decimal, ".")) <
+            Number(oldValue.replace(decimal, "."));
       const animate =
-        !reduced.matches && !document.hidden && oldValue !== number;
+        !reduced.matches &&
+        !WorkTimeApp.i18n.changing &&
+        !document.hidden &&
+        (animateInitial || old?.number != null) &&
+        oldValue !== number;
       const pending = [];
-      for (const [index, digit] of [...number].entries()) {
-        if (!/\d/.test(digit)) {
+      for (const [index, digit] of (animateWhole
+        ? [number]
+        : [...number]
+      ).entries()) {
+        if (!animateWhole && !/\d/.test(digit)) {
           const punctuation = document.createElement("span");
-          punctuation.textContent = digit;
+          punctuation.textContent = digit === " " ? "\u00a0" : digit;
           visual.append(punctuation);
           continue;
         }
@@ -88,11 +117,14 @@
           index < newDot
             ? oldDot - (newDot - index)
             : oldDot + (index - newDot);
-        const before = /\d/.test(oldValue[oldIndex] || "")
-          ? oldValue[oldIndex]
-          : "0";
+        const before = animateWhole
+          ? oldValue
+          : /\d/.test(oldValue[oldIndex] || "")
+            ? oldValue[oldIndex]
+            : "0";
         const column = document.createElement("span");
         column.className = "summary-number-column";
+        if (animateWhole) column.classList.add("summary-number-word");
         const track = document.createElement("span");
         track.className = "summary-number-track";
         const row = (text) => {
@@ -106,10 +138,11 @@
           track.classList.add(
             decreasing ? "number-roll-down" : "number-roll-up",
           );
-          track.style.setProperty("--number-delay", index * 18 + "ms");
-          track.append(
-            ...(decreasing ? [finalRow, row(before)] : [row(before), finalRow]),
-          );
+          const delay = Math.min(pending.length * 12, 48);
+          track.style.setProperty("--number-delay", delay + "ms");
+          const outgoing = row(before);
+          outgoing.classList.add("summary-number-outgoing");
+          track.append(finalRow, outgoing);
           const end = (event) => {
             if (event.target === track) finish(track);
           };
@@ -118,9 +151,9 @@
           track.style.animationPlayState = "paused";
           active.set(track, {
             end,
-            finalRow,
+            outgoing,
             timer: null,
-            duration: 400 + index * 18,
+            duration: 400 + delay,
           });
           pending.push(track);
         } else track.append(finalRow);
@@ -135,8 +168,7 @@
       }
       wrapper.append(accessible, visual);
       element.replaceChildren(wrapper);
-      // Rows and transforms share the CSS 1.3em height. Reading pixel geometry
-      // here would force a layout after every individual numeric DOM update.
+      // The final row owns layout; the outgoing row never contributes geometry.
       if (!document.documentElement.classList.contains("app-loading"))
         pending.forEach(start);
     }

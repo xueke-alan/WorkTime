@@ -10,6 +10,7 @@ const dates = Object.freeze(
 );
 function stripReferences(text) {
   return text
+    .replace(/<ref\b[^>]*\/>/g, "")
     .replace(/<ref\b[^>]*>[\s\S]*?<\/ref>/g, "")
     .replace(/<ref[^>]*\/>/g, "")
     .replace(/<!--[\s\S]*?-->/g, "");
@@ -19,15 +20,21 @@ async function fetchPages(
   {
     request = fetch,
     pause = (delay) => new Promise((resolve) => setTimeout(resolve, delay)),
+    language = "zh",
   } = {},
 ) {
   const url =
-    "https://zh.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content%7Cids&rvslots=main&format=json&titles=" +
+    "https://" +
+    (language === "en" ? "en" : "zh") +
+    ".wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content%7Cids&rvslots=main&format=json&titles=" +
     encodeURIComponent(titles.join("|"));
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
       const response = await request(url, {
         signal: AbortSignal.timeout(40000),
+        headers: {
+          "User-Agent": "HWorkTime/1.0 (offline calendar data updater)",
+        },
       });
       if (!response.ok) throw Error("HTTP " + response.status);
       const data = await response.json();

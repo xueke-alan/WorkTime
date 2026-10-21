@@ -21,13 +21,16 @@ WorkTimeApp.ui.createImportController = function (options) {
   let oaNavigationTimer = null;
   let resultsMode = "history";
   function anomalyReason(record) {
-    if (!record.start && !record.end) return "无记录";
-    if (!record.start) return "缺上班卡";
-    if (!record.end) return "缺下班卡";
+    if (!record.start && !record.end)
+      return WorkTimeApp.i18n.t("copy.afaa05cdc4");
+    if (!record.start) return WorkTimeApp.i18n.t("copy.447b0f2e6f");
+    if (!record.end) return WorkTimeApp.i18n.t("copy.9236f52e70");
     const start = C.timeMin(record.start),
       end = C.timeMin(record.end);
-    if (start === null || end === null) return "时间无效";
-    if (!record.nextDay && end < start) return "时间倒置";
+    if (start === null || end === null)
+      return WorkTimeApp.i18n.t("copy.8f73c836dc");
+    if (!record.nextDay && end < start)
+      return WorkTimeApp.i18n.t("copy.381c22871c");
     return "";
   }
   function recordCells(record) {
@@ -40,7 +43,7 @@ WorkTimeApp.ui.createImportController = function (options) {
       esc(record.date.replace(/-/g, "/")) +
       "</strong><span>" +
       esc(time) +
-      (record.nextDay ? "（次日）" : "") +
+      (record.nextDay ? WorkTimeApp.i18n.t("copy.c751037c58") : "") +
       '</span><span class="import-record-anomaly">' +
       esc(anomalyReason(record)) +
       "</span>"
@@ -74,7 +77,7 @@ WorkTimeApp.ui.createImportController = function (options) {
   }
   function scheduleImportParse() {
     invalidatePreview(!$("pasteText").value.trim());
-    setImportParseStatus("pending", "正在解析…");
+    setImportParseStatus("pending", WorkTimeApp.i18n.t("copy.a0f28b2e00"));
     importParseTimer = setTimeout(parseImport, 250);
   }
   function invalidatePreview(showHistory = true) {
@@ -85,10 +88,11 @@ WorkTimeApp.ui.createImportController = function (options) {
     preview = null;
     $("commitImport").disabled = true;
     if (showHistory) $("importTable").classList.add("hidden");
-    $("importSummary").textContent = "暂无解析";
+    $("importSummary").textContent = WorkTimeApp.i18n.t("copy.8b76d80fc7");
     $("importWarnings").textContent = "";
     if (showHistory) {
-      $("importResultsTitle").textContent = "导入历史";
+      $("importResultsTitle").textContent =
+        WorkTimeApp.i18n.t("copy.dc71cd204d");
       $("importHistoryList").classList.remove("hidden");
       renderImportHistory();
       animateResults("history");
@@ -114,17 +118,20 @@ WorkTimeApp.ui.createImportController = function (options) {
         ),
         { records, warnings, rows } = plan;
       preview = rows.length ? plan : null;
-      $("importWarnings").textContent = warnings.join("\n");
+      $("importWarnings").textContent = warnings
+        .map(WorkTimeApp.i18n.message)
+        .join("\n");
       $("importSummary").textContent =
-        "已解析 " +
+        WorkTimeApp.i18n.t("copy.19b361b64c") +
         records.length +
-        " 条 · " +
+        WorkTimeApp.i18n.t("copy.c538cd1f50") +
         warnings.length +
-        " 提示 · " +
+        WorkTimeApp.i18n.t("copy.3bc4aa604d") +
         rows.filter((x) => x.result.conflict).length +
-        " 冲突";
+        WorkTimeApp.i18n.t("copy.2f47bca658");
       $("importSummary").title =
-        warnings.join("\n") || $("importSummary").textContent;
+        warnings.map(WorkTimeApp.i18n.message).join("\n") ||
+        $("importSummary").textContent;
       $("importRows").innerHTML = rows
         .map(
           (x, i) =>
@@ -133,27 +140,28 @@ WorkTimeApp.ui.createImportController = function (options) {
             (x.result.conflict
               ? '<div class="conflict">' +
                 (x.result.repeated
-                  ? "同批次重复日期；请按顺序选择，保留时沿用此前选择。"
-                  : "已有 " +
+                  ? WorkTimeApp.i18n.t("copy.36486f62eb")
+                  : WorkTimeApp.i18n.t("copy.c8e8abf448") +
                     esc(x.old.start + "–" + x.old.end) +
-                    "；本次 " +
+                    WorkTimeApp.i18n.t("copy.c6750ea6a2") +
                     esc(x.record.start + "–" + x.record.end)) +
                 '</div><select data-conflict="' +
                 i +
                 '" aria-label="' +
                 x.record.date +
-                ' 冲突处理"><option value="new">采用本次导入</option><option value="old">保留已有记录或此前选择</option></select>'
+                WorkTimeApp.i18n.t("copy.c2583b0c68")
               : "") +
             (model.state.days[x.record.date] &&
             model.state.days[x.record.date].actual
-              ? '<div class="muted">手动填写仍保留</div>'
+              ? WorkTimeApp.i18n.t("copy.3a6c29659c")
               : "") +
             "</article>",
         )
         .join("");
       $("importTable").classList.toggle("hidden", !rows.length);
       $("importHistoryList").classList.add("hidden");
-      $("importResultsTitle").textContent = "记录解析结果";
+      $("importResultsTitle").textContent =
+        WorkTimeApp.i18n.t("copy.2dc2565cb9");
       animateResults("results");
       const abnormalDates = new Set(
         rows
@@ -161,7 +169,10 @@ WorkTimeApp.ui.createImportController = function (options) {
           .map((row) => row.record.date),
       );
       $("importHistoryCount").textContent =
-        rows.length + " 条记录 · " + abnormalDates.size + " 条异常";
+        rows.length +
+        WorkTimeApp.i18n.t("copy.0d19dbc09e") +
+        abnormalDates.size +
+        WorkTimeApp.i18n.t("copy.8fc2846555");
       $("commitImport").disabled = !rows.length;
       setImportParseStatus(
         !rows.length
@@ -171,15 +182,16 @@ WorkTimeApp.ui.createImportController = function (options) {
             : "success",
       );
       if (!rows.length && !warnings.length)
-        $("importSummary").textContent = "未识别到可导入记录，请检查输入";
+        $("importSummary").textContent = WorkTimeApp.i18n.t("copy.f99e8f1ad6");
       if (!rows.length && !warnings.length)
-        $("importWarnings").textContent =
-          "未识别到可导入的 OA 记录，请检查文本内容。";
+        $("importWarnings").textContent = WorkTimeApp.i18n.t("copy.7a813c10de");
     } catch (error) {
       invalidatePreview();
-      setImportParseStatus("error", "解析失败");
-      $("importSummary").textContent = "解析失败，请检查输入";
-      $("importWarnings").textContent = "解析失败：" + error.message;
+      setImportParseStatus("error", WorkTimeApp.i18n.t("copy.0a95106968"));
+      $("importSummary").textContent = WorkTimeApp.i18n.t("copy.52574f7e25");
+      $("importWarnings").textContent =
+        WorkTimeApp.i18n.t("copy.0542674ee0") +
+        WorkTimeApp.i18n.message(error.message);
     }
   }
   async function commitOARecords(
@@ -213,7 +225,7 @@ WorkTimeApp.ui.createImportController = function (options) {
     try {
       await hydrateImports();
     } catch (error) {
-      actions.toast(error.message, "error");
+      actions.toast(WorkTimeApp.i18n.message(error.message), "error");
       return;
     }
     if (disposed) return;
@@ -222,8 +234,10 @@ WorkTimeApp.ui.createImportController = function (options) {
       logs.flatMap((log) => importIndex.describe(log).acceptedDates),
     );
     if (!preview)
-      $("importHistoryCount").textContent =
-        "共 " + logs.length + " 条记录 · " + dates.size + " 天有效记录";
+      $("importHistoryCount").textContent = WorkTimeApp.i18n.t(
+        "import.historyTotals",
+        { imports: logs.length, dates: dates.size },
+      );
     $("importHistoryList").innerHTML = logs.length
       ? logs
           .map((log) => {
@@ -232,13 +246,13 @@ WorkTimeApp.ui.createImportController = function (options) {
               ? dates[0].replaceAll("-", "/") +
                 " - " +
                 dates[dates.length - 1].replaceAll("-", "/")
-              : "未识别日期";
+              : WorkTimeApp.i18n.t("copy.0cee9f5104");
             return (
               '<article class="import-history-item" data-history-id="' +
               esc(log.id) +
               '"><div class="row between"><h3>' +
               esc(
-                new Date(log.at).toLocaleString("zh-CN", {
+                new Date(log.at).toLocaleString(WorkTimeApp.i18n.locale, {
                   year: "numeric",
                   month: "2-digit",
                   day: "2-digit",
@@ -249,24 +263,24 @@ WorkTimeApp.ui.createImportController = function (options) {
               ) +
               '</h3><div class="row"><button type="button" class="ui-button" data-view-import="' +
               esc(log.id) +
-              '" aria-label="查看导入详情" title="查看详情"><svg class="ui-icon" aria-hidden="true"><use href="#ms-info"/></svg></button><button type="button" class="ui-button danger" data-delete-import="' +
+              WorkTimeApp.i18n.t("copy.fb7fd1001d") +
               esc(log.id) +
-              '" aria-label="删除导入批次" title="删除批次"><svg class="ui-icon" aria-hidden="true"><use href="#ms-delete-outline"/></svg></button></div></div><div class="import-history-meta">' +
+              WorkTimeApp.i18n.t("copy.74a12ef5dc") +
               esc(range) +
               " · " +
               log.count +
-              " 条记录</div></article>"
+              WorkTimeApp.i18n.t("copy.81a9b617ab")
             );
           })
           .join("")
-      : '<div class="import-history-empty">暂无导入历史</div>';
+      : WorkTimeApp.i18n.t("copy.d6971aab23");
   }
   let detailId = null;
   async function showImportDetail(id) {
     try {
       await hydrateImports();
     } catch (error) {
-      actions.toast(error.message, "error");
+      actions.toast(WorkTimeApp.i18n.message(error.message), "error");
       return;
     }
     if (disposed) return;
@@ -282,7 +296,7 @@ WorkTimeApp.ui.createImportController = function (options) {
     pane.querySelector("h2").innerHTML =
       "<span>" +
       esc(
-        new Date(log.at).toLocaleString("zh-CN", {
+        new Date(log.at).toLocaleString(WorkTimeApp.i18n.locale, {
           year: "numeric",
           month: "2-digit",
           day: "2-digit",
@@ -291,34 +305,32 @@ WorkTimeApp.ui.createImportController = function (options) {
           hour12: false,
         }),
       ) +
-      '</span><small class="import-detail-caption">导入记录</small>';
+      WorkTimeApp.i18n.t("copy.b336d19181");
     const records = log.records;
     $("sourceBody").innerHTML =
       '<div class="import-detail-toolbar"><span class="muted">' +
       records.length +
-      " 条记录 · " +
+      WorkTimeApp.i18n.t("copy.0d19dbc09e") +
       records.filter((record) => anomalyReason(record)).length +
-      " 条异常</span></div>" +
+      WorkTimeApp.i18n.t("copy.6827141ae0") +
       '<div class="import-parsed-list">' +
       records
         .map((record) => "<article>" + recordCells(record) + "</article>")
         .join("") +
-      (records.length
-        ? ""
-        : '<p class="muted">没有已接受的解析记录，可查看核心打卡文本。</p>') +
+      (records.length ? "" : WorkTimeApp.i18n.t("copy.dafb4362f7")) +
       "</div>" +
-      '<label class="import-detail-raw-label" for="importDetailRawText">核心打卡文本</label>' +
-      '<div class="import-detail-raw-field"><textarea id="importDetailRawText" class="import-detail-raw-text" readonly aria-label="核心打卡文本" placeholder="没有可识别的核心打卡文本" spellcheck="false">' +
+      WorkTimeApp.i18n.t("copy.ae4748b462") +
+      WorkTimeApp.i18n.t("copy.d7f42a424c") +
       esc(log.sources.map((source) => source.raw).join("\n\n")) +
       "</textarea></div>";
     pane.querySelector(".dialog-foot").innerHTML =
-      '<button type="button" class="ui-button icon-only" aria-label="上一条导入记录" title="上一条" data-detail-step="-1"' +
+      WorkTimeApp.i18n.t("copy.5c7f465892") +
       (index === 0 ? " disabled" : "") +
       '><svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-left"/></svg></button><span class="muted">' +
       (index + 1) +
       " / " +
       logs.length +
-      '</span><button type="button" class="ui-button icon-only" aria-label="下一条导入记录" title="下一条" data-detail-step="1"' +
+      WorkTimeApp.i18n.t("copy.80bab87117") +
       (index === logs.length - 1 ? " disabled" : "") +
       '><svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-right"/></svg></button>';
     $("sourceBody").scrollTop = 0;
@@ -330,7 +342,7 @@ WorkTimeApp.ui.createImportController = function (options) {
     try {
       await hydrateImports();
     } catch (error) {
-      actions.toast(error.message, "error");
+      actions.toast(WorkTimeApp.i18n.message(error.message), "error");
       return;
     }
     if (disposed) return;
@@ -346,7 +358,7 @@ WorkTimeApp.ui.createImportController = function (options) {
           ) ||
         logs.at(-1);
     if (!log) {
-      actions.toast("未找到对应记录，请查看导入历史");
+      actions.toast(WorkTimeApp.i18n.t("copy.184ad4d4ad"));
       return;
     }
     showImportDetail(log.id);
@@ -367,7 +379,7 @@ WorkTimeApp.ui.createImportController = function (options) {
     try {
       const url = new URL(model.state.oaUrl);
       if (!["http:", "https:"].includes(url.protocol))
-        throw Error("请使用 http 或 https 链接。");
+        throw Error(WorkTimeApp.i18n.t("copy.617fe2d78b"));
       // A popup may suspend painting before blur/visibilitychange is delivered.
       // Leave the sidebar at its final state before handing focus to OA.
       actions.finishSidebarNavigation();
@@ -375,7 +387,7 @@ WorkTimeApp.ui.createImportController = function (options) {
     } catch (error) {
       if (disposed) return;
       editOALink();
-      $("oaLinkError").textContent = error.message;
+      $("oaLinkError").textContent = WorkTimeApp.i18n.message(error.message);
     }
   }
   function cancelOANavigation() {
@@ -387,6 +399,21 @@ WorkTimeApp.ui.createImportController = function (options) {
     if (bound) return;
     bound = true;
     disposed = false;
+    events.listen(document, "worktime:languagechange", () => {
+      if (preview) {
+        const choices = [
+          ...$("importRows").querySelectorAll("[data-conflict]"),
+        ].map((select) => [select.dataset.conflict, select.value]);
+        parseImport();
+        for (const [index, value] of choices) {
+          const select = $("importRows").querySelector(
+            '[data-conflict="' + index + '"]',
+          );
+          if (select) select.value = value;
+        }
+      } else renderImportHistory();
+      if ($("sourceDialog").open && detailId) showImportDetail(detailId);
+    });
     events.listen($("importDialog"), "close", resetImportInput);
     events.listen($("importDialog"), "close", cancelOANavigation);
     events.listen($("importDialog"), "sidebar-open", renderImportHistory);
@@ -411,18 +438,16 @@ WorkTimeApp.ui.createImportController = function (options) {
       importToDelete = log.id;
       const previewState = actions.clone(model.state),
         impact = C.deleteImport(previewState, log.id);
-      $("deleteImportSummary").textContent =
-        "删除 " +
-        new Date(log.at).toLocaleString("zh-CN") +
-        " 导入的 " +
-        log.sources.map((s) => s.name).join("、") +
-        "？将更新 " +
-        impact.affected +
-        " 个日期，其中 " +
-        impact.restored +
-        " 个日期回退到其他导入数据，" +
-        impact.cleared +
-        " 个日期撤回该批次打卡。";
+      $("deleteImportSummary").textContent = WorkTimeApp.i18n.t(
+        "import.deleteSummary",
+        {
+          date: new Date(log.at).toLocaleString(WorkTimeApp.i18n.locale),
+          sources: log.sources.map((s) => s.name).join(", "),
+          affected: impact.affected,
+          restored: impact.restored,
+          cleared: impact.cleared,
+        },
+      );
       actions.open("deleteImportDialog");
     });
     events.handler($("confirmDeleteImport"), "onclick", async () => {
@@ -432,13 +457,13 @@ WorkTimeApp.ui.createImportController = function (options) {
       importToDelete = null;
       $("deleteImportDialog").close();
       if (!result.removed) {
-        actions.toast("该导入记录已不存在");
+        actions.toast(WorkTimeApp.i18n.t("copy.38e1e768da"));
         return;
       }
       const saved = commit.persisted;
       actions.render();
       renderImportHistory();
-      actions.saveFeedback(saved, "导入记录已删除，工时统计已更新");
+      actions.saveFeedback(saved, WorkTimeApp.i18n.t("copy.5986f6bd33"));
     });
     events.handler($("sourceOpen"), "onclick", showSources);
     events.handler($("importOASite"), "onclick", () => {
@@ -473,13 +498,13 @@ WorkTimeApp.ui.createImportController = function (options) {
           url.username ||
           url.password
         )
-          throw Error("请填写有效的 http 或 https 网页地址。");
+          throw Error(WorkTimeApp.i18n.t("copy.1b5b47c899"));
         if ((await application.saveOAUrl(url.href)).persisted) {
           $("oaLinkDialog").close();
-          actions.toast("OA系统链接已保存");
+          actions.toast(WorkTimeApp.i18n.t("copy.130c1e06f3"));
         }
       } catch (error) {
-        $("oaLinkError").textContent = error.message;
+        $("oaLinkError").textContent = WorkTimeApp.i18n.message(error.message);
       }
     });
     events.handler($("pasteText"), "oninput", scheduleImportParse);
@@ -494,7 +519,7 @@ WorkTimeApp.ui.createImportController = function (options) {
         const text = await clipboard.readText();
         if (disposed || !$("importDialog").open) return;
         if (!text.trim()) {
-          actions.toast("剪贴板中没有文本，请先复制OA考勤信息");
+          actions.toast(WorkTimeApp.i18n.t("copy.041c1e0625"));
           return;
         }
         input.setRangeText(text, start, end, "end");
@@ -502,10 +527,7 @@ WorkTimeApp.ui.createImportController = function (options) {
         input.focus({ preventScroll: true });
       } catch (error) {
         if (disposed || !$("importDialog").open) return;
-        actions.toast(
-          "无法读取剪贴板，请允许剪贴板访问或按 Ctrl+V 粘贴",
-          "error",
-        );
+        actions.toast(WorkTimeApp.i18n.t("copy.a97d627f90"), "error");
         input.focus({ preventScroll: true });
       } finally {
         button.disabled = false;
@@ -529,7 +551,12 @@ WorkTimeApp.ui.createImportController = function (options) {
         preview.rows[0]?.record.date,
       );
       $("importDialog").close();
-      actions.saveFeedback(saved, "导入完成，已处理 " + processed + " 条记录");
+      actions.saveFeedback(
+        saved,
+        WorkTimeApp.i18n.t("copy.a3fdb05924") +
+          processed +
+          WorkTimeApp.i18n.t("copy.bed75b3651"),
+      );
     });
   }
   function detailClick(event) {

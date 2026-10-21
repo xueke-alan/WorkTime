@@ -44,75 +44,98 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     editorViews = [editor.querySelector(".editor-content")],
     settings = document.getElementById("settingsDialog");
   const editorTabs = editor.querySelector(".notification-tabs");
-  const pageSettingsButton = document.getElementById("pageSettingsOpen"),
-    pageSettings = document.getElementById("pageSettingsPane");
+  const pageSettings = document.getElementById("pageSettingsPane");
   const themeSettings = WorkTimeApp.ui.theme.mount(
     pageSettings.querySelector(".theme-settings-host"),
   );
-  function bindSettingsCancel(id, close) {
-    const button = document.getElementById(id);
-    button.addEventListener("click", close);
-    return button;
-  }
-  const workSettingsCancel = bindSettingsCancel(
-    "workSettingsCancel",
-    closeSettingsPanel,
-  );
-  const personalSettingsCancel = bindSettingsCancel(
-    "personalSettingsCancel",
-    closePageSettings,
-  );
-  function closePageSettings(focus = true) {
-    if (pageSettings.hidden) return;
-    WorkTimeApp.ui.motion?.stop(pageSettings);
-    pageSettings.hidden = true;
-    pageSettings.dispatchEvent(new Event("personal-settings-close"));
-    editor.classList.remove("is-page-settings-open");
-    pageSettingsButton.classList.remove("primary");
-    pageSettingsButton.setAttribute("aria-pressed", "false");
-    pageSettingsButton.setAttribute("aria-label", "我的设置");
-    pageSettingsButton.title = "我的设置";
-    pageSettingsButton
+  const pagePanels = [
+    {
+      button: "pageSettingsOpen",
+      pane: "pageSettingsPane",
+      cancel: "personalSettingsCancel",
+      label: "copy.165118b1d4",
+      closeLabel: "copy.e2ae92e1ec",
+      icon: "settings",
+    },
+    {
+      button: "personalSettingsOpen",
+      pane: "personalSettingsPane",
+      cancel: "profileSettingsCancel",
+      label: "copy.c241ef1b93",
+      closeLabel: "profile.close",
+      icon: "article-person",
+      personal: true,
+    },
+  ].map((config) => ({
+    ...config,
+    button: document.getElementById(config.button),
+    pane: document.getElementById(config.pane),
+    cancel: document.getElementById(config.cancel),
+  }));
+  function updatePageButton(panel) {
+    const open = !panel.pane.hidden;
+    panel.button.classList.toggle("primary", open);
+    panel.button.setAttribute("aria-pressed", String(open));
+    panel.button.title = WorkTimeApp.i18n.t(
+      open ? panel.closeLabel : panel.label,
+    );
+    panel.button.setAttribute("aria-label", panel.button.title);
+    panel.button
       .querySelector("use")
-      .setAttribute("href", "#ms-settings");
+      .setAttribute("href", open ? "#ms-close" : "#ms-" + panel.icon);
+  }
+  function closePageSettings(focus = true) {
+    const active = pagePanels.find((panel) => !panel.pane.hidden);
+    if (!active) return;
+    WorkTimeApp.ui.motion?.stop(active.pane);
+    active.pane.hidden = true;
+    if (active.personal)
+      active.pane.dispatchEvent(new Event("personal-settings-close"));
+    editor.classList.remove("is-page-settings-open");
+    updatePageButton(active);
     if (!disposed)
       WorkTimeApp.ui.motion?.play(editorViews[0], "motion-sidebar-back");
-    if (focus) pageSettingsButton.focus({ preventScroll: true });
+    if (focus) active.button.focus({ preventScroll: true });
   }
-  function togglePageSettings() {
+  function togglePageSettings(panel) {
     if (disposed) return;
-    if (!pageSettings.hidden) {
+    if (!panel.pane.hidden) {
       closePageSettings();
       return;
     }
     closeSettingsPanel();
     if (settings.open) return;
+    closePageSettings(false);
     leaveBatch();
-    pageSettings.dispatchEvent(new Event("personal-settings-open"));
-    pageSettings.hidden = false;
+    if (panel.personal)
+      panel.pane.dispatchEvent(new Event("personal-settings-open"));
+    panel.pane.hidden = false;
     WorkTimeApp.ui.motion?.stop(editorViews[0]);
     editor.classList.add("is-page-settings-open");
-    pageSettingsButton.classList.add("primary");
-    pageSettingsButton.setAttribute("aria-pressed", "true");
-    pageSettingsButton.setAttribute("aria-label", "关闭我的设置");
-    pageSettingsButton.title = "关闭我的设置";
-    pageSettingsButton.querySelector("use").setAttribute("href", "#ms-close");
-    WorkTimeApp.ui.motion?.play(pageSettings, "motion-sidebar-forward");
-    WorkTimeApp.ui.alignment?.refresh([pageSettings]);
+    updatePageButton(panel);
+    WorkTimeApp.ui.motion?.play(panel.pane, "motion-sidebar-forward");
+    WorkTimeApp.ui.alignment?.refresh([panel.pane]);
     if (window.matchMedia("(max-width: 1150px)").matches)
       editor.scrollIntoView({ block: "start" });
-    pageSettingsButton.focus({ preventScroll: true });
+    panel.button.focus({ preventScroll: true });
   }
   function leavePageSettings(event) {
     if (
-      !pageSettings.hidden &&
+      pagePanels.some((panel) => !panel.pane.hidden) &&
       event.target.closest(
         "#batchToggle, #settingsOpen, #setupButton, #restore",
       )
     )
       closePageSettings(false);
   }
-  pageSettingsButton.addEventListener("click", togglePageSettings);
+  const workSettingsCancel = document.getElementById("workSettingsCancel");
+  workSettingsCancel.addEventListener("click", closeSettingsPanel);
+  for (const panel of pagePanels) {
+    panel.toggle = () => togglePageSettings(panel);
+    panel.close = () => closePageSettings();
+    panel.button.addEventListener("click", panel.toggle);
+    panel.cancel.addEventListener("click", panel.close);
+  }
   document.addEventListener("click", leavePageSettings, true);
   function leaveSettingsFromTab(event) {
     if (settings.open && event.target.closest(".notification-tab"))
@@ -125,9 +148,13 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     button.setAttribute("aria-pressed", String(open));
     button.setAttribute(
       "aria-label",
-      open ? "关闭工作时间设置" : "工作时间设置",
+      open
+        ? WorkTimeApp.i18n.t("copy.d223bd345f")
+        : WorkTimeApp.i18n.t("copy.a09e533eed"),
     );
-    button.title = open ? "关闭工作时间设置" : "工作时间设置";
+    button.title = open
+      ? WorkTimeApp.i18n.t("copy.d223bd345f")
+      : WorkTimeApp.i18n.t("copy.a09e533eed");
     button
       .querySelector("use")
       .setAttribute("href", open ? "#ms-close" : "#ms-manage-accounts");
@@ -165,15 +192,23 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     );
     secondaryActions.inert = !!active;
     secondaryActions.setAttribute("aria-hidden", String(!!active));
-    const returnLabel = stack.length > 1 ? "返回导入" : "返回概览";
+    const returnLabel =
+      stack.length > 1
+        ? WorkTimeApp.i18n.t("copy.e1fa5c7224")
+        : WorkTimeApp.i18n.t("copy.13e491d46e");
     importOpen.querySelector(".import-main > span").textContent = active
       ? returnLabel
-      : "OA记录";
+      : WorkTimeApp.i18n.t("copy.f80695ff47");
     importOpen
       .querySelector(".import-main use")
       .setAttribute("href", active ? "#ms-chevron-left" : "#ms-add");
-    importOpen.setAttribute("aria-label", active ? returnLabel : "OA记录");
-    importOpen.title = active ? returnLabel : "打开 OA 导入";
+    importOpen.setAttribute(
+      "aria-label",
+      active ? returnLabel : WorkTimeApp.i18n.t("copy.f80695ff47"),
+    );
+    importOpen.title = active
+      ? returnLabel
+      : WorkTimeApp.i18n.t("copy.ed282645c7");
     host.hidden = !active;
     for (const element of overview)
       element.classList.toggle("sidebar-overview-hidden", !!active);
@@ -181,7 +216,10 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       pane.classList.toggle("sidebar-pane-inactive", id !== active?.id);
     if (active) {
       const pane = panes.get(active.id),
-        back = stack.length > 1 ? "返回上一页" : "返回工时概览";
+        back =
+          stack.length > 1
+            ? WorkTimeApp.i18n.t("copy.b14f0fab76")
+            : WorkTimeApp.i18n.t("copy.07fcc4d5f6");
       const close = pane.querySelector(".dialog-head [data-close]");
       if (close) {
         close.setAttribute("aria-label", back);
@@ -189,7 +227,9 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       }
       pane.querySelectorAll(".dialog-foot [data-close]").forEach((button) => {
         button.querySelector(".button-label").textContent =
-          active.id === "importDialog" ? "取消" : "返回";
+          active.id === "importDialog"
+            ? WorkTimeApp.i18n.t("copy.4d0b4688c7")
+            : WorkTimeApp.i18n.t("copy.11d0241540");
       });
     }
   }
@@ -273,7 +313,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
   function keydown(event) {
     if (
       event.key === "Escape" &&
-      !pageSettings.hidden &&
+      pagePanels.some((panel) => !panel.pane.hidden) &&
       !document.querySelector("dialog:modal")
     ) {
       event.preventDefault();
@@ -299,12 +339,15 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     }
   }
   function dispose() {
+    document.removeEventListener("worktime:languagechange", refreshLanguage);
     if (disposed) return;
     disposed = true;
     themeSettings.dispose();
     workSettingsCancel.removeEventListener("click", closeSettingsPanel);
-    personalSettingsCancel.removeEventListener("click", closePageSettings);
-    pageSettingsButton.removeEventListener("click", togglePageSettings);
+    for (const panel of pagePanels) {
+      panel.button.removeEventListener("click", panel.toggle);
+      panel.cancel.removeEventListener("click", panel.close);
+    }
     document.removeEventListener("click", leavePageSettings, true);
     closePageSettings(false);
     settings.removeEventListener("close", closeSettings);
@@ -331,6 +374,12 @@ WorkTimeApp.ui.createSidebarPanels = function ({
   document.addEventListener("keydown", keydown);
   document.addEventListener("visibilitychange", onVisibility);
   window.addEventListener("blur", finishNavigationMotion);
+  function refreshLanguage() {
+    render();
+    updateSettingsButton(settings.open);
+    pagePanels.forEach(updatePageButton);
+  }
+  document.addEventListener("worktime:languagechange", refreshLanguage);
   return {
     open,
     dispose,

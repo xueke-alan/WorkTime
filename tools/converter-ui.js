@@ -21,7 +21,7 @@
       request = generation;
     if (!file) return;
     if (file.size > WorkTimeApp.services.backup.MAX_BYTES) {
-      element("status").textContent = "文件超过备份大小限制。";
+      element("status").textContent = WorkTimeApp.i18n.t("copy.9e4f8963f1");
       return;
     }
     try {
@@ -30,7 +30,7 @@
         element("backupInput").value = text;
     } catch (error) {
       if (!disposed && request === generation)
-        element("status").textContent = error.message;
+        element("status").textContent = WorkTimeApp.i18n.message(error.message);
     }
   });
   element("convert").addEventListener("click", async () => {
@@ -44,17 +44,20 @@
       if (disposed || request !== generation) return;
       element("backupOutput").value = JSON.stringify(result, null, 2);
       element("download").disabled = false;
-      element("status").textContent =
-        `转换成功：${result.modules.length} 个独立模块。`;
+      element("status").textContent = WorkTimeApp.i18n.t("converter.success", {
+        count: result.modules.length,
+      });
     } catch (error) {
       if (!disposed && request === generation)
-        element("status").textContent = "转换失败：" + error.message;
+        element("status").textContent =
+          WorkTimeApp.i18n.t("copy.5793742753") +
+          WorkTimeApp.i18n.message(error.message);
     }
   });
   element("download").addEventListener("click", () => {
     if (disposed || element("download").disabled) return;
     downloads.download(
-      "工作记录备份-archive.json",
+      WorkTimeApp.i18n.t("copy.7a6b07d795"),
       element("backupOutput").value,
       "application/json;charset=utf-8",
     );

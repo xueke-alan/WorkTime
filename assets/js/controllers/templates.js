@@ -27,7 +27,9 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     for (const id of ["addTimeTemplate", "batchAddTimeTemplate"]) {
       const button = $(id);
       button.disabled = full;
-      button.title = full ? "模板已满（6 个），请先删除" : "新增时间模板";
+      button.title = full
+        ? WorkTimeApp.i18n.t("copy.b4c64a5057")
+        : WorkTimeApp.i18n.t("copy.b464e3690d");
       button.setAttribute("aria-label", button.title);
       const icon = button.querySelector("use"),
         href = full ? "#ms-block" : "#ms-add";
@@ -100,17 +102,21 @@ WorkTimeApp.ui.createTemplateController = function (options) {
           shareFeedbackTimers.delete(button);
         }, 450),
       );
-      actions.toast("打卡模板已复制到剪贴板");
+      actions.toast(WorkTimeApp.i18n.t("copy.6b61c9cb60"));
     } catch (error) {
       if (disposed) return;
       if (text) {
         $("templateShareText").value = text;
         $("templateShareError").textContent =
-          "无法自动复制，请全选后手动复制。";
+          WorkTimeApp.i18n.t("copy.826156d83c");
         actions.open("templateShareDialog");
         $("templateShareText").focus({ preventScroll: true });
         $("templateShareText").select();
-      } else actions.toast(error.userMessage || error.message, "error");
+      } else
+        actions.toast(
+          WorkTimeApp.i18n.message(error.userMessage || error.message),
+          "error",
+        );
     } finally {
       sharing = false;
       if (!disposed) updateTemplateLimit();
@@ -133,23 +139,29 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         return;
       importPreview = templates;
       $("templateImportPreview").innerHTML =
-        '<div class="template-preview-columns" aria-hidden="true"><span>名称</span><span>上班时间</span><span>下班时间</span></div>' +
+        WorkTimeApp.i18n.t("copy.178e345f17") +
         templates
           .map(
             (template) =>
               "<article><strong>" +
               esc(template.name) +
               '</strong><span class="template-preview-time" aria-label="' +
-              esc(template.start ? "上班 " + template.start : "不填写上班") +
+              esc(
+                template.start
+                  ? WorkTimeApp.i18n.t("copy.c4eeb2ee2f") + template.start
+                  : WorkTimeApp.i18n.t("copy.855e113afa"),
+              ) +
               '">' +
               esc(template.start || "—") +
               '</span><span class="template-preview-time" aria-label="' +
               esc(
                 template.end
-                  ? "下班 " +
+                  ? WorkTimeApp.i18n.t("copy.8c33c472a7") +
                       template.end +
-                      (template.nextDay ? "（次日）" : "")
-                  : "不填写下班",
+                      (template.nextDay
+                        ? WorkTimeApp.i18n.t("copy.c751037c58")
+                        : "")
+                  : WorkTimeApp.i18n.t("copy.19d79ec3cc"),
               ) +
               '">' +
               esc(template.end || "—") +
@@ -162,8 +174,9 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       $("templateImportPreview").hidden = false;
     } catch (error) {
       if (!disposed && lifetime === generation)
-        $("templateImportError").textContent =
-          error.userMessage || error.message;
+        $("templateImportError").textContent = WorkTimeApp.i18n.message(
+          error.userMessage || error.message,
+        );
     } finally {
       importing = false;
       if (!disposed) updateImportControls();
@@ -179,16 +192,17 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       if (disposed) return;
       if (!result.persisted) {
         $("templateImportError").textContent =
-          "导入尚未保存，原模板已保留，可重试。" + (result.message || "");
+          WorkTimeApp.i18n.t("copy.345391343a") + (result.message || "");
         return;
       }
       renderTimeTemplates();
       $("templateImportDialog").close();
-      actions.saveFeedback(true, "打卡模板已导入");
+      actions.saveFeedback(true, WorkTimeApp.i18n.t("copy.6e4508239f"));
     } catch (error) {
       if (!disposed)
-        $("templateImportError").textContent =
-          error.userMessage || error.message;
+        $("templateImportError").textContent = WorkTimeApp.i18n.message(
+          error.userMessage || error.message,
+        );
     } finally {
       importing = savingImport = false;
       if (!disposed) updateImportControls();
@@ -214,7 +228,8 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     return current;
   }
   function renderTimeTemplates() {
-    const signature = JSON.stringify(model.state.timeTemplates);
+    const signature =
+      WorkTimeApp.i18n.language + JSON.stringify(model.state.timeTemplates);
     if (signature === renderedTemplates) return;
     renderedTemplates = signature;
     $("timeTemplateList").innerHTML = model.state.timeTemplates.length
@@ -230,15 +245,15 @@ WorkTimeApp.ui.createTemplateController = function (options) {
                   t.start +
                   "–" +
                   t.end +
-                  (t.nextDay ? "（次日）" : ""),
+                  (t.nextDay ? WorkTimeApp.i18n.t("copy.c751037c58") : ""),
               ) +
               '"><span class="button-label">' +
               esc(t.name) +
               '</span></button><button type="button" class="ui-button template-edit icon-only" data-template-edit="' +
               esc(t.id) +
-              '" aria-label="编辑模板 ' +
+              WorkTimeApp.i18n.t("copy.ac35793d79") +
               esc(t.name) +
-              '" title="编辑模板">' +
+              WorkTimeApp.i18n.t("copy.293224a98b") +
               actions.controlIcon("more") +
               "</button></div>",
           )
@@ -253,13 +268,13 @@ WorkTimeApp.ui.createTemplateController = function (options) {
   function openTimeTemplate(template = null, defaults = null) {
     if (savingTemplate) return;
     if (!template && model.state.timeTemplates.length >= templateLimit) {
-      actions.toast("模板已满（6 个），请先删除");
+      actions.toast(WorkTimeApp.i18n.t("copy.b4c64a5057"));
       return;
     }
     templateEditingId = template ? template.id : null;
     $("timeTemplateTitle").textContent = template
-      ? "编辑时间模板"
-      : "新增时间模板";
+      ? WorkTimeApp.i18n.t("copy.7cf04378a1")
+      : WorkTimeApp.i18n.t("copy.b464e3690d");
     $("timeTemplateName").value = template ? template.name : "";
     const schedule = C.scheduleForDate(model.state, model.selected);
     $("timeTemplateStart").placeholder =
@@ -296,7 +311,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     renderedBatchTemplates = signature;
     const list = $("batchTimeTemplateList");
     if (!model.state.timeTemplates.length) {
-      list.innerHTML = '<span class="template-empty">暂无模板</span>';
+      list.innerHTML = WorkTimeApp.i18n.t("copy.84c6ec48f3");
       renderedBatchTemplateIds = new Set();
       return;
     }
@@ -312,15 +327,15 @@ WorkTimeApp.ui.createTemplateController = function (options) {
               template.start +
               "–" +
               template.end +
-              (template.nextDay ? "（次日）" : ""),
+              (template.nextDay ? WorkTimeApp.i18n.t("copy.c751037c58") : ""),
           ) +
           '"><span class="button-label">' +
           esc(template.name) +
           '</span></button><button type="button" class="ui-button template-edit icon-only" data-batch-template-edit="' +
           esc(template.id) +
-          '" aria-label="编辑模板 ' +
+          WorkTimeApp.i18n.t("copy.ac35793d79") +
           esc(template.name) +
-          '" title="编辑模板">' +
+          WorkTimeApp.i18n.t("copy.293224a98b") +
           actions.controlIcon("more") +
           "</button></div>"
         );
@@ -380,11 +395,12 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         await clipboard.writeText($("templateShareText").value);
         if (!disposed) {
           $("templateShareDialog").close();
-          actions.toast("打卡模板已复制到剪贴板");
+          actions.toast(WorkTimeApp.i18n.t("copy.6b61c9cb60"));
         }
       } catch {
         if (!disposed)
-          $("templateShareError").textContent = "复制失败，请全选后手动复制。";
+          $("templateShareError").textContent =
+            WorkTimeApp.i18n.t("copy.1177ecca4d");
       } finally {
         if (!disposed) button.disabled = false;
       }
@@ -417,8 +433,8 @@ WorkTimeApp.ui.createTemplateController = function (options) {
       if (await actions.saveDayEdit())
         actions.toast(
           model.storageFailed
-            ? "已应用模板，保存异常请查看提醒"
-            : "已应用并保存“" + template.name + "”",
+            ? WorkTimeApp.i18n.t("copy.5897d1052d")
+            : WorkTimeApp.i18n.t("nav.applied", { name: template.name }),
         );
     });
     events.handler($("timeTemplateForm"), "onsubmit", async (e) => {
@@ -430,7 +446,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
           !templateEditingId &&
           model.state.timeTemplates.length >= templateLimit
         )
-          throw Error("模板已满（6 个），请先删除。");
+          throw Error(WorkTimeApp.i18n.t("copy.875c3553f3"));
         const template = C.validateTimeTemplate({
           id: templateEditingId || WorkTimeApp.services.archive.uuid(),
           name: $("timeTemplateName").value,
@@ -447,11 +463,13 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         if (saved) $("timeTemplateDialog").close();
         else
           $("timeTemplateError").textContent =
-            "模板尚未保存，可重试提交或关闭后备份。";
-        actions.saveFeedback(saved, "时间模板已保存");
+            WorkTimeApp.i18n.t("copy.61e356982e");
+        actions.saveFeedback(saved, WorkTimeApp.i18n.t("copy.8d44bed273"));
       } catch (err) {
         if (!disposed)
-          $("timeTemplateError").textContent = err.userMessage || err.message;
+          $("timeTemplateError").textContent = WorkTimeApp.i18n.message(
+            err.userMessage || err.message,
+          );
       } finally {
         if (!disposed) setTemplateSaving(false);
       }
@@ -465,11 +483,12 @@ WorkTimeApp.ui.createTemplateController = function (options) {
         if (disposed) return;
         renderTimeTemplates();
         $("timeTemplateDialog").close();
-        actions.saveFeedback(saved, "时间模板已删除");
+        actions.saveFeedback(saved, WorkTimeApp.i18n.t("copy.ea6b072dea"));
       } catch (error) {
         if (!disposed)
-          $("timeTemplateError").textContent =
-            error.userMessage || error.message;
+          $("timeTemplateError").textContent = WorkTimeApp.i18n.message(
+            error.userMessage || error.message,
+          );
       } finally {
         if (!disposed) setTemplateSaving(false);
       }

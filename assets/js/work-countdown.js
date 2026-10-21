@@ -9,37 +9,73 @@
     const date = businessDate(now),
       day = s?.days?.[date] || {};
     if (!s)
-      return { date, status: "unavailable", message: "请先完成工作时间设置" };
+      return {
+        date,
+        status: "unavailable",
+        message: WorkTimeApp.i18n.t("copy.4561283ba2"),
+      };
     const schedule = scheduleForDate(s, date);
     const record = effectiveRecord(day, true),
       work =
         calendarInfo(date, day).work ||
         !!day.plannedOvertime ||
         !!(record && complete(record));
-    if (!work) return { date, status: "rest", message: "今日不上班" };
+    if (!work)
+      return {
+        date,
+        status: "rest",
+        message: WorkTimeApp.i18n.t("copy.c1b80631c8"),
+      };
     if (day.leaveMinutes > 0 && day.leaveMinutes >= schedule.standardMinutes)
-      return { date, status: "leave", message: "今天全天请假，无需倒计时" };
-    const end = schedule.workEnd,
-      minutes = timeMin(end);
-    if (minutes === null)
-      return { date, status: "unavailable", message: "请设置常规下班时间" };
-    const target = Date.parse(date + "T" + end + ":00+08:00") + 0,
+      return {
+        date,
+        status: "leave",
+        message: WorkTimeApp.i18n.t("copy.c22427e005"),
+      };
+    const start = schedule.workStart,
+      end = schedule.workEnd;
+    if (timeMin(start) === null || timeMin(end) === null || end <= start)
+      return {
+        date,
+        status: "unavailable",
+        message: WorkTimeApp.i18n.t("copy.a46e2b9933"),
+      };
+    const beforeStart =
+        now.getTime() < Date.parse(date + "T" + start + ":00+08:00"),
+      targetTime = beforeStart ? start : end,
+      target = Date.parse(date + "T" + targetTime + ":00+08:00"),
       seconds = Math.max(0, Math.ceil((target - now.getTime()) / 1000));
     return {
       date,
-      status: seconds ? "counting" : "done",
-      message: seconds ? "距离下班" : "已到下班时间",
+      status: beforeStart ? "before-start" : seconds ? "counting" : "done",
+      message: beforeStart
+        ? WorkTimeApp.i18n.t("copy.d303bfd3b3")
+        : seconds
+          ? WorkTimeApp.i18n.t("copy.091c989a01")
+          : WorkTimeApp.i18n.t("copy.70b97a5ce9"),
+      detail: seconds
+        ? targetTime +
+          (beforeStart
+            ? WorkTimeApp.i18n.t("copy.be1d14e51f")
+            : WorkTimeApp.i18n.t("copy.e0af82c8c2"))
+        : WorkTimeApp.i18n.t("copy.2233059cf7"),
+      start,
       end,
+      targetTime,
       nextDay: false,
-      source: "当日标准下班时间",
+      source: beforeStart
+        ? WorkTimeApp.i18n.t("copy.1bd8b32cc0")
+        : WorkTimeApp.i18n.t("copy.945ee05122"),
       seconds,
-      time: [
-        Math.floor(seconds / 3600),
-        Math.floor((seconds % 3600) / 60),
-        seconds % 60,
-      ]
-        .map((n) => String(n).padStart(2, "0"))
-        .join(":"),
+      time: seconds
+        ? [
+            Math.floor(seconds / 3600),
+            Math.floor((seconds % 3600) / 60),
+            seconds % 60,
+          ]
+            .map((n) => String(n).padStart(2, "0"))
+            .join(":")
+        : null,
     };
   }
   const api = {
@@ -51,11 +87,15 @@
   WorkTimeApp.services.countdown = api;
   WorkTimeApp.services.dateInfo?.register({
     id: "countdown",
-    label: "下班倒计时",
+    label: WorkTimeApp.i18n.t("copy.b78b63b0b9"),
     icon: "clock",
     getContent() {
       const c = calculate(state);
-      return { title: "下班倒计时", date: c.date, countdown: c };
+      return {
+        title: WorkTimeApp.i18n.t("copy.b78b63b0b9"),
+        date: c.date,
+        countdown: c,
+      };
     },
   });
 })(typeof window === "undefined" ? globalThis : window);

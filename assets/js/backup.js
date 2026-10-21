@@ -15,10 +15,15 @@ WorkTimeApp.services.backup = (() => {
     return PREFIX + btoa(binary);
   }
   async function decode(text, validate, { maxBytes = MAX_BYTES } = {}) {
-    if (typeof text !== "string") throw Error("备份内容必须为文本。");
+    if (typeof text !== "string")
+      throw Error(WorkTimeApp.i18n.t("copy.91f8def561"));
     text = text.trim();
     const limitError = () =>
-      Error("备份超过 " + Math.round(maxBytes / 1024 / 1024) + "MB 大小限制。");
+      Error(
+        WorkTimeApp.i18n.t("backup.tooLarge", {
+          size: Math.round(maxBytes / 1024 / 1024),
+        }),
+      );
     if (new TextEncoder().encode(text).length > maxBytes) throw limitError();
     if (text.startsWith(PREFIX)) {
       const binary = atob(text.slice(PREFIX.length));

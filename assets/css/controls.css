@@ -87,6 +87,11 @@ body #settingsForm .settings-requirement input.number-input {
 body #personalSettingsForm :is(#employmentDate, #workCity) {
   font-size: 1rem;
 }
+/* City names use CJK fallback glyphs, which do not need the numeric font's
+   downward optical correction. Keep the native text centered in its field. */
+body #personalSettingsForm #workCity {
+  padding-block: 0 !important;
+}
 body .editor #dayForm .time-entry .clock-input::placeholder,
 body #settingsForm #workCity::placeholder,
 body input::placeholder,
@@ -157,41 +162,28 @@ body button.ui-button.primary:hover:not(:disabled) {
   background: var(--theme-accent-deep, #10634f);
   border-color: var(--theme-edge, #10634f);
 }
-/* Keyboard focus stays inside existing hit areas; no outer ring. */
-body button.ui-button:focus-visible,
-body .month-controls .month-title:focus-visible,
-body .calendar .day:focus-visible,
-body .year-month .year-day:focus-visible,
-body .editor > .notification-tabs button.notification-tab:focus-visible {
-  outline: 0;
-  box-shadow: inset 0 -2px 0 currentColor !important;
-}
 body button.ui-button:disabled {
   opacity: 0.45;
   cursor: default;
 }
-/* A common line box preserves baseline alignment across different label strings. */
-/* The Windows font stack centers its line box above the visible CJK ink.
-   A shared size-based correction keeps labels on the same baseline, regardless
-   of their text. Icons and hit areas retain their original geometry. */
+/* Flex centers the icon slot; ui-alignment centers the visible text ink in its
+   line box after fonts load and labels change. Use that single correction:
+   an additional optical nudge would move already-centered text down again. */
 body button.ui-button:not(.notification-tab) .button-label,
 body #importOpen .import-main > span {
   display: inline-block;
   font: inherit;
   line-height: 1.3;
-  translate: 0 var(--button-label-offset, 0.11em);
+  transform: translateY(var(--ui-ink-offset, 0px));
 }
-/* Calibrate the shared 13px font profile, independently of viewport and text. */
-body button.ui-button.ui-font-13,
-body #importOpen.ui-font-13 {
-  --button-label-offset: 0.18em;
+body #importOpen .import-main > span {
+  width: auto;
+  min-width: 0;
+  flex: 0 1 auto;
 }
-body #importOpen:not(.ui-font-13) {
-  --button-label-offset: 0.11em;
-}
-body button.ui-button.ui-font-14-plus,
-body #importOpen.ui-font-14-plus {
-  --button-label-offset: 0.07em;
+/* Equal side padding centers the return icon and label as one group. */
+body .editor .settings-pane-actions button {
+  padding-inline: 1.142857rem;
 }
 body #batchAddTimeTemplate {
   width: var(--control-height) !important;
@@ -214,10 +206,6 @@ body .sidebar-actions :is(#importOpen, #importOASite) .ui-icon {
 body .sidebar-actions #importOASite .ui-icon {
   width: var(--icon-size-small);
   height: var(--icon-size-small);
-}
-body #importOpen .import-main > span {
-  line-height: 1.3;
-  translate: 0 var(--button-label-offset, 0.11em);
 }
 @supports (font-size: round(nearest, 1rem, 1px)) {
   @media (min-width: 1921px) {

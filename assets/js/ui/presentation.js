@@ -21,23 +21,33 @@ WorkTimeApp.ui.createDayPresentation = function (options) {
   function stateLabel(day = {}, r = null, k = null) {
     const state = getState();
     const { today } = getView();
-    if (timeAnomaly(day, r || day.oa)) return "异常";
-    if (r && C.complete(r)) return r.manual ? "手动填写" : "OA导入";
-    if (r && r.manual && (r.start || r.end)) return "待录入";
-    if (day.oa) return day.oa.status === "off" ? "无出勤记录" : "待录入";
+    if (timeAnomaly(day, r || day.oa)) return "anomaly";
+    if (r && C.complete(r)) return r.manual ? "manual" : "oa";
+    if (r && r.manual && (r.start || r.end)) return "pending";
+    if (day.oa) return day.oa.status === "off" ? "absent" : "pending";
     if (
       k &&
       k <= today &&
       C.calendarInfo(k, day).work &&
       (day.leaveMinutes || 0) < C.scheduleForDate(state, k).standardMinutes
     )
-      return "待录入";
-    return "未填写";
+      return "pending";
+    return "empty";
   }
   function visibleStatus(label, info) {
     const { today, month } = getView();
-    if (label === "待录入" && month !== today.slice(0, 7)) return "";
-    return (info.holiday || !info.work) && label === "无出勤记录" ? "" : label;
+    if (label === "pending" && month !== today.slice(0, 7)) return "";
+    if ((info.holiday || !info.work) && label === "absent") return "";
+    return WorkTimeApp.i18n.t(
+      {
+        anomaly: "copy.5caf279339",
+        manual: "copy.85f1f8dfaf",
+        oa: "copy.079b8cd375",
+        pending: "copy.eb87bec8ca",
+        absent: "copy.90e8eea725",
+        empty: "copy.287a1d1034",
+      }[label],
+    );
   }
   function tag(label, cls = "", title = "") {
     return (
@@ -51,7 +61,14 @@ WorkTimeApp.ui.createDayPresentation = function (options) {
     );
   }
   function statusTag(label, info, cls = "") {
-    return visibleStatus(label, info) ? tag(label, cls) : "";
+    const text = visibleStatus(label, info);
+    if (text && label === "pending" && WorkTimeApp.i18n.language !== "zh-CN")
+      return tag(
+        WorkTimeApp.i18n.t("status.pending.short"),
+        cls + " pending-entry",
+        text,
+      );
+    return text ? tag(text, cls) : "";
   }
   return {
     isFullLeave,

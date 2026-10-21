@@ -1,0 +1,186 @@
+600|소나기|にわか雨|Chubascos|Schauer|Averses
+601|소낙눈|にわか雪|Chubascos de nieve|Schneeschauer|Averses de neige
+602|뇌우|雷雨|Tormentas|Gewitter|Orages
+603|HWorkTime · 근무 기록|HWorkTime · 勤務記録|HWorkTime · Registro horario|HWorkTime · Zeiterfassung|HWorkTime · Suivi du temps
+604|개요|概要|Resumen|Übersicht|Vue d’ensemble
+605|근무 기록|勤務記録|Registro horario|Zeiterfassung|Pointage
+606|OA 바로가기|OAショートカット|Accesos OA|OA-Verknüpfungen|Raccourcis OA
+607|OA 사이트 열기 및 가져오기|OAサイトを開いて取込|Abrir OA e importar|OA-Website öffnen und importieren|Ouvrir OA et importer
+608|근무 요약|勤務集計|Resumen de trabajo|Arbeitsübersicht|Bilan du travail
+609|월 초과근무 목표|月間残業目標|Objetivo extra mensual|Monatliches Überstundenziel|Objectif mensuel d’h. sup.
+610|OA 근태 기록 붙여넣기|OAの勤怠記録を貼り付け|Pega los registros de asistencia de OA|OA-Anwesenheitsdaten einfügen|Collez les relevés de présence OA
+611|클립보드에서 OA 기록 붙여넣기|クリップボードからOA記録を貼り付け|Pegar registros OA del portapapeles|OA-Einträge aus Zwischenablage einfügen|Coller les relevés OA du presse-papiers
+612|붙여넣기|貼り付け|Pegar|Einfügen|Coller
+613|OA 사이트|OAサイト|Sitio OA|OA-Website|Site OA
+614|OA 열기. 링크를 수정하려면 2초간 누르세요.|OAを開く。2秒長押しするとリンクを編集できます。|Abrir OA. Mantén pulsado 2 segundos para editar el enlace.|OA öffnen. Zum Bearbeiten des Links 2 Sekunden gedrückt halten.|Ouvrir OA. Maintenez 2 secondes pour modifier le lien.
+615|가져오기|取込|Importar|Importieren|Importer
+616|기록 출처|記録の出典|Origen del registro|Eintragsquelle|Source de la saisie
+617|닫기|閉じる|Cerrar|Schließen|Fermer
+618|이번 달|今月|Mes actual|Aktueller Monat|Mois en cours
+619|오늘 날짜|今日の日付|Fecha de hoy|Heutiges Datum|Date du jour
+620|백업 및 복원|バックアップと復元|Copias y restauración|Sichern und Wiederherstellen|Sauvegarde et restauration
+621|백업 복사. 다운로드하려면 2초간 누르세요.|バックアップをコピー。2秒長押しでダウンロード。|Copiar copia de seguridad. Mantén pulsado 2 segundos para descargar.|Sicherung kopieren. Zum Herunterladen 2 Sekunden gedrückt halten.|Copier la sauvegarde. Maintenez 2 secondes pour télécharger.
+622|복원|復元|Restaurar|Wiederherstellen|Restaurer
+623|근무 일정, 개인 정보 및 환경설정|勤務スケジュール・プロフィール・環境設定|Horario, perfil y preferencias|Arbeitsplan, Profil und Einstellungen|Horaires, profil et préférences
+624|월|月|lun|Mo|lun.
+625|화|火|mar|Di|mar.
+626|수|水|mié|Mi|mer.
+627|목|木|jue|Do|jeu.
+628|금|金|vie|Fr|ven.
+629|토|土|sáb|Sa|sam.
+630|히트맵 범례|ヒートマップの凡例|Leyenda del mapa de calor|Heatmap-Legende|Légende de la carte thermique
+631|선택: 0일|選択中：0日|Selección: 0 días|Ausgewählt: 0 Tage|Sélection : 0 jour
+632|익일 퇴근|翌日退勤|Salida al día siguiente|Ende am Folgetag|Départ le lendemain
+633|퇴근이 자정 이후면 켜세요|日をまたぐ勤務の場合に有効にしてください|Activa si el turno termina después de medianoche|Aktivieren, wenn die Schicht nach Mitternacht endet|À activer si le travail se termine après minuit
+634|일괄 템플릿|一括テンプレート|Plantillas múltiples|Mehrfachvorlagen|Modèles groupés
+635|시간 템플릿|時刻テンプレート|Plantillas horarias|Zeitvorlagen|Modèles horaires
+636|템플릿 공유 또는 가져오기|テンプレートを共有・取込|Compartir o importar plantillas|Vorlagen teilen oder importieren|Partager ou importer des modèles
+637|모든 템플릿 공유|すべてのテンプレートを共有|Compartir todas las plantillas|Alle Vorlagen teilen|Partager tous les modèles
+638|템플릿 가져오기|テンプレートを取込|Importar plantillas|Vorlagen importieren|Importer des modèles
+639|시간 템플릿 추가|時刻テンプレートを追加|Añadir plantilla horaria|Zeitvorlage hinzufügen|Ajouter un modèle horaire
+640|템플릿 추가|テンプレート追加|Añadir plantilla|Vorlage hinzufügen|Ajouter un modèle
+641|평균 초과근무로 퇴근 시간 계산|平均残業から退勤時刻を計算|Calcular la salida según la media extra|Arbeitsende aus durchschnittlichen Überstunden berechnen|Calculer le départ selon la moyenne d’h. sup.
+642|평균 초과로 입력|平均残業で入力|Rellenar por media|Nach Ø ausfüllen|Remplir selon la moyenne
+643|평균 초과 / 시간|平均残業 / 時間|Media extra / h|Ø Überstd. / Std.|Moy. h. sup. / h
+644|퇴근 시간 계산|退勤時刻を計算|Calcular salida|Arbeitsende berechnen|Calculer le départ
+645|모든 달의 수동 시간, 휴가, 메모, 날짜 유형 및 초과근무 계획을 지웁니다. OA 기록과 템플릿은 유지됩니다.|すべての月の手入力の時間・休暇・メモ・日区分・残業予定を消去します。OAの記録とテンプレートは保持されます。|Borra horas manuales, permisos, notas, tipos de día y extra prevista de todos los meses. Conserva entradas OA y plantillas.|Löscht manuelle Stunden, Urlaub, Notizen, Tagesarten und geplante Überstunden aller Monate. OA-Einträge und Vorlagen bleiben erhalten.|Efface heures manuelles, congés, notes, types de jour et prévisions d’h. sup. de tous les mois. Les saisies OA et modèles sont conservés.
+646|저장|保存|Guardar|Speichern|Enregistrer
+647|출근 시간|出勤時刻|Hora de entrada|Arbeitsbeginn|Heure d’arrivée
+648|예: 08:00|例：08:00|p. ej., 08:00|z. B. 08:00|par ex. 08:00
+649|퇴근 시간|退勤時刻|Hora de salida|Arbeitsende|Heure de départ
+650|예: 17:30|例：17:30|p. ej., 17:30|z. B. 17:30|par ex. 17:30
+651|템플릿 적용|テンプレート適用|Aplicar plantilla|Vorlage anwenden|Appliquer le modèle
+652|휴가 시간|休暇時間|Horas de permiso|Urlaubsstunden|Heures de congé
+653|휴가 / 시간|休暇 / 時間|Permiso / h|Urlaub / Std.|Congé / h
+654|종일|終日|Día completo|Ganzer Tag|Journée entière
+655|휴가 저장|休暇を保存|Guardar permiso|Urlaub speichern|Enregistrer le congé
+656|이 날짜의 수동 시간, 휴가, 메모 및 날짜 유형을 지웁니다. OA 기록과 템플릿은 유지됩니다.|この日の手入力の時間・休暇・メモ・日区分を消去します。OAの記録とテンプレートは保持されます。|Borra las horas manuales, permisos, notas y tipo de día de esta fecha. Conserva entradas OA y plantillas.|Löscht manuelle Stunden, Urlaub, Notizen und Tagesart dieses Tages. OA-Einträge und Vorlagen bleiben erhalten.|Efface les heures manuelles, congés, notes et type de ce jour. Les saisies OA et modèles sont conservés.
+657|이 날짜의 수동 기록 초기화|この日の手入力をリセット|Restablecer la entrada manual del día|Manuellen Tageseintrag zurücksetzen|Réinitialiser la saisie manuelle du jour
+658|초기화|リセット|Restablecer|Zurücksetzen|Réinitialiser
+659|기록 출처 보기|記録の出典を表示|Ver origen del registro|Eintragsquelle anzeigen|Voir la source de la saisie
+660|출처|出典|Origen|Quelle|Source
+661|개인 정보 닫기|プロフィールを閉じる|Cerrar perfil|Profil schließen|Fermer le profil
+662|개인 정보|プロフィール|Perfil|Profil|Profil
+663|입사일|入社日|Fecha de incorporación|Eintrittsdatum|Date d’embauche
+664|연월일을 입력하거나 2000-9-9 또는 20000909를 붙여넣으세요.|年月日を入力するか、2000-9-9または20000909を貼り付けてください。|Introduce año, mes y día, o pega 2000-9-9 o 20000909.|Jahr, Monat und Tag eingeben oder 2000-9-9 bzw. 20000909 einfügen.|Saisissez année, mois et jour, ou collez 2000-9-9 ou 20000909.
+665|근무 도시|勤務地の都市|Ciudad de trabajo|Arbeitsort|Ville de travail
+666|스냅샷 및 복구|スナップショットと復旧|Instantáneas y recuperación|Snapshots und Wiederherstellung|Instantanés et récupération
+667|시작 시간|開始時刻|Hora de inicio|Beginn|Heure de début
+668|종료 시간|終了時刻|Hora de fin|Ende|Heure de fin
+669|일정 적용|スケジュール適用|Aplicar horario|Arbeitsplan anwenden|Appliquer l’horaire
+670|날짜 범위에 일정 적용|期間を指定してスケジュールを適用|Aplicar horario a un periodo|Arbeitsplan auf Zeitraum anwenden|Appliquer l’horaire à une période
+671|일일 무급 휴게|1日の無給休憩|Pausas diarias no remuneradas|Tägliche unbezahlte Pausen|Pauses quotidiennes non rémunérées
+672|초과근무 목표|残業目標|Objetivo extra|Überstundenziel|Objectif h. sup.
+673|초과근무 구간|残業区分|Niveles extra|Überstundenstufen|Paliers d’h. sup.
+674|0일|0日|0 días|0 Tage|0 jour
+675|1일|1日|1 día|1 Tag|1 jour
+676|2일|2日|2 días|2 Tage|2 jours
+677|3일|3日|3 días|3 Tage|3 jours
+678|≥4일|4日以上|≥4 días|≥4 Tage|≥4 jours
+679|다시 확인|再確認|Comprobar de nuevo|Erneut prüfen|Revérifier
+680|읽을 수 없는 원본 데이터 내보내기|読み込めない元データを書き出す|Exportar datos originales ilegibles|Unlesbare Rohdaten exportieren|Exporter les données brutes illisibles
+681|백업 복원|バックアップを復元|Restaurar copia|Sicherung wiederherstellen|Restaurer une sauvegarde
+682|저장 자료 초기화|保存データをリセット|Restablecer datos|Daten zurücksetzen|Réinitialiser l’archive
+683|백업 변환 도구 열기|バックアップ変換ツールを開く|Abrir conversor de copias|Sicherungskonverter öffnen|Ouvrir le convertisseur de sauvegardes
+684|근무 일정과 휴게 시간을 설정하세요.|勤務スケジュールと休憩を設定してください。|Configura tu horario y pausas.|Arbeitsplan und Pausen einrichten.|Définissez vos horaires et pauses.
+685|일정 설정|スケジュール設定|Configurar horario|Arbeitsplan einrichten|Configurer les horaires
+686|공휴일 일정이 없어 월~금을 사용합니다.|休日予定がないため、月～金を勤務日とします。|Sin calendario festivo. Se usa de lunes a viernes.|Kein Feiertagsplan verfügbar. Montag–Freitag wird verwendet.|Calendrier férié indisponible. Du lundi au vendredi par défaut.
+687|알림 없음|通知はありません|Sin notificaciones|Keine Mitteilungen|Aucune notification
+688|근무 기록 · 개인 근무 관리 · 정기적으로 백업하세요 ·|勤務記録・個人用・定期的にバックアップしてください・|Registro horario · Registros personales · Haz copias periódicas ·|Zeiterfassung · Persönliche Arbeitsdaten · Regelmäßig sichern ·|Suivi du temps · Relevés personnels · Sauvegardez régulièrement ·
+689|기록, 설정, IndexedDB, 스냅샷 및 캐시 자료의 예상 저장 공간|記録・設定・IndexedDB・スナップショット・キャッシュの推定使用量|Espacio estimado de registros, ajustes, IndexedDB, instantáneas y caché|Geschätzter Speicher für Einträge, Einstellungen, IndexedDB, Snapshots und Cache|Stockage estimé des saisies, réglages, IndexedDB, instantanés et sources en cache
+690|저장 공간: —|ストレージ：—|Espacio: —|Speicher: —|Stockage : —
+691|바이두 날씨 API. GitHub Actions가 매시 7, 22, 37, 52분에 수집합니다.|百度天気API。GitHub Actionsで毎時7・22・37・52分に取得します。|API meteorológica de Baidu. GitHub Actions obtiene los datos a los minutos 7, 22, 37 y 52 de cada hora.|Baidu-Wetter-API. GitHub Actions ruft Daten stündlich zu Minute 7, 22, 37 und 52 ab.|API météo Baidu. GitHub Actions récupère les données aux minutes 7, 22, 37 et 52 de chaque heure.
+692|날씨:|天気：|Tiempo:|Wetter:|Météo :
+693|· 중국 공휴일 일정: 2020~2026|・中国の休日予定：2020～2026|· Festivos de China: 2020–2026|· Chinesische Feiertagspläne: 2020–2026|· Jours fériés en Chine : 2020–2026
+694|저작권|著作権|Derechos de autor|Urheberrecht|Droits d’auteur
+695|템플릿 공유 코드|テンプレート共有コード|Código de plantillas|Vorlagen-Freigabecode|Code de partage de modèles
+696|템플릿 공유 코드 붙여넣기|テンプレート共有コードを貼り付け|Pega un código de plantillas|Vorlagen-Freigabecode einfügen|Collez un code de partage
+697|템플릿 미리보기|テンプレートのプレビュー|Vista previa de plantillas|Vorlagenvorschau|Aperçu des modèles
+698|공유 코드를 붙여넣어 템플릿을 미리 보세요.|共有コードを貼り付けてテンプレートを確認できます。|Pega un código para ver sus plantillas.|Freigabecode einfügen, um Vorlagen anzuzeigen.|Collez un code pour afficher ses modèles.
+699|미리보기|プレビュー|Vista previa|Vorschau|Aperçu
+700|모든 템플릿 교체|すべてのテンプレートを置換|Sustituir todas las plantillas|Alle Vorlagen ersetzen|Remplacer tous les modèles
+701|템플릿 공유|テンプレートを共有|Compartir plantillas|Vorlagen teilen|Partager les modèles
+702|복사 실패. 아래 코드를 선택하여 직접 복사하세요.|コピーできませんでした。以下のコードを選択して手動でコピーしてください。|No se pudo copiar. Selecciona el código y cópialo manualmente.|Kopieren fehlgeschlagen. Code unten auswählen und manuell kopieren.|Échec de la copie. Sélectionnez le code ci-dessous et copiez-le manuellement.
+703|전체 선택|すべて選択|Seleccionar todo|Alles auswählen|Tout sélectionner
+704|코드 복사|コードをコピー|Copiar código|Code kopieren|Copier le code
+705|템플릿 이름|テンプレート名|Nombre de plantilla|Vorlagenname|Nom du modèle
+706|예: 일반, 야간 근무|例：通常勤務、遅番|p. ej., Normal, Turno de tarde|z. B. Regulär, Spätschicht|par ex. Normal, Équipe du soir
+707|템플릿 삭제|テンプレートを削除|Eliminar plantilla|Vorlage löschen|Supprimer le modèle
+708|템플릿 저장|テンプレートを保存|Guardar plantilla|Vorlage speichern|Enregistrer le modèle
+709|적용할 일정|適用するスケジュール|Horario que aplicar|Anzuwendender Arbeitsplan|Horaire à appliquer
+710|날짜 범위|期間|Periodo|Zeitraum|Période
+711|모든 날짜|すべての日付|Todas las fechas|Alle Daten|Toutes les dates
+712|오늘부터|今日から|Desde hoy|Ab heute|À partir d’aujourd’hui
+713|향후 7일|今後7日間|Próximos 7 días|Nächste 7 Tage|7 prochains jours
+714|이번 달 남은 기간|今月の残り|Resto de este mes|Rest dieses Monats|Reste du mois
+715|직접 지정|期間を指定|Periodo personalizado|Eigener Zeitraum|Période personnalisée
+716|종료일|終了日|Fecha de fin|Enddatum|Date de fin
+717|종료일 없음|終了日なし|Sin fecha de fin|Ohne Enddatum|Sans date de fin
+718|범위 내 일정을 바꿉니다. 출퇴근 시각과 휴가 시간은 유지됩니다.|期間内のスケジュールを置き換えます。出退勤時刻と休暇時間は変更しません。|Sustituye los horarios del periodo. Conserva las horas de fichaje y permiso.|Ersetzt Arbeitspläne im Zeitraum. Buchungszeiten und Urlaubsstunden bleiben gleich.|Remplace les horaires de la période. Les pointages et heures de congé restent inchangés.
+719|근무 일정 목록|スケジュール一覧|Horarios|Arbeitspläne|Horaires
+720|일정을 선택한 후 적용 기간을 지정하세요. 지정 기간 외에는 기본 일정이 적용됩니다.|スケジュールを選び、期間を指定してください。指定期間外は基本スケジュールが適用されます。|Elige un horario y luego su periodo. Fuera de los periodos personalizados se usa el horario base.|Arbeitsplan und dann Zeitraum wählen. Außerhalb eigener Zeiträume gilt der Basisarbeitsplan.|Choisissez un horaire puis sa période. L’horaire de base s’applique hors des périodes personnalisées.
+721|미적용 일정|未適用のスケジュール|Horario sin aplicar|Nicht angewendeter Arbeitsplan|Horaire non appliqué
+722|일정 변경 사항을 먼저 적용할까요?|先にスケジュールの変更を適用しますか？|¿Aplicar primero los cambios de horario?|Arbeitsplanänderungen zuerst anwenden?|Appliquer d’abord les modifications d’horaire ?
+723|계속 편집|編集を続ける|Seguir editando|Weiter bearbeiten|Continuer à modifier
+724|버리기|破棄|Descartar|Verwerfen|Abandonner
+725|적용|適用|Aplicar|Anwenden|Appliquer
+726|가져오기 삭제|取込を削除|Eliminar importación|Import löschen|Supprimer l’importation
+727|이 묶음의 타각을 제거합니다. 중복 날짜에는 다른 가져오기 기록을 유지합니다. 수동 기록, 휴가 및 템플릿은 유지됩니다.|この取込の打刻を削除します。重複する日は別の取込記録を残します。手入力・休暇・テンプレートは保持されます。|Elimina los fichajes de este lote. Las fechas coincidentes conservan otras importaciones. Se mantienen entradas manuales, permisos y plantillas.|Entfernt Buchungen dieses Imports. Bei überlappenden Tagen bleiben andere Importe erhalten, ebenso manuelle Einträge, Urlaub und Vorlagen.|Supprime les pointages de ce lot. Les dates communes conservent les autres importations. Saisies manuelles, congés et modèles sont conservés.
+728|100 MiB 내에서 일일 스냅샷 7개와 변경 전 스냅샷 3개를 보관합니다. 이전 원본은 별도 보관됩니다. 브라우저 외부에도 백업하세요.|100 MiB以内で日次7件・変更前3件のスナップショットを保持します。旧形式の元データは別に保持します。ブラウザー外にもバックアップしてください。|Conserva hasta 7 instantáneas diarias y 3 previas a cambios, en 100 MiB. Los originales antiguos se guardan aparte. Exporta también copias fuera del navegador.|Behält bis zu 7 Tages- und 3 Änderungs-Snapshots innerhalb von 100 MiB. Alte Originaldaten werden separat aufbewahrt. Auch außerhalb des Browsers sichern.|Conserve jusqu’à 7 instantanés quotidiens et 3 avant modification, dans 100 Mio. Les anciens originaux sont conservés séparément. Sauvegardez aussi hors du navigateur.
+729|복구 데이터 다운로드|復旧データをダウンロード|Descargar datos de recuperación|Wiederherstellungsdaten herunterladen|Télécharger les données de récupération
+730|이전 자료 다시 가져오기|旧データを再取込|Reimportar datos antiguos|Altdaten erneut importieren|Réimporter l’ancienne archive
+731|스냅샷 삭제|スナップショットを削除|Eliminar instantáneas|Snapshots löschen|Supprimer les instantanés
+732|모든 스냅샷을 삭제합니다. 현재 저장 자료와 이전 원본은 유지됩니다. 먼저 복구 데이터를 다운로드할 수 있습니다.|すべてのスナップショットを削除します。現在の保存データと旧形式の元データは保持されます。先に復旧データをダウンロードできます。|Elimina todas las instantáneas. Conserva los datos actuales y los originales antiguos. Puedes descargar antes los datos de recuperación.|Löscht alle Snapshots. Aktuelle Daten und alte Originaldaten bleiben erhalten. Wiederherstellungsdaten können vorher heruntergeladen werden.|Supprime tous les instantanés. L’archive actuelle et les anciens originaux sont conservés. Vous pouvez d’abord télécharger les données de récupération.
+733|테마 저장 재시도|テーマの保存を再試行|Reintentar guardar tema|Design erneut speichern|Réessayer d’enregistrer le thème
+734|이 브라우저의 모든 기록, 템플릿, 일정을 교체합니다. 먼저 스냅샷이 저장되며 백업도 다운로드할 수 있습니다. 로컬 파일과 웹사이트의 저장소는 별개입니다. 파일 이동이나 브라우저 변경 전에 내보내세요.|このブラウザーの全記録・テンプレート・スケジュールを置き換えます。先にスナップショットを保存します。バックアップのダウンロードも可能です。ローカルファイルとWebサイトの保存領域は別です。ファイルの移動やブラウザーの変更前に書き出してください。|Sustituye todos los registros, plantillas y horarios de este navegador. Se guarda antes una instantánea; también puedes descargar una copia. Los archivos locales y los sitios usan almacenamiento separado. Exporta antes de mover archivos o cambiar de navegador.|Ersetzt alle Einträge, Vorlagen und Arbeitspläne dieses Browsers. Zuvor wird ein Snapshot gespeichert; eine Sicherung kann ebenfalls heruntergeladen werden. Lokale Dateien und Websites nutzen getrennte Speicher. Vor Dateiumzug oder Browserwechsel exportieren.|Remplace toutes les saisies, modèles et horaires de ce navigateur. Un instantané est créé d’abord ; vous pouvez aussi télécharger une sauvegarde. Fichiers locaux et sites utilisent des stockages distincts. Exportez avant de déplacer les fichiers ou de changer de navigateur.
+735|이 백업에는 임시 기본값과 현재 페이지 변경 사항만 있습니다. 읽을 수 없는 원본을 보존하려면 ‘원본 데이터 내보내기’를 사용하세요.|このバックアップには仮の初期設定とこのページの変更のみが含まれます。読み込めない元データの保全には「元データを書き出す」を使ってください。|Esta copia solo contiene valores temporales y cambios de esta página. Usa «Exportar datos originales» para conservar los originales ilegibles.|Diese Sicherung enthält nur temporäre Standardwerte und Änderungen dieser Seite. Mit „Rohdaten exportieren“ bleiben unlesbare Originaldaten erhalten.|Cette sauvegarde ne contient que les valeurs temporaires et les modifications de cette page. Utilisez « Exporter les données brutes » pour préserver l’archive d’origine illisible.
+736|교체 및 복원|置換して復元|Sustituir y restaurar|Ersetzen und wiederherstellen|Remplacer et restaurer
+737|OA 링크|OAリンク|Enlace OA|OA-Link|Lien OA
+738|OA URL|OA URL|URL de OA|OA-URL|URL OA
+739|링크 저장|リンクを保存|Guardar enlace|Link speichern|Enregistrer le lien
+740|손상된 저장 자료와 임시 변경 사항을 버립니다. 모든 기록, 가져오기, 템플릿, 일정 및 개인 설정을 지우고 기본값으로 복원합니다. 테마는 유지됩니다.|破損した保存データと仮の変更を破棄します。全記録・取込・テンプレート・スケジュール・プロフィールを消去し、初期設定に戻します。テーマは保持されます。|Descarta los datos dañados y cambios temporales. Borra registros, importaciones, plantillas, horarios y perfil, y restaura los valores iniciales. Conserva el tema.|Verwirft beschädigte Daten und temporäre Änderungen. Löscht alle Einträge, Importe, Vorlagen, Arbeitspläne und Profildaten und stellt Standardwerte wieder her. Das Design bleibt erhalten.|Abandonne l’archive endommagée et les modifications temporaires. Efface saisies, importations, modèles, horaires et profil, puis rétablit les valeurs par défaut. Le thème est conservé.
+741|되돌릴 수 없습니다. 복구 또는 문제 분석을 위해 먼저 원본 데이터를 내보내세요.|この操作は取り消せません。復旧や調査に備え、先に元データを書き出してください。|No se puede deshacer. Exporta primero los datos originales para recuperar o diagnosticar.|Dies kann nicht rückgängig gemacht werden. Rohdaten zuerst zur Wiederherstellung oder Fehleranalyse exportieren.|Cette action est irréversible. Exportez d’abord les données brutes pour la récupération ou le diagnostic.
+742|원본 데이터 내보내기|元データを書き出す|Exportar datos originales|Rohdaten exportieren|Exporter les données brutes
+743|저장 자료 버리고 초기화|保存データを破棄してリセット|Descartar datos y restablecer|Daten verwerfen und zurücksetzen|Abandonner l’archive et réinitialiser
+744|근무 도시 목록|勤務地の都市一覧|Ciudades de trabajo|Arbeitsorte|Villes de travail
+745|WorkTime 백업 변환 도구|WorkTime バックアップ変換|Conversor de copias WorkTime|WorkTime-Sicherungskonverter|Convertisseur de sauvegardes WorkTime
+746|버전 1, 2, 3의 JSON 또는 압축 텍스트 백업을 현재 형식으로 변환합니다. 메인 앱도 읽을 수 있는 이전 자료를 자동으로 변환합니다. 변환은 메모리에서 수행되며 새 파일을 다운로드합니다. 브라우저 기록과 원본 파일은 변경하지 않습니다.|バージョン1・2・3のJSONまたは圧縮テキストのバックアップを現形式に変換します。メイン画面でも読込可能な旧データは自動移行します。変換はメモリー内で行い、新しいファイルとしてダウンロードします。ブラウザーの記録と元ファイルは変更しません。|Convierte copias JSON o texto comprimido de versiones 1, 2 y 3 al formato actual. La aplicación también migra automáticamente los datos antiguos legibles. La conversión se realiza en memoria y descarga un archivo nuevo. No modifica los registros del navegador ni el original.|Konvertiert JSON- oder komprimierte Textsicherungen der Versionen 1, 2 und 3 ins aktuelle Format. Die Hauptseite migriert lesbare Altdaten auch automatisch. Die Konvertierung erfolgt im Arbeitsspeicher und lädt eine neue Datei herunter. Browserdaten und Originaldatei bleiben unverändert.|Convertit les sauvegardes JSON ou texte compressé des versions 1, 2 et 3 au format actuel. L’application migre aussi automatiquement les anciennes archives lisibles. La conversion se fait en mémoire et produit un nouveau fichier à télécharger. Les données du navigateur et le fichier d’origine restent inchangés.
+747|이전 백업 선택|旧形式のバックアップを選択|Elegir copia antigua|Alte Sicherung wählen|Choisir une ancienne sauvegarde
+748|또는 백업 텍스트 붙여넣기|またはバックアップのテキストを貼り付け|O pega el texto de la copia|Oder Sicherungstext einfügen|Ou collez le texte de la sauvegarde
+749|백업 변환|バックアップを変換|Convertir copia|Sicherung konvertieren|Convertir la sauvegarde
+750|변환된 백업|変換後のバックアップ|Copia convertida|Konvertierte Sicherung|Sauvegarde convertie
+751|변환된 백업 다운로드|変換後のバックアップをダウンロード|Descargar copia convertida|Konvertierte Sicherung herunterladen|Télécharger la sauvegarde convertie
+752|다운로드 후 돌아가기:|ダウンロード後に戻る：|Tras descargar, vuelve a|Nach dem Herunterladen zurück zu|Après le téléchargement, revenez à
+753|근무 기록|勤務記録|Registro horario|Zeiterfassung|Suivi du temps
+754|에서 ‘복원’으로 변환된 백업을 가져오세요. 기록, 일정, 가져오기 내역을 확인할 때까지 원본을 보관하세요.|で「復元」を使って変換後のバックアップを取り込んでください。記録・スケジュール・取込履歴を確認するまで元ファイルを保管してください。|y usa «Restaurar» para importar la copia convertida. Conserva el original hasta verificar registros, horarios e historial de importación.|und mit „Wiederherstellen“ die konvertierte Sicherung importieren. Original behalten, bis Einträge, Arbeitspläne und Importverlauf geprüft sind.|et utilisez « Restaurer » pour importer la sauvegarde convertie. Conservez l’original jusqu’à vérification des saisies, horaires et importations.
+755|이달 누계: {date}|月初からの累計：{date}|Acumulado del mes: {date}|Monat bisher: {date}|Cumul du mois : {date}
+756|입사 {count}일째|勤続{count}日目|Día {count} en la empresa|Tag {count} im Betrieb|Jour {count} dans l’entreprise
+757|입사까지 {count}일|勤務開始まで{count}日|Empieza en {count} días|Beginn in {count} Tagen|Début dans {count} jours
+758|초과근무 예정: {count}일|残業予定：{count}日|Extra prevista: {count} días|Überstd. geplant: {count} Tage|H. sup. prévues : {count} jours
+759|이번 달: 완료 {complete}일 · 미완료 {pending}일|今月：完了{complete}日・未完了{pending}日|Este mes: {complete} completos · {pending} pendientes|Dieser Monat: {complete} vollständig · {pending} offen|Ce mois-ci : {complete} complets · {pending} à compléter
+760|기록 {records}개 · 경고 {warnings}개 · 충돌 {conflicts}개|記録{records}件・警告{warnings}件・競合{conflicts}件|{records} registros · {warnings} avisos · {conflicts} conflictos|{records} Einträge · {warnings} Warnungen · {conflicts} Konflikte|{records} enregistrements · {warnings} avertissements · {conflicts} conflits
+761|언어|言語|Idioma|Sprache|Langue
+762|시스템 기본값|システムの既定|Predeterminado del sistema|Systemstandard|Langue du système
+763|언어가 적용되었지만 저장되지 않았습니다. 다시 선택하면 재시도합니다.|言語は適用されましたが保存できませんでした。もう一度選択すると再試行します。|Idioma aplicado, pero no guardado. Vuelve a seleccionarlo para reintentar.|Sprache angewendet, aber nicht gespeichert. Zum Wiederholen erneut auswählen.|Langue appliquée, mais non enregistrée. Sélectionnez-la à nouveau pour réessayer.
+764|{count}일|{count}日|{count} día|{count} Tag|{count} jour
+765|{count}일|{count}日|{count} días|{count} Tage|{count} jours
+766|{count}주년|{count}周年|{count} años|{count}-jähriges Jubiläum|{count} ans
+767|변환 완료: 모듈 {count}개.|変換完了：{count}モジュール。|Conversión completada: {count} módulos.|Konvertierung erfolgreich: {count} Module.|Conversion réussie : {count} modules.
+768|{source} 백업: 날짜 {dates}개, 가져오기 {imports}개, 템플릿 {templates}개, 일정 {schedules}개. 기본 일일 근무: {hours}시간.|{source}のバックアップ：{dates}日分、取込{imports}件、テンプレート{templates}件、スケジュール{schedules}件。1日の所定労働時間：{hours}時間。|Copia de {source}: {dates} fechas, {imports} importaciones, {templates} plantillas, {schedules} horarios. Jornada estándar: {hours} h.|Sicherung aus {source}: {dates} Tage, {imports} Importe, {templates} Vorlagen, {schedules} Arbeitspläne. Tägliche Sollzeit: {hours} Std.|Sauvegarde de {source} : {dates} dates, {imports} importations, {templates} modèles, {schedules} horaires. Durée journalière normale : {hours} h.
+769|선택: {count}|選択中：{count}|Selección: {count}|Ausgewählt: {count}|Sélection : {count}
+770|입사 {count}주년|勤続{count}周年|{count} años en la empresa|{count}-jähriges Betriebsjubiläum|{count} ans dans l’entreprise
+771|; 예정 {date}, {count}일 앞당김|；予定日{date}、{count}日前倒し|; previsto el {date}, {count} días antes|; geplant für {date}, {count} Tage früher| ; prévu le {date}, {count} jours d’avance
+772|{start} – 미완료|{start} – 未完了|{start} – Pendiente|{start} – Offen|{start} – À compléter
+773|{year}년 {month}|{year}年{month}|{month} {year}|{month} {year}|{month} {year}
+774|알림 ({type})|通知（{type}）|Notificaciones ({type})|Mitteilungen ({type})|Notifications ({type})
+775|{count}일을 갱신했습니다|{count}日分を更新しました|{count} días actualizados|{count} Tage aktualisiert|{count} jours actualisés
+776|수동 기록 {count}개를 초기화했습니다. OA 기록은 유지됩니다.|手入力{count}件をリセットしました。OAの記録は保持されています。|{count} entradas manuales restablecidas. Se conservan las de OA.|{count} manuelle Einträge zurückgesetzt. OA-Einträge bleiben erhalten.|{count} saisies manuelles réinitialisées. Les saisies OA sont conservées.
+777|‘{name}’ 적용 및 저장 완료|「{name}」を適用・保存しました|«{name}» aplicado y guardado|„{name}“ angewendet und gespeichert|« {name} » appliqué et enregistré
+778|백업의 휴게 시간이 잘못되었습니다.|バックアップの休憩時間が無効です。|Pausas no válidas en la copia.|Ungültige Pausen in der Sicherung.|Pauses invalides dans la sauvegarde.
+779|백업의 예정 출퇴근 시각이 잘못되었습니다.|バックアップの勤務予定時刻が無効です。|Horas previstas no válidas en la copia.|Ungültige geplante Uhrzeiten in der Sicherung.|Heures prévues invalides dans la sauvegarde.
+780|백업의 기본 근무 시간 범위가 잘못되었습니다.|バックアップの所定労働時間の範囲が無効です。|Intervalo de jornada estándar no válido en la copia.|Ungültiger Sollstundenbereich in der Sicherung.|Plage de durée normale invalide dans la sauvegarde.
+781|백업의 월평균 초과근무 목표가 잘못되었습니다.|バックアップの月平均残業目標が無効です。|Objetivo de media extra mensual no válido en la copia.|Ungültiges monatliches Überstundendurchschnittsziel in der Sicherung.|Objectif mensuel moyen d’h. sup. invalide dans la sauvegarde.
+782|백업의 언어 설정이 잘못되었습니다.|バックアップの言語設定が無効です。|Idioma no válido en la copia.|Ungültige Spracheinstellung in der Sicherung.|Préférence de langue invalide dans la sauvegarde.
+783|미완료|未完|Pend.|Offen|À compl.
+784|바람|風力|Viento|Wind|Vent
+785|풍향|風向|Dirección|Richtung|Direction

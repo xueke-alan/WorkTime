@@ -1212,8 +1212,11 @@ body .sidebar-actions > #importOpen {
   line-height: 1;
 }
 body #importOpen .import-main {
+  display: grid;
+  grid-template-columns: var(--icon-size) minmax(0, 1fr);
   align-items: center;
   gap: 0.357143rem;
+  padding-inline: 0.714286rem;
 }
 body #importOpen .import-main > .ui-icon {
   display: block;
@@ -1462,15 +1465,27 @@ body .summary-sidebar .card.average-card .metric > .summary-number {
   overflow: hidden;
   vertical-align: bottom;
 }
+.summary-number-column.summary-number-word {
+  width: auto;
+}
 .summary-number-track {
-  display: flex;
-  flex-direction: column;
+  display: block;
+  position: relative;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   line-height: 1.3;
+}
+.summary-number-outgoing {
+  position: absolute;
+  inset-inline: 0;
+  top: -100%;
+}
+.number-roll-down > .summary-number-outgoing {
+  top: 100%;
 }
 .summary-number-digit {
   display: block;
   height: 1.3em;
-  flex: none;
   line-height: 1.3;
   text-align: center;
 }
@@ -1498,11 +1513,6 @@ body .summary-sidebar .fixed-record-count {
   width: 2ch;
   text-align: center;
   font-variant-numeric: tabular-nums;
-}
-:where(.summary-number-track.number-roll-up, .summary-number-track.number-roll-down) {
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
-  backface-visibility: hidden;
 }
 
 /* OA views replace only the content below the persistent sidebar divider. */
@@ -1651,7 +1661,7 @@ body .summary-sidebar #importDialog .import-footer-links {
 }
 body .summary-sidebar #importDialog .import-dialog-foot {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
   gap: 0.428571rem;
 }
@@ -1661,6 +1671,7 @@ body .summary-sidebar #importDialog .import-dialog-foot button {
   white-space: nowrap;
 }
 body .summary-sidebar #importDialog .import-dialog-foot #oaShortcut {
+  width: 100%;
   padding-inline: 1rem;
 }
 body .summary-sidebar .sidebar-import-history {
@@ -1736,6 +1747,7 @@ body #importDialog #importHistoryList .import-history-item .row .row {
 body #sourceDialog.import-detail-view .dialog-head > [data-close] { display: none; }
 body #sourceDialog.import-detail-view .dialog-head h2 {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.428571rem;
@@ -1753,18 +1765,17 @@ body #sourceDialog.import-detail-view .import-detail-caption {
   text-align: right;
 }
 body .summary-sidebar #sourceDialog.import-detail-view .dialog-head { padding-inline: 0.428571rem; border-bottom: 0; }
-body #sourceDialog.import-detail-view .dialog-head h2 > span { font-size: 1.285714rem; }
+body #sourceDialog.import-detail-view .dialog-head h2 > span { font-size: 1.285714rem; white-space: nowrap; }
 body #sourceDialog.import-detail-view .dialog-foot { display: flex; justify-content: space-between; align-items: center; gap: 0.428571rem; }
 .import-detail-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.571429rem; margin-bottom: 0.714286rem; }
 .import-detail-toolbar > span { font-size: 0.785714rem; }
 .import-parsed-list { display: grid; gap: 0.571429rem; }
 .import-parsed-list > article { display: flex; flex-direction: column; gap: 0.285714rem; padding: 0.714286rem; border: 1px solid var(--line); border-radius: 0.571429rem; }
 .import-parsed-list > article > span { color: var(--muted); font-variant-numeric: tabular-nums; }
-/* Reserve the longest OA label so changing to Return never shifts the icon. */
+/* The label fills its own slot without moving the leading OA icon. */
 body #importOpen .import-main > span {
-  width: 4em;
-  min-width: 4em;
-  flex: 0 0 4em;
+  width: 100%;
+  min-width: 0;
   text-align: center;
   white-space: nowrap;
 }
@@ -2066,4 +2077,12 @@ body .summary-sidebar .summary-number-value > small {
   color: inherit;
   opacity: 0.65;
   transform: translateY(-0.55em);
+}
+/* Reserve figures first; labels retain their full localized title and ARIA text. */
+body .summary-sidebar .card-label {
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
