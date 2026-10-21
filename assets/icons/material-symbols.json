@@ -254,10 +254,10 @@
     },
     {
       "id": "ms-calendar",
-      "name": "calendar_month",
-      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/calendar_month/materialsymbolsrounded/calendar_month_24px.svg",
+      "name": "calendar_today",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/calendar_today/materialsymbolsrounded/calendar_today_24px.svg",
       "viewBox": "0 -960 960 960",
-      "sha256": "b17728fb9d768c22b34f0e4c3ec10b3185a26d03a707898130aad750c861dcf0"
+      "sha256": "aa3fd04f67bd1b144324f09aaf31cbbc9eb773b7afe8087e12ea301a54677247"
     },
     {
       "id": "ms-article-person",
@@ -335,6 +335,104 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/nest_clock_farsight_analog/materialsymbolsrounded/nest_clock_farsight_analog_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "d8effd2b897075a7232f7a67a3f07058436d7fb39fadb89653bef67c36ce08ca"
+    },
+    {
+      "id": "ms-table-chart-view",
+      "name": "table_chart_view",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/table_chart_view/materialsymbolsrounded/table_chart_view_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "01de29d5d50f0172b91cb1936599937a34f45cebedf74ae255f7075d94d537d6"
+    },
+    {
+      "id": "ms-joystick",
+      "name": "joystick",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/joystick/materialsymbolsrounded/joystick_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "727968dda1d567210b338dc2be89ad1d4f88504c3ff6361b837493ae35f038fd"
+    },
+    {
+      "id": "ms-sports-esports",
+      "name": "sports_esports",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/sports_esports/materialsymbolsrounded/sports_esports_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "0ffe8342421be0f46020e775a1dd8da43bc1472eff7a4ad15f47a74310c2497c"
+    },
+    {
+      "id": "ms-grid-4x4",
+      "name": "grid_4x4",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/grid_4x4/materialsymbolsrounded/grid_4x4_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "556cc9bf163cba0d275ef4e7bde45cf9f7da053ceaad4d05ab94eaaff9d0ea61"
+    },
+    {
+      "id": "ms-flag",
+      "name": "flag",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/flag/materialsymbolsrounded/flag_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "61d25229534baac0403569870112db3fec52f8dac972c1843bc31b8ab6ce5679"
+    },
+    {
+      "id": "ms-bomb",
+      "name": "bomb",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/bomb/materialsymbolsrounded/bomb_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "bab89df9412b9740d53fd809abc876f1533ca9ffea68c76cb540903604e4d0b7"
+    },
+    {
+      "id": "ms-undo",
+      "name": "undo",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/undo/materialsymbolsrounded/undo_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "8216cb5fe27924df91fbf55cc6b78424c46b0d8c55ff5c0ae3a7cf32b946bf40"
+    },
+    {
+      "id": "ms-help",
+      "name": "help",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/help/materialsymbolsrounded/help_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "6d4f1e2b01533aed45a9a5d66b6699140aa604697f231793b2d8b08a312a0889"
+    },
+    {
+      "id": "ms-pause",
+      "name": "pause",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/pause/materialsymbolsrounded/pause_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "80a0cb04e108e874d78b3b84ecfd9cd6674c6128856cdbca4cb7785118f8b708"
+    },
+    {
+      "id": "ms-play-arrow",
+      "name": "play_arrow",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/play_arrow/materialsymbolsrounded/play_arrow_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "ca883b7cda454cfaf5ca2cb527c4c723ce7fc91f0d75aa26032029f75740668e"
+    },
+    {
+      "id": "ms-arrow-upward",
+      "name": "arrow_upward",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/arrow_upward/materialsymbolsrounded/arrow_upward_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "8d77871a0aefe5b3b0fb5837f061b380655574f8bb494c14ba35fc03c1eaf945"
+    },
+    {
+      "id": "ms-arrow-downward",
+      "name": "arrow_downward",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/arrow_downward/materialsymbolsrounded/arrow_downward_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "ae11b8378dd16ffa680e7574e5e15668e68f49855d5f027c58517066432ccfa1"
+    },
+    {
+      "id": "ms-arrow-back",
+      "name": "arrow_back",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/arrow_back/materialsymbolsrounded/arrow_back_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "119b3957ad81d730963f91b3354e444f4884549dd572abaacf0ace752f70506c"
+    },
+    {
+      "id": "ms-arrow-forward",
+      "name": "arrow_forward",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/arrow_forward/materialsymbolsrounded/arrow_forward_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "5a6d56dbb1ffcfc46756a2f2a59116de7eb80e4db7c5fb14c74c22abc8661d19"
     }
   ]
 }

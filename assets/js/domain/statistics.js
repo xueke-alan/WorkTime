@@ -27,6 +27,111 @@ WorkTimeApp.domain.statistics = (() => {
     return { date: latest, days, stale: days >= 3 };
   }
   const { scheduleForDate } = WorkTimeApp.domain.schedule;
+  /** Monthly clock-time analysis. No storage access; asOf is a business date. */
+  function monthlyAnalysis(state, month, asOf, includeManual = false) {
+    const [first, last] = WorkTimeApp.domain.time.monthBounds(month);
+    const days = [],
+      calendarDays = [];
+    let run = [],
+      longest = [];
+    for (let n = 1; n <= Number(last.slice(8)); n++) {
+      const date = month + "-" + String(n).padStart(2, "0"),
+        day = state.days[date] || {},
+        schedule = scheduleForDate(state, date),
+        work = calendarInfo(date, day).work;
+      calendarDays.push({
+        date,
+        work,
+        workStart: timeMin(schedule.workStart),
+        workEnd: timeMin(schedule.workEnd),
+      });
+      const record = effectiveRecord(day, includeManual);
+      if (
+        date > asOf ||
+        !complete(record) ||
+        (!includeManual &&
+          (record.manual || record.filledStart || record.filledEnd))
+      ) {
+        run = [];
+        continue;
+      }
+      const start = timeMin(record.start),
+        clockEnd = timeMin(record.end),
+        end = clockEnd === null ? null : clockEnd + (record.nextDay ? 1440 : 0),
+        result = calculate(date, day, schedule, includeManual);
+      if (
+        start === null ||
+        end === null ||
+        end <= start ||
+        !(result.minutes > 0)
+      ) {
+        run = [];
+        continue;
+      }
+      const item = {
+        date,
+        start,
+        end,
+        minutes: result.minutes,
+        overtime: result.overtime,
+        work,
+        manual: !!(record.manual || record.filledStart || record.filledEnd),
+      };
+      days.push(item);
+      if (result.overtime > 0) {
+        run.push(date);
+        if (run.length > longest.length) longest = [...run];
+      } else run = [];
+    }
+    const extreme = (key, pick) => {
+      if (!days.length) return null;
+      const minutes = pick(...days.map((day) => day[key]));
+      return {
+        minutes,
+        dates: days
+          .filter((day) => day[key] === minutes)
+          .map((day) => day.date),
+      };
+    };
+    const median = (key) => {
+      if (!days.length) return null;
+      const values = days.map((day) => day[key]).sort((a, b) => a - b),
+        middle = Math.floor(values.length / 2);
+      return values.length % 2
+        ? values[middle]
+        : (values[middle - 1] + values[middle]) / 2;
+    };
+    return {
+      first,
+      last,
+      asOf,
+      includeManual,
+      calendarDays,
+      days,
+      count: days.length,
+      manualDays: days.filter((day) => day.manual).length,
+      earliest: extreme("start", Math.min),
+      latest: extreme("end", Math.max),
+      latestStart: extreme("start", Math.max),
+      earliestEnd: extreme("end", Math.min),
+      averageStart: days.length
+        ? days.reduce((sum, day) => sum + day.start, 0) / days.length
+        : null,
+      averageEnd: days.length
+        ? days.reduce((sum, day) => sum + day.end, 0) / days.length
+        : null,
+      overtimeDays: days.filter((day) => day.overtime > 0).length,
+      medianStart: median("start"),
+      medianEnd: median("end"),
+      lateDays: days.filter((day) => day.end > 1260).length,
+      longest: {
+        count: longest.length,
+        dates: longest,
+        start: longest[0] || null,
+        end: longest.at(-1) || null,
+      },
+    };
+  }
   function attendanceHoursThrough(state, start, end, endDay) {
     if (!validDate(start) || !validDate(end) || start > end) return null;
     let expectedMinutes = 0,
@@ -225,6 +330,7 @@ WorkTimeApp.domain.statistics = (() => {
     };
   }
   return {
+    monthlyAnalysis,
     oaStaleness,
     attendanceHoursThrough,
     cumulativeAverageOvertime,

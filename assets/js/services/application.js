@@ -18,6 +18,8 @@ WorkTimeApp.services.application = (() => {
       batchPreview: null,
       batchSaving: false,
       yearMode: false,
+      analysisMode: false,
+      analysisIncludeManual: false,
       viewYear: Number(input.today.slice(0, 4)),
       returnMonth: input.today.slice(0, 7),
     };

@@ -5,6 +5,9 @@
     ".summary-sidebar .card:not(.average-card):not(.surplus-card) .metric";
   const selectors = [
     "button.ui-button:not(.notification-tab) .button-label",
+    ".puzzle-confirm .game-button > .button-label",
+    ".puzzle-overlay .game-button > .button-label",
+    ".mine-cover-actions .game-button > .button-label",
     "#importOpen .import-main > span",
     ".month-title-year",
     ".month-title-month",
@@ -26,10 +29,14 @@
     "#calendarFoot",
     ".calendar-footer .legend-label",
     ".almanac-watermark-text",
+    ".analysis-manual > span",
+    ".analysis-chart-legend > span > span",
+    ".analysis-legend-label",
+    "#gameTitle",
   ];
   const targetSelector = selectors.join(",");
   const scopeSelector =
-    ".calendar .day,.summary-sidebar .card,.target-panel,.calendar-footer,.panel-head,.calendar,.summary-sidebar,.editor,dialog,.sidebar-brand,.sidebar-actions";
+    ".calendar .day,.summary-sidebar .card,.target-panel,.calendar-footer,.panel-head,.calendar,.summary-sidebar,.editor,dialog,.sidebar-brand,.sidebar-actions,.analysis-manual,.analysis-chart-heading,.analysis-streak-heading,.game-toolbar,.puzzle-confirm,.puzzle-overlay,.mine-cover,.game-shell";
   const pendingScopes = new Set();
   let fullRefresh = false;
   const canvas = document.createElement("canvas");
@@ -333,6 +340,10 @@
         .forEach((element) => candidates.add(element));
     }
     candidates.forEach((element) => {
+      // The game covers and inerts these panels. Measuring their temporary
+      // line boxes can resize the workspace and interrupt the expansion.
+      // Restoring root overflow on exit schedules their next full refresh.
+      if (element.closest(".workspace.is-game-expanded > [inert]")) return;
       // These cards align the complete metric, including its placeholder.
       if (
         element.hasAttribute("data-number-ink") &&
@@ -414,6 +425,9 @@
     "motion-sidebar-forward",
     "motion-sidebar-back",
     "motion-dialog-preparing",
+    "is-game-expanded",
+    "is-game-transitioning",
+    "game-origin-muted",
   ]);
   const calendarSurfaceClasses = new Set([
     "is-batch-editing",
@@ -450,6 +464,19 @@
       before.removeProperty(property);
       after.removeProperty(property);
     }
+    // Game fades and slides preserve text geometry. Shell size and typography
+    // changes still reach alignment through the remaining style properties.
+    if (element.matches(".game-surface,.game-toolbar,.game-content")) {
+      for (const property of ["opacity", "transform"]) {
+        before.removeProperty(property);
+        after.removeProperty(property);
+      }
+    }
+    // The charge meter changes every frame without changing any text metrics.
+    if (element.matches(".jump-charge > span")) {
+      before.removeProperty("transform");
+      after.removeProperty("transform");
+    }
     return before.cssText === after.cssText;
   }
   function mutationsChanged(records) {
@@ -459,6 +486,14 @@
           ? record.target
           : record.target.parentElement;
       if (!element) continue;
+      // Analysis geometry owns its coordinates. Its animation frames do not
+      // change the single-line text metrics handled by this observer.
+      if (
+        element.closest(
+          "#analysisPlot, #analysisStreak, .analysis-text-outgoing, .analysis-text-incoming",
+        )
+      )
+        continue;
       // Digit tracks keep a fixed line box; their cleanup only changes visual rows.
       // Wrapper/value replacement still reaches the observer through its parent.
       if (element.closest(".summary-number-visual")) continue;

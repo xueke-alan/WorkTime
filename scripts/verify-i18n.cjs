@@ -714,7 +714,7 @@ async function verify() {
       );
       if (english) {
         assert.deepEqual(
-          await page.locator(".panel>.weekdays span").allTextContents(),
+          await page.locator("#panelContent>.weekdays span").allTextContents(),
           ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
         );
         assert.equal(
@@ -796,20 +796,25 @@ async function verify() {
           }),
           /21 Oct 2026/,
         );
-        const positions = [];
         for (const date of ["2026-10-01", "2026-10-25", "2026-10-31"]) {
           await page.locator('.calendar [data-date="' + date + '"]').click();
-          positions.push(
-            await page.locator("#editorDate > span").evaluateAll((parts) =>
-              parts.map((part) => {
-                const { x, width } = part.getBoundingClientRect();
-                return { x, width };
-              }),
-            ),
-          );
+          const header = await page.evaluate((selected) => {
+            const root = document.querySelector("#editorDate");
+            return {
+              date: [...root.querySelectorAll(".calendar-today-number")]
+                .map((part) => part.textContent)
+                .join(" / "),
+              expectedDate: WorkTimeApp.i18n
+                .date(selected)
+                .replace(/\s*\/\s*/g, " / "),
+              weekday: root.querySelector(".calendar-today-weekday")
+                .textContent,
+              expectedWeekday: WorkTimeApp.i18n.weekday(selected),
+            };
+          }, date);
+          assert.equal(header.date, header.expectedDate);
+          assert.equal(header.weekday, header.expectedWeekday);
         }
-        assert.deepEqual(positions[1], positions[0]);
-        assert.deepEqual(positions[2], positions[0]);
         await page.locator('.calendar [data-date="2026-10-21"]').click();
         await englishText(page, "month view");
         const dates = await page.evaluate(() => ({

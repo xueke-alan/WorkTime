@@ -6,7 +6,7 @@ body :focus-visible {
   outline-offset: 0;
 }
 /* Tabs stretch to their footer row; ordinary form controls use fixed geometry. */
-body button.ui-button:where(:not(.notification-tab)),
+body button.ui-button:where(:not(.notification-tab):not(.game-menu-entry)),
 body
   input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
     [type="hidden"]

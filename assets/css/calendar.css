@@ -2,6 +2,19 @@
 .workspace .calendar {
   flex: 1;
 }
+/* One moving surface keeps weekday labels and cards together.
+   Only the stationary viewport clips the content at the panel boundary. */
+.panel-content-viewport,
+.panel-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.panel-content-viewport {
+  overflow: clip;
+}
 .panel-head {
   --month-item-gap: 0.714286rem;
   padding: 20px 22px;
@@ -12,8 +25,12 @@ body .panel-head > .row {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
 }
-.calendar-today {
+.calendar-today,
+body .editor .editor-day-header .editor-date {
   justify-self: center;
+  justify-content: center;
+  margin: 0;
+  transform: none;
   display: flex;
   align-items: center;
   height: var(--control-height);
@@ -22,6 +39,7 @@ body .panel-head > .row {
   color: var(--text);
   font-size: var(--text-title);
   font-weight: 700;
+  letter-spacing: normal;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1206,7 +1224,8 @@ body .calendar .daystatus:not(:empty) {
   margin-inline-start: 0;
 }
 @media (max-width: 699px) {
-  .calendar-today {
+  .calendar-today,
+  body .editor .editor-day-header .editor-date {
     font-size: 1.285714rem;
   }
   body .month-controls .month-title {
@@ -1260,9 +1279,9 @@ body .month-controls .month-title > :is(.month-title-year, .month-title-divider,
   transform: translate(0, var(--ui-ink-offset, 0px));
   transition: transform 360ms var(--motion-ease);
 }
-/* The slash is an SVG, so it has no text-ink correction. */
+/* Lower the SVG slightly to match the rasterized digits' optical center. */
 body .month-controls .month-title > .month-title-divider {
-  transform: none;
+  transform: translateY(0.035em);
 }
 body .month-controls .month-title > :is(.month-title-divider, .month-title-month) {
   opacity: 1;
@@ -1277,7 +1296,7 @@ body .month-controls .month-title.is-year-title > :is(.month-title-year, .month-
   transform: translate(calc(var(--month-label-width, 2ch) / 2 + 0.25em + var(--month-item-gap)), var(--ui-ink-offset, 0px));
 }
 body .month-controls .month-title.is-year-title > .month-title-divider {
-  transform: translateX(calc(var(--month-label-width, 2ch) / 2 + 0.25em + var(--month-item-gap)));
+  transform: translate(calc(var(--month-label-width, 2ch) / 2 + 0.25em + var(--month-item-gap)), 0.035em);
 }
 body .month-controls .month-title.is-year-title > :is(.month-title-divider, .month-title-month) {
   opacity: 0;
@@ -1944,6 +1963,10 @@ body .panel-head #backup .backup-icon-slot {
 }
 /* Six actions fit a narrow calendar without hiding the settings off-screen. */
 @container calendar-panel (max-width: 359px) {
+  /* Localized month labels plus four navigation buttons must fit at 320px. */
+  body .panel-head {
+    --month-item-gap: 0.428571rem;
+  }
   body .panel-head .calendar-toolbar-actions {
     gap: 4px;
   }
@@ -2033,7 +2056,9 @@ body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
   opacity: 0.6;
 }
 body #monthTitle[aria-disabled="true"] {
-  opacity: 0.45;
   cursor: default;
   pointer-events: none;
+}
+body:has(#calendar.is-batch-editing) #monthTitle[aria-disabled="true"] {
+  opacity: 0.45;
 }

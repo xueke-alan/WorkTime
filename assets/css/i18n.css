@@ -106,28 +106,6 @@ html:not([lang="zh-CN"]) body #dateInfoPanel.festivals-panel .date-info-rows dt 
   white-space: nowrap;
   overflow-wrap: normal;
 }
-/* Reserve each date field independently so changing dates cannot shift neighbors. */
-html:not([lang="zh-CN"]) .editor-date {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.14em;
-  white-space: nowrap;
-}
-html:not([lang="zh-CN"]) .editor-date > span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  height: 1.3em;
-  text-align: center;
-}
-html:not([lang="zh-CN"]) .editor-date-day { width: 1.2em; }
-html:not([lang="zh-CN"]) .editor-date-month { width: 1.75em; }
-html:not([lang="zh-CN"]) .editor-date-year { width: 2.4em; }
-html:not([lang="zh-CN"]) .editor-date-separator { width: 0.2em; }
-html:not([lang="zh-CN"]) .editor-date-weekday { width: 2em; }
-
 /* Localized labels keep the same components and grid. */
 @container calendar-panel (max-width: 619px) {
   html:not([lang^="zh-"]):not([lang="ja"]):not([lang="ko"]) body .panel-head > .row {
@@ -139,18 +117,10 @@ html:not([lang="zh-CN"]) .editor-date-weekday { width: 2em; }
     justify-self: start;
   }
 }
-html:not([lang="zh-CN"]) .editor-date-month { width: auto; min-width: 1.75em; }
-html:not([lang="zh-CN"]) .editor-date-weekday { width: auto; min-width: 2em; }
-html:not([lang="zh-CN"]) .editor-date { gap: 0.05em; }
 html:not([lang="zh-CN"]) .button-label { min-width: 0; }
 html[lang="ko"] { word-break: keep-all; }
 
-/* Archive actions must accommodate localized names rather than a half-column slot. */
-body .editor .settings-archive-actions > button {
-  flex: 0 1 auto;
-  width: auto;
-  max-width: 100%;
-}
+/* Compact localized archive labels retain the shared six-column button slot. */
 body .editor .settings-archive-actions > button .button-label { white-space: nowrap; }
 /* Korean planned-overtime text is wider than the shared fixed Chinese button. */
 html:not([lang="zh-CN"]) body .editor #dayForm #plannedOvertimeToggle {
@@ -160,6 +130,10 @@ html:not([lang="zh-CN"]) body .editor #dayForm #plannedOvertimeToggle {
 
 html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row { --day-action-columns: minmax(max-content, 1fr) max-content max-content; }
 html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row :is(#clearManual, #sourceOpen) { width: auto; }
+/* Translated batch actions need enough room for their icon, label and insets. */
+html:not([lang="zh-CN"]) body .editor #batchForm .batch-editor-actions {
+  grid-template-columns: minmax(max-content, 4fr) repeat(2, minmax(max-content, 3fr));
+}
 
 html:not([lang="zh-CN"]) .calendar .daykind { hyphens: auto; }
 

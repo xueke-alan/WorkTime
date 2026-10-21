@@ -24,7 +24,7 @@
  * @typedef {{scheduleRanges:WorkScheduleRange[],schemaVersion:3,personal:WorkPersonal,preferences:WorkPreferences,overtimeRequirements:(number|null)[],oaUrl:string,settings:WorkSettings,timeTemplates:WorkTimeTemplate[],days:Object<string,WorkDay>,imports:WorkImportLog[]}} WorkStateData
  * @typedef {{reset:'none'|'selected'|'all',month:string,dates:string[],record:WorkManualRecord|null,valid:boolean,canConfirm:boolean}} WorkBatchDraft
  * @typedef {{base:WorkStateData,state:WorkStateData}} WorkBatchPreview
- * @typedef {{today:string,month:string,selected:string,batchMode:boolean,batchDays:Set<string>,batchDraft:WorkBatchDraft|null,batchSaving:boolean,yearMode:boolean,viewYear:number}} WorkViewState
+ * @typedef {{today:string,month:string,selected:string,batchMode:boolean,batchDays:Set<string>,batchDraft:WorkBatchDraft|null,batchSaving:boolean,yearMode:boolean,viewYear:number,analysisMode:boolean,analysisIncludeManual:boolean}} WorkViewState
  * @typedef {'unavailable'|'unsupported'|'corrupt'|null} WorkStorageLoadIssue
  * @typedef {WorkViewState & {state:WorkStateData,revision:number,storageFailed:boolean,loadCorrupt:boolean,loadIssue:WorkStorageLoadIssue,batchAnchor:string|null,batchPreview:WorkBatchPreview|null,returnMonth:string}} WorkApplicationModel
  * @typedef {{core:Object,element:function(string):HTMLElement,escape:function(*):string,getState:function():WorkStateData,getView:function():WorkViewState,document:Document,window:Window}} WorkViewDependencies

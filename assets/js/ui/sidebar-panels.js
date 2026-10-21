@@ -256,6 +256,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       return true;
     }
     if (!panes.has(id) || disposed) return false;
+    const navigating = stack.at(-1)?.id !== id;
     const instant = motionDuration === 0;
     if (instant) {
       finishNavigationMotion();
@@ -272,7 +273,8 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       render();
       const pane = panes.get(id);
       if (!pane.open) pane.show();
-      if (!instant) WorkTimeApp.ui.motion?.play(host, "motion-sidebar-forward");
+      if (navigating && !instant)
+        WorkTimeApp.ui.motion?.play(host, "motion-sidebar-forward");
       if (id === "importDialog") pane.dispatchEvent(new Event("sidebar-open"));
       WorkTimeApp.ui.alignment?.refresh([pane]);
       if (window.matchMedia("(max-width: 1150px)").matches)

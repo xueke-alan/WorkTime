@@ -6,12 +6,103 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   const animationCompat = WorkTimeApp.ui.animationCompat;
   const reducedMotion = animationCompat.preference();
   let todayAttention = null,
+    analysisTransition = null,
+    monthAnimations = [],
     unlistenMotion,
     resettingBatch = false;
 
   function stopTodayAttention() {
     todayAttention?.cancel();
     todayAttention = null;
+  }
+
+  function commitAnalysisTransition(transition) {
+    if (transition.committed) return;
+    transition.committed = true;
+    if (model.yearMode) {
+      model.month = model.returnMonth;
+      model.yearMode = false;
+    }
+    model.analysisMode = transition.target;
+    actions.render();
+  }
+
+  function stopAnalysisTransition(settle = true) {
+    stopMonthTransition();
+    const transition = analysisTransition;
+    if (!transition) return;
+    analysisTransition = null;
+    for (const animation of transition.animations) animation.cancel();
+    try {
+      if (settle) commitAnalysisTransition(transition);
+    } finally {
+      for (const [element, inert] of transition.elements) element.inert = inert;
+    }
+  }
+
+  async function toggleAnalysis() {
+    if (resettingBatch || model.batchMode || analysisTransition) return;
+    stopMonthTransition();
+    stopTodayAttention();
+    const transition = {
+      target: !model.analysisMode,
+      committed: false,
+      animations: [],
+      elements: new Map(),
+    };
+    analysisTransition = transition;
+    const play = (entering) => {
+      const distance = transition.target ? -24 : 24,
+        offset = entering ? -distance : distance,
+        shifted = {
+          opacity: 0,
+          transform: `translateY(${offset}px)`,
+        },
+        resting = { opacity: 1, transform: "none" };
+      const content = $("panelContent"),
+        elements = [
+          content,
+          ...document.querySelectorAll(".calendar-footer > *"),
+        ];
+      transition.animations = elements.map((element) => {
+        if (!transition.elements.has(element))
+          transition.elements.set(element, element.inert);
+        element.inert = true;
+        WorkTimeApp.ui.motion?.stop(element);
+        const frames =
+          element === content
+            ? [shifted, resting]
+            : [{ opacity: 0 }, { opacity: 1 }];
+        return animationCompat.animate(
+          element,
+          entering ? frames : frames.toReversed(),
+          {
+            duration: entering ? 220 : 140,
+            easing: entering
+              ? getComputedStyle(element)
+                  .getPropertyValue("--motion-ease")
+                  .trim() || "cubic-bezier(0.22, 1, 0.36, 1)"
+              : "ease-in",
+            fill: "both",
+          },
+        );
+      });
+      return Promise.all(
+        transition.animations.map((animation) => animation.finished),
+      );
+    };
+    try {
+      if (reducedMotion.matches || document.hidden) {
+        commitAnalysisTransition(transition);
+        return;
+      }
+      await play(false);
+      if (analysisTransition !== transition) return;
+      commitAnalysisTransition(transition);
+      await play(true);
+    } finally {
+      if (analysisTransition === transition) stopAnalysisTransition();
+    }
   }
   function highlightToday() {
     stopTodayAttention();
@@ -55,11 +146,47 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
   }
 
+  function stopMonthTransition() {
+    for (const animation of monthAnimations) animation.cancel();
+    monthAnimations = [];
+  }
+
+  function animateMonth(direction) {
+    stopMonthTransition();
+    if (model.analysisMode) return;
+    if (!direction || reducedMotion.matches || document.hidden) return;
+    const element = $(model.analysisMode ? "analysisPage" : "calendar"),
+      offset = direction * 18;
+    WorkTimeApp.ui.motion?.stop(element);
+    // Update the month immediately; only its entrance moves, so rapid navigation
+    // always shows the latest requested month without queuing stale renders.
+    monthAnimations = [
+      animationCompat.animate(
+        element,
+        [
+          {
+            opacity: 0.3,
+            transform: `translateX(${offset}px)`,
+            clipPath: offset > 0 ? "inset(0 18px 0 0)" : "inset(0 0 0 18px)",
+          },
+          { opacity: 1, transform: "none", clipPath: "inset(0)" },
+        ],
+        {
+          duration: 260,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          fill: "both",
+        },
+      ),
+    ];
+  }
+
   function navigateMonth(v) {
+    stopAnalysisTransition();
     if (resettingBatch || model.batchMode) return;
     stopTodayAttention();
     model.yearMode = false;
     if (!/^\d{4}-\d{2}$/.test(v) || !C.validDate(v + "-01")) return;
+    const direction = v === model.month ? 0 : v > model.month ? 1 : -1;
     model.month = v;
     model.selected =
       model.month === model.today.slice(0, 7)
@@ -68,6 +195,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     model.batchDays.clear();
     model.batchAnchor = null;
     actions.render();
+    animateMonth(direction);
     if ($("settingsDialog").open) actions.refreshSettings();
   }
   function prepareBatchEditor() {
@@ -200,9 +328,15 @@ WorkTimeApp.ui.createNavigationController = function (options) {
           $("batchError").textContent = "";
           refreshBatchPreview();
         });
-    unlistenMotion = animationCompat.listen(reducedMotion, stopTodayAttention);
+    unlistenMotion = animationCompat.listen(reducedMotion, () => {
+      stopTodayAttention();
+      if (reducedMotion.matches) stopAnalysisTransition();
+    });
     events.listen(document, "visibilitychange", () => {
-      if (document.hidden) stopTodayAttention();
+      if (document.hidden) {
+        stopTodayAttention();
+        stopAnalysisTransition();
+      }
     });
     events.listen($("calendar"), "click", stopTodayAttention, true);
     events.handler($("calendar"), "onclick", async (e) => {
@@ -269,7 +403,8 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       }
     });
     events.handler($("monthTitle"), "onclick", () => {
-      if (resettingBatch || model.batchMode) return;
+      stopAnalysisTransition();
+      if (resettingBatch || model.batchMode || model.analysisMode) return;
       stopTodayAttention();
       if (model.yearMode) {
         model.yearMode = false;
@@ -299,6 +434,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         ?.focus();
     });
     events.handler($("prevMonth"), "onclick", () => {
+      stopAnalysisTransition();
       if (model.batchMode) return;
       stopTodayAttention();
       if (model.yearMode) {
@@ -311,6 +447,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       navigateMonth(C.dateKey(d).slice(0, 7));
     });
     events.handler($("nextMonth"), "onclick", () => {
+      stopAnalysisTransition();
       if (model.batchMode) return;
       stopTodayAttention();
       if (model.yearMode) {
@@ -326,10 +463,16 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (model.batchMode) return;
       model.today = clock.today();
       navigateMonth(model.today.slice(0, 7));
-      highlightToday();
+      if (!model.analysisMode) highlightToday();
+    });
+    events.handler($("analysisToggle"), "onclick", toggleAnalysis);
+    events.listen($("analysisManual"), "change", (event) => {
+      model.analysisIncludeManual = event.target.checked;
+      actions.renderCalendar(true);
     });
     events.handler($("batchToggle"), "onclick", () => {
-      if (resettingBatch) return;
+      stopAnalysisTransition();
+      if (resettingBatch || model.analysisMode) return;
       stopTodayAttention();
       if ($("settingsDialog").open) actions.closeSettings();
       if (model.batchMode) {
@@ -420,6 +563,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   }
 
   function dispose() {
+    stopAnalysisTransition(false);
     stopTodayAttention();
     unlistenMotion?.();
     unlistenMotion = null;

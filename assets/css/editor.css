@@ -1363,10 +1363,10 @@ body .editor .editor-actions.day-action-row button {
 }
 body .editor #batchForm .batch-editor-actions {
   --control-height: var(--action-control-height);
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) repeat(2, minmax(0, 3fr));
   align-items: center;
   gap: 0.428571rem;
-  flex-wrap: wrap;
   padding-top: 0.857143rem;
   padding-bottom: 0.857143rem;
   border-top: 1px solid var(--line);
@@ -1385,9 +1385,8 @@ body .editor #batchForm .batch-editor-actions {
 }
 .batch-preview-status:empty { display: none; }
 body .editor #batchForm .batch-editor-actions button {
-  flex: 0 0 auto;
-  width: auto;
-  min-width: 4.285714rem;
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
   padding-inline: 0.428571rem;
   white-space: nowrap;
@@ -1395,9 +1394,6 @@ body .editor #batchForm .batch-editor-actions button {
 body .editor #batchForm .batch-editor-actions .ui-icon {
   width: var(--icon-size-small);
   height: var(--icon-size-small);
-}
-body .editor #batchForm #batchReset {
-  margin-inline-end: auto;
 }
 @media (min-width: 1151px) {
   body .editor #batchBar {
@@ -1853,8 +1849,9 @@ body .editor .page-settings-header { display: flex; flex: none; width: 100%; mar
 body .editor .page-settings-body { flex: 1; min-height: 0; overflow-y: auto; padding: 1rem var(--editor-gutter); font-size: var(--text-small); }
 body .editor .settings-pane-actions {
   --control-height: var(--action-control-height);
-  display: flex;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) repeat(2, minmax(0, 3fr));
+  gap: 0.428571rem;
   flex: none;
   padding: 0.857143rem var(--editor-gutter) var(--editor-gutter);
 }
@@ -1863,9 +1860,20 @@ body .editor .settings-content-divider {
   border-top: 1px solid var(--line);
   margin: 1rem 0;
 }
-body .editor .settings-archive-actions { display: flex; flex-wrap: wrap; }
-body .editor .settings-archive-actions > button { min-width: 0; }
+body .editor .settings-archive-actions {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0.428571rem;
+}
+body .editor .settings-archive-actions > button {
+  grid-column: span 6;
+  width: 100%;
+  min-width: 0;
+}
 body .editor .settings-pane-actions button {
+  grid-column: 3;
+  width: 100%;
+  min-width: 0;
   height: var(--control-height);
   min-height: var(--control-height);
   padding: 0 1.428571rem 0 0.857143rem;

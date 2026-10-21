@@ -84,11 +84,15 @@ body .editor .date-info-area {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* The frame stays still while tab content animates inside its bounds. */
+  overflow: hidden;
+  border-top: 1px solid var(--line);
   background: var(--theme-surface-paper, #f6faf7);
 }
 body .editor .date-info-area > #editorInfo {
   flex: 1;
   min-height: 0;
+  border-top: 0;
 }
 body .editor #dateInfoPanel[hidden] {
   /* Component flex display must never override the semantic hidden state. */
@@ -100,7 +104,7 @@ body .editor #dateInfoPanel {
   overflow: auto;
   color: var(--ink);
   font-size: var(--text-small);
-  border-top: 1px solid var(--line);
+  border-top: 0;
 }
 .date-info-date,
 .date-info-source,
@@ -902,7 +906,6 @@ body #dateInfoPanel.almanac-panel .almanac-activities {
   gap: 0.5rem;
   flex: none;
   padding: 0.75rem 1rem 0.6rem;
-  border-top: 1px solid var(--line);
 }
 .date-context-header::after {
   content: "";

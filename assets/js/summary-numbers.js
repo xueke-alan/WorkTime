@@ -38,6 +38,8 @@
       alignInk = false,
       animateInitial = true,
       animateWhole = false,
+      motion = true,
+      deferAnimation = false,
     } = {},
   ) {
     if (disposed) return;
@@ -97,6 +99,7 @@
           : Number(number.replace(decimal, ".")) <
             Number(oldValue.replace(decimal, "."));
       const animate =
+        motion &&
         !reduced.matches &&
         !WorkTimeApp.i18n.changing &&
         !document.hidden &&
@@ -169,7 +172,10 @@
       wrapper.append(accessible, visual);
       element.replaceChildren(wrapper);
       // The final row owns layout; the outgoing row never contributes geometry.
-      if (!document.documentElement.classList.contains("app-loading"))
+      if (
+        !deferAnimation &&
+        !document.documentElement.classList.contains("app-loading")
+      )
         pending.forEach(start);
     }
     if (unit) {
@@ -178,12 +184,14 @@
       element.append(label);
     }
   }
-  function reveal() {
+  function reveal(root) {
     if (document.hidden || reduced.matches) return settle();
-    for (const track of active.keys()) start(track);
+    for (const track of active.keys())
+      if (!(root instanceof Element) || root.contains(track)) start(track);
   }
-  function settle() {
-    for (const track of [...active.keys()]) finish(track);
+  function settle(root) {
+    for (const track of [...active.keys()])
+      if (!(root instanceof Element) || root.contains(track)) finish(track);
   }
   function visibilityChanged() {
     if (document.hidden) settle();
@@ -210,6 +218,6 @@
     );
     document.addEventListener("visibilitychange", visibilityChanged);
   }
-  WorkTimeApp.ui.numbers = { set, reveal, mount, dispose };
+  WorkTimeApp.ui.numbers = { set, reveal, settle, mount, dispose };
   mount();
 })();

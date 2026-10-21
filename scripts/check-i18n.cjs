@@ -27,6 +27,9 @@ function checkI18n() {
     "content-ko",
     "content-ja",
     "additions",
+    "sudoku",
+    "jump",
+    "sokoban",
   ])
     run("assets/js/locales/" + locale + ".js");
   const catalogs = context.WorkTimeApp.data.locales;

@@ -21,13 +21,15 @@ async function verify() {
       const page = await context.newPage();
       await page.route(/^https?:/, (route) => route.abort());
       await page.clock.setFixedTime(new Date("2026-10-21T04:00:00Z"));
-      await page.goto(pathToFileURL(path.resolve("index.html")).href);
+      await page.goto(
+        pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
+      );
       await page.waitForFunction(
         () =>
           document.documentElement.dataset.appState === "ready" &&
           !document.documentElement.classList.contains("app-loading"),
       );
-      for (const width of [1440, 1280, 390]) {
+      for (const width of [1440, 1280, 390, 320]) {
         await page.setViewportSize({ width, height: 1000 });
         await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
         const result = await page.evaluate(() => {
@@ -68,6 +70,34 @@ async function verify() {
             weekday: stamp.querySelector(".calendar-today-weekday").textContent,
           };
         });
+        const headerStyles = await page.evaluate(() => {
+          const properties = [
+            "fontFamily",
+            "fontSize",
+            "fontWeight",
+            "lineHeight",
+            "letterSpacing",
+            "color",
+            "gap",
+            "height",
+            "transform",
+          ];
+          const describe = (selector) => {
+            const root = document.querySelector(selector);
+            return [root, ...root.querySelectorAll("span,svg")].map((node) => {
+              const style = getComputedStyle(node);
+              return Object.fromEntries(
+                properties.map((key) => [key, style[key]]),
+              );
+            });
+          };
+          return [describe("#calendarToday"), describe("#editorDate")];
+        });
+        assert.deepEqual(
+          headerStyles[1],
+          headerStyles[0],
+          language + " matching date headers at " + width,
+        );
         assert.equal(
           result.slashes,
           result.expectedSlashes,
@@ -83,6 +113,18 @@ async function verify() {
         );
         assert.ok(result.leftGap >= 5, language + " dot has breathing room");
         assert.ok(result.fits, language + " date fits at " + width);
+        const controlsFit = await page.evaluate(() => {
+          const host = document
+            .querySelector(".panel-head")
+            .getBoundingClientRect();
+          return [...document.querySelectorAll(".month-controls > *")].every(
+            (node) => {
+              const box = node.getBoundingClientRect();
+              return box.left >= host.left - 1 && box.right <= host.right + 1;
+            },
+          );
+        });
+        assert.ok(controlsFit, language + " month controls fit at " + width);
         await page.locator("#calendarToday").screenshot({
           path: path.join(output, language + "-" + width + ".png"),
         });

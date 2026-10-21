@@ -493,6 +493,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
       batchDraft,
       batchSaving,
       yearMode,
+      analysisMode,
       viewYear,
     } = getView();
     for (const id of ["prevMonth", "nextMonth", "todayButton"])
@@ -501,26 +502,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     $("monthTitle").tabIndex = batchMode ? -1 : 0;
     const weekday = WorkTimeApp.i18n.weekday(today);
     const dateLabel = WorkTimeApp.i18n.date(today).replace(/\s*\/\s*/g, " / ");
-    const dateParts = dateLabel.split(/\s*\/\s*/);
-    const dateMarkup = dateParts
-      .map(
-        (part) =>
-          '<span class="calendar-today-number">' + esc(part) + "</span>",
-      )
-      .join(
-        dateDivider.replace(
-          'class="month-title-divider"',
-          'class="calendar-date-divider"',
-        ),
-      );
-    updateHTML(
-      $("calendarToday"),
-      '<span class="calendar-today-date">' +
-        dateMarkup +
-        '</span><span class="calendar-today-separator" aria-hidden="true"></span><span class="calendar-today-weekday">' +
-        esc(weekday) +
-        "</span>",
-    );
+    updateHTML($("calendarToday"), WorkTimeApp.ui.headerDateMarkup(today, esc));
     $("calendarToday").setAttribute(
       "aria-label",
       WorkTimeApp.i18n.t("copy.723d1e7f20") + dateLabel + " " + weekday,
@@ -539,13 +521,61 @@ WorkTimeApp.ui.createCalendar = function (options) {
     $("calendar").classList.toggle("year-calendar", yearMode);
     $("calendar").classList.toggle("is-batch-editing", batchMode && !yearMode);
     document
-      .querySelector(".panel>.weekdays")
+      .querySelector("#panelContent>.weekdays")
       .classList.toggle("hidden", yearMode);
     document
       .querySelector(".calendar-footer>.legend:not(.year-legend)")
       .classList.toggle("hidden", yearMode);
     $("yearLegend").classList.toggle("hidden", !yearMode);
-    $("batchToggle").disabled = yearMode;
+    $("batchToggle").disabled = yearMode || analysisMode;
+    $("analysisToggle").disabled = batchMode;
+    $("analysisToggle").setAttribute("aria-pressed", String(!!analysisMode));
+    $("analysisToggle").classList.toggle("is-active", !!analysisMode);
+    $("analysisToggle")
+      .querySelector("use")
+      .setAttribute(
+        "href",
+        analysisMode ? "#ms-table-chart-view" : "#ms-calendar",
+      );
+    const analysisLabel = analysisMode
+      ? "analysis.calendar"
+      : "analysis.toggle";
+    for (const attribute of ["title", "aria-label"])
+      $("analysisToggle").setAttribute(
+        attribute,
+        WorkTimeApp.i18n.t(analysisLabel),
+      );
+    $("analysisToggle").setAttribute("data-i18n-title", analysisLabel);
+    $("analysisToggle").setAttribute("data-i18n-aria-label", analysisLabel);
+    $("calendar").classList.toggle("hidden", !!analysisMode);
+    $("analysisPage").hidden = !analysisMode;
+    if (analysisMode) {
+      document.querySelector("#panelContent>.weekdays").classList.add("hidden");
+      document
+        .querySelector(".calendar-footer>.legend:not(.year-legend)")
+        .classList.add("hidden");
+      $("yearLegend").classList.add("hidden");
+      $("monthTitle").setAttribute("aria-disabled", "true");
+      $("monthTitle").setAttribute("aria-pressed", "false");
+      $("monthTitle").tabIndex = -1;
+      updateMonthTitle(
+        Number(month.slice(0, 4)),
+        Number(month.slice(5)),
+        false,
+      );
+      $("monthTitle").setAttribute(
+        "aria-label",
+        WorkTimeApp.i18n.t("analysis.title"),
+      );
+      for (const [id, key] of [
+        ["prevMonth", "copy.69bb1687b5"],
+        ["nextMonth", "copy.8c9b38e26d"],
+      ])
+        $(id).setAttribute("aria-label", WorkTimeApp.i18n.t(key));
+      updateText($("calendarFoot"), WorkTimeApp.i18n.t("analysis.footer"));
+      options.renderAnalysis();
+      return;
+    }
     $("monthTitle").setAttribute("aria-pressed", String(yearMode));
     $("monthTitle").setAttribute(
       "aria-label",

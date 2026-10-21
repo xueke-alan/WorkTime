@@ -1,0 +1,127 @@
+.game-jump {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  height: var(--jump-height, 100%);
+  min-height: 430px;
+}
+.game-jump [hidden] {
+  display: none !important;
+}
+.jump-counters,
+.jump-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+.jump-stage {
+  position: relative;
+  flex: 1;
+  min-height: 210px;
+  width: min(100%, 760px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: radial-gradient(
+    ellipse at 45% 30%,
+    #f0f2ed 0%,
+    #e6eae4 55%,
+    #dce3db 100%
+  );
+  color: #313a39;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.jump-stage:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.jump-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.jump-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: clamp(1rem, 4vh, 2.5rem) 1rem;
+  gap: 0.65rem;
+  text-align: center;
+  background: linear-gradient(#e7e9e6 0%, #e7e9e6ed 27%, #e7e9e600 65%);
+}
+.jump-cover h3 {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  letter-spacing: 0.08em;
+}
+.jump-cover p {
+  margin: 0;
+  max-width: 30rem;
+  white-space: pre-line;
+  line-height: 1.6;
+}
+.jump-cover .game-button {
+  margin-top: 0.3rem;
+  min-width: 9rem;
+  background: #303c39;
+  border-color: #303c39;
+  color: #fff;
+}
+.jump-cover .game-button:hover {
+  background: #465a52;
+}
+.jump-cover[data-ended="true"] {
+  justify-content: center;
+  background: #e7e9e6ed;
+}
+.jump-cover[data-ended="true"] h3 {
+  font: 700 3rem var(--font-numeric);
+  letter-spacing: -0.04em;
+}
+.jump-charge {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  width: min(160px, 45%);
+  height: 4px;
+  transform: translateX(-50%);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #cbd2cb;
+  pointer-events: none;
+}
+.jump-charge span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: #39826b;
+}
+.jump-feedback {
+  min-height: 1.5em;
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-small);
+  text-align: center;
+}
+.game-jump .game-notice {
+  text-align: center;
+}
+@media (max-width: 540px) {
+  .game-jump {
+    gap: 0.5rem;
+  }
+  .jump-cover {
+    padding-top: 1.25rem;
+  }
+}

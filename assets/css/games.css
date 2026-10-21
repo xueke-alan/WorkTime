@@ -1,0 +1,453 @@
+/* Game feedback stays flat and is scoped to the active game session. */
+.games-panel,
+.game-shell {
+  --game-control: #fff;
+  --game-control-hover: var(--control-hover);
+  --game-control-border: var(--control-border);
+}
+.game-session {
+  position: relative;
+  --game-edge: color-mix(in srgb, var(--accent) 18%, white);
+  --game-board: color-mix(in srgb, var(--accent) 10%, var(--paper));
+}
+.game-hud {
+  min-height: 4.5rem;
+}
+.game-session .game-title {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+.game-stat {
+  flex: none;
+  width: 6rem;
+  min-height: 4.1rem;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--theme-surface-subtle, #f3f8f5);
+  text-align: center;
+}
+.game-stat > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+  font-size: var(--text-small);
+  color: var(--theme-text-muted, var(--muted));
+}
+.game-stat > strong {
+  display: block;
+  line-height: 1.4;
+  font: 700 1.5rem var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+}
+.game-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: var(--control-height);
+  height: var(--control-height);
+  margin: 0;
+  padding: 0 0.8rem;
+  border: 1px solid var(--game-button-edge, var(--game-control-border));
+  border-radius: var(--control-radius);
+  background: var(--game-button-fill, var(--game-control));
+  color: var(--ink);
+  box-shadow: none;
+  font: 500 var(--text-small) var(--font-ui);
+  line-height: 1.3;
+  gap: 0.357143rem;
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 140ms,
+    color 140ms;
+}
+.game-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.game-button[aria-pressed="true"] {
+  --game-button-edge: var(--accent);
+  --game-button-fill: var(--accent);
+  --game-button-hover: var(--theme-accent-dark, #116d59);
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.game-button[aria-pressed="true"]:hover:not(:disabled),
+.game-button[aria-pressed="true"]:active:not(:disabled) {
+  background: var(--theme-accent-dark, #116d59);
+  color: #fff;
+}
+.game-icon-button {
+  width: var(--control-height);
+  padding: 0;
+  font-size: 1.2rem;
+}
+.game-icon-button .ui-icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+.game-native-select {
+  display: none;
+}
+.game-select-trigger {
+  width: 100%;
+  min-width: 0;
+  justify-content: space-between;
+  padding-inline: 0.857143rem;
+  text-align: start;
+}
+.game-select-trigger > .button-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.game-select-trigger > .ui-icon {
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
+  color: var(--muted);
+}
+.game-select-trigger[aria-expanded="true"] {
+  --game-button-edge: var(--accent);
+  border-color: var(--accent);
+  background: var(--control-hover);
+}
+body .game-session .game-select-options {
+  --language-menu-padding: 0.285714rem;
+  border-color: var(--theme-border-soft, var(--line));
+  border-radius: var(--control-radius);
+  background: var(--theme-surface-paper, var(--paper));
+  box-shadow: none;
+}
+body .game-session .game-select-options > .game-button {
+  justify-content: space-between;
+  width: 100%;
+  height: auto;
+  min-height: var(--control-height);
+  padding: 0.5rem calc(0.857143rem - 0.285714rem);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  white-space: normal;
+  text-align: start;
+}
+.game-select-options .button-label {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+.game-select-options .ui-icon {
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
+}
+body
+  .game-session
+  .game-select-options
+  > .game-button:is(:hover, :focus-visible) {
+  background: var(--control-hover);
+}
+body .game-session .game-select-options > .game-button:focus-visible {
+  outline: 0;
+}
+body .game-session .game-select-options > .game-button[aria-selected="true"] {
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.game-controls {
+  min-height: 3.5rem;
+}
+.game-notice {
+  height: 2.8em;
+  min-height: 2.8em;
+  flex: none;
+  overflow: auto;
+  width: 100%;
+  font-size: var(--text-small);
+}
+.game-notice p {
+  margin: 0;
+  line-height: 1.4;
+}
+.game-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.game-help-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  overflow: auto;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--theme-surface-paper, #f8fbf9);
+}
+.game-help-screen[hidden] {
+  display: none !important;
+}
+.game-help-screen h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--accent);
+}
+.game-help-screen p {
+  max-width: 30rem;
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.9;
+  white-space: pre-line;
+}
+@media (hover: hover) {
+  .game-session .game-button:hover:not(:disabled) {
+    background: var(--game-button-hover, var(--game-control-hover));
+    border-color: var(--game-button-edge, var(--game-control-border));
+  }
+}
+.game-session .game-button:active:not(:disabled) {
+  background: var(
+    --game-button-hover,
+    color-mix(in srgb, var(--accent) 16%, white)
+  );
+  border-color: var(--game-button-edge, var(--game-control-border));
+}
+body .game-session .game-select-options > .game-button:is(:hover, :active) {
+  border-color: currentColor;
+  transform: none;
+  box-shadow: none;
+}
+@media (max-width: 540px) {
+  .game-stat {
+    width: 5.1rem;
+    min-height: 3.8rem;
+  }
+  .game-session .game-title {
+    font-size: 1.4rem;
+  }
+}
+.workspace {
+  position: relative;
+}
+.games-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem var(--editor-gutter, 1.428571rem);
+}
+.games-panel[hidden],
+.game-shell[hidden] {
+  display: none !important;
+}
+.games-panel h2,
+.game-content > h2 {
+  margin: 0 0 0.75rem;
+  font-size: var(--text-body, 1rem);
+}
+.game-menu-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, min(100%, 5.5rem));
+  gap: 0.6rem;
+}
+body button.game-menu-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  aspect-ratio: 1;
+  text-align: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  white-space: normal;
+  background: var(--game-control);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: none;
+  transition:
+    background-color 140ms,
+    border-color 140ms;
+}
+.game-menu-entry > .ui-icon {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  color: var(--accent);
+}
+body .game-menu-entry > .game-menu-icon {
+  width: 2rem;
+  height: 2rem;
+}
+.game-menu-entry > span {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.game-menu-entry strong,
+.game-menu-description {
+  display: block;
+}
+.game-menu-description {
+  margin-top: 0.25rem;
+  font-size: var(--text-small);
+  color: var(--theme-text-muted, #668b77);
+  font-weight: normal;
+}
+.game-shell {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 1px;
+  border-radius: 16px;
+  color: var(--ink);
+  isolation: isolate;
+}
+.game-surface {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid var(--line);
+  border-radius: inherit;
+  background: var(--theme-surface-paper, #f8fbf9);
+}
+.game-shell-compact {
+  position: fixed;
+}
+.game-toolbar {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.game-toolbar h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.428571rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.game-toolbar .ui-button {
+  flex: none;
+}
+/* Match the calendar's previous-month chevron and theme color. */
+body #gameExitButton > .ui-icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  color: var(--toolbar-icon-color);
+  shape-rendering: geometricPrecision;
+}
+.game-content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  padding: 1.5rem;
+}
+.game-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  text-align: center;
+}
+.game-demo > .ui-icon {
+  width: 4rem;
+  height: 4rem;
+  color: var(--accent);
+}
+.game-demo h2 {
+  margin: 1rem 0 0.5rem;
+}
+.game-demo p {
+  max-width: 32rem;
+  color: var(--theme-text-muted, #668b77);
+}
+/* Stable endpoints survive canceled or unavailable animations. */
+.workspace.is-game-expanded > .summary-sidebar {
+  opacity: 0;
+  transform: translateX(-28px);
+}
+.workspace.is-game-expanded > .editor {
+  opacity: 0;
+  transform: translateX(28px);
+}
+.game-origin-muted {
+  opacity: 0;
+}
+/* Release promoted layers after each transition rather than retaining large
+   surfaces in GPU memory while the game is idle. */
+.workspace.is-game-transitioning > :is(.summary-sidebar, .editor) {
+  will-change: transform, opacity;
+}
+.workspace.is-game-transitioning > .game-origin-muted,
+.workspace.is-game-transitioning > section.panel {
+  will-change: opacity;
+}
+.workspace.is-game-transitioning > .game-shell {
+  will-change: clip-path;
+}
+.workspace.is-game-transitioning .game-surface,
+.workspace.is-game-transitioning .game-toolbar {
+  will-change: opacity;
+}
+.workspace.is-game-transitioning .game-content {
+  will-change: transform, opacity;
+}
+.game-session button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+@media (max-width: 540px) {
+  .game-toolbar {
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+  .game-content {
+    padding: 1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-button,
+  .game-menu-entry,
+  body .game-session .game-select-options > .game-button > .button-label {
+    transition: none;
+  }
+  .game-shell .game-button:is(:hover, :active),
+  .games-panel .game-menu-entry:is(:hover, :active),
+  body .game-session .game-select-options > .game-button:hover > .button-label {
+    transform: none;
+  }
+}

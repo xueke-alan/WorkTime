@@ -14,7 +14,8 @@ WorkTimeApp.ui.createEditor = function (options) {
     numbers,
   } = options;
 
-  let previewMarkup = null;
+  let previewMarkup = null,
+    editorDateMarkup = null;
   function updatePreview(html) {
     const next = document.createElement("template");
     next.innerHTML = html;
@@ -98,49 +99,12 @@ WorkTimeApp.ui.createEditor = function (options) {
       r = C.effectiveRecord(day, true) || day.oa || {},
       info = C.calendarInfo(selected, day);
     const editorDate = $("editorDate"),
-      localizedDate = WorkTimeApp.i18n.language !== "zh-CN";
-    if (localizedDate) {
-      const parts = new Intl.DateTimeFormat(WorkTimeApp.i18n.locale, {
-        year: "numeric",
-        month: WorkTimeApp.i18n.config.cjk ? "numeric" : "short",
-        day: "numeric",
-        timeZone: "Asia/Shanghai",
-      }).formatToParts(new Date(selected + "T12:00:00+08:00"));
-      if (editorDate.dataset.locale !== WorkTimeApp.i18n.locale) {
-        numbers.set(editorDate, null);
-        editorDate.replaceChildren();
-        for (const part of parts) {
-          if (part.type === "literal") {
-            editorDate.append(part.value);
-            continue;
-          }
-          const span = document.createElement("span");
-          span.className = "editor-date-" + part.type;
-          editorDate.append(span);
-        }
-        editorDate.append(" · ");
-        const weekday = document.createElement("span");
-        weekday.className = "editor-date-weekday";
-        editorDate.append(weekday);
-        editorDate.dataset.locale = WorkTimeApp.i18n.locale;
-      }
-      numbers.set(
-        editorDate.querySelector(".editor-date-day"),
-        Number(selected.slice(8)),
-      );
-      editorDate.querySelector(".editor-date-month").textContent =
-        WorkTimeApp.i18n.monthName(selected);
-      numbers.set(
-        editorDate.querySelector(".editor-date-year"),
-        selected.slice(0, 4),
-      );
-      editorDate.querySelector(".editor-date-weekday").textContent =
-        WorkTimeApp.i18n.weekday(selected);
-    } else {
-      delete editorDate.dataset.locale;
-      numbers.set(editorDate, selected, {
-        suffix: " · 周" + "日一二三四五六"[C.localDate(selected).getDay()],
-      });
+      dateMarkup = WorkTimeApp.ui.headerDateMarkup(selected, esc);
+    // Alignment adds classes/styles to the date spans; compare source markup
+    // rather than the decorated DOM so ordinary edits retain their text nodes.
+    if (editorDateMarkup !== dateMarkup) {
+      editorDate.innerHTML = dateMarkup;
+      editorDateMarkup = dateMarkup;
     }
     $("dayStart").placeholder = C.scheduleForDate(state, selected).workStart;
     $("dayEnd").placeholder = C.scheduleForDate(state, selected).workEnd;

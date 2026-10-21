@@ -41,6 +41,12 @@
     return e;
   }
   const dateViews = ["history", "festivals", "almanac"];
+  const gamesPanel = node("section", undefined, "games-panel");
+  gamesPanel.id = "gamesPanel";
+  gamesPanel.hidden = true;
+  gamesPanel.setAttribute("role", "tabpanel");
+  gamesPanel.setAttribute("aria-labelledby", "date-tab-games");
+  panel.after(gamesPanel);
   let selectedDateView = dateViews.includes(active) ? active : "history";
   const dateHeader = node("div", undefined, "date-context-header");
   const dateHeading = node("time", "", "date-context-date");
@@ -494,7 +500,8 @@
       b.tabIndex = on ? 0 : -1;
     }
     notices.hidden = active !== "notifications";
-    panel.hidden = active === "notifications";
+    panel.hidden = active === "notifications" || active === "games";
+    gamesPanel.hidden = active !== "games";
     const grouped = dateViews.includes(active);
     dateHeader.hidden = !grouped;
     area.classList.toggle("has-date-context", grouped);
@@ -510,7 +517,7 @@
     }
     area.classList.toggle("has-date-info", active !== "notifications");
     WorkTimeApp.services.weather?.setDemand("details", active === "weather");
-    if (active === "notifications") return;
+    if (active === "notifications" || active === "games") return;
     panel.setAttribute(
       "aria-labelledby",
       (grouped ? "date-context-" : "date-tab-") + active,
@@ -776,7 +783,9 @@
         icon: "notifications",
       },
     ];
-    const independentTabs = ["notifications", "countdown", "weather"];
+    // Games is a UI page, not a date-information provider.
+    providers.push({ id: "games", label: WorkTimeApp.i18n.t("games.tab") });
+    const independentTabs = ["notifications", "countdown", "weather", "games"];
     const tabOrder = (provider) => {
       const index = independentTabs.indexOf(provider.id);
       return index < 0 ? independentTabs.length : index;
@@ -801,14 +810,18 @@
       b.setAttribute("role", "tab");
       b.setAttribute(
         "aria-controls",
-        p.id === "notifications" ? "editorInfo" : "dateInfoPanel",
+        p.id === "notifications"
+          ? "editorInfo"
+          : p.id === "games"
+            ? "gamesPanel"
+            : "dateInfoPanel",
       );
       b.innerHTML =
         '<svg class="ui-icon" aria-hidden="true"><use href="#ms-' +
-        (p.id === "history"
-          ? icons.calendar
-          : icons[p.icon] || icons.calendar) +
+        (p.id === "history" ? "event-note" : icons[p.icon] || icons.calendar) +
         '"></use></svg>';
+      if (p.id === "games")
+        b.replaceChildren(WorkTimeApp.games.createIcon("joystick"));
       tabEvents.handler(b, "onclick", () => {
         active = p.id === "history" ? selectedDateView : p.id;
         rememberTab();
@@ -954,13 +967,17 @@
     rememberTab();
   }
   WorkTimeApp.ui.dateInfo = {
+    selectTab(id) {
+      const button = [...bar.children].find((item) => item.dataset.tab === id);
+      if (button && !disposed) button.click();
+    },
     refreshLanguage,
     setDate(value) {
       date = value;
       // These panels use live application data rather than the selected date.
       if (
         renderedView === active &&
-        ["weather", "countdown", "notifications"].includes(active)
+        ["weather", "countdown", "notifications", "games"].includes(active)
       )
         return;
       render();

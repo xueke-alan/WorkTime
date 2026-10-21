@@ -1,0 +1,20 @@
+Microban level collection
+Copyright David W. Skinner, April 2000.
+
+Author's distribution terms:
+"These sets may be freely distributed provided they remain properly credited."
+
+Author's page (archived mirror):
+https://www.onlinespiele-sammlung.de/sokoban/sokobangames/skinner/
+Original author page referenced by the source:
+http://www.abelmartin.com/rj/sokobanJS/Skinner/David%20W.%20Skinner%20-%20Sokoban.htm
+
+Source mirror:
+https://github.com/sebnozzi/minimicro-sokoban/blob/master/microban.txt
+An unchanged copy of the source text is preserved in assets/data/sources/microban.txt.
+The imported data records its SHA-256. The importer selects 60 solvable puzzles
+from source levels 1–100, preserving original geometry and source numbers, and
+orders them by minimum pushes. Levels with third-party derivation notes at the
+end of the original collection are outside this range and are not imported.
+This is credited redistribution, not a claim that the levels are public domain.
+Game code, UI, solver and translations were implemented separately.

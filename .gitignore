@@ -56,6 +56,16 @@ __pycache__/
 !/scripts/verify-batch-month.cjs
 !/scripts/verify-reset-state.cjs
 !/scripts/verify-rest-overtime.cjs
+!/scripts/verify-analysis.cjs
+!/scripts/verify-performance.cjs
+!/scripts/verify-games.cjs
+!/scripts/verify-minesweeper.cjs
+!/scripts/verify-snake.cjs
+!/scripts/verify-sudoku.cjs
+!/scripts/verify-jump.cjs
+!/scripts/import-sudoku.cjs
+!/scripts/import-sokoban.cjs
+!/scripts/verify-sokoban.cjs
 !/scripts/verify-button-layout.cjs
 !/scripts/i18n/
 !/scripts/clean-css.cjs

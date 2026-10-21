@@ -41,7 +41,23 @@ jobs:
       - name: Verify offline entry
         env:
           WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-offline.cjs
+        run: node scripts/verify-offline.cjs && node scripts/verify-calendar-date.cjs
+      - name: Verify work record regressions
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-batch-month.cjs && node scripts/verify-reset-state.cjs && node scripts/verify-rest-overtime.cjs && node scripts/verify-source-priority.cjs
+      - name: Verify offline games
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-games.cjs && node scripts/verify-minesweeper.cjs && node scripts/verify-snake.cjs && node scripts/verify-sudoku.cjs && node scripts/verify-sokoban.cjs
+      - name: Verify analysis and rendering performance
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-analysis.cjs && node scripts/verify-performance.cjs
+      - name: Verify offline jump
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-jump.cjs
       - name: Prepare site
         run: |
           mkdir _site
@@ -55,7 +71,31 @@ jobs:
       - name: Verify published startup
         env:
           WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-startup.cjs _site
+        run: node scripts/verify-startup.cjs _site && node scripts/verify-calendar-date.cjs _site
+      - name: Verify published minesweeper
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-minesweeper.cjs _site
+      - name: Verify published games, analysis and rendering performance
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-games.cjs _site && node scripts/verify-analysis.cjs _site && node scripts/verify-performance.cjs _site
+      - name: Verify published snake
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-snake.cjs _site
+      - name: Verify published sudoku
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-sudoku.cjs _site
+      - name: Verify published sokoban
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-sokoban.cjs _site
+      - name: Verify published jump
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-jump.cjs _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

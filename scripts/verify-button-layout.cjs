@@ -71,6 +71,28 @@ async function verify() {
               checked.push(id);
               const style = getComputedStyle(host);
               const box = host.getBoundingClientRect();
+              if (id === "recoveryOpen") {
+                const row = host.parentElement;
+                const gap = parseFloat(getComputedStyle(row).columnGap);
+                const expected = (row.getBoundingClientRect().width - gap) / 2;
+                if (Math.abs(box.width - expected) > 1)
+                  issues.push(
+                    id + ": backup button does not occupy six shares",
+                  );
+              }
+              if (host.parentElement.matches(".settings-pane-actions")) {
+                const row = host.parentElement;
+                const rowStyle = getComputedStyle(row);
+                const available =
+                  row.getBoundingClientRect().width -
+                  parseFloat(rowStyle.paddingLeft) -
+                  parseFloat(rowStyle.paddingRight) -
+                  2 * parseFloat(rowStyle.columnGap);
+                if (Math.abs(box.width - available * 0.3) > 1)
+                  issues.push(
+                    id + ": return button does not occupy three shares",
+                  );
+              }
               if (box.left < -1 || box.right > innerWidth + 1)
                 issues.push(id + ": button outside viewport");
               const left =
@@ -83,15 +105,31 @@ async function verify() {
                 parseFloat(style.paddingRight);
               const iconBox = icon.getBoundingClientRect();
               const labelBox = label.getBoundingClientRect();
-              const labelLeft = iconBox.right + parseFloat(style.columnGap);
+              const labelLeft =
+                iconBox.right +
+                parseFloat(getComputedStyle(icon).marginRight) +
+                parseFloat(style.columnGap);
               const inset =
                 parseFloat(
                   getComputedStyle(document.documentElement).fontSize,
-                ) * 0.714286;
+                ) * 0.642857;
               if (Math.abs(parseFloat(style.paddingLeft) - inset) > 1)
                 issues.push(id + ": inconsistent icon inset");
               if (Math.abs(iconBox.left - left) > 1)
                 issues.push(id + ": icon moved away from left inset");
+              const chevron = icon.querySelector(
+                'use[href="#ms-chevron-left"]',
+              );
+              if (chevron) {
+                const ink = chevron.getBoundingClientRect();
+                const inkInset = ink.left - iconBox.left;
+                if (inkInset < 0 || inkInset > iconBox.width * 0.2 + 0.5)
+                  issues.push(id + ": back chevron has excessive visual inset");
+                if (labelLeft - ink.right > iconBox.width * 0.65)
+                  issues.push(
+                    id + ": excessive space between back arrow and label",
+                  );
+              }
               if (host.matches("#importOpen .import-main")) {
                 const button = host.parentElement;
                 const buttonLeft =

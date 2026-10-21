@@ -17,7 +17,9 @@
     }
     return () => {};
   }
-  function animate(element, frames, options) {
+  // An optional document-timeline timestamp synchronizes independently timed
+  // tracks. Existing callers keep the browser's default start behavior.
+  function animate(element, frames, options, startTime) {
     let nativeAnimation,
       timer,
       settled = false,
@@ -41,6 +43,7 @@
       if (typeof element.animate !== "function")
         throw Error("Animation unavailable");
       nativeAnimation = element.animate(frames, options);
+      if (Number.isFinite(startTime)) nativeAnimation.startTime = startTime;
       timer = setTimeout(
         complete,
         (options.delay || 0) + options.duration + 100,

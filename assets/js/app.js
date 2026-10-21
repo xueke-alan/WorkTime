@@ -129,6 +129,8 @@ WorkTimeApp.services.bootstrap.run(
       batchDraft: model.batchDraft,
       batchSaving: model.batchSaving,
       yearMode: model.yearMode,
+      analysisMode: model.analysisMode,
+      analysisIncludeManual: model.analysisIncludeManual,
       viewYear: model.viewYear,
     });
     const monthBounds = () => D.time.monthBounds(model.month);
@@ -195,7 +197,10 @@ WorkTimeApp.services.bootstrap.run(
     });
     lifecycle.defer(() => weatherLayer.dispose());
     WorkTimeApp.ui.calendarWeather = weatherLayer;
+    const analysisUI = WorkTimeApp.ui.createAnalysis(shared);
+    lifecycle.defer(() => analysisUI.dispose());
     const calendarUI = WorkTimeApp.ui.createCalendar({
+      renderAnalysis: analysisUI.render,
       ...shared,
       getState: getPreviewState,
       getOriginalState: getState,
@@ -512,6 +517,8 @@ WorkTimeApp.services.bootstrap.run(
     }
     for (const controller of controllers) controller.bind();
     workspace.mount();
+    const games = WorkTimeApp.ui.createGamesController({ document, window });
+    lifecycle.defer(() => games.dispose());
     function refreshLanguage() {
       const errors = WorkTimeApp.ui.fieldErrors.snapshot();
       const focusId = document.activeElement?.id;

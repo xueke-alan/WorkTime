@@ -43,7 +43,12 @@ WorkTimeApp.ui.createSummary = function (options) {
           ? null
           : actual.workOvertime - requirement * actual.attendance,
       surplusMinutes = surplus === null ? null : Math.round(Math.abs(surplus)),
-      surplusNegative = surplus < 0 && surplusMinutes > 0;
+      surplusNegative = surplus < 0 && surplusMinutes > 0,
+      surplusLabel = surplusNegative
+        ? "summary.hoursOwed"
+        : surplusMinutes > 0
+          ? "summary.hoursSurplus"
+          : "copy.fa91c92797";
     const data = [
       [
         WorkTimeApp.i18n.t("copy.cc954e610b"),
@@ -52,7 +57,7 @@ WorkTimeApp.ui.createSummary = function (options) {
         { decimals: 3, unit: "h" },
       ],
       [
-        WorkTimeApp.i18n.t("copy.fa91c92797"),
+        WorkTimeApp.i18n.t(surplusLabel),
         surplusMinutes,
         WorkTimeApp.i18n.t("short.balanceFormula"),
         { unit: "" },
@@ -90,15 +95,14 @@ WorkTimeApp.ui.createSummary = function (options) {
     ];
     const targetPanel = document.querySelector(".target-panel");
     if (!cards.length) {
-      cards = data.map(([label, , description]) => {
+      cards = data.map(([label, , description], index) => {
         const card = document.createElement("article");
         card.className =
           "card" +
           (label === WorkTimeApp.i18n.t("copy.cc954e610b")
             ? " average-card"
             : "");
-        if (label === WorkTimeApp.i18n.t("copy.fa91c92797"))
-          card.classList.add("surplus-card");
+        if (index === 1) card.classList.add("surplus-card");
         card.innerHTML =
           '<div class="card-label"></div><div class="metric"></div>' +
           (description ? '<div class="card-foot"></div>' : "");
@@ -116,7 +120,7 @@ WorkTimeApp.ui.createSummary = function (options) {
       cards[index].querySelector(".card-label").textContent = item[0];
       const fullLabel = [
         "copy.cc954e610b",
-        "copy.fa91c92797",
+        surplusLabel,
         "copy.7a26926ed7",
         "copy.04fd5a186c",
         "copy.2db287963f",
@@ -133,7 +137,7 @@ WorkTimeApp.ui.createSummary = function (options) {
           index === 0 ? "copy.ae47f5dfb5" : "copy.2e0e43d0d6",
         );
       const metric = cards[index].querySelector(".metric");
-      if (item[0] === WorkTimeApp.i18n.t("copy.fa91c92797")) {
+      if (index === 1) {
         if (surplusMinutes === null) updateHTML(metric, "—");
         else {
           updateHTML(

@@ -17,7 +17,19 @@ body .ui-icon {
   stroke: none;
   flex: none;
 }
-body .panel-head .month-controls :is(#prevMonth, #nextMonth, #todayButton) .ui-icon,
+/* Back chevrons need less horizontal space than full-width action symbols.
+   Reclaim their trailing whitespace so the label sits closer to the arrow,
+   while keeping the glyph size and shared outside insets unchanged. */
+body button.ui-button > .ui-icon:has(> use[href="#ms-chevron-left"]):has(+ .button-label:last-child),
+body #importOpen .import-main > .ui-icon:has(> use[href="#ms-chevron-left"]) {
+  margin-inline-end: -0.285714rem;
+}
+body button.ui-button > .ui-icon:has(+ .button-label:last-child) > use[href="#ms-chevron-left"],
+body #importOpen .import-main > .ui-icon > use[href="#ms-chevron-left"] {
+  transform-box: view-box;
+  transform: translateX(-20%);
+}
+body .panel-head .month-controls :is(#prevMonth, #nextMonth, #todayButton, #analysisToggle) .ui-icon,
 body .panel-head .calendar-toolbar-actions :is(#batchToggle, #settingsOpen, #backup, #restore, #personalSettingsOpen, #pageSettingsOpen) .ui-icon,
 body #importOpen .ui-icon,
 body #sourceDialog.import-detail-view .dialog-foot button[data-detail-step] .ui-icon,

@@ -1,4 +1,24 @@
 "use strict";
+
+/** Shared date stamp for the calendar and selected-day headers. */
+WorkTimeApp.ui.headerDateMarkup = function (date, esc) {
+  const divider =
+    '<svg class="calendar-date-divider" viewBox="0 0 12 24" aria-hidden="true" focusable="false"><path d="M9 4 3 20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>';
+  const parts = WorkTimeApp.i18n.date(date).split(/\s*\/\s*/);
+  return (
+    '<span class="calendar-today-date">' +
+    parts
+      .map(
+        (part) =>
+          '<span class="calendar-today-number">' + esc(part) + "</span>",
+      )
+      .join(divider) +
+    '</span><span class="calendar-today-separator" aria-hidden="true"></span><span class="calendar-today-weekday">' +
+    esc(WorkTimeApp.i18n.weekday(date)) +
+    "</span>"
+  );
+};
+
 /** Create an isolated presentation view; state/view getters remain live after restore and navigation. */
 WorkTimeApp.ui.createDayPresentation = function (options) {
   const { core: C, escape: esc, getState, getView } = options;

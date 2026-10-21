@@ -15,7 +15,7 @@
   --control-height: 2.428571rem;
   --action-control-height: 2.142857rem;
   --control-radius: 0.571429rem;
-  --button-icon-inset: 0.714286rem;
+  --button-icon-inset: 0.642857rem;
   --input-height: 2.714286rem;
   --ui-unit: clamp(14px, calc(0.4375vw + 5.6px), 16.8px);
   --text-body: 1rem;
