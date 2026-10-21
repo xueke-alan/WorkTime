@@ -444,6 +444,11 @@ async function verifyCalendar(page) {
     0,
   );
   await page.locator("#settingsOpen").click();
+  await page.waitForFunction(
+    () =>
+      document.querySelector("#settingsOpen use").getAttribute("href") ===
+      "#ms-nest-clock-farsight-analog",
+  );
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.waitForFunction(
     () =>

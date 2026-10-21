@@ -157,7 +157,10 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       : WorkTimeApp.i18n.t("copy.a09e533eed");
     button
       .querySelector("use")
-      .setAttribute("href", open ? "#ms-close" : "#ms-manage-accounts");
+      .setAttribute(
+        "href",
+        open ? "#ms-close" : "#ms-nest-clock-farsight-analog",
+      );
   }
   function closeSettings() {
     if (settings.open || !editor.classList.contains("is-settings-open")) return;
