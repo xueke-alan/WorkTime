@@ -419,6 +419,13 @@ async function verify() {
           .querySelector('[data-source-date="2026-10-08"]')
           .getAttribute("aria-pressed") === "true",
     );
+    // Source order updates optimistically. Reload only after the queued archive
+    // transaction has completed, including on slower CI storage backends.
+    await view.waitForFunction(
+      () =>
+        document.querySelector("#storageUsage").textContent !==
+        WorkTimeApp.i18n.t("copy.9ca32f988d"),
+    );
     await view.reload();
     await ready(view);
     assert.equal(await toggle.getAttribute("aria-pressed"), "true");
