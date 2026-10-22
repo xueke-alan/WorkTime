@@ -541,6 +541,7 @@ async function verify() {
   try {
     const context = await browser.newContext({
       viewport: { width: 1920, height: 1080 },
+      locale: "en-US",
     });
     const page = await context.newPage();
     page.on("pageerror", (error) => errors.push(error.message));
@@ -706,7 +707,11 @@ async function verify() {
           }
         },
       });
-      WorkTimeApp.i18n.setLanguage("en");
+      // Rebuild the test catalog through a real language change. On English
+      // CI hosts, selecting English again is a no-op and leaves probe unlisted.
+      WorkTimeApp.i18n.setLanguage(
+        WorkTimeApp.i18n.language === "en" ? "zh-CN" : "en",
+      );
     });
     await page.locator('#gamesPanel [data-game="probe"]').click();
     await state(page, "open");
