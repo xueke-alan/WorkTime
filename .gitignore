@@ -66,6 +66,8 @@ __pycache__/
 !/scripts/import-sudoku.cjs
 !/scripts/import-sokoban.cjs
 !/scripts/verify-sokoban.cjs
+!/scripts/verify-link.cjs
+!/scripts/verify-garden.cjs
 !/scripts/verify-button-layout.cjs
 !/scripts/i18n/
 !/scripts/clean-css.cjs

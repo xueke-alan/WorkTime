@@ -697,6 +697,16 @@ for (const [language, text] of Object.entries({
     });
 })();
 // Linked routine trends and the full-month overtime rhythm.
+for (const [language, text] of Object.entries({
+  "zh-CN": "休息日加班",
+  "zh-TW": "休息日加班",
+  "zh-HK": "休息日加班",
+  en: "Rest-day overtime",
+  ja: "休日出勤",
+  ko: "휴일 초과근무",
+}))
+  WorkTimeApp.data.locales[language]["analysis.restOvertime"] = text;
+
 (() => {
   const keys = [
     "trend",

@@ -28,7 +28,13 @@ WorkTimeApp.domain.statistics = (() => {
   }
   const { scheduleForDate } = WorkTimeApp.domain.schedule;
   /** Monthly clock-time analysis. No storage access; asOf is a business date. */
-  function monthlyAnalysis(state, month, asOf, includeManual = false) {
+  function monthlyAnalysis(
+    state,
+    month,
+    asOf,
+    includeManual = false,
+    { workdaysOnly = false } = {},
+  ) {
     const [first, last] = WorkTimeApp.domain.time.monthBounds(month);
     const days = [],
       calendarDays = [];
@@ -48,6 +54,7 @@ WorkTimeApp.domain.statistics = (() => {
       const record = effectiveRecord(day, includeManual);
       if (
         date > asOf ||
+        (workdaysOnly && !work) ||
         !complete(record) ||
         (!includeManual &&
           (record.manual || record.filledStart || record.filledEnd))

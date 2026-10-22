@@ -51,7 +51,7 @@ jobs:
           WORKTIME_BROWSER_CHANNEL: chromium
         run: |
           failed=0
-          for feature in games minesweeper snake sudoku sokoban analysis performance jump; do
+          for feature in games minesweeper snake sudoku sokoban analysis performance jump link garden; do
             echo "::group::Verify $feature"
             node "scripts/verify-$feature.cjs" || failed=1
             echo "::endgroup::"
@@ -95,6 +95,12 @@ jobs:
         env:
           WORKTIME_BROWSER_CHANNEL: chromium
         run: node scripts/verify-jump.cjs _site
+      - name: Verify published tile link
+        env:
+          WORKTIME_BROWSER_CHANNEL: chromium
+        run: node scripts/verify-link.cjs _site
+      - name: Verify published layer garden
+        run: node scripts/verify-garden.cjs _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

@@ -1228,7 +1228,22 @@ async function verify() {
       };
       const before = JSON.stringify(state),
         base = analyze(),
-        included = analyze(state, true);
+        included = analyze(state, true),
+        workdays = (input = state, manual = false) =>
+          D.statistics.monthlyAnalysis(input, "2026-10", "2026-10-21", manual, {
+            workdaysOnly: true,
+          });
+      const restOnly = D.state.defaultState();
+      restOnly.days = { "2026-10-10": state.days["2026-10-10"] };
+      const calendarState = D.state.cloneState(state);
+      delete calendarState.days["2026-10-01"].kind;
+      delete calendarState.days["2026-10-10"].kind;
+      const restBridge = D.state.defaultState();
+      restBridge.days = {
+        "2026-10-09": { oa: oa("2026-10-09"), kind: "work" },
+        "2026-10-10": { oa: oa("2026-10-10"), kind: "rest" },
+        "2026-10-11": { oa: oa("2026-10-11"), kind: "work" },
+      };
       const medianState = D.state.defaultState();
       medianState.days = {
         "2026-10-01": { oa: oa("2026-10-01", "08:00", "23:00"), kind: "work" },
@@ -1284,6 +1299,11 @@ async function verify() {
         state,
         base,
         included,
+        workdays: workdays(),
+        manualWorkdays: workdays(state, true),
+        restOnly: workdays(restOnly, true),
+        calendarWorkdays: workdays(calendarState),
+        restBridge: workdays(restBridge),
         median: analyze(medianState),
         average: analyze(averageState),
         empty: analyze(D.state.defaultState()),
@@ -1299,6 +1319,34 @@ async function verify() {
     });
     assert.equal(results.unchanged, true, "Analysis must be pure");
     assert.equal(results.base.count, 7);
+    assert.equal(results.workdays.count, 6);
+    assert.equal(results.workdays.overtimeDays, 5);
+    assert.equal(results.workdays.latest.minutes, 1260);
+    assert.deepEqual(results.workdays.latest.dates, ["2026-10-09"]);
+    assert.equal(results.workdays.averageStart, (510 * 4 + 492 + 480) / 6);
+    assert.equal(results.workdays.averageEnd, (1200 * 4 + 1260 + 1050) / 6);
+    assert.equal(results.manualWorkdays.count, 10);
+    assert.equal(results.manualWorkdays.manualDays, 4);
+    assert.equal(
+      results.manualWorkdays.days.every((day) => day.work),
+      true,
+    );
+    assert.equal(results.restOnly.count, 0);
+    assert.equal(results.restOnly.latest, null);
+    assert.equal(results.restOnly.averageStart, null);
+    assert.equal(results.restOnly.averageEnd, null);
+    assert.equal(results.restOnly.longest.count, 0);
+    assert.equal(results.restBridge.longest.count, 1);
+    assert.equal(
+      results.calendarWorkdays.days.some((day) => day.date === "2026-10-01"),
+      false,
+      "Public holidays are excluded without a manual workday override",
+    );
+    assert.equal(
+      results.calendarWorkdays.days.some((day) => day.date === "2026-10-10"),
+      true,
+      "Calendar makeup workdays are included",
+    );
     assert.equal(results.base.overtimeDays, 6);
     assert.deepEqual(results.base.earliest, {
       minutes: 480,
@@ -1407,6 +1455,19 @@ async function verify() {
     assert.equal(await view.locator("#batchToggle").isDisabled(), true);
     assert.equal(await view.locator(".analysis-range").count(), 7);
     assert.equal(await view.locator(".analysis-range.is-manual").count(), 0);
+    assert.equal(
+      await view
+        .locator(
+          '.analysis-metric[data-key="latest"] .summary-number-accessible',
+        )
+        .textContent(),
+      "21:00",
+      "Monthly cards exclude the rest-day next-day departure",
+    );
+    assert.equal(
+      await view.locator(".analysis-metric-ratio").getAttribute("aria-label"),
+      "5 / 6",
+    );
     await view.locator("#analysisToggle").click();
     assert.equal(
       await view.locator("#calendarFoot").textContent(),
@@ -1426,6 +1487,63 @@ async function verify() {
     await view.locator("#analysisManual").check();
     assert.equal(await view.locator(".analysis-range").count(), 11);
     assert.equal(await view.locator(".analysis-range.is-manual").count(), 4);
+    assert.equal(
+      await view.locator(".analysis-range.is-rest-overtime").count(),
+      1,
+    );
+    assert.equal(
+      await view
+        .locator('.analysis-day[data-state="restOvertime"]')
+        .getAttribute("data-date"),
+      "2026-10-10",
+    );
+    assert.equal(
+      await view.evaluate(() => {
+        const range = document.querySelector(
+            ".analysis-range.is-rest-overtime",
+          ),
+          legend = getComputedStyle(
+            document.querySelector(".analysis-legend-rest-overtime"),
+          ).backgroundColor,
+          marker = document.querySelector(
+            '.analysis-day[data-state="restOvertime"] .analysis-marker-shape[data-active="true"]',
+          ),
+          timelineLegend = document.querySelector(
+            '.analysis-timeline-legend [data-state="restOvertime"] i',
+          ),
+          colorsMatch = () =>
+            getComputedStyle(range.querySelector(".analysis-connector"))
+              .stroke === legend &&
+            [
+              ...range.querySelectorAll(
+                ".analysis-point, .analysis-point-alternate",
+              ),
+            ].every((point) => getComputedStyle(point).fill === legend);
+        const observed = colorsMatch();
+        range.classList.add("is-manual");
+        const manual = colorsMatch();
+        range.classList.remove("is-manual");
+        return (
+          observed &&
+          manual &&
+          getComputedStyle(marker).backgroundColor === legend &&
+          getComputedStyle(timelineLegend).backgroundColor === legend &&
+          legend !==
+            getComputedStyle(document.querySelector(".analysis-legend-dot"))
+              .backgroundColor &&
+          legend !==
+            getComputedStyle(document.querySelector(".analysis-legend-manual"))
+              .backgroundColor
+        );
+      }),
+      true,
+      "Rest-day lines, endpoints (including late diamonds), manual records and distribution markers share a distinct legend color",
+    );
+    assert.equal(
+      await view.locator(".analysis-metric-ratio").getAttribute("aria-label"),
+      "9 / 10",
+      "Including manual records still excludes rest days from both ratio counts",
+    );
     assert.equal(
       await view.evaluate(() => {
         const color = getComputedStyle(
@@ -1532,7 +1650,13 @@ async function verify() {
       structure.gutter < 108,
       "Axis gutter should fit its labels rather than reserve a fixed blank column",
     );
-    for (const state of ["workedOvertime", "recorded", "missing", "future"])
+    for (const state of [
+      "workedOvertime",
+      "restOvertime",
+      "recorded",
+      "missing",
+      "future",
+    ])
       assert.ok(
         await view.locator('.analysis-day[data-state="' + state + '"]').count(),
       );

@@ -784,6 +784,7 @@ WorkTimeApp.ui.createAnalysis = function ({
           date(day.date) +
             " · " +
             WorkTimeApp.i18n.weekday(day.date) +
+            (!day.work ? " · " + t("restOvertime") : "") +
             (day.manual ? " · " + t("manualRecord") : ""),
         ) +
         "</strong>" +
@@ -1022,10 +1023,12 @@ WorkTimeApp.ui.createAnalysis = function ({
           t("overtime") +
           " " +
           WorkTimeApp.i18n.duration(day.overtime) +
+          (!day.work ? " · " + t("restOvertime") : "") +
           (day.manual ? " · " + t("manualRecord") : "");
       svg +=
         '<g class="analysis-range' +
         (day.manual ? " is-manual" : "") +
+        (!day.work ? " is-rest-overtime" : "") +
         '" tabindex="0" role="img" data-date="' +
         day.date +
         '" aria-label="' +
@@ -1157,7 +1160,9 @@ WorkTimeApp.ui.createAnalysis = function ({
                 : !record
                   ? "missing"
                   : record.overtime > 0
-                    ? "workedOvertime"
+                    ? day.work
+                      ? "workedOvertime"
+                      : "restOvertime"
                     : "recorded",
             label =
               date(day.date) +
@@ -1182,7 +1187,7 @@ WorkTimeApp.ui.createAnalysis = function ({
             '"><span>' +
             esc(number(index + 1)) +
             '</span><span class="analysis-marker" aria-hidden="true">' +
-            ["workedOvertime", "recorded", "missing", "future"]
+            ["workedOvertime", "restOvertime", "recorded", "missing", "future"]
               .map(
                 (shape) =>
                   '<i class="analysis-marker-shape" data-key="' +
@@ -1202,7 +1207,7 @@ WorkTimeApp.ui.createAnalysis = function ({
     );
   }
   function timelineLegend() {
-    return ["workedOvertime", "recorded", "missing", "future"]
+    return ["workedOvertime", "restOvertime", "recorded", "missing", "future"]
       .map(
         (status) =>
           '<span data-state="' +
@@ -1231,6 +1236,13 @@ WorkTimeApp.ui.createAnalysis = function ({
         ),
         referenceStart: WorkTimeApp.domain.time.timeMin(schedule.workStart),
         referenceEnd: WorkTimeApp.domain.time.timeMin(schedule.workEnd),
+        workdayMetrics: WorkTimeApp.domain.statistics.monthlyAnalysis(
+          state,
+          view.month,
+          view.today,
+          view.analysisIncludeManual,
+          { workdaysOnly: true },
+        ),
       };
     const language = WorkTimeApp.i18n.language,
       signature = JSON.stringify(data),
@@ -1262,10 +1274,11 @@ WorkTimeApp.ui.createAnalysis = function ({
     lastLanguage = language;
     lastSignature = signature;
     $("analysisManual").checked = view.analysisIncludeManual;
-    const earliest = data.earliest,
-      latest = data.latest,
-      range = data.longest.count
-        ? date(data.longest.start) + " – " + date(data.longest.end)
+    const metrics = data.workdayMetrics,
+      earliest = metrics.earliest,
+      latest = metrics.latest,
+      range = metrics.longest.count
+        ? date(metrics.longest.start) + " – " + date(metrics.longest.end)
         : "—";
     const extremeMetric = (label, extreme) =>
       metric(
@@ -1277,28 +1290,35 @@ WorkTimeApp.ui.createAnalysis = function ({
     const metricsMarkup =
       '<div class="analysis-metric-group">' +
       extremeMetric("earliest", earliest) +
-      extremeMetric("latestStart", data.latestStart) +
-      metric("averageStart", clock(data.averageStart), "") +
+      extremeMetric("latestStart", metrics.latestStart) +
+      metric("averageStart", clock(metrics.averageStart), "") +
       '</div><div class="analysis-metric-group">' +
-      extremeMetric("earliestEnd", data.earliestEnd) +
+      extremeMetric("earliestEnd", metrics.earliestEnd) +
       extremeMetric("latest", latest) +
-      metric("averageEnd", clock(data.averageEnd), "") +
+      metric("averageEnd", clock(metrics.averageEnd), "") +
       '</div><div class="analysis-metric-group analysis-metric-group-overtime">' +
       metric(
         "overtimeDays",
-        data.count
-          ? number(data.overtimeDays) + " / " + number(data.count)
+        metrics.count
+          ? number(metrics.overtimeDays) + " / " + number(metrics.count)
           : "—",
-        data.count
+        metrics.count
           ? t("ratio", {
-              value: WorkTimeApp.i18n.number(data.overtimeDays / data.count, {
-                style: "percent",
-                maximumFractionDigits: 0,
-              }),
+              value: WorkTimeApp.i18n.number(
+                metrics.overtimeDays / metrics.count,
+                {
+                  style: "percent",
+                  maximumFractionDigits: 0,
+                },
+              ),
             })
           : "—",
       ) +
-      metric("longest", data.count ? number(data.longest.count) : "—", range) +
+      metric(
+        "longest",
+        metrics.count ? number(metrics.longest.count) : "—",
+        range,
+      ) +
       "</div>";
     syncMarkup($("analysisMetrics"), metricsMarkup, 0);
     $("analysisDetails").hidden = false;
