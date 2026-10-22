@@ -1,11 +1,12 @@
 "use strict";
-WorkTimeApp.domain.validation = (() => {
+const WorkTimeDomainValidation = (() => {
   const { validDate, timeMin } = WorkTimeApp.domain.time,
     { SCHEMA, defaultState } = WorkTimeApp.domain.state,
     { complete } = WorkTimeApp.domain.records;
   const object = (value) =>
     value !== null && typeof value === "object" && !Array.isArray(value);
   function fail(path, message) {
+    /** @type {Error & {code?:string,path?:string,userMessage?:string}} */
     const error = Error(message + " [" + path + "]");
     error.name = "BackupValidationError";
     error.code = "INVALID_BACKUP";
@@ -302,7 +303,14 @@ WorkTimeApp.domain.validation = (() => {
       if (!Number.isInteger(count) || count < 0)
         fail(path + ".count", "备份中的导入数量无效。");
       importIds.add(log.id);
-      const result = { id: log.id, at: log.at, year: log.year, sources, count };
+      const result = {
+        id: log.id,
+        at: log.at,
+        year: log.year,
+        sources,
+        count,
+        records: [],
+      };
       {
         if (!Array.isArray(log.records))
           fail(path + ".records", "备份中的导入打卡记录无效。");
@@ -336,3 +344,5 @@ WorkTimeApp.domain.validation = (() => {
     validateBackup,
   };
 })();
+
+WorkTimeApp.domain.validation = WorkTimeDomainValidation;

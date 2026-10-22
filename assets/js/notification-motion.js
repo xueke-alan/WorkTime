@@ -49,6 +49,7 @@
     if (document.hidden) cancelAnimations();
   }
   function mount() {
+    if (document.documentElement.dataset.appState === "failed") return;
     if (observer) return;
     visible = new WeakMap();
     observer = new MutationObserver(sync);

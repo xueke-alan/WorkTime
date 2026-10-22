@@ -11,6 +11,7 @@ WorkTimeApp.services.preferences = (() => {
       mountedWindow = null,
       archive = null,
       pendingPreferences = {};
+    let languageRequest = 0;
     function read() {
       try {
         return rules.normalize(
@@ -38,6 +39,25 @@ WorkTimeApp.services.preferences = (() => {
       return operation;
     }
     async function savePreference(preferences) {
+      const request = preferences.language
+        ? ++languageRequest
+        : languageRequest;
+      // Load before changing the saved preference; failure keeps the previous language.
+      if (
+        preferences.language &&
+        !WorkTimeApp.data.locales[preferences.language]
+      ) {
+        try {
+          await WorkTimeApp.i18n.loadLanguage(preferences.language);
+          if (request !== languageRequest) return result(false, false);
+        } catch (error) {
+          if (request !== languageRequest) return result(false, false);
+          return publish({
+            ...result(false, false, error),
+            preferenceNames: ["language"],
+          });
+        }
+      }
       const patch = { ...pendingPreferences, ...preferences };
       const operationResult = (...args) => ({
         ...result(...args),
@@ -77,15 +97,27 @@ WorkTimeApp.services.preferences = (() => {
       return savePreference({ pageTheme: id });
     }
     function adopt(preferences) {
-      state = Object.freeze({ ...preferences });
-      const language = WorkTimeApp.i18n.normalize(state.language);
-      WorkTimeApp.i18n.setLanguage(language);
+      const request = ++languageRequest,
+        generation = revision,
+        candidate = Object.freeze({ ...preferences }),
+        language = WorkTimeApp.i18n.normalize(candidate.language);
+      function finish() {
+        if (request !== languageRequest || generation !== revision) return;
+        state = candidate;
+        WorkTimeApp.i18n.setLanguage(language);
+        return adopted(language);
+      }
+      if (!WorkTimeApp.data.locales[language])
+        return WorkTimeApp.i18n.loadLanguage(language).then(finish);
+      return finish();
+    }
+    function adopted(language) {
       revision++;
       dirty = false;
       pendingPreferences = {};
       if (state.language !== language) {
         // Save through the archive owner so old backups and fresh stores migrate alike.
-        void savePreference({ language });
+        return savePreference({ language });
       } else publish(result(true, true));
     }
     function storage(event) {
@@ -133,11 +165,11 @@ WorkTimeApp.services.preferences = (() => {
       },
       attach(adapter) {
         archive = adapter;
-        adopt(adapter.state);
+        return adopt(adapter.state);
       },
       synchronize() {
         if (!archive) return;
-        adopt(archive.getState());
+        return adopt(archive.getState());
       },
       async saveForecastMode(mode) {
         if (!archive || !["hourly", "daily"].includes(mode)) return;
@@ -155,6 +187,7 @@ WorkTimeApp.services.preferences = (() => {
         window.addEventListener("storage", storage);
       },
       dispose() {
+        languageRequest++;
         mountedWindow?.removeEventListener("storage", storage);
         mountedWindow = null;
         listeners.clear();

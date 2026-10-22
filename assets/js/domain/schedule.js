@@ -1,6 +1,6 @@
 "use strict";
 /** Date schedules are pure interval replacements, never layered overrides. */
-WorkTimeApp.domain.schedule = (() => {
+const WorkTimeDomainSchedule = (() => {
   const { validDate, localDate, dateKey, timeMin } = WorkTimeApp.domain.time;
   function shiftDate(date, days) {
     const d = localDate(date);
@@ -9,12 +9,14 @@ WorkTimeApp.domain.schedule = (() => {
     if (!validDate(result)) throw Error("日期超出支持范围。");
     return result;
   }
+  /** @param {WorkStateData} state */
   function scheduleForDate(state, date) {
     const range = (state.scheduleRanges || []).find(
       (r) => r.start <= date && (!r.end || date <= r.end),
     );
     return range ? { ...state.settings, ...range.schedule } : state.settings;
   }
+  /** @param {WorkStateData} state */
   function canBatchEditDate(state, date) {
     if (!validDate(date)) return false;
     const day = state.days[date] || {};
@@ -28,6 +30,7 @@ WorkTimeApp.domain.schedule = (() => {
     );
   }
   function scheduleError(path, message) {
+    /** @type {Error & {code?:string,path?:string,userMessage?:string}} */
     const error = Error(message + " [" + path + "]");
     error.name = "BackupValidationError";
     error.code = "INVALID_SCHEDULE";
@@ -127,6 +130,7 @@ WorkTimeApp.domain.schedule = (() => {
       return result;
     });
   }
+  /** @param {WorkStateData} state */
   function applyScheduleRange(state, schedule, start, end) {
     const clean = validateSchedule(schedule);
     if (
@@ -217,3 +221,5 @@ WorkTimeApp.domain.schedule = (() => {
     scheduleRangeForChoice,
   };
 })();
+
+WorkTimeApp.domain.schedule = WorkTimeDomainSchedule;

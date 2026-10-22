@@ -92,6 +92,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     savedScroll = null,
     lastSize = null,
     restingPanels = [];
+  let loadGeneration = 0;
   const t = (key) => WorkTimeApp.i18n.t(key);
   const setState = (value) => {
     state = value;
@@ -111,6 +112,8 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     }
   }
   function releaseGame() {
+    loadGeneration++;
+    content.removeAttribute("aria-busy");
     archiveUI.detach(content);
     abort?.abort();
     abort = null;
@@ -320,7 +323,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     if (disposed || token !== revision) return;
     stopMotion();
     if (opening) {
-      setState("open");
+      if (!content.hasAttribute("aria-busy")) setState("open");
       notifySize();
     } else restore();
   }
@@ -345,7 +348,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     translateToolbar();
     content.querySelector("button")?.focus({ preventScroll: true });
   }
-  function launch(id) {
+  async function launch(id) {
     if (!archiveReady) return;
     if (archiveFailure) {
       archiveUI.report(archiveFailure);
@@ -360,7 +363,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       // Games remain playable when the browser blocks persistent storage.
     }
     if (disposed || !["closed", "open"].includes(state)) return;
-    const entry = WorkTimeApp.games.get(id);
+    let entry = WorkTimeApp.games.get(id);
     if (!entry) return;
     const opening = state === "closed";
     if (opening) {
@@ -378,15 +381,24 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       measure();
     }
     releaseGame();
+    const token = loadGeneration;
     currentId = id;
-    abort = new window.AbortController();
+    translateToolbar();
+    content.setAttribute("aria-busy", "true");
+    if (opening) void transition(true);
     try {
+      entry = await WorkTimeApp.games.load(id);
+      if (disposed || token !== loadGeneration || state === "closing") return;
+      content.removeAttribute("aria-busy");
+      abort = new window.AbortController();
       instance = entry.create({ container: content, signal: abort.signal });
       if (!instance || typeof instance.dispose !== "function")
         throw Error("Game must return a disposable instance");
       notifySize();
       call(document.hidden ? "pause" : "resume");
     } catch (error) {
+      if (disposed || token !== loadGeneration || state === "closing") return;
+      content.removeAttribute("aria-busy");
       console.error("Game startup failed", error);
       releaseGame();
       const message = document.createElement("p");
@@ -395,12 +407,13 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       message.textContent = t("games.failed");
       content.append(message);
     }
+    if (state === "opening" && !animations.length) setState("open");
     translateToolbar();
     exitButton.focus({ preventScroll: true });
-    if (opening) void transition(true);
   }
   function exit() {
     if (disposed || state === "closed" || state === "closing") return;
+    loadGeneration++;
     abort?.abort();
     call("pause");
     const reversing = state === "opening";

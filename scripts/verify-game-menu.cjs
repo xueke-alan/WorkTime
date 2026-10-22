@@ -11,6 +11,59 @@ const { chromium } = require("playwright");
     headless: true,
   });
   try {
+    const motionPage = await browser.newPage({
+      reducedMotion: "no-preference",
+    });
+    await motionPage.route(/^https?:/, (route) => route.abort());
+    await motionPage.goto(pathToFileURL(path.resolve("index.html")).href);
+    await motionPage.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+    const checkMotion = () => {
+      const ui = WorkTimeApp.ui;
+      const panel = document.getElementById("gamesPanel");
+      const detail = panel.querySelector(".game-menu-detail");
+      ui.dateInfo.selectTab("notifications");
+      ui.dateInfo.selectTab("games");
+      const entering = panel.getAnimations().length;
+      ui.dateInfo.selectTab("countdown");
+      const stopped = panel.getAnimations().length;
+      ui.dateInfo.selectTab("games");
+      ui.motion.stop(panel);
+      const buttons = panel.querySelectorAll(".game-menu-entry");
+      buttons[1].click();
+      buttons[2].click();
+      const switching = detail.getAnimations().length;
+      buttons[2].click();
+      return {
+        entering,
+        stopped,
+        switching,
+        repeated: detail.getAnimations().length,
+      };
+    };
+    assert.deepEqual(await motionPage.evaluate(checkMotion), {
+      entering: 1,
+      stopped: 0,
+      switching: 1,
+      repeated: 1,
+    });
+    await motionPage.waitForFunction(
+      () =>
+        !document.querySelector("#gamesPanel .game-menu-detail").getAnimations()
+          .length,
+    );
+    await motionPage.emulateMedia({ reducedMotion: "reduce" });
+    assert.deepEqual(await motionPage.evaluate(checkMotion), {
+      entering: 0,
+      stopped: 0,
+      switching: 0,
+      repeated: 0,
+    });
+    await motionPage.close();
+    console.log(
+      "Game menu page/detail motion, rapid switching and reduced motion passed.",
+    );
     for (const viewport of [
       { width: 1920, height: 1080 },
       { width: 2560, height: 1440 },

@@ -438,6 +438,7 @@ async function main() {
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
+    await page.evaluate(() => WorkTimeApp.games.load("game-tank", true));
     await page.evaluate(() => {
       const r = WorkTimeApp.games.tankRules,
         create = r.create;

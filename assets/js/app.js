@@ -9,6 +9,8 @@ WorkTimeApp.services.bootstrap.run(
     lifecycle.defer(() => WorkTimeApp.ui.motion?.dispose());
     lifecycle.defer(() => WorkTimeApp.ui.background?.dispose());
     lifecycle.defer(() => WorkTimeApp.ui.notificationMotion?.dispose());
+    await WorkTimeApp.i18n.ready;
+    if (lifecycle.closed) return;
     const D = WorkTimeApp.domain;
     const elements = WorkTimeApp.ui.createElements(document);
     const { element: $, escape: esc, icon, controlIcon, trendIcon } = elements;
@@ -32,6 +34,10 @@ WorkTimeApp.services.bootstrap.run(
       return;
     }
     const loaded = await persistence.load();
+    await WorkTimeApp.i18n.setLanguage(
+      WorkTimeApp.i18n.normalize(loaded.state.preferences.language),
+    );
+    if (lifecycle.closed) return;
     WorkTimeApp.services.archiveCache = persistence.cache;
     const storageStatus = WorkTimeApp.ui.createStorageStatus({
       element: $,
@@ -301,8 +307,8 @@ WorkTimeApp.services.bootstrap.run(
         storageStatus.updateRecovery();
         for (const controller of controllers) controller.updateRecovery?.();
       },
-      onReload() {
-        WorkTimeApp.services.preferences.page.synchronize();
+      async onReload() {
+        await WorkTimeApp.services.preferences.page.synchronize();
         workspace.reload();
       },
       onRecovered() {

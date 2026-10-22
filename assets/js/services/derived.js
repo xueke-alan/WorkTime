@@ -1,6 +1,7 @@
 "use strict";
 /** Revision-scoped derived values. The public domain API remains uncached and pure. */
-WorkTimeApp.services.derived = (() => {
+const WorkTimeServiceDerived = (() => {
+  /** @param {{core:WorkDerivedCore,getState:()=>WorkStateData,getRevision:()=>number,now?:()=>Date}} options */
   function create({ core, getState, getRevision, now = () => new Date() }) {
     let state = null,
       revision = null,
@@ -230,3 +231,5 @@ WorkTimeApp.services.derived = (() => {
   }
   return { create };
 })();
+
+WorkTimeApp.services.derived = WorkTimeServiceDerived;

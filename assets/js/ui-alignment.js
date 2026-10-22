@@ -497,6 +497,14 @@
       // Digit tracks keep a fixed line box; their cleanup only changes visual rows.
       // Wrapper/value replacement still reaches the observer through its parent.
       if (element.closest(".summary-number-visual")) continue;
+      // Boards animate and mutate independently of the aligned toolbar/help text.
+      // Do not promote every tile/style change to a full game-shell measurement.
+      if (
+        element.closest(".game-content") &&
+        !element.closest(targetSelector) &&
+        !element.querySelector(targetSelector)
+      )
+        continue;
       if (isMotionMetadata(record)) continue;
       const scope = element.closest(scopeSelector);
       if (scope) queue(scope);

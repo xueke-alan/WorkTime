@@ -235,10 +235,6 @@
 .analysis-legend-rest-overtime {
   background: var(--analysis-rest-overtime);
 }
-.analysis-legend-line {
-  width: 18px;
-  border-top: 1.5px dashed var(--muted);
-}
 .analysis-legend-late {
   width: 8px;
   height: 8px;
@@ -342,9 +338,9 @@
 .analysis-hover {
   position: absolute;
   z-index: 5;
-  width: 220px;
+  width: 160px;
   max-width: calc(100% - 16px);
-  padding: 12px 14px;
+  padding: 8px 10px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--paper);
@@ -353,12 +349,12 @@
 }
 .analysis-tooltip {
   display: grid;
-  gap: 7px;
+  gap: 4px;
   font-size: 12px;
 }
 .analysis-tooltip > strong {
   font-weight: 600;
-  padding-bottom: 3px;
+  padding-bottom: 2px;
 }
 .analysis-tooltip > span {
   display: flex;

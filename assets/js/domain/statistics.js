@@ -1,6 +1,6 @@
 "use strict";
 /** statistics domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
-WorkTimeApp.domain.statistics = (() => {
+const WorkTimeDomainStatistics = (() => {
   const {
     dateKey,
     localDate,
@@ -13,6 +13,7 @@ WorkTimeApp.domain.statistics = (() => {
   const { calendarInfo } = WorkTimeApp.domain.calendar;
   const { effectiveRecord, complete, duration, calculate } =
     WorkTimeApp.domain.records;
+  /** @param {WorkStateData} state */
   function oaStaleness(state, today) {
     const latest = Object.keys(state.days)
       .filter((k) => validDate(k) && k <= today && state.days[k].oa)
@@ -28,6 +29,7 @@ WorkTimeApp.domain.statistics = (() => {
   }
   const { scheduleForDate } = WorkTimeApp.domain.schedule;
   /** Monthly clock-time analysis. No storage access; asOf is a business date. */
+  /** @param {WorkStateData} state @param {string} month @param {string} asOf @param {boolean} [includeManual] @param {{workdaysOnly?:boolean}} [options] */
   function monthlyAnalysis(
     state,
     month,
@@ -139,6 +141,7 @@ WorkTimeApp.domain.statistics = (() => {
       },
     };
   }
+  /** @param {WorkStateData} state */
   function attendanceHoursThrough(state, start, end, endDay) {
     if (!validDate(start) || !validDate(end) || start > end) return null;
     let expectedMinutes = 0,
@@ -167,6 +170,7 @@ WorkTimeApp.domain.statistics = (() => {
     }
     return { expectedMinutes, workedMinutes, expectedDays, workedDays };
   }
+  /** @param {WorkStateData} state */
   function cumulativeAverageOvertime(state, start, end, endDay) {
     const values = {};
     if (!validDate(start) || !validDate(end) || start > end) return values;
@@ -207,6 +211,7 @@ WorkTimeApp.domain.statistics = (() => {
     }
     return values;
   }
+  /** @param {WorkStateData} state */
   function pendingWorkdays(state, start, end, asOf, now) {
     if (!validDate(start) || !validDate(end) || !validDate(asOf)) return 0;
     const last = end < asOf ? end : asOf;
@@ -234,6 +239,7 @@ WorkTimeApp.domain.statistics = (() => {
     }
     return count;
   }
+  /** @param {WorkStateData} state */
   function summary(state, start, end, includeEstimate = true) {
     const out = {
       total: 0,
@@ -266,6 +272,7 @@ WorkTimeApp.domain.statistics = (() => {
     if (out.attendance > 0) out.average = out.workOvertime / out.attendance;
     return out;
   }
+  /** @param {WorkStateData} state */
   function countRestOvertimeDays(state, start, end) {
     let actualDays = 0,
       plannedDays = 0;
@@ -280,12 +287,14 @@ WorkTimeApp.domain.statistics = (() => {
     }
     return { actualDays, plannedDays, totalDays: actualDays + plannedDays };
   }
+  /** @param {WorkStateData} state */
   function selectOvertimeRequirement(state, start, end) {
     const counts = countRestOvertimeDays(state, start, end),
       tier = Math.min(4, counts.totalDays),
       requirements = state.overtimeRequirements;
     return { ...counts, tier, targetMinutes: requirements[tier] };
   }
+  /** @param {WorkStateData} state */
   function targetPace(state, start, end, asOf, targetMinutes, derivedSummary) {
     if (
       !validDate(start) ||
@@ -348,3 +357,5 @@ WorkTimeApp.domain.statistics = (() => {
     targetPace,
   };
 })();
+
+WorkTimeApp.domain.statistics = WorkTimeDomainStatistics;

@@ -1,16 +1,21 @@
 {
   "name": "worktime",
-  "version": "1.3.35",
+  "version": "1.3.36",
   "private": true,
   "description": "Offline work time records; development tools do not affect file:// use.",
   "scripts": {
-    "generate:locales": "node scripts/generate-locales.cjs && prettier --write \"assets/js/locales/**/*.js\"",
+    "prepare": "node scripts/install-hooks.cjs",
+    "prepare:site": "node scripts/prepare-site.cjs",
+    "check:release": "node scripts/verify-release.cjs",
+    "generate:locales": "node scripts/generate-locales.cjs && prettier --write \"assets/js/locales/**/*.js\" && npm run prepare:assets",
     "test": "npm run check",
-    "check": "node scripts/check-site.cjs",
+    "check": "node scripts/check-site.cjs && npm run typecheck",
     "lint": "eslint assets/js scripts tools eslint.config.cjs --max-warnings 0",
     "format:css": "node scripts/clean-css.cjs",
     "format:source": "prettier --write \"assets/js/**/*.js\" \"scripts/**/*.cjs\" \"tools/**/*.js\" eslint.config.cjs",
-    "check:format": "prettier --check \"assets/js/**/*.js\" \"scripts/**/*.cjs\" \"tools/**/*.js\" eslint.config.cjs"
+    "check:format": "prettier --check \"assets/js/**/*.js\" \"scripts/**/*.cjs\" \"tools/**/*.js\" eslint.config.cjs",
+    "prepare:assets": "node scripts/prepare-assets.cjs",
+    "typecheck": "tsc -p jsconfig.json"
   },
   "engines": {
     "node": ">=22.13"
@@ -22,6 +27,7 @@
     "opencc-js": "1.0.5",
     "playwright": "1.62.1",
     "postcss": "8.5.28",
-    "prettier": "3.9.9"
+    "prettier": "3.9.9",
+    "typescript": "5.4.2"
   }
 }

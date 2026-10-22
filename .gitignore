@@ -1,6 +1,7 @@
 # Only project source, required resources and reproducible tooling at repository root.
 /*
 !/.github/
+!/.githooks/
 !/assets/
 !/data/
 !/licenses/
@@ -42,6 +43,10 @@ __pycache__/
 /tests/
 /scripts/*
 !/scripts/check-site.cjs
+!/scripts/install-hooks.cjs
+!/scripts/pre-push.cjs
+!/scripts/prepare-site.cjs
+!/scripts/verify-release.cjs
 !/scripts/verify-offline.cjs
 !/scripts/verify-source-priority.cjs
 !/scripts/verify-theme.cjs
@@ -102,3 +107,12 @@ Thumbs.db
 *.swo
 .vscode/
 .idea/
+
+# Runtime preparation and regression tooling
+!/scripts/prepare-assets.cjs
+
+!/jsconfig.json
+!/scripts/verify-loading.cjs
+!/scripts/verify-performance-budget.cjs
+!/scripts/performance-budgets.json
+!/scripts/type-contracts.js

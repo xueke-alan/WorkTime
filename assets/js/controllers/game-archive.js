@@ -59,6 +59,7 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
     for (const status of controls.values()) status.textContent = text;
   }
   const dialog = node("dialog", "game-archive-dialog", document.body);
+  dialog.id = "gameArchiveDialog";
   const heading = node("h2", "", dialog);
   heading.id = "gameArchiveTitle";
   dialog.setAttribute("aria-labelledby", heading.id);
@@ -74,8 +75,10 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
   const tools = node("div", "game-archive-actions", dialog);
   const chooseFile = button(tools, "file", () => file.click());
   const readText = button(tools, "preview", () => loadText(input.value));
-  const backup = button(tools, "before", () => {
+  const backup = button(tools, "before", async () => {
     try {
+      await WorkTimeApp.games.prepareArchive();
+      if (disposed || !dialog.open) return;
       download(service.previousBackup(), "before");
     } catch (error) {
       errorText.textContent = message(error);
@@ -202,6 +205,7 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
     summary.replaceChildren();
     errorText.textContent = "";
     try {
+      await WorkTimeApp.games.prepareArchive();
       const decoded = await service.decode(text);
       if (disposed || !dialog.open || token !== generation) return;
       archive = decoded;
@@ -335,6 +339,7 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
       '<svg class="ui-icon" aria-hidden="true"><use href="#ms-restore"/></svg>';
     restore.dataset.gameArchive = "import";
     const status = node("p", "game-menu-archive-status", header);
+    header.insertBefore(status, actions);
     status.setAttribute("role", "status");
     controls.set(container, status);
     let saving = false;
@@ -342,6 +347,8 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
       if (saving || disposed) return;
       saving = true;
       try {
+        await WorkTimeApp.games.prepareArchive();
+        if (disposed) return;
         const value = service.exportArchive();
         if (toFile) download(value);
         else await clipboard.writeText(await service.encode(value));

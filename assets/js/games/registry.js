@@ -7,6 +7,21 @@
  */
 WorkTimeApp.games = (() => {
   const entries = new Map();
+  const definitions = new Map();
+  async function load(id, rulesOnly = false) {
+    const definition = definitions.get(id);
+    if (!definition) {
+      if (entries.has(id)) return entries.get(id);
+      throw Error("Unknown game: " + id);
+    }
+    await WorkTimeApp.services.assets.scripts(definition.rules);
+    if (!rulesOnly)
+      await Promise.all([
+        WorkTimeApp.services.assets.style(definition.style),
+        WorkTimeApp.services.assets.script(definition.source),
+      ]);
+    return entries.get(id);
+  }
   // Minimal menu artwork: a shared 32px grid and uniform rounded outlines.
   // Inline SVG keeps the offline entry self-contained and crisp at any scale.
   const gameIcons = {
@@ -26,6 +41,20 @@ WorkTimeApp.games = (() => {
       <path d="m10 10 12 12m0-12L10 22"/>`,
   };
   return {
+    define(catalog) {
+      for (const definition of catalog) {
+        if (definitions.has(definition.id) || entries.has(definition.id))
+          throw Error("Duplicate game definition");
+        definitions.set(definition.id, Object.freeze(definition));
+        entries.set(
+          definition.id,
+          Object.freeze({ ...definition, lazy: true }),
+        );
+      }
+    },
+    load,
+    prepareArchive: () =>
+      Promise.all([...definitions.keys()].map((id) => load(id, true))),
     register(entry) {
       if (
         !entry ||
@@ -36,7 +65,7 @@ WorkTimeApp.games = (() => {
         typeof entry.descriptionKey !== "string" ||
         !entry.descriptionKey ||
         typeof entry.create !== "function" ||
-        entries.has(entry.id)
+        (entries.has(entry.id) && !entries.get(entry.id).lazy)
       )
         throw Error("Invalid or duplicate game registration");
       entries.set(entry.id, Object.freeze({ ...entry }));

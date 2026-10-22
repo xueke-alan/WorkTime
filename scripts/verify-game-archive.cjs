@@ -446,6 +446,12 @@ async function ui() {
     const save = page.locator('#gamesPanel [data-game-archive="save"]');
     const restore = page.locator('#gamesPanel [data-game-archive="import"]');
     await save.click();
+    await page.waitForFunction(() =>
+      /暂无|No game/.test(
+        document.querySelector("#gamesPanel .game-menu-archive-status")
+          .textContent,
+      ),
+    );
     assert.match(
       await page.locator("#gamesPanel .game-menu-archive-status").textContent(),
       /暂无|No game/,
@@ -512,7 +518,20 @@ async function ui() {
       .getByRole("button", { name: /下载导入前备份|Download pre-import/ })
       .click();
     assert.match((await backupDownload).suggestedFilename(), /before/);
+    await page.evaluate(() => {
+      window.archiveDialogClosed = false;
+      document.querySelector(".game-archive-dialog").addEventListener(
+        "close",
+        () => {
+          window.archiveDialogClosed = true;
+        },
+        { once: true },
+      );
+    });
     await dialog.getByRole("button", { name: /取消|Cancel/ }).click();
+    // Native close dispatch restores focus asynchronously. Wait for that event
+    // before starting a keyboard hold on a different button.
+    await page.waitForFunction(() => window.archiveDialogClosed);
     const holdDownload = page.waitForEvent("download");
     await save.focus();
     await page.keyboard.down("Space");

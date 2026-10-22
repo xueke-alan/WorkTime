@@ -72,14 +72,45 @@ async function verify() {
     await page.waitForTimeout(400);
     const measurements = await page.evaluate(() => window.inkMeasurements);
     await page.keyboard.up("Space");
+    await page.waitForTimeout(500);
+    const boardMeasurements = await page.evaluate(async () => {
+      const probe = document.createElement("span");
+      document.querySelector(".jump-stage").append(probe);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      window.inkMeasurements = 0;
+      for (let frame = 0; frame < 8; frame++) {
+        probe.style.transform = `translateX(${frame}px)`;
+        await new Promise((resolve) => setTimeout(resolve, 40));
+      }
+      const count = window.inkMeasurements;
+      probe.remove();
+      return count;
+    });
+    const titleMeasurements = await page.evaluate(async () => {
+      window.inkMeasurements = 0;
+      document.querySelector("#gameTitle").textContent += " test";
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return window.inkMeasurements;
+    });
     console.log({
       counterStable,
       dateStable,
       chargeInkMeasurements: measurements,
+      boardInkMeasurements: boardMeasurements,
+      titleInkMeasurements: titleMeasurements,
     });
     assert.ok(counterStable, "unchanged counters retain their text node");
     assert.ok(dateStable, "ordinary renders retain aligned editor date nodes");
     assert.equal(measurements, 0, "charging must not remeasure aligned text");
+    assert.equal(
+      boardMeasurements,
+      0,
+      "board-only changes must not remeasure unrelated text",
+    );
+    assert.ok(
+      titleMeasurements > 0,
+      "toolbar text changes must still be aligned",
+    );
     assert.deepEqual(errors, []);
     await context.close();
     console.log(

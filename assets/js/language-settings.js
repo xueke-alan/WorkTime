@@ -155,10 +155,15 @@
     let languageRevision = 0;
     select.addEventListener("change", async () => {
       const revision = ++languageRevision;
-      const result = await config.save(select.value);
-      if (revision !== languageRevision) return;
-      synchronize();
-      notice.textContent = result.persisted ? "" : i18n.t(config.failed);
+      field.setAttribute("aria-busy", "true");
+      try {
+        const result = await config.save(select.value);
+        if (revision !== languageRevision) return;
+        synchronize();
+        notice.textContent = result.persisted ? "" : i18n.t(config.failed);
+      } finally {
+        if (revision === languageRevision) field.removeAttribute("aria-busy");
+      }
     });
     const unsubscribe = preferences.subscribe((state, result) => {
       synchronize();
@@ -181,6 +186,7 @@
     synchronize();
   }
   function mount() {
+    if (document.documentElement.dataset.appState === "failed") return;
     const host = document.querySelector(".settings-archive-actions");
     if (!host) return;
     const row = document.createElement("div");

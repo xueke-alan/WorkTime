@@ -1,0 +1,11 @@
+{
+  "sourceJavaScriptBytes": 1500000,
+  "blockingJavaScriptBytes": 120000,
+  "sourceCssBytes": 320000,
+  "cpuThrottle": 4,
+  "startupMs": 2500,
+  "totalLongTaskMs": 1250,
+  "largestLongTaskMs": 500,
+  "hundredEditsMs": 2500,
+  "recordYears": 10
+}

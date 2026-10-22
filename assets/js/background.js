@@ -100,7 +100,8 @@
     points = [];
   }
   function mount() {
-    if (!disposed) return;
+    if (!disposed || document.documentElement.dataset.appState === "failed")
+      return;
     disposed = false;
     addEventListener("resize", resize);
     addEventListener("pagehide", dispose);

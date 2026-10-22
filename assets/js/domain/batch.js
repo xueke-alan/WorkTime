@@ -1,6 +1,6 @@
 "use strict";
 /** Pure batch candidates shared by preview and atomic confirmation. */
-WorkTimeApp.domain.batch = (() => {
+const WorkTimeDomainBatch = (() => {
   const owned = new Set([
     "oa",
     "actual",
@@ -83,3 +83,5 @@ WorkTimeApp.domain.batch = (() => {
   }
   return { resetBatchDay, applyBatchChanges };
 })();
+
+WorkTimeApp.domain.batch = WorkTimeDomainBatch;

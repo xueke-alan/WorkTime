@@ -1,6 +1,6 @@
 "use strict";
 /** Theme identities shared by backup validation, preference storage and presentation. */
-WorkTimeApp.domain.preferences = (() => {
+const WorkTimeDomainPreferences = (() => {
   const themes = Object.freeze(
     [
       { id: "green", name: "清新绿", color: "#157e68" },
@@ -15,7 +15,7 @@ WorkTimeApp.domain.preferences = (() => {
       { id: "gold", name: "琥珀金", color: "#846312" },
       { id: "red", name: "朱砂红", color: "#ad3e3e" },
       { id: "brown", name: "可可棕", color: "#805b43" },
-    ].map(Object.freeze),
+    ].map((theme) => Object.freeze(theme)),
   );
   const isTheme = (id) => themes.some((theme) => theme.id === id);
   return Object.freeze({
@@ -24,3 +24,5 @@ WorkTimeApp.domain.preferences = (() => {
     normalize: (id) => (isTheme(id) ? id : "green"),
   });
 })();
+
+WorkTimeApp.domain.preferences = WorkTimeDomainPreferences;

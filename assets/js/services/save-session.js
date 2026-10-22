@@ -34,7 +34,7 @@ WorkTimeApp.services.createSaveSession = function ({
         if (latest.error) throw latest.error;
         owner.reload(latest.state);
         savedRevision = owner.revision;
-        onReload();
+        await onReload();
       }
       // Adopt newer data only when both formal state and every draft are untouched.
       if (
@@ -47,7 +47,7 @@ WorkTimeApp.services.createSaveSession = function ({
         if (latest.error) throw latest.error;
         owner.reload(latest.state);
         savedRevision = owner.revision;
-        onReload();
+        await onReload();
       }
       if ((await commit(owner.retry())).persisted) onRecovered();
     } catch (error) {

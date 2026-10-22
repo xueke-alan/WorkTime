@@ -1,6 +1,6 @@
 "use strict";
 /** observations domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
-WorkTimeApp.domain.observations = (() => {
+const WorkTimeDomainObservations = (() => {
   const { pad, localDate, validDate, timeMin } = WorkTimeApp.domain.time;
   const dateHeader = /^(\d{1,2})[\/-](\d{1,2})$/,
     weekdayLine = /^(周|星期)[一二三四五六日天]$/,
@@ -224,3 +224,5 @@ WorkTimeApp.domain.observations = (() => {
     deleteImport,
   };
 })();
+
+WorkTimeApp.domain.observations = WorkTimeDomainObservations;

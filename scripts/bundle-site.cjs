@@ -16,6 +16,36 @@ function bundleSite(root) {
       throw Error("Asset escapes site directory");
     return fs.readFileSync(file, "utf8");
   };
+  // Dynamic resources need the same content-addressed cache invalidation as HTML dependencies.
+  function dynamicFiles(directory) {
+    return fs
+      .readdirSync(path.join(root, directory), { withFileTypes: true })
+      .flatMap((entry) => {
+        const asset = directory + "/" + entry.name;
+        return entry.isDirectory()
+          ? dynamicFiles(asset)
+          : /\.(js|css)$/.test(asset)
+            ? [asset]
+            : [];
+      });
+  }
+  const assetVersions = Object.fromEntries(
+    [
+      "assets/js/locales/runtime",
+      "assets/js/games",
+      "assets/css",
+      "assets/data",
+    ]
+      .flatMap(dynamicFiles)
+      .map((asset) => [
+        asset,
+        crypto
+          .createHash("sha256")
+          .update(read(asset))
+          .digest("hex")
+          .slice(0, 16),
+      ]),
+  );
   const versions = Object.fromEntries(
     Array.from({ length: 12 }, (_, index) => {
       const month = String(index + 1).padStart(2, "0");
@@ -57,7 +87,18 @@ function bundleSite(root) {
     const group = scripts.filter((match) => Boolean(match[1]) === deferred);
     const asset = deferred ? "assets/js/site.js" : "assets/js/site-theme.js";
     const source = group
-      .map((match) => "/* " + match[2] + " */\n" + read(match[2]))
+      .map(
+        (match) =>
+          "/* " +
+          match[2] +
+          " */\n" +
+          read(match[2]) +
+          (match[2] === "assets/js/namespace.js"
+            ? "\n;WorkTimeApp.data.assetVersions = " +
+              JSON.stringify(assetVersions) +
+              ";\n"
+            : ""),
+      )
       .join("\n;\n");
     fs.writeFileSync(
       path.join(root, asset),

@@ -1,11 +1,13 @@
 "use strict";
 /** records domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
-WorkTimeApp.domain.records = (() => {
+const WorkTimeDomainRecords = (() => {
   const { pad, timeMin } = WorkTimeApp.domain.time;
   const { calendarInfo } = WorkTimeApp.domain.calendar;
+  /** @param {WorkDay} [day] */
   function actualRecord(day = {}) {
     return effectiveRecord(day);
   }
+  /** @param {WorkDay} [day] @returns {WorkEffectiveRecord|null} */
   function effectiveRecord(day = {}, includeEstimate = false) {
     const candidate = day.draft || day.actual || day.estimate,
       manual =
@@ -34,9 +36,14 @@ WorkTimeApp.domain.records = (() => {
       filledEnd,
     };
   }
+  /** @param {Partial<WorkManualRecord>|WorkOAObservation|null} r */
   function complete(r) {
     if (!r) return false;
-    if (r.effectiveMinutes !== null && r.effectiveMinutes !== undefined)
+    if (
+      "effectiveMinutes" in r &&
+      r.effectiveMinutes !== null &&
+      r.effectiveMinutes !== undefined
+    )
       return Number.isInteger(r.effectiveMinutes) && r.effectiveMinutes >= 0;
     const a = timeMin(r.start),
       b = timeMin(r.end);
@@ -52,6 +59,7 @@ WorkTimeApp.domain.records = (() => {
     const day = { ...old, leaveMinutes },
       record = { start, end, nextDay, effectiveMinutes: null },
       oa = old.oa;
+    /** @type {Partial<WorkManualRecord>} */
     const current = effectiveRecord(old, true) || {};
     if (
       start === (current.start || "") &&
@@ -78,13 +86,17 @@ WorkTimeApp.domain.records = (() => {
     return day;
   }
   /**
-   * @param {WorkManualRecord|WorkOAObservation|null} r
+   * @param {Partial<WorkManualRecord>|null} r
    * @param {{breaks:WorkBreak[]}} settings
    * @returns {number|null} Effective minutes; null means incomplete, not zero.
    */
   function duration(r, settings) {
     if (!complete(r)) return null;
-    if (r.effectiveMinutes !== null && r.effectiveMinutes !== undefined)
+    if (
+      "effectiveMinutes" in r &&
+      r.effectiveMinutes !== null &&
+      r.effectiveMinutes !== undefined
+    )
       return r.effectiveMinutes;
     const start = timeMin(r.start),
       end = timeMin(r.end) + (r.nextDay ? 1440 : 0),
@@ -161,6 +173,7 @@ WorkTimeApp.domain.records = (() => {
    * @param {WorkSettings} settings
    * @param {boolean} includeEstimate Include manual filling held as estimate.
    */
+  /** @param {string} k @param {WorkDay} day @param {WorkSettings} settings @param {boolean} [includeEstimate] */
   function calculate(k, day, settings, includeEstimate = false) {
     const r = effectiveRecord(day, includeEstimate),
       info = calendarInfo(k, day),
@@ -235,3 +248,5 @@ WorkTimeApp.domain.records = (() => {
     calculate,
   };
 })();
+
+WorkTimeApp.domain.records = WorkTimeDomainRecords;

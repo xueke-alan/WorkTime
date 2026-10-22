@@ -1,6 +1,6 @@
 "use strict";
 /** calendar domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
-WorkTimeApp.domain.calendar = (() => {
+const WorkTimeDomainCalendar = (() => {
   const { dateKey, localDate } = WorkTimeApp.domain.time;
   const holidays = {},
     makeups = new Set();
@@ -79,3 +79,5 @@ WorkTimeApp.domain.calendar = (() => {
     festivalName,
   };
 })();
+
+WorkTimeApp.domain.calendar = WorkTimeDomainCalendar;

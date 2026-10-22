@@ -491,12 +491,13 @@ async function verifyNotificationLanguage(browser) {
     await page.waitForFunction(
       () => document.querySelector("#feedbackList").childElementCount === 1,
     );
-    const result = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       const notice = document.querySelector("#oaStaleNotice");
       const feedback = document.querySelector("#feedbackList .feedback-notice");
-      return ["zh-CN", "en", "zh-CN"].map((language) => {
-        WorkTimeApp.i18n.setLanguage(language);
-        return {
+      const results = [];
+      for (const language of ["zh-CN", "en", "zh-CN"]) {
+        await WorkTimeApp.i18n.setLanguage(language);
+        results.push({
           language,
           text: notice.querySelector(".notification-body").textContent,
           title: notice.title,
@@ -506,8 +507,9 @@ async function verifyNotificationLanguage(browser) {
             document.querySelector("#feedbackList .feedback-notice") ===
             feedback,
           count: feedback.querySelector(".ring-count").textContent,
-        };
-      });
+        });
+      }
+      return results;
     });
     for (const item of result) {
       assert.equal(
@@ -655,12 +657,12 @@ async function verify() {
       await page.goto(pathToFileURL(path.join(root, "index.html")).href);
       await ready(page);
       await page.locator("#monthTitle").click();
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const button = document.querySelector("[data-year-date]");
         const month = document.querySelector(".year-month");
         const label = month.getAttribute("aria-label");
         const expected = WorkTimeApp.i18n.month(month.dataset.yearMonth);
-        WorkTimeApp.i18n.setLanguage("en");
+        await WorkTimeApp.i18n.setLanguage("en");
         return {
           label,
           expected,
@@ -961,6 +963,10 @@ async function verify() {
       await page
         .locator("#languageSelect")
         .selectOption(english ? "zh-CN" : "en");
+      await page.waitForFunction(
+        (language) => WorkTimeApp.i18n.language === language,
+        english ? "zh-CN" : "en",
+      );
       assert.equal(await page.locator("#dayStart").inputValue(), "09:17");
       if (!english) {
         assert.equal(
@@ -1048,6 +1054,7 @@ async function verify() {
         english ? "Dongguan" : "东莞市",
         "Saved city must be localized when Preferences is reopened after reload",
       );
+      await page.evaluate(() => WorkTimeApp.i18n.loadLanguage("en"));
       const cities = await page.evaluate(() =>
         WorkTimeApp.data.weatherCities.cities.map((city) => ({
           id: city.id,

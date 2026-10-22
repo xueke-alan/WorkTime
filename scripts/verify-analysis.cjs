@@ -138,7 +138,9 @@ async function verifyViewMotion(browser, url, state) {
   await page.clock.setFixedTime(new Date("2026-10-21T04:00:00Z"));
   await page.goto(url);
   await page.waitForFunction(
-    () => document.documentElement.dataset.appState === "ready",
+    () =>
+      document.documentElement.dataset.appState === "ready" &&
+      !document.documentElement.classList.contains("app-loading"),
   );
   const phase = async (duration, offset) => {
     await page.waitForFunction(

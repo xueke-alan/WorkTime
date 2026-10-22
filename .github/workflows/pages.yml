@@ -21,90 +21,18 @@ jobs:
   build:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ github.event_name == 'push' && github.sha || github.event.repository.default_branch }}
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install development dependencies
-        run: npm ci
-      - name: Code and data quality gate
-        run: npm run check && npm run lint && npm run check:format
-      - name: Install offline browser
-        run: npx playwright install --with-deps chromium
-      - name: Verify offline entry
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-offline.cjs && node scripts/verify-calendar-date.cjs
-      - name: Verify work record regressions
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-batch-month.cjs && node scripts/verify-reset-state.cjs && node scripts/verify-rest-overtime.cjs && node scripts/verify-source-priority.cjs
-      - name: Verify offline features and rendering
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: |
-          failed=0
-          for feature in games game-menu game-archive minesweeper snake sudoku sokoban analysis performance jump link garden tank; do
-            echo "::group::Verify $feature"
-            node "scripts/verify-$feature.cjs" || failed=1
-            echo "::endgroup::"
-          done
-          exit "$failed"
+      # Full source and published-site checks run locally in the pre-push hook.
+      # Preparing the static site uses only Node's built-in modules.
       - name: Prepare site
-        run: |
-          mkdir _site
-          cp index.html _site/
-          cp -R assets licenses _site/
-          cp -R tools _site/
-          if [ -d data ]; then cp -R data _site/; fi
-          node scripts/bundle-site.cjs _site
-          node scripts/version-site.cjs _site
-          touch _site/.nojekyll
-      - name: Verify published startup
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-startup.cjs _site && node scripts/verify-calendar-date.cjs _site
-      - name: Verify published minesweeper
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-minesweeper.cjs _site
-      - name: Verify published games, analysis and rendering performance
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-game-menu.cjs _site && node scripts/verify-game-archive.cjs _site && node scripts/verify-games.cjs _site && node scripts/verify-analysis.cjs _site && node scripts/verify-performance.cjs _site
-      - name: Verify published snake
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-snake.cjs _site
-      - name: Verify published sudoku
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-sudoku.cjs _site
-      - name: Verify published sokoban
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-sokoban.cjs _site
-      - name: Verify published jump
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-jump.cjs _site
-      - name: Verify published tile link
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-link.cjs _site
-      - name: Verify published layer garden
-        run: node scripts/verify-garden.cjs _site
-      - name: Verify published tank battle
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-tank.cjs _site
+        run: node scripts/prepare-site.cjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

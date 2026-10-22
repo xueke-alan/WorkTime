@@ -4,3 +4,7 @@ assets/vendor/
 assets/data/
 scripts/vendor/
 tests/fixtures/
+
+# Reproducible JSON catalogs emitted by prepare-assets.
+assets/js/locales/runtime/
+assets/js/games/catalog.js

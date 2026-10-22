@@ -20,12 +20,16 @@ WorkTimeApp.ui.renderGameMenu = function (container, onSelect, archiveUI) {
   const artwork = document.createElement("div");
   artwork.className = "game-menu-artwork";
   const name = document.createElement("h3");
+  const heading = document.createElement("div");
+  heading.className = "game-menu-detail-heading";
+  heading.append(artwork, name);
   const play = document.createElement("button");
   play.type = "button";
   play.className = "ui-button primary game-menu-play";
   play.textContent = t("games.play");
-  detail.append(artwork, name, play);
-  function select(entry) {
+  detail.append(heading, play);
+  function select(entry, animate = false) {
+    const changed = container.dataset.selectedGame !== entry.id;
     container.dataset.selectedGame = entry.id;
     for (const button of list.children)
       button.setAttribute(
@@ -36,6 +40,7 @@ WorkTimeApp.ui.renderGameMenu = function (container, onSelect, archiveUI) {
     name.textContent = t(entry.nameKey);
     play.setAttribute("aria-label", t("games.play") + " · " + t(entry.nameKey));
     play.onclick = () => onSelect(entry.id);
+    if (animate && changed) WorkTimeApp.ui.motion?.play(detail);
   }
   for (const entry of entries) {
     const button = document.createElement("button");
@@ -45,7 +50,7 @@ WorkTimeApp.ui.renderGameMenu = function (container, onSelect, archiveUI) {
     const label = document.createElement("span");
     label.textContent = t(entry.nameKey);
     button.append(WorkTimeApp.games.createIcon(entry.icon), label);
-    button.onclick = () => select(entry);
+    button.onclick = () => select(entry, true);
     list.append(button);
   }
   list.onkeydown = (event) => {

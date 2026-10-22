@@ -161,7 +161,14 @@ WorkTimeApp.ui.createBackupController = function (options) {
         actions.toast(error.message, "error");
         return;
       }
-      actions.toast(WorkTimeApp.i18n.t("copy.9f71e85dd5"), "error");
+      const detail =
+        (error?.name ? error.name + ": " : "") +
+        (WorkTimeApp.i18n.message(error?.message) ||
+          WorkTimeApp.i18n.t("copy.91aaca6374"));
+      actions.toast(
+        WorkTimeApp.i18n.t("copy.9f71e85dd5") + "：" + detail,
+        "error",
+      );
       $("backupFile").click();
     } finally {
       if (lifetime === generation) button.disabled = false;

@@ -5,6 +5,7 @@ const acorn = require("acorn");
 const assert = require("node:assert/strict");
 const postcss = require("postcss");
 const { versionHtml } = require("./version-site.cjs");
+require("./prepare-assets.cjs").prepareAssets({ check: true });
 const root = path.resolve(__dirname, "..");
 function files(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

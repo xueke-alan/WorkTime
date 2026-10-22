@@ -51,34 +51,50 @@ WorkTimeApp.i18n = (() => {
   const sourceKeys = new Map(
     Object.entries(catalogs["zh-CN"]).map(([key, value]) => [value, key]),
   );
-  const englishSources = new Map(
-    Object.values(catalogs).flatMap((catalog) =>
-      Object.entries(catalog).map(([key, value]) => [
-        value,
-        catalogs["zh-CN"][key],
+  const englishSources = new Map();
+  let fragments = [],
+    contentFragments = {};
+  function refreshSources() {
+    englishSources.clear();
+    for (const catalog of Object.values(catalogs))
+      for (const [key, value] of Object.entries(catalog))
+        englishSources.set(value, catalogs["zh-CN"][key]);
+    fragments = [
+      ...new Set([
+        ...sourceKeys.keys(),
+        ...Object.values(WorkTimeApp.data.contentLocales || {}).flatMap(
+          (catalog) => Object.keys(catalog),
+        ),
       ]),
-    ),
-  );
+    ]
+      .filter((text) => text.trim() && /[\u3400-\u9fff]/.test(text))
+      .sort((a, b) => b.length - a.length);
+    contentFragments = Object.fromEntries(
+      languages.map(({ id }) => [
+        id,
+        Object.keys(WorkTimeApp.data.contentLocales?.[id] || {})
+          .filter((text) => text.length > 1)
+          .sort((a, b) => b.length - a.length),
+      ]),
+    );
+  }
+  async function loadLanguage(id) {
+    if (!catalogs[id]) {
+      await WorkTimeApp.services.assets.script(
+        "assets/js/locales/runtime/" + id + ".js",
+      );
+      if (!catalogs[id])
+        throw Error("Language catalog did not register: " + id);
+    }
+    refreshSources();
+  }
+  refreshSources();
   const canonical = (value) =>
     englishSources.get(String(value ?? "")) ?? String(value ?? "");
   const content = () =>
     language === "en"
-      ? WorkTimeApp.data.contentEnglish
+      ? WorkTimeApp.data.contentEnglish || {}
       : WorkTimeApp.data.contentLocales?.[language] || {};
-  const fragments = [
-    ...sourceKeys.keys(),
-    ...Object.keys(WorkTimeApp.data.contentEnglish),
-  ]
-    .filter((text) => text.trim() && /[\u3400-\u9fff]/.test(text))
-    .sort((a, b) => b.length - a.length);
-  const contentFragments = Object.fromEntries(
-    languages.map(({ id }) => [
-      id,
-      Object.keys(WorkTimeApp.data.contentLocales?.[id] || {})
-        .filter((text) => text.length > 1)
-        .sort((a, b) => b.length - a.length),
-    ]),
-  );
   function t(key, values = {}) {
     const text = catalogs[language]?.[key] ?? catalogs["zh-CN"][key] ?? key;
     return text.replace(/\{(\w+)\}/g, (match, name) =>
@@ -170,9 +186,18 @@ WorkTimeApp.i18n = (() => {
     }
     document.documentElement.lang = language;
   }
+  let languageGeneration = 0;
   function setLanguage(value) {
     const next = normalize(value),
-      previous = language;
+      token = ++languageGeneration;
+    if (!catalogs[next])
+      return loadLanguage(next).then(() => {
+        if (token === languageGeneration) applyLanguage(next);
+      });
+    applyLanguage(next);
+  }
+  function applyLanguage(next) {
+    const previous = language;
     preference = next;
     language = next;
     try {
@@ -206,6 +231,10 @@ WorkTimeApp.i18n = (() => {
     apply,
     normalize,
     setLanguage,
+    loadLanguage,
+    get ready() {
+      return ready;
+    },
     get changing() {
       return changing;
     },
@@ -248,6 +277,20 @@ WorkTimeApp.i18n = (() => {
       return () => listeners.delete(listener);
     },
   };
+  const ready = loadLanguage(language).then(() => {
+    // Deferred modules may have mounted with the source-language fallback while
+    // this catalog was loading. Refresh their accessible labels before reveal.
+    changing = true;
+    try {
+      apply();
+      for (const listener of listeners) listener(language);
+      document.dispatchEvent(new Event("worktime:languagechange"));
+    } finally {
+      changing = false;
+    }
+  });
+  // Startup awaits this promise and owns the visible failure state.
+  ready.catch(() => {});
   document.documentElement.lang = language;
   document.addEventListener("DOMContentLoaded", () => apply(), { once: true });
   return Object.freeze(owner);

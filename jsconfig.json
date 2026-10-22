@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "strict": false,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": [
+    "assets/js/namespace.js",
+    "assets/js/domain/**/*.js",
+    "assets/js/services/application.js",
+    "assets/js/services/derived.js",
+    "assets/js/services/clock.js",
+    "scripts/type-contracts.js"
+  ]
+}

@@ -488,8 +488,11 @@
     synchronizeTimer();
     const view = active;
     if (renderedView !== null && renderedView !== view) {
-      WorkTimeApp.ui.motion?.stop(active === "notifications" ? panel : notices);
-      WorkTimeApp.ui.motion?.play(active === "notifications" ? notices : panel);
+      const surface = (id) =>
+        id === "notifications" ? notices : id === "games" ? gamesPanel : panel;
+      if (surface(renderedView) !== surface(view))
+        WorkTimeApp.ui.motion?.stop(surface(renderedView));
+      WorkTimeApp.ui.motion?.play(surface(view));
     }
     renderedView = view;
     for (const b of bar.children) {

@@ -779,6 +779,7 @@ async function verifyBrowser(fixtures) {
       .locator('xpath=ancestor::div[contains(@class,"game-library")]')
       .locator(".game-menu-play")
       .click();
+    await page.locator(".game-2048").waitFor();
     assert.equal(await page.locator(".game-2048").count(), 1);
     await verifyOfficialIcons(page);
     await page.keyboard.press("Escape");

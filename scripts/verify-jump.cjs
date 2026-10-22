@@ -87,6 +87,7 @@ async function verifyUI(browser, viewport, reducedMotion) {
   await page.waitForFunction(
     () => document.documentElement.dataset.appState === "ready",
   );
+  await page.evaluate(() => WorkTimeApp.games.load("game-jump", true));
   await page.evaluate(() => {
     localStorage.setItem("worktime.games.jump.best.v1", "{invalid");
     const rules = WorkTimeApp.games.jumpRules;

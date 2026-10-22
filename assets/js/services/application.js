@@ -1,6 +1,6 @@
 "use strict";
 /** Application state and navigation model. Storage and views are supplied separately. */
-WorkTimeApp.services.application = (() => {
+const WorkTimeServiceApplication = (() => {
   /** @param {{state:WorkStateData,writable:boolean,readError:Error|null,corrupt:boolean,today:string}} input @returns {WorkApplicationModel} */
   function create(input) {
     return {
@@ -8,6 +8,11 @@ WorkTimeApp.services.application = (() => {
       revision: 0,
       storageFailed: !!input.readError || !input.writable,
       loadCorrupt: input.corrupt,
+      loadIssue: input.corrupt
+        ? "corrupt"
+        : input.readError
+          ? "unavailable"
+          : null,
       today: input.today,
       month: input.today.slice(0, 7),
       selected: input.today,
@@ -24,7 +29,9 @@ WorkTimeApp.services.application = (() => {
       returnMonth: input.today.slice(0, 7),
     };
   }
-  /** Own business state. Views receive frozen snapshots, operations own all writes. */
+  /** Own business state. Views receive frozen snapshots, operations own all writes.
+   * @param {{state:WorkStateData,persistence:WorkStatePersistence,core:WorkApplicationCore,failed?:boolean,corrupt?:boolean,unsaved?:boolean}} options
+   */
   function createState({
     state: initial,
     persistence,
@@ -198,6 +205,7 @@ WorkTimeApp.services.application = (() => {
       retry() {
         return commit(state);
       },
+      /** @param {string} date @param {WorkDay} day */
       saveDay(date, day) {
         const previous = state.days[date] || {};
         const known = [
@@ -313,6 +321,7 @@ WorkTimeApp.services.application = (() => {
           },
         );
       },
+      /** @param {WorkImportLog} log */
       importRecords(log) {
         const candidate = {
           ...state,
@@ -390,6 +399,7 @@ WorkTimeApp.services.application = (() => {
       saveOAUrl(oaUrl) {
         return commit({ ...state, oaUrl });
       },
+      /** @param {Partial<WorkSettings>} settings @param {(number|null)[]} overtimeRequirements */
       saveSettings(settings, overtimeRequirements) {
         return commit({
           ...state,
@@ -397,9 +407,11 @@ WorkTimeApp.services.application = (() => {
           overtimeRequirements: [...overtimeRequirements],
         });
       },
+      /** @param {WorkStateData} candidate */
       applySchedule(candidate) {
         return commit(candidate, { atomic: true });
       },
+      /** @param {Partial<WorkPersonal>} personal */
       savePersonal(personal) {
         return commit({
           ...state,
@@ -427,6 +439,7 @@ WorkTimeApp.services.application = (() => {
         candidate.preferences.pageTheme = pageTheme;
         return commit(candidate, { restore: true, atomic: true });
       },
+      /** @param {Partial<WorkPreferences>} preferences */
       savePreferences(preferences) {
         return commit({
           ...state,
@@ -462,6 +475,7 @@ WorkTimeApp.services.application = (() => {
             : state,
         );
       },
+      /** @param {WorkStateData} candidate */
       reload(candidate) {
         state = freeze(candidate);
         revision++;
@@ -475,3 +489,5 @@ WorkTimeApp.services.application = (() => {
   }
   return { create, createState };
 })();
+
+WorkTimeApp.services.application = WorkTimeServiceApplication;

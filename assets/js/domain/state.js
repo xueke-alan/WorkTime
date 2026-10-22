@@ -1,6 +1,6 @@
 "use strict";
 /** state domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
-WorkTimeApp.domain.state = (() => {
+const WorkTimeDomainState = (() => {
   const DEFAULT_START = "08:00",
     DEFAULT_END = "17:30",
     DEFAULT_BREAKS = [
@@ -42,3 +42,5 @@ WorkTimeApp.domain.state = (() => {
     defaultState,
   };
 })();
+
+WorkTimeApp.domain.state = WorkTimeDomainState;

@@ -1,6 +1,7 @@
 "use strict";
 /** Injectable clock. Business date policy is supplied independently of the host timestamp. */
-WorkTimeApp.services.clock = (() => {
+const WorkTimeServiceClock = (() => {
+  /** @param {{now?:()=>Date,dateKey:(date:Date)=>string}} options */
   function create({ now = () => new Date(), dateKey }) {
     function current() {
       const value = now();
@@ -67,3 +68,5 @@ WorkTimeApp.services.clock = (() => {
   }
   return { create };
 })();
+
+WorkTimeApp.services.clock = WorkTimeServiceClock;
