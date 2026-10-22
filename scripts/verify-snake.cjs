@@ -337,11 +337,6 @@ async function verifyBrowser() {
     await page.locator("#date-tab-games").click();
     async function open() {
       await page.locator('#gamesPanel [data-game="game-snake"]').click();
-      await page
-        .locator('#gamesPanel [data-game="game-snake"]')
-        .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-        .locator(".game-menu-play")
-        .click();
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
@@ -725,11 +720,6 @@ async function verifyBrowser() {
     );
     await touch.locator("#date-tab-games").tap();
     await touch.locator('#gamesPanel [data-game="game-snake"]').tap();
-    await touch
-      .locator('#gamesPanel [data-game="game-snake"]')
-      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-      .locator(".game-menu-play")
-      .tap();
     await touch.waitForFunction(
       () => document.querySelector("#gameShell").dataset.state === "open",
     );

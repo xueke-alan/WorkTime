@@ -399,11 +399,6 @@ async function verifyTideAnimations(browser) {
     );
     await page.locator("#date-tab-games").click();
     await page.locator('#gamesPanel [data-game="game-link"]').click();
-    await page
-      .locator('#gamesPanel [data-game="game-link"]')
-      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-      .locator(".game-menu-play")
-      .click();
     await page.waitForFunction(
       () => document.getElementById("gameShell").dataset.state === "open",
     );
@@ -646,11 +641,6 @@ async function main() {
     async function open() {
       await page.locator("#date-tab-games").click();
       await page.locator('#gamesPanel [data-game="game-link"]').click();
-      await page
-        .locator('#gamesPanel [data-game="game-link"]')
-        .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-        .locator(".game-menu-play")
-        .click();
       await page.waitForFunction(
         () => document.getElementById("gameShell").dataset.state === "open",
       );
@@ -1048,11 +1038,6 @@ async function main() {
     );
     await unavailable.locator("#date-tab-games").click();
     await unavailable.locator('[data-game="game-link"]').click();
-    await unavailable
-      .locator('[data-game="game-link"]')
-      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-      .locator(".game-menu-play")
-      .click();
     await unavailable.locator('[data-link-action="zen"]').click();
     assert.ok((await unavailable.locator(".link-warning").innerText()).length);
     assert.equal(await unavailable.locator(".link-tile:enabled").count(), 240);

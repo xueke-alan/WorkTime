@@ -148,7 +148,7 @@ body #timeTemplateName {
 }
 
 /* Same button family across toolbars, editor actions and dialogs. */
-body button.ui-button:not(.notification-tab):not(#importOpen) {
+body button.ui-button:not(.notification-tab):not(#importOpen):not(.game-menu-entry) {
   font-family: inherit;
   font-size: var(--button-font-size, var(--text-small)) !important;
   font-weight: 500;

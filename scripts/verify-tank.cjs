@@ -449,11 +449,6 @@ async function main() {
     const action = (key) => page.locator(`[data-tank-action="${key}"]`);
     await page.locator("#date-tab-games").click();
     await page.locator('[data-game="game-tank"]').click();
-    await page
-      .locator('[data-game="game-tank"]')
-      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-      .locator(".game-menu-play")
-      .click();
     await page.waitForSelector('#gameShell[data-state="open"]');
     assert.equal(await page.locator(".game-tank").count(), 1);
     const statsBox = await page.locator(".tank-counters").boundingBox();
@@ -566,11 +561,6 @@ async function main() {
     await page.locator(".tank-board").focus();
     await page.keyboard.press("Escape");
     await page.locator('#gameShell [data-game="game-tank"]').click();
-    await page
-      .locator('#gameShell [data-game="game-tank"]')
-      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-      .locator(".game-menu-play")
-      .click();
     await page.evaluate(() => {
       const el = document.querySelector('[data-tank-select="players"]');
       el.value = "2";
@@ -720,11 +710,6 @@ async function main() {
     );
     await blocked.locator("#date-tab-games").click();
     await blocked.locator('[data-game="game-tank"]').click();
-    await blocked
-      .locator('[data-game="game-tank"]')
-      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-      .locator(".game-menu-play")
-      .click();
     assert.ok((await blocked.locator(".tank-warning").textContent()).length);
     await blocked.locator('[data-tank-action="start"]').click();
     assert.equal(

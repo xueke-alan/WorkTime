@@ -130,7 +130,6 @@ async function verify() {
           });
           await page.locator("#date-tab-games").click();
           await page.locator('#gamesPanel [data-game="game-snake"]').click();
-          await page.locator("#gamesPanel .game-menu-play").click();
           await started;
           await page.locator("#gameExitButton").click();
           await page.waitForTimeout(300);
@@ -144,7 +143,6 @@ async function verify() {
             "a cancelled load must not mount a game after exit",
           );
           await page.locator('#gamesPanel [data-game="game-snake"]').click();
-          await page.locator("#gamesPanel .game-menu-play").click();
           await page.locator(".game-snake").waitFor();
           await page.evaluate(() => WorkTimeApp.games.prepareArchive());
           assert.equal(

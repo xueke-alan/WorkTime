@@ -1938,3 +1938,88 @@ for (const [language, labels] of Object.entries({
   locale["backup.workOnly"] = labels[2];
   locale["backup.unsupported"] = labels[3];
 }
+// Short card captions follow the shared game catalog order.
+for (const [language, captions] of Object.entries({
+  "zh-CN": [
+    "合并数字挑战",
+    "寻找地雷线索",
+    "吃点长大",
+    "九宫格逻辑挑战",
+    "蓄力跳跃挑战",
+    "推箱解谜",
+    "连线配对消除",
+    "种花照料花园",
+    "守护坦克基地",
+  ],
+  "zh-TW": [
+    "合併數字挑戰",
+    "尋找地雷線索",
+    "吃點長大",
+    "九宮格邏輯挑戰",
+    "蓄力跳躍挑戰",
+    "推箱解謎",
+    "連線配對消除",
+    "種花照料花園",
+    "守護坦克基地",
+  ],
+  "zh-HK": [
+    "合併數字挑戰",
+    "尋找地雷線索",
+    "吃點長大",
+    "九宮格邏輯挑戰",
+    "蓄力跳躍挑戰",
+    "推箱解謎",
+    "連線配對消除",
+    "種花照料花園",
+    "守護坦克基地",
+  ],
+  en: [
+    "Merge your way to 2048",
+    "Find clues, dodge mines",
+    "Eat, grow, keep moving",
+    "A little logic in every grid",
+    "Charge, jump, land",
+    "Push each crate into place",
+    "Match pairs, clear the board",
+    "Plant and tend your garden",
+    "Defend your base",
+  ],
+  ja: [
+    "数字を合わせて2048へ",
+    "手がかりを探して地雷回避",
+    "食べて伸びて進もう",
+    "マス目に隠れた論理パズル",
+    "ためて跳んで着地",
+    "箱を押してゴールへ",
+    "ペアをつないで消そう",
+    "花を植えて庭づくり",
+    "基地を守って敵を迎撃",
+  ],
+  ko: [
+    "숫자를 합쳐 2048 도전",
+    "단서를 찾아 지뢰 피하기",
+    "먹고 자라며 방향 전환",
+    "칸마다 숨겨진 논리 퍼즐",
+    "힘을 모아 점프하고 착지",
+    "상자를 밀어 목표 지점으로",
+    "짝을 연결해 보드 비우기",
+    "꽃을 심고 정원 가꾸기",
+    "기지를 지키며 적군 격퇴",
+  ],
+})) {
+  const ids = [
+    "2048",
+    "minesweeper",
+    "snake",
+    "sudoku",
+    "jump",
+    "sokoban",
+    "link",
+    "garden",
+    "tank",
+  ];
+  ids.forEach((id, index) => {
+    WorkTimeApp.data.locales[language]["games.card.game-" + id] =
+      captions[index];
+  });
+}

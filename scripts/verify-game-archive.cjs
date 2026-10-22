@@ -715,7 +715,6 @@ async function ui() {
     );
     await other.locator("#date-tab-games").click();
     await other.locator('#gamesPanel [data-game="game-2048"]').click();
-    await other.locator("#gamesPanel .game-menu-play").click();
     await other.waitForFunction(
       () => document.getElementById("gameShell").dataset.state === "open",
     );
@@ -789,7 +788,6 @@ async function ui() {
     );
     await restrictedPage.locator("#date-tab-games").click();
     await restrictedPage.locator('#gamesPanel [data-game="game-2048"]').click();
-    await restrictedPage.locator("#gamesPanel .game-menu-play").click();
     await restrictedPage.waitForFunction(
       () => document.getElementById("gameShell").dataset.state === "open",
     );

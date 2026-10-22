@@ -188,11 +188,6 @@ async function main() {
     async function open() {
       await page.locator("#date-tab-games").click();
       await page.locator('#gamesPanel [data-game="game-garden"]').click();
-      await page
-        .locator('#gamesPanel [data-game="game-garden"]')
-        .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-        .locator(".game-menu-play")
-        .click();
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
@@ -474,11 +469,6 @@ async function main() {
     );
     await unavailable.locator("#date-tab-games").click();
     await unavailable.locator('[data-game="game-garden"]').click();
-    await unavailable
-      .locator('[data-game="game-garden"]')
-      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-      .locator(".game-menu-play")
-      .click();
     assert.ok(
       (await unavailable.locator(".garden-warning").innerText()).length,
     );
@@ -514,11 +504,6 @@ async function verifyMotion(browser) {
   );
   await page.locator("#date-tab-games").click();
   await page.locator('[data-game="game-garden"]').click();
-  await page
-    .locator('[data-game="game-garden"]')
-    .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-    .locator(".game-menu-play")
-    .click();
   await page.waitForFunction(
     () => document.querySelector("#gameShell").dataset.state === "open",
   );
@@ -668,11 +653,6 @@ async function verifyMotion(browser) {
   );
   assert.equal(await page.locator(".garden-motion").count(), 0);
   await page.locator('[data-game="game-garden"]').click();
-  await page
-    .locator('[data-game="game-garden"]')
-    .locator('xpath=ancestor::div[contains(@class,"game-library")]')
-    .locator(".game-menu-play")
-    .click();
   await page.waitForFunction(
     () => document.querySelector("#gameShell").dataset.state === "open",
   );
