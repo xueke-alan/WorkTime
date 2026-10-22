@@ -120,7 +120,14 @@ async function main() {
     const saved = () =>
       page.evaluate((key) => JSON.parse(localStorage.getItem(key)), key);
     async function launch() {
-      await page.goto(pathToFileURL(entry).href);
+      const url = pathToFileURL(entry).href;
+      if (page.url() === url) {
+        await page.locator("#gameExitButton").click();
+        await page.waitForFunction(
+          () => document.querySelector("#gameShell").dataset.state === "closed",
+        );
+        await page.reload();
+      } else await page.goto(url);
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
