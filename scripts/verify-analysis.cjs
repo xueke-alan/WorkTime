@@ -1509,7 +1509,9 @@ async function verify() {
         );
       });
     assert.ok(
-      opticalOffsets.every((offset) => Math.abs(offset) < 0.8),
+      // Font fallback and hinted glyph metrics differ across Windows/Linux.
+      // Preserve a one-CSS-pixel optical bound rather than subpixel equality.
+      opticalOffsets.every((offset) => Math.abs(offset) <= 1),
       "Ratio divider matches digit ink centers: " + opticalOffsets.join(", "),
     );
     assert.ok(structure.distributionHeight >= 65);
@@ -1546,8 +1548,13 @@ async function verify() {
     await view.locator("#analysisHeading").hover();
     assert.equal(await view.locator("#analysisHover").isVisible(), false);
     assert.equal(await view.locator(".analysis-range.is-selected").count(), 0);
-    const layoutSnapshot = () =>
-      view.evaluate(() => ({
+    const layoutSnapshot = async () => {
+      await view.evaluate(async () => {
+        await document.fonts.ready;
+        WorkTimeApp.ui.alignment.refresh();
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      });
+      return view.evaluate(() => ({
         blocks: [
           ...document.querySelectorAll(
             ".analysis-heading, .analysis-metric, .analysis-chart-heading, #analysisPlot, .analysis-streak-heading, .analysis-distribution-body",
@@ -1562,6 +1569,7 @@ async function verify() {
           .querySelector(".analysis-grid line")
           .getAttribute("x1"),
       }));
+    };
     const populatedLayout = await layoutSnapshot();
     assert.equal(
       await view.evaluate(() =>

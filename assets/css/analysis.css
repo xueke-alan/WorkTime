@@ -213,7 +213,7 @@
 }
 .analysis-section-title {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
 }
 .analysis-chart-legend {
