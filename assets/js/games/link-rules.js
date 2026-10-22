@@ -87,27 +87,34 @@ WorkTimeApp.games.linkRules = (() => {
       cols,
     );
   }
-  function fall(board, cols = boardSize.cols, direction = "down") {
+  function fallPlan(board, cols = boardSize.cols, direction = "down") {
     const result = Array(board.length).fill(0),
-      rows = board.length / cols;
+      rows = board.length / cols,
+      moves = [];
     const vertical = direction === "up" || direction === "down";
     const lanes = vertical ? cols : rows,
       length = vertical ? rows : cols;
     for (let lane = 0; lane < lanes; lane++) {
       const index = (offset) =>
         vertical ? offset * cols + lane : lane * cols + offset;
-      const values = Array.from({ length }, (_, i) => board[index(i)]).filter(
-        Boolean,
-      );
+      const values = Array.from({ length }, (_, i) => ({
+        from: index(i),
+        value: board[index(i)],
+      })).filter(({ value }) => value);
       const start =
         direction === "down" || direction === "right"
           ? length - values.length
           : 0;
-      values.forEach((value, i) => {
-        result[index(start + i)] = value;
+      values.forEach(({ from, value }, i) => {
+        const to = index(start + i);
+        result[to] = value;
+        moves.push({ from, to });
       });
     }
-    return result;
+    return { board: result, moves };
+  }
+  function fall(board, cols = boardSize.cols, direction = "down") {
+    return fallPlan(board, cols, direction).board;
   }
   function routeInfo(path, cols = boardSize.cols, rows = boardSize.rows) {
     let turns = 0,
@@ -165,8 +172,11 @@ WorkTimeApp.games.linkRules = (() => {
       }
     }
     const gravity = directions[state.tideStep];
+    let moves = [];
     if (state.mode === "tide") {
-      state.board = fall(state.board, state.cols, gravity);
+      const plan = fallPlan(state.board, state.cols, gravity);
+      state.board = plan.board;
+      moves = plan.moves;
       state.tideStep = (state.tideStep + 1) % 4;
     }
     advanceTarget(state);
@@ -174,7 +184,7 @@ WorkTimeApp.games.linkRules = (() => {
       state.score += 500;
       state.phase = state.level === 2 ? "won" : "cleared";
     }
-    return { path, points, completedMission, gravity, ...info };
+    return { path, points, completedMission, gravity, moves, ...info };
   }
   function swap(state, a, b) {
     if (
@@ -286,6 +296,7 @@ WorkTimeApp.games.linkRules = (() => {
     shuffle,
     create,
     fall,
+    fallPlan,
     match,
     swap,
     restore,

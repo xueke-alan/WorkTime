@@ -37,6 +37,7 @@ WorkTimeApp.games.register({
   descriptionKey: "games.snake.description",
   icon: "game-snake",
   create({ container, signal }) {
+    const gameStorage = WorkTimeApp.services.gameArchive.session();
     const rules = WorkTimeApp.games.snakeRules;
     const key = "worktime.games.snake.v1";
     const t = (name, params) =>
@@ -62,9 +63,7 @@ WorkTimeApp.games.register({
       lastSave = 0;
     let viewportSize = null;
     try {
-      const restored = rules.restore(
-        JSON.parse(window.localStorage.getItem(key)),
-      );
+      const restored = rules.restore(JSON.parse(gameStorage.getItem(key)));
       if (restored) {
         ({ state, best } = restored);
         paused = state.status === "playing";
@@ -207,10 +206,7 @@ WorkTimeApp.games.register({
     function save() {
       best[state.mode] = Math.max(best[state.mode], state.score);
       try {
-        window.localStorage.setItem(
-          key,
-          JSON.stringify({ version: 1, state, best }),
-        );
+        gameStorage.setItem(key, JSON.stringify({ version: 1, state, best }));
         saveFailed = false;
       } catch {
         saveFailed = true;

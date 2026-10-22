@@ -5,6 +5,7 @@ WorkTimeApp.games.register({
   descriptionKey: "games.puzzleDescription",
   icon: "game-2048",
   create({ container, signal }) {
+    const gameStorage = WorkTimeApp.services.gameArchive.session();
     const rules = WorkTimeApp.games.rules2048;
     const compat = WorkTimeApp.ui.animationCompat;
     const reduced = compat.preference();
@@ -22,7 +23,7 @@ WorkTimeApp.games.register({
       revision = 0,
       animations = [];
     try {
-      const saved = rules.restore(JSON.parse(window.localStorage.getItem(key)));
+      const saved = rules.restore(JSON.parse(gameStorage.getItem(key)));
       if (saved) ({ state, previous, best } = saved);
     } catch {
       saveFailed = true;
@@ -151,7 +152,7 @@ WorkTimeApp.games.register({
     warning.setAttribute("role", "status");
     function save() {
       try {
-        window.localStorage.setItem(
+        gameStorage.setItem(
           key,
           JSON.stringify({ version: 1, state, best, previous }),
         );

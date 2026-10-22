@@ -5,6 +5,7 @@ WorkTimeApp.games.register({
   descriptionKey: "games.jump.description",
   icon: "game-jump",
   create({ container, signal }) {
+    const gameStorage = WorkTimeApp.services.gameArchive.session();
     const rules = WorkTimeApp.games.jumpRules;
     const storageKey = "worktime.games.jump.best.v1";
     const t = (name, params) =>
@@ -35,7 +36,7 @@ WorkTimeApp.games.register({
       dpr = 1;
     const smooth = (value) => value * value * (3 - 2 * value);
     function readBest() {
-      const raw = window.localStorage.getItem(storageKey);
+      const raw = gameStorage.getItem(storageKey);
       try {
         const value = JSON.parse(raw);
         return Number.isSafeInteger(value) && value >= 0 ? value : 0;
@@ -138,7 +139,7 @@ WorkTimeApp.games.register({
       best = Math.max(best, state.score);
       try {
         best = Math.max(best, readBest());
-        window.localStorage.setItem(storageKey, JSON.stringify(best));
+        gameStorage.setItem(storageKey, JSON.stringify(best));
         saveFailed = false;
       } catch {
         saveFailed = true;

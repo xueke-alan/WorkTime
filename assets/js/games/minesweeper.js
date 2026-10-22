@@ -5,6 +5,7 @@ WorkTimeApp.games.register({
   descriptionKey: "games.mine.description",
   icon: "game-minesweeper",
   create({ container, signal }) {
+    const gameStorage = WorkTimeApp.services.gameArchive.session();
     const rules = WorkTimeApp.games.minesweeperRules;
     const compat = WorkTimeApp.ui.animationCompat;
     const reduced = compat.preference();
@@ -37,7 +38,7 @@ WorkTimeApp.games.register({
       celebration = null,
       confettiMotions = [];
     try {
-      const saved = rules.restore(JSON.parse(window.localStorage.getItem(key)));
+      const saved = rules.restore(JSON.parse(gameStorage.getItem(key)));
       if (saved) ({ state, stats, elapsed, manualPaused } = saved);
     } catch {
       saveFailed = true;
@@ -193,7 +194,7 @@ WorkTimeApp.games.register({
     }
     function save() {
       try {
-        window.localStorage.setItem(
+        gameStorage.setItem(
           key,
           JSON.stringify({
             version: 1,

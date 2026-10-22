@@ -10,6 +10,7 @@ WorkTimeApp.games = (() => {
   // Minimal menu artwork: a shared 32px grid and uniform rounded outlines.
   // Inline SVG keeps the offline entry self-contained and crisp at any scale.
   const gameIcons = {
+    "game-tank": `<rect x="5" y="15" width="22" height="11" rx="4"/><path d="M10 15v-5h10l3 5M17 10V5h10M10 21h12"/><circle cx="10" cy="21" r="1"/><circle cx="22" cy="21" r="1"/>`,
     "game-garden": `<rect x="4" y="12" width="14" height="15" rx="3"/><path d="M11 8V6a2 2 0 0 1 2-2h12a3 3 0 0 1 3 3v12a2 2 0 0 1-2 2h-3"/><path d="M11 23v-7m0 4c-4 0-4-4-4-4 4 0 4 4 4 4Zm0 0c4 0 4-4 4-4-4 0-4 4-4 4Z"/>`,
     "game-link": `<rect x="3" y="5" width="10" height="13" rx="2"/><rect x="19" y="14" width="10" height="13" rx="2"/><path d="M8 22v5h7m9-17V5h-7"/>`,
     "game-2048": `<rect x="5" y="5" width="9" height="9" rx="2"/><rect x="18" y="5" width="9" height="9" rx="2"/>

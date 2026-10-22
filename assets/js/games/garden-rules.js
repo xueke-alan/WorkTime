@@ -41,7 +41,78 @@ WorkTimeApp.games.gardenRules = (() => {
       (tile) => !gone.has(tile.id) && tile.above.every((id) => gone.has(id)),
     );
   }
-  function layout(level, seed) {
+  function stackGeometry(level) {
+    const tiles = [];
+    const add = (x, y, z, pile = "main") =>
+      tiles.push({ id: tiles.length, x, y, z, pile, type: 0, above: [] });
+    const layer = (cols, rows, ox, oy, z, shape = "full") => {
+      for (let y = 0; y < rows; y++)
+        for (let x = 0; x < cols; x++) {
+          const corner =
+            (x === 0 || x === cols - 1) && (y === 0 || y === rows - 1);
+          const cross =
+            x === Math.floor(cols / 2) || y === Math.floor(rows / 2);
+          if (
+            (shape === "cut" && corner) ||
+            (shape === "cross" && !cross) ||
+            (shape === "ring" && x > 0 && x < cols - 1 && y > 0 && y < rows - 1)
+          )
+            continue;
+          add(x + ox, y + oy, z);
+        }
+    };
+    if (level === 0) {
+      layer(4, 4, 1, 0.6, 0);
+      layer(3, 2, 1.5, 1.6, 1);
+      layer(2, 1, 2, 2.1, 2);
+    } else if (level === 1) {
+      layer(4, 4, 1, 0.3, 0);
+      layer(4, 4, 0.75, 0.8, 1);
+      layer(3, 3, 1.5, 1.3, 2);
+      layer(3, 3, 1.5, 1.3, 3, "cross");
+    } else {
+      const depth = level === 2 ? 5 : 4 + Math.floor(level / 5);
+      for (let z = 0; z < depth; z++) {
+        const last = z === depth - 1;
+        if (last) {
+          layer(
+            3,
+            3,
+            1.5 + (level % 2 ? 0.25 : 0),
+            1.9,
+            z,
+            level % 3 === 0 ? "ring" : "cross",
+          );
+        } else if (z === depth - 2) {
+          layer(3, 3, 1.5, 1.4, z);
+        } else {
+          const shift = z % 2 ? 0.25 : 0;
+          layer(
+            5,
+            z % 2 ? 4 : 5,
+            0.5 + shift,
+            0.35 + shift,
+            z,
+            z % 2 ? "full" : "cut",
+          );
+        }
+      }
+    }
+    if (level > 0) {
+      const count = level <= 2 ? 7 : Math.min(7, 3 + Math.floor(level / 4));
+      for (const [index, x] of [0.65, 4.35].entries()) {
+        for (let z = 0; z < count; z++)
+          add(x, 5.75 + z * 0.075, z, "side-" + index);
+      }
+    }
+    // Trim a concealed base edge, keeping both side piles and the top silhouette.
+    while (tiles.length % 3) tiles.splice(0, 1);
+    tiles.forEach((tile, id) => {
+      tile.id = id;
+    });
+    return tiles;
+  }
+  function layout(level, seed, layoutVersion = 2) {
     const random = randomizer(seed),
       tiles = [];
     const layers =
@@ -79,6 +150,8 @@ WorkTimeApp.games.gardenRules = (() => {
         }
     });
     while (tiles.length % 3) tiles.pop();
+    if (layoutVersion === 2)
+      tiles.splice(0, tiles.length, ...stackGeometry(level));
     for (const tile of tiles)
       tile.above = tiles
         .filter(
@@ -134,6 +207,7 @@ WorkTimeApp.games.gardenRules = (() => {
     seed = Math.floor(Math.random() * 4294967296),
   ) => ({
     level,
+    layoutVersion: 2,
     seed: seed >>> 0,
     removed: [],
     tray: [],
@@ -227,7 +301,9 @@ WorkTimeApp.games.gardenRules = (() => {
       value.seed > 4294967295
     )
       return null;
-    const { tiles } = layout(value.level, value.seed);
+    const layoutVersion = value.layoutVersion ?? 1;
+    if (![1, 2].includes(layoutVersion)) return null;
+    const { tiles } = layout(value.level, value.seed, layoutVersion);
     for (const name of ["removed", "tray", "reserve"]) {
       const list = value[name];
       if (
@@ -276,6 +352,7 @@ WorkTimeApp.games.gardenRules = (() => {
     if (value.moves < value.removed.length) return null;
     return {
       ...create(value.level, value.seed),
+      layoutVersion,
       ...Object.fromEntries(
         ["removed", "tray", "reserve"].map((name) => [name, [...value[name]]]),
       ),

@@ -172,6 +172,11 @@ async function main() {
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
       await page.locator("#date-tab-games").click();
       await page.locator('#gamesPanel [data-game="game-sudoku"]').click();
+      await page
+        .locator('#gamesPanel [data-game="game-sudoku"]')
+        .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+        .locator(".game-menu-play")
+        .click();
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
@@ -390,6 +395,11 @@ async function main() {
       key,
     );
     await page.locator('#gamesPanel [data-game="game-sudoku"]').click();
+    await page
+      .locator('#gamesPanel [data-game="game-sudoku"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     assert.equal(await page.locator(".sudoku-catalog").isVisible(), true);
     await context.close();
     const blocked = await browser.newContext({ reducedMotion: "reduce" });
@@ -409,6 +419,11 @@ async function main() {
     );
     await noStorage.locator("#date-tab-games").click();
     await noStorage.locator('[data-game="game-sudoku"]').click();
+    await noStorage
+      .locator('[data-game="game-sudoku"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     await noStorage.locator('[data-sudoku-action="level-1"]').click();
     await noStorage.locator('[data-sudoku-action="hint"]').click();
     assert.equal(await noStorage.locator("[data-game-error]").count(), 0);

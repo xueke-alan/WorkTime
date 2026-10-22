@@ -59,6 +59,8 @@ __pycache__/
 !/scripts/verify-analysis.cjs
 !/scripts/verify-performance.cjs
 !/scripts/verify-games.cjs
+!/scripts/verify-game-menu.cjs
+!/scripts/verify-game-archive.cjs
 !/scripts/verify-minesweeper.cjs
 !/scripts/verify-snake.cjs
 !/scripts/verify-sudoku.cjs
@@ -68,6 +70,7 @@ __pycache__/
 !/scripts/verify-sokoban.cjs
 !/scripts/verify-link.cjs
 !/scripts/verify-garden.cjs
+!/scripts/verify-tank.cjs
 !/scripts/verify-button-layout.cjs
 !/scripts/i18n/
 !/scripts/clean-css.cjs

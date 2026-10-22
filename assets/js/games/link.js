@@ -5,8 +5,15 @@ WorkTimeApp.games.register({
   descriptionKey: "games.link.description",
   icon: "game-link",
   create({ container, signal }) {
+    const gameStorage = WorkTimeApp.services.gameArchive.session();
     const rules = WorkTimeApp.games.linkRules,
       key = "worktime.games.link.v1";
+    const compat = WorkTimeApp.ui.animationCompat;
+    const reduced = compat.preference();
+    let animations = [],
+      motionRevision = 0,
+      motionStarted = 0,
+      lastLayout = null;
     const t = (name, params) =>
       WorkTimeApp.i18n.t("games.link." + name, params);
     const node = (tag, className, parent) => {
@@ -36,7 +43,7 @@ WorkTimeApp.games.register({
       connectionPath = null;
     let best = { zen: 0, quest: 0, tide: 0 };
     try {
-      const saved = JSON.parse(localStorage.getItem(key));
+      const saved = JSON.parse(gameStorage.getItem(key));
       state = rules.restore(saved?.state);
       for (const mode of Object.keys(best))
         if (
@@ -70,6 +77,7 @@ WorkTimeApp.games.register({
         render();
         primary.focus();
       } else {
+        clearMotion();
         state = null;
         save();
         render();
@@ -175,7 +183,7 @@ WorkTimeApp.games.register({
       if (swapMode) focusTile();
     });
     actions.insertBefore(swapButton, pause);
-    const notice = node("p", "link-notice", play);
+    const notice = node("p", "link-notice game-sr-only", root);
     notice.setAttribute("role", "status");
     const warning = node("p", "link-warning", root);
     warning.setAttribute("role", "status");
@@ -185,12 +193,14 @@ WorkTimeApp.games.register({
       signal,
       text: () => t("help"),
       onChange(open) {
-        if (open && state?.phase === "playing") {
+        if (open && state) {
           setPaused(true);
           render();
         }
       },
     });
+    const sidebar = node("aside", "link-sidebar", root);
+    sidebar.append(hud, meters, actions, controls);
     const colors = [
       "#ae701b",
       "#6476b4",
@@ -207,7 +217,7 @@ WorkTimeApp.games.register({
     ];
     function save() {
       try {
-        localStorage.setItem(key, JSON.stringify({ state, best }));
+        gameStorage.setItem(key, JSON.stringify({ state, best }));
         saveFailed = false;
       } catch {
         saveFailed = true;
@@ -215,6 +225,7 @@ WorkTimeApp.games.register({
       warning.textContent = saveFailed ? t("saveFailed") : "";
     }
     function start(mode) {
+      clearMotion();
       state = {
         mode,
         level: 0,
@@ -243,6 +254,7 @@ WorkTimeApp.games.register({
       focusTile();
     }
     function next() {
+      clearMotion();
       state.level++;
       state.cols = rules.size(state.level).cols;
       state.board = rules.create(state.level);
@@ -279,7 +291,13 @@ WorkTimeApp.games.register({
       const now = performance.now(),
         elapsed = now - lastTick;
       lastTick = now;
-      if (state?.phase !== "playing" || paused || suspended || help.isOpen())
+      if (
+        state?.phase !== "playing" ||
+        paused ||
+        suspended ||
+        busy ||
+        help.isOpen()
+      )
         return;
       if (combo && now - lastMatch > 6000) {
         combo = 0;
@@ -307,11 +325,104 @@ WorkTimeApp.games.register({
       save();
     }
     function clearMotion() {
+      motionRevision++;
       clearTimeout(timer);
       timer = null;
+      animations.forEach((animation) => animation.cancel());
+      animations = [];
+      if (motionStarted) {
+        const now = performance.now();
+        if (combo) lastMatch += now - motionStarted;
+        lastTick = now;
+        motionStarted = 0;
+      }
       busy = false;
+      delete root.dataset.motion;
       connectionPath = null;
       line.replaceChildren();
+    }
+    function finishMotion(token, index) {
+      if (token !== motionRevision || disposed || signal.aborted) return;
+      clearMotion();
+      render();
+      if (!help.isOpen() && !suspended && !paused) {
+        if (state.phase === "playing") focusTile(index);
+        else primary.focus({ preventScroll: true });
+      }
+    }
+    function animateMatch(result, a, b) {
+      const token = ++motionRevision;
+      busy = true;
+      motionStarted = performance.now();
+      root.dataset.motion = "linking";
+      board.inert = true;
+      [hint, shuffle, swapButton].forEach((button) => {
+        button.disabled = true;
+      });
+      if (reduced.matches || document.hidden) {
+        finishMotion(token, b);
+        return;
+      }
+      if (state.mode !== "tide") {
+        timer = setTimeout(() => finishMotion(token, b), 220);
+        return;
+      }
+      const tiles = [...board.children];
+      const boxes = tiles.map((tile) => tile.getBoundingClientRect());
+      const moving = result.moves.filter(({ from, to }) => from !== to);
+      for (const index of [a, b]) {
+        tiles[index].style.opacity = "0";
+        animations.push(
+          compat.animate(
+            tiles[index],
+            [
+              { opacity: 1, transform: "scale(1)" },
+              { opacity: 0, transform: "scale(0.82)" },
+            ],
+            { duration: 160, easing: "ease-out", fill: "both" },
+          ),
+        );
+      }
+      timer = setTimeout(() => {
+        if (token !== motionRevision || disposed || signal.aborted) return;
+        timer = null;
+        connectionPath = null;
+        line.replaceChildren();
+        root.dataset.motion = "tide";
+        const distance = moving.reduce(
+          (max, { from, to }) =>
+            Math.max(
+              max,
+              Math.abs((from % state.cols) - (to % state.cols)) +
+                Math.abs(
+                  Math.floor(from / state.cols) - Math.floor(to / state.cols),
+                ),
+            ),
+          0,
+        );
+        const duration = Math.min(420, 260 + distance * 18);
+        const startTime = document.timeline?.currentTime;
+        for (const { from, to } of moving) {
+          const transform = `translate(${boxes[to].left - boxes[from].left}px, ${boxes[to].top - boxes[from].top}px)`;
+          tiles[from].style.transform = transform;
+          tiles[from].style.zIndex = "1";
+          animations.push(
+            compat.animate(
+              tiles[from],
+              [{ transform: "translate(0px, 0px)" }, { transform }],
+              {
+                duration,
+                easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+                fill: "both",
+              },
+              startTime,
+            ),
+          );
+        }
+        void Promise.all(
+          animations.map((animation) => animation.finished),
+        ).then(() => finishMotion(token, b));
+      }, 180);
     }
     function ensureMove() {
       if (state.board.some(Boolean) && !rules.find(state.board, state.cols)) {
@@ -378,16 +489,7 @@ WorkTimeApp.games.register({
       connectionPath = path;
       line.append(polyline);
       drawPath();
-      busy = true;
-      timer = setTimeout(
-        () => {
-          clearMotion();
-          render();
-          if (state.phase === "playing") focusTile(index);
-          else primary.focus({ preventScroll: true });
-        },
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220,
-      );
+      animateMatch(result, previous, index);
     }
     function focusTile(from = 0) {
       const tiles = [...board.children];
@@ -430,6 +532,16 @@ WorkTimeApp.games.register({
       const width = scroll.clientWidth,
         height = scroll.clientHeight;
       if (!width || !height) return;
+      if (
+        busy &&
+        lastLayout &&
+        (lastLayout.width !== width || lastLayout.height !== height)
+      ) {
+        clearMotion();
+        render();
+        return;
+      }
+      lastLayout = { width, height };
       const cols = state.cols,
         rows = state.board.length / cols;
       const normal = Math.min(width / (cols + 1), height / (rows + 1));
@@ -448,8 +560,11 @@ WorkTimeApp.games.register({
       );
       stage.style.setProperty("--link-cols", String(visualCols));
       stage.style.setProperty("--link-rows", String(visualRows));
-      stage.style.setProperty("--link-gap", Math.min(4, cell * 0.07) + "px");
-      stage.style.setProperty("--link-radius", Math.min(8, cell * 0.13) + "px");
+      stage.style.setProperty("--link-gap", Math.min(3, cell * 0.045) + "px");
+      stage.style.setProperty(
+        "--link-marker-size",
+        Math.max(2, Math.min(4, cell * 0.078)) + "px",
+      );
       stage.style.width = Math.floor(cell * (visualCols + 1)) + "px";
       stage.style.height = Math.floor(cell * (visualRows + 1)) + "px";
       line.setAttribute(
@@ -539,6 +654,8 @@ WorkTimeApp.games.register({
       });
       catalog.hidden = !!state;
       play.hidden = !state;
+      meters.hidden = !state;
+      actions.hidden = !state;
       help.refresh();
       warning.textContent = saveFailed ? t("saveFailed") : "";
       if (!state) return;
@@ -622,11 +739,21 @@ WorkTimeApp.games.register({
         }
       }
     });
-    listen(document, "worktime:languagechange", render);
+    listen(document, "worktime:languagechange", () => {
+      if (busy) clearMotion();
+      render();
+    });
     if (state?.phase === "playing") ensureMove();
     render();
     const observer = new ResizeObserver(fit);
     observer.observe(arena);
+    const releasePreference = compat.listen(reduced, () => {
+      if (reduced.matches && busy) {
+        clearMotion();
+        render();
+      }
+    });
+    signal.addEventListener("abort", clearMotion, { once: true });
     const interval = setInterval(tick, 200);
     return {
       resize: fit,
@@ -647,6 +774,7 @@ WorkTimeApp.games.register({
         disposed = true;
         clearInterval(interval);
         observer.disconnect();
+        releasePreference();
         clearMotion();
         root.remove();
         container.classList.remove("game-content-link");

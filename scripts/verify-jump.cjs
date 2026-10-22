@@ -101,6 +101,11 @@ async function verifyUI(browser, viewport, reducedMotion) {
   });
   await page.locator("#date-tab-games").click();
   await page.locator('[data-game="game-jump"]').click();
+  await page
+    .locator('[data-game="game-jump"]')
+    .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+    .locator(".game-menu-play")
+    .click();
   await page.waitForFunction(
     () => document.querySelector("#gameShell").dataset.state === "open",
   );
@@ -257,6 +262,11 @@ async function verifyUI(browser, viewport, reducedMotion) {
   await page.clock.runFor(500);
   assert.equal(await game.count(), 0);
   await page.locator('[data-game="game-jump"]').click();
+  await page
+    .locator('[data-game="game-jump"]')
+    .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+    .locator(".game-menu-play")
+    .click();
   await page.clock.runFor(600);
   assert.equal(await best.textContent(), "6");
   assert.equal(await score.textContent(), "0");

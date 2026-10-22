@@ -5,6 +5,7 @@ WorkTimeApp.games.register({
   descriptionKey: "games.sokoban.description",
   icon: "game-sokoban",
   create({ container, signal }) {
+    const gameStorage = WorkTimeApp.services.gameArchive.session();
     const rules = WorkTimeApp.games.sokobanRules;
     const bank = WorkTimeApp.data.sokoban;
     const levels = bank.levels;
@@ -41,7 +42,7 @@ WorkTimeApp.games.register({
       !!completed[levels[index - 1].id] ||
       !!completed[levels[index].id];
     try {
-      const saved = JSON.parse(window.localStorage.getItem(key));
+      const saved = JSON.parse(gameStorage.getItem(key));
       if (saved?.version === 1) {
         levels.forEach((level, index) => {
           const record = rules.restore(
@@ -217,7 +218,7 @@ WorkTimeApp.games.register({
               { path: value.path },
             ]),
           );
-        window.localStorage.setItem(
+        gameStorage.setItem(
           key,
           JSON.stringify({
             version: 1,

@@ -179,6 +179,11 @@ async function verifyPuzzle(browser) {
   const afterMove = await read();
   await page.keyboard.press("Escape");
   await page.locator('#gameShell [data-game="game-2048"]').click();
+  await page
+    .locator('#gameShell [data-game="game-2048"]')
+    .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+    .locator(".game-menu-play")
+    .click();
   assert.deepEqual(
     await read(),
     afterMove,
@@ -483,6 +488,11 @@ function assertMotion(result, opening) {
 async function enter(page) {
   await page.locator("#date-tab-games").click();
   await page.locator('#gamesPanel [data-game="game-2048"]').click();
+  await page
+    .locator('#gamesPanel [data-game="game-2048"]')
+    .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+    .locator(".game-menu-play")
+    .click();
   await state(page, "open");
 }
 async function close(page) {
@@ -567,8 +577,15 @@ async function verify() {
     await page.screenshot({
       path: path.join(root, "test-results/games/menu.png"),
     });
-    await page.evaluate(() =>
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+    await page.evaluate(
+      () => (
+        document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+        document
+          .querySelector('#gamesPanel [data-game="game-2048"]')
+          .closest(".game-library")
+          .querySelector(".game-menu-play")
+          .click()
+      ),
     );
     assertMotion(await sampleMotion(page, [80, 180, 280, 410]), true);
     await state(page, "open");
@@ -714,6 +731,11 @@ async function verify() {
       );
     });
     await page.locator('#gamesPanel [data-game="probe"]').click();
+    await page
+      .locator('#gamesPanel [data-game="probe"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     await state(page, "open");
     assert.equal(
       await page.evaluate(() => {
@@ -740,6 +762,11 @@ async function verify() {
     await page.setViewportSize({ width: 1600, height: 900 });
     await page.keyboard.press("Escape");
     await page.locator('#gameShell [data-game="probe"]').click();
+    await page
+      .locator('#gameShell [data-game="probe"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     await close(page);
     const probe = await page.evaluate(() => window.gameProbe);
     assert.equal(probe.created, 2);
@@ -771,12 +798,21 @@ async function verify() {
         '#gamesPanel [data-game="game-2048"]',
       );
       button.click();
-      button.click();
+      const play = button
+        .closest(".game-library")
+        .querySelector(".game-menu-play");
+      play.click();
+      play.click();
       document.getElementById("gameExitButton").click();
     });
     await state(page, "closed");
     const reversal = await page.evaluate(() => {
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click();
+      (document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+        document
+          .querySelector('#gamesPanel [data-game="game-2048"]')
+          .closest(".game-library")
+          .querySelector(".game-menu-play")
+          .click());
       const targets = [
         ...document.querySelectorAll(
           ".workspace > .panel, .game-shell, .game-surface, .game-toolbar, .game-content",
@@ -817,7 +853,12 @@ async function verify() {
     );
     await state(page, "closed");
     await page.evaluate(() => {
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click();
+      (document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+        document
+          .querySelector('#gamesPanel [data-game="game-2048"]')
+          .closest(".game-library")
+          .querySelector(".game-menu-play")
+          .click());
       Object.defineProperty(document, "hidden", {
         configurable: true,
         value: true,
@@ -834,8 +875,15 @@ async function verify() {
       document.dispatchEvent(new Event("visibilitychange"));
     });
     await close(page);
-    await page.evaluate(() =>
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+    await page.evaluate(
+      () => (
+        document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+        document
+          .querySelector('#gamesPanel [data-game="game-2048"]')
+          .closest(".game-library")
+          .querySelector(".game-menu-play")
+          .click()
+      ),
     );
     await page.setViewportSize({ width: 1440, height: 900 });
     await state(page, "open");
@@ -848,8 +896,15 @@ async function verify() {
       await page.locator(".workspace.is-game-transitioning").count(),
       0,
     );
-    await page.evaluate(() =>
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+    await page.evaluate(
+      () => (
+        document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+        document
+          .querySelector('#gamesPanel [data-game="game-2048"]')
+          .closest(".game-library")
+          .querySelector(".game-menu-play")
+          .click()
+      ),
     );
     await page.emulateMedia({ reducedMotion: "reduce" });
     await state(page, "open");
@@ -904,6 +959,11 @@ async function verify() {
       WorkTimeApp.i18n.setLanguage("zh-CN");
     });
     await page.locator('#gamesPanel [data-game="broken"]').click();
+    await page
+      .locator('#gamesPanel [data-game="broken"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     await state(page, "open");
     assert.equal(await page.evaluate(() => window.brokenAborted), true);
     await page.evaluate(() => WorkTimeApp.i18n.setLanguage("en"));
@@ -912,6 +972,11 @@ async function verify() {
     await page.locator("#gameExitButton").click();
     await state(page, "closed");
     await page.locator('#gamesPanel [data-game="probe"]').click();
+    await page
+      .locator('#gamesPanel [data-game="probe"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     await state(page, "open");
     const priorDisposals = await page.evaluate(() => window.gameProbe.disposed);
     await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));

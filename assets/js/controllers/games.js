@@ -32,6 +32,27 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   const origin = workspace.querySelector("section.panel");
   const panels = [...workspace.children];
   const sidebar = document.getElementById("gamesPanel");
+  const archiveUI = WorkTimeApp.ui.createGameArchiveController({
+    document,
+    window,
+  });
+  const gameArchive = WorkTimeApp.services.gameArchive;
+  let archiveReady = false,
+    archiveFailure = null,
+    handlingArchiveChange = false;
+  gameArchive
+    .initialize()
+    .then(() => {
+      archiveReady = true;
+    })
+    .catch((error) => {
+      // Restricted storage must not stop games from running without persistence.
+      archiveFailure = ["recovery", "invalid"].includes(error.code)
+        ? error
+        : null;
+      archiveReady = true;
+      archiveUI.report(error);
+    });
   const shell = document.createElement("div");
   shell.className = "game-shell";
   shell.id = "gameShell";
@@ -90,6 +111,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     }
   }
   function releaseGame() {
+    archiveUI.detach(content);
     abort?.abort();
     abort = null;
     call("dispose");
@@ -319,11 +341,24 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   function showMenu() {
     if (state !== "open") return;
     releaseGame();
-    WorkTimeApp.ui.renderGameMenu(content, launch);
+    WorkTimeApp.ui.renderGameMenu(content, launch, archiveUI);
     translateToolbar();
     content.querySelector("button")?.focus({ preventScroll: true });
   }
   function launch(id) {
+    if (!archiveReady) return;
+    if (archiveFailure) {
+      archiveUI.report(archiveFailure);
+      return;
+    }
+    try {
+      if (gameArchive.pendingRecovery()) {
+        archiveUI.report({ code: "recovery" });
+        return;
+      }
+    } catch {
+      // Games remain playable when the browser blocks persistent storage.
+    }
     if (disposed || !["closed", "open"].includes(state)) return;
     const entry = WorkTimeApp.games.get(id);
     if (!entry) return;
@@ -382,13 +417,14 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     const focused = document.activeElement;
     const gameId = focused?.dataset.game;
     const inMenu = sidebar.contains(focused) || content.contains(focused);
-    WorkTimeApp.ui.renderGameMenu(sidebar, launch);
+    WorkTimeApp.ui.renderGameMenu(sidebar, launch, archiveUI);
     if (state !== "closed") {
       translateToolbar();
       if (content.querySelector("[data-game-error]"))
         content.querySelector("[data-game-error]").textContent =
           t("games.failed");
-      else if (!currentId) WorkTimeApp.ui.renderGameMenu(content, launch);
+      else if (!currentId)
+        WorkTimeApp.ui.renderGameMenu(content, launch, archiveUI);
     }
     if (gameId && inMenu) {
       const target = state === "closed" ? sidebar : content;
@@ -399,6 +435,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   }
   events.listen(exitButton, "click", exit);
   events.listen(shell, "keydown", (event) => {
+    if (archiveUI.isOpen()) return;
     if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
@@ -427,7 +464,11 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     }
   });
   events.listen(document, "focusin", (event) => {
-    if (state !== "closed" && !shell.contains(event.target))
+    if (
+      state !== "closed" &&
+      !archiveUI.isOpen() &&
+      !shell.contains(event.target)
+    )
       exitButton.focus({ preventScroll: true });
   });
   events.listen(document, "visibilitychange", () => {
@@ -437,6 +478,23 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   });
   events.listen(document, "worktime:languagechange", refreshLanguage);
   events.listen(window, "resize", onResize);
+  function archiveChanged() {
+    if (handlingArchiveChange || disposed || !currentId) return;
+    handlingArchiveChange = true;
+    try {
+      revision++;
+      stopMotion();
+      restore(false);
+      refreshLanguage();
+    } finally {
+      handlingArchiveChange = false;
+    }
+  }
+  events.listen(window, "worktime:gamearchive", archiveChanged);
+  events.listen(window, "storage", (event) => {
+    if (event.key === gameArchive.REVISION || event.key === gameArchive.JOURNAL)
+      archiveChanged();
+  });
   if (window.visualViewport)
     events.listen(window.visualViewport, "resize", onResize);
   const unlisten = compat.listen(reduced, () => {
@@ -455,6 +513,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       revision++;
       stopMotion();
       releaseGame();
+      archiveUI.dispose();
       events.dispose();
       unlisten();
       observer.disconnect();

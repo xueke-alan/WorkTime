@@ -32,6 +32,7 @@ function checkI18n() {
     "sokoban",
     "link",
     "garden",
+    "tank",
   ])
     run("assets/js/locales/" + locale + ".js");
   const catalogs = context.WorkTimeApp.data.locales;

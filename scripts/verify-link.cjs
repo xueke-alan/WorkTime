@@ -147,11 +147,31 @@ function verifyRules() {
     up: [1, 3, 2, 0, 0, 0],
     left: [1, 2, 0, 3, 0, 0],
     right: [0, 1, 2, 0, 0, 3],
-  }))
+  })) {
     assert.deepEqual(
       Array.from(rules.fall(fallExample, 3, direction)),
       expected,
     );
+    const plan = rules.fallPlan(fallExample, 3, direction);
+    assert.deepEqual(Array.from(plan.board), expected);
+    assert.equal(new Set(plan.moves.map(({ from }) => from)).size, 3);
+    assert.equal(new Set(plan.moves.map(({ to }) => to)).size, 3);
+    for (const { from, to } of plan.moves)
+      assert.equal(plan.board[to], fallExample[from]);
+  }
+  assert.deepEqual(
+    Array.from(
+      rules.fallPlan([1, 0, 1, 1, 0, 1], 3, "left").moves,
+      ({ from, to }) => [from, to],
+    ),
+    [
+      [0, 0],
+      [2, 1],
+      [3, 3],
+      [5, 4],
+    ],
+    "identical pictures retain stable identities",
+  );
   assert.equal(
     rules.routeInfo([
       [1, 1],
@@ -271,6 +291,328 @@ function verifyRules() {
     "Link rules: path-oracle comparisons, 120 fixed 240-tile clears with gravity/rescue and legacy save validation verified.",
   );
 }
+async function verifyTideAnimations(browser) {
+  const page = await browser.newPage({
+    viewport: { width: 1440, height: 900 },
+    locale: "zh-CN",
+    reducedMotion: "no-preference",
+  });
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route(/^https?:/, (route) => route.abort());
+  await page.goto(pathToFileURL(entry).href);
+  await page.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  const fixtures = [
+    {
+      step: 0,
+      a: 220,
+      b: 221,
+      from: 0,
+      to: 200,
+      cards: [
+        [0, 1],
+        [1, 1],
+        [40, 3],
+        [41, 3],
+        [220, 2],
+        [221, 2],
+      ],
+    },
+    {
+      step: 1,
+      a: 0,
+      b: 20,
+      from: 19,
+      to: 1,
+      cards: [
+        [19, 1],
+        [39, 1],
+        [18, 3],
+        [38, 3],
+        [0, 2],
+        [20, 2],
+      ],
+    },
+    {
+      step: 2,
+      a: 0,
+      b: 1,
+      from: 220,
+      to: 20,
+      cards: [
+        [220, 1],
+        [221, 1],
+        [180, 3],
+        [181, 3],
+        [0, 2],
+        [1, 2],
+      ],
+    },
+    {
+      step: 3,
+      a: 19,
+      b: 39,
+      from: 0,
+      to: 18,
+      cards: [
+        [0, 1],
+        [20, 1],
+        [1, 3],
+        [21, 3],
+        [19, 2],
+        [39, 2],
+      ],
+    },
+  ];
+  async function open(fixture = fixtures[0]) {
+    await page.evaluate(
+      ({ storageKey, fixture }) => {
+        const board = Array(240).fill(0);
+        fixture.cards.forEach(([index, value]) => {
+          board[index] = value;
+        });
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            state: {
+              mode: "tide",
+              level: 0,
+              cols: 20,
+              board,
+              phase: "playing",
+              score: 0,
+              remaining: 150000,
+              hints: 3,
+              shuffles: 2,
+              energy: 3,
+              target: 0,
+              targetProgress: 0,
+              tideStep: fixture.step,
+              missions: 0,
+            },
+          }),
+        );
+      },
+      { storageKey: key, fixture },
+    );
+    await page.locator("#date-tab-games").click();
+    await page.locator('#gamesPanel [data-game="game-link"]').click();
+    await page
+      .locator('#gamesPanel [data-game="game-link"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
+    await page.waitForFunction(
+      () => document.getElementById("gameShell").dataset.state === "open",
+    );
+    await page.locator('[data-link-action="primary"]').click();
+  }
+  async function exit() {
+    await page.locator("#gameExitButton").click();
+    await page.waitForFunction(
+      () => document.getElementById("gameShell").dataset.state === "closed",
+    );
+  }
+  async function trigger(fixture = fixtures[0]) {
+    return page.evaluate(
+      ({ fixture, storageKey }) => {
+        const tile = (index) =>
+          document.querySelector('.link-tile[data-index="' + index + '"]');
+        const start = tile(fixture.from).getBoundingClientRect(),
+          end = tile(fixture.to).getBoundingClientRect();
+        tile(fixture.a).click();
+        tile(fixture.b).click();
+        return {
+          start: { x: start.x, y: start.y },
+          end: { x: end.x, y: end.y },
+          board: JSON.parse(localStorage.getItem(storageKey)).state.board,
+          remaining: JSON.parse(localStorage.getItem(storageKey)).state
+            .remaining,
+        };
+      },
+      { fixture, storageKey: key },
+    );
+  }
+  async function moving() {
+    await page.waitForFunction(
+      () => document.querySelector(".game-link").dataset.motion === "tide",
+    );
+  }
+  async function settled() {
+    await page.waitForFunction(
+      () => !document.querySelector(".game-link")?.dataset.motion,
+    );
+    assert.equal(
+      await page
+        .locator(".link-board")
+        .evaluate(
+          (board) =>
+            board
+              .getAnimations({ subtree: true })
+              .filter((animation) =>
+                animation.effect
+                  .getKeyframes()
+                  .some((frame) => Object.hasOwn(frame, "transform")),
+              ).length,
+        ),
+      0,
+    );
+  }
+  try {
+    for (const fixture of fixtures) {
+      await open(fixture);
+      const geometry = await trigger(fixture);
+      await moving();
+      const middle = await page.evaluate((from) => {
+        const board = document.querySelector(".link-board");
+        const animations = board.getAnimations({ subtree: true });
+        for (const animation of animations) {
+          animation.pause();
+          animation.currentTime = animation.effect.getTiming().duration / 2;
+        }
+        const r = board
+          .querySelector('[data-index="' + from + '"]')
+          .getBoundingClientRect();
+        return {
+          x: r.x,
+          y: r.y,
+          locked: board.inert,
+          moving: animations.filter((animation) =>
+            animation.effect
+              .getKeyframes()
+              .some((frame) => Object.hasOwn(frame, "transform")),
+          ).length,
+        };
+      }, fixture.from);
+      assert.ok(middle.locked && middle.moving > 0);
+      const axis = geometry.start.x !== geometry.end.x ? "x" : "y",
+        other = axis === "x" ? "y" : "x";
+      assert.ok(
+        middle[axis] > Math.min(geometry.start[axis], geometry.end[axis]) + 0.5,
+      );
+      assert.ok(
+        middle[axis] < Math.max(geometry.start[axis], geometry.end[axis]) - 0.5,
+      );
+      assert.ok(
+        Math.abs(middle[other] - geometry.start[other]) < 1,
+        "moves follow one physical axis",
+      );
+      assert.equal(
+        await page.locator('[data-link-action="hint"]').isDisabled(),
+        true,
+      );
+      await page
+        .locator(".link-board")
+        .evaluate((board) =>
+          board
+            .getAnimations({ subtree: true })
+            .forEach((animation) => animation.play()),
+        );
+      await settled();
+      const remaining = await page.evaluate((storageKey) => {
+        document.querySelector('[data-link-action="pause"]').click();
+        return JSON.parse(localStorage.getItem(storageKey)).state.remaining;
+      }, key);
+      assert.ok(
+        remaining >= geometry.remaining - 200,
+        "movement does not consume thinking time",
+      );
+      assert.equal(
+        await page.evaluate(
+          ({ storageKey, to }) =>
+            JSON.parse(localStorage.getItem(storageKey)).state.board[to],
+          { storageKey: key, to: fixture.to },
+        ),
+        1,
+      );
+      assert.equal(await page.locator(".link-tile:enabled").count(), 4);
+      await exit();
+    }
+    for (const action of [
+      "pause",
+      "resize",
+      "reduce",
+      "exit",
+      "help",
+      "language",
+    ]) {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await open();
+      const expected = await trigger();
+      await moving();
+      if (action === "pause")
+        await page.locator('[data-link-action="pause"]').click();
+      if (action === "resize")
+        await page.setViewportSize({ width: 390, height: 844 });
+      if (action === "reduce")
+        await page.emulateMedia({ reducedMotion: "reduce" });
+      if (action === "help")
+        await page.locator(".game-link [data-game-help]").click();
+      if (action === "language")
+        await page.evaluate(() => WorkTimeApp.i18n.setLanguage("en"));
+      if (action === "exit") await exit();
+      else {
+        await settled();
+        if (action === "pause")
+          assert.ok(await page.locator(".link-cover").isVisible());
+        if (action === "help")
+          await page.locator(".game-link [data-game-help-close]").click();
+        await exit();
+      }
+      assert.deepEqual(
+        await page.evaluate(
+          (storageKey) =>
+            JSON.parse(localStorage.getItem(storageKey)).state.board,
+          key,
+        ),
+        expected.board,
+        "interruption retains the committed board",
+      );
+      assert.equal(await page.locator(".game-link").count(), 0);
+    }
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.evaluate(() => {
+      window.linkOriginalAnimate = Element.prototype.animate;
+      Element.prototype.animate = undefined;
+    });
+    await open();
+    await trigger();
+    await settled();
+    await exit();
+    await page.evaluate(() => {
+      Element.prototype.animate = window.linkOriginalAnimate;
+      delete window.linkOriginalAnimate;
+    });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await open();
+    await trigger();
+    await settled();
+    await exit();
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await open({
+      ...fixtures[0],
+      cards: [
+        [220, 2],
+        [221, 2],
+      ],
+    });
+    await trigger();
+    await page.locator('[data-link-action="restart"]').click();
+    assert.ok(await page.locator(".link-catalog").isVisible());
+    await settled();
+    await exit();
+    assert.deepEqual(errors, []);
+    console.log(
+      "Tide animation: four physical directions, duplicate tile identity, input lock, pause/help/resize/exit, reduced motion and missing animation API verified.",
+    );
+  } finally {
+    await page.close();
+  }
+}
 async function main() {
   verifyRules();
   fs.mkdirSync(output, { recursive: true });
@@ -279,6 +621,10 @@ async function main() {
     headless: true,
   });
   try {
+    if (process.argv.includes("--motion-only")) {
+      await verifyTideAnimations(browser);
+      return;
+    }
     const page = await browser.newPage({
       viewport: { width: 1440, height: 1050 },
       locale: "zh-CN",
@@ -300,6 +646,11 @@ async function main() {
     async function open() {
       await page.locator("#date-tab-games").click();
       await page.locator('#gamesPanel [data-game="game-link"]').click();
+      await page
+        .locator('#gamesPanel [data-game="game-link"]')
+        .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+        .locator(".game-menu-play")
+        .click();
       await page.waitForFunction(
         () => document.getElementById("gameShell").dataset.state === "open",
       );
@@ -697,9 +1048,15 @@ async function main() {
     );
     await unavailable.locator("#date-tab-games").click();
     await unavailable.locator('[data-game="game-link"]').click();
+    await unavailable
+      .locator('[data-game="game-link"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     await unavailable.locator('[data-link-action="zen"]').click();
     assert.ok((await unavailable.locator(".link-warning").innerText()).length);
     assert.equal(await unavailable.locator(".link-tile:enabled").count(), 240);
+    await verifyTideAnimations(browser);
     console.log(
       "Link UI: 48 species, energy and swapping, all three modes completed, objectives, rotating tides, pause/resume, storage, keyboard, six languages and eight one-screen layouts verified: " +
         entry,

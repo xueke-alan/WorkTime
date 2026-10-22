@@ -14,16 +14,28 @@ WorkTimeApp.services.backup = (() => {
       binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
     return PREFIX + btoa(binary);
   }
-  async function decode(text, validate, { maxBytes = MAX_BYTES } = {}) {
+  async function decode(
+    text,
+    validate,
+    { maxBytes = MAX_BYTES, allowGameArchive = false } = {},
+  ) {
     if (typeof text !== "string")
       throw Error(WorkTimeApp.i18n.t("copy.91f8def561"));
     text = text.trim();
-    const limitError = () =>
-      Error(
+    if (!allowGameArchive && text.startsWith("WORKTIME:GAMES:")) {
+      const error = Error(WorkTimeApp.i18n.t("gameArchive.gameOnly"));
+      error.code = "gameOnly";
+      throw error;
+    }
+    const limitError = () => {
+      const error = Error(
         WorkTimeApp.i18n.t("backup.tooLarge", {
           size: Math.round(maxBytes / 1024 / 1024),
         }),
       );
+      error.code = "tooLarge";
+      return error;
+    };
     if (new TextEncoder().encode(text).length > maxBytes) throw limitError();
     if (text.startsWith(PREFIX)) {
       const binary = atob(text.slice(PREFIX.length));
@@ -51,7 +63,13 @@ WorkTimeApp.services.backup = (() => {
       text = await new Blob(chunks).text();
     }
     if (new TextEncoder().encode(text).length > maxBytes) throw limitError();
-    return validate(JSON.parse(text));
+    const value = JSON.parse(text);
+    if (!allowGameArchive && value?.type === "worktime-games") {
+      const error = Error(WorkTimeApp.i18n.t("gameArchive.gameOnly"));
+      error.code = "gameOnly";
+      throw error;
+    }
+    return validate(value);
   }
   return { PREFIX, MAX_BYTES, encode, decode };
 })();

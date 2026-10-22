@@ -157,6 +157,10 @@ WorkTimeApp.ui.createBackupController = function (options) {
       actions.toast(WorkTimeApp.i18n.t("copy.32936d1ceb"));
     } catch (error) {
       if (disposed || lifetime !== generation) return;
+      if (error.code === "gameOnly") {
+        actions.toast(error.message, "error");
+        return;
+      }
       actions.toast(WorkTimeApp.i18n.t("copy.9f71e85dd5"), "error");
       $("backupFile").click();
     } finally {

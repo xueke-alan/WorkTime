@@ -5,6 +5,7 @@ WorkTimeApp.games.register({
   descriptionKey: "games.sudoku.description",
   icon: "game-sudoku",
   create({ container, signal }) {
+    const gameStorage = WorkTimeApp.services.gameArchive.session();
     const rules = WorkTimeApp.games.sudokuRules;
     const groups = WorkTimeApp.data.sudoku.groups;
     const key = "worktime.games.sudoku.v1";
@@ -30,7 +31,7 @@ WorkTimeApp.games.register({
       started = null;
     let availableSize = null;
     try {
-      const saved = JSON.parse(window.localStorage.getItem(key));
+      const saved = JSON.parse(gameStorage.getItem(key));
       if (saved?.version === 1) {
         for (const [id, puzzle] of puzzles) {
           const draft = rules.restore(puzzle, saved.drafts?.[id]);
@@ -339,7 +340,7 @@ WorkTimeApp.games.register({
             },
           ]),
         );
-        window.localStorage.setItem(
+        gameStorage.setItem(
           key,
           JSON.stringify({
             version: 1,

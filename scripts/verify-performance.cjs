@@ -45,6 +45,11 @@ async function verify() {
     );
     await page.locator("#date-tab-games").click();
     await page.locator('#gamesPanel [data-game="game-jump"]').click();
+    await page
+      .locator('#gamesPanel [data-game="game-jump"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     await page.waitForFunction(
       () => document.querySelector("#gameShell").dataset.state === "open",
     );

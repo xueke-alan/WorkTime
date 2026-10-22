@@ -187,7 +187,7 @@ async function verifyOfficialIcons(page) {
   );
   const refs = await page
     .locator(
-      ".game-shell svg:not(.game-menu-icon), #gamesPanel svg:not(.game-menu-icon)",
+      ".game-shell svg:not(.game-menu-icon):not(.backup-hold-icon), #gamesPanel svg:not(.game-menu-icon):not(.backup-hold-icon)",
     )
     .evaluateAll((elements) =>
       elements.map((svg) =>
@@ -224,6 +224,11 @@ async function verifyOfficialIcons(page) {
 async function open(page) {
   await page.locator("#date-tab-games").click();
   await page.locator('#gamesPanel [data-game="game-minesweeper"]').click();
+  await page
+    .locator('#gamesPanel [data-game="game-minesweeper"]')
+    .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+    .locator(".game-menu-play")
+    .click();
   await page.waitForFunction(
     () => document.getElementById("gameShell").dataset.state === "open",
   );
@@ -769,6 +774,11 @@ async function verifyBrowser(fixtures) {
       "disposed game has no writing timer",
     );
     await page.locator('#gamesPanel [data-game="game-2048"]').click();
+    await page
+      .locator('#gamesPanel [data-game="game-2048"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     assert.equal(await page.locator(".game-2048").count(), 1);
     await verifyOfficialIcons(page);
     await page.keyboard.press("Escape");
@@ -777,6 +787,11 @@ async function verifyBrowser(fixtures) {
       await page.evaluate(() => WorkTimeApp.games.list().length),
     );
     await page.locator('#gameShell [data-game="game-minesweeper"]').click();
+    await page
+      .locator('#gameShell [data-game="game-minesweeper"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     assert.deepEqual((await saved(page)).state, departed.state);
     await seed(page, fixtures.state, 61000);
     const chordTarget = fixtures.state.revealed.findIndex(

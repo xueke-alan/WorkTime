@@ -127,6 +127,11 @@ async function main() {
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
       await page.locator("#date-tab-games").click();
       await page.locator('#gamesPanel [data-game="game-sokoban"]').click();
+      await page
+        .locator('#gamesPanel [data-game="game-sokoban"]')
+        .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+        .locator(".game-menu-play")
+        .click();
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
@@ -570,6 +575,11 @@ async function main() {
     );
     await noStorage.locator("#date-tab-games").click();
     await noStorage.locator('[data-game="game-sokoban"]').click();
+    await noStorage
+      .locator('[data-game="game-sokoban"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     await noStorage.locator('[data-sokoban-action="level-0"]').click();
     await noStorage.locator(".sokoban-board").press("ArrowRight");
     assert.equal(

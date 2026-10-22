@@ -5,8 +5,15 @@ WorkTimeApp.games.register({
   descriptionKey: "games.garden.description",
   icon: "game-garden",
   create({ container, signal }) {
+    const gameStorage = WorkTimeApp.services.gameArchive.session();
     const rules = WorkTimeApp.games.gardenRules,
       key = "worktime.games.garden.v1";
+    const compat = WorkTimeApp.ui.animationCompat;
+    const reduced = compat.preference();
+    let busy = false,
+      motionRevision = 0,
+      animations = [],
+      hiddenTokens = [];
     const t = (name, params) =>
       WorkTimeApp.i18n.t("games.garden." + name, params);
     const node = (tag, className, parent) => {
@@ -26,9 +33,10 @@ WorkTimeApp.games.register({
       suggested = null,
       feedback = "ready",
       saveFailed = false;
+    let entered = false;
     const records = Array(rules.levelCount).fill(0);
     try {
-      const saved = JSON.parse(localStorage.getItem(key));
+      const saved = JSON.parse(gameStorage.getItem(key));
       if (saved?.version === 1) {
         if (Array.isArray(saved.records))
           saved.records.slice(0, rules.levelCount).forEach((value, i) => {
@@ -40,6 +48,7 @@ WorkTimeApp.games.register({
         if (
           state &&
           candidate?.level === state.level &&
+          candidate.layoutVersion === state.layoutVersion &&
           candidate.seed === state.seed &&
           candidate.moves + 1 === state.moves &&
           candidate.undoLeft === state.undoLeft
@@ -50,7 +59,11 @@ WorkTimeApp.games.register({
       saveFailed = true;
     }
     state ||= rules.create();
-    let tiles = rules.layout(state.level, state.seed).tiles;
+    let tiles = rules.layout(
+      state.level,
+      state.seed,
+      state.layoutVersion,
+    ).tiles;
     const root = node("section", "game-garden game-session", container);
     const header = node("div", "garden-header", root);
     const tools = node("div", "garden-tools", header);
@@ -59,11 +72,12 @@ WorkTimeApp.games.register({
       element.type = "button";
       element.dataset.gardenAction = action;
       listen(element, "click", () => {
-        if (!paused && !disposed && !signal.aborted) callback();
+        if (!paused && !disposed && !signal.aborted && !busy) callback();
       });
       return element;
     }
     const restart = button(tools, "restart", () => {
+      stopMotion();
       choosing = false;
       confirming = true;
       render();
@@ -77,6 +91,7 @@ WorkTimeApp.games.register({
     const chapterTitle = node("span", "", steps);
     chapterTitle.setAttribute("role", "listitem");
     const picker = button(steps, "levels", () => {
+      stopMotion();
       choosing = true;
       render();
       levelButtons[state.level].focus();
@@ -130,9 +145,12 @@ WorkTimeApp.games.register({
       slot.type = "button";
       return slot;
     });
+    const fence = node("div", "garden-fence", tray);
+    fence.setAttribute("aria-hidden", "true");
+    for (let i = 0; i < 8; i++) node("i", "", fence);
     const footer = node("div", "garden-footer", root);
-    const reserveRow = node("div", "garden-reserve-row", footer);
-    const reserveTitle = node("strong", "", reserveRow);
+    const reserveRow = node("div", "garden-reserve-row", field);
+    const reserveTitle = node("strong", "game-sr-only", reserveRow);
     const reserve = node("div", "garden-reserve", reserveRow);
     reserve.setAttribute("role", "group");
     const reserveSlots = Array.from({ length: 2 }, () => {
@@ -141,8 +159,14 @@ WorkTimeApp.games.register({
       return slot;
     });
     const actions = node("div", "garden-actions", footer);
-    const undo = button(actions, "undo", () => {
+    const store = button(actions, "store", () => {
+      const id = state.tray.at(-1);
+      if (id !== undefined) void act("store", id);
+    });
+    const undo = button(actions, "undo", async () => {
       if (confirming || !previous || !state.undoLeft) return;
+      stopMotion();
+      const origins = positions();
       const undoLeft = state.undoLeft - 1,
         hintsLeft = state.hintsLeft;
       state = rules.copy(previous);
@@ -153,7 +177,8 @@ WorkTimeApp.games.register({
       feedback = "undone";
       save();
       render();
-      focusTile();
+      await restoreMotion(origins);
+      if (!disposed && !paused && !signal.aborted) focusTile();
     });
     const hint = button(actions, "hint", () => {
       if (
@@ -172,6 +197,29 @@ WorkTimeApp.games.register({
         reserveSlots[state.reserve.indexOf(suggested.id)]?.focus();
       else tileNodes[suggested.id]?.focus({ preventScroll: true });
     });
+    const toolLabels = new Map();
+    for (const [element, icon] of [
+      [store, "store"],
+      [undo, "undo"],
+      [hint, "hint"],
+    ]) {
+      const graphic = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+      );
+      graphic.setAttribute("viewBox", "0 0 48 48");
+      graphic.setAttribute("aria-hidden", "true");
+      graphic.classList.add("garden-tool-art");
+      const paths = {
+        store:
+          '<path d="M8 24v16h31V24H28v8H19v-8Z"/><path d="M19 7h10v10h8L24 29 11 17h8Z"/>',
+        undo: '<path d="m19 8-13 12 13 12v-8h10a7 7 0 1 1 0 14H19v7h10a14 14 0 1 0 0-28H19Z"/>',
+        hint: '<path d="M24 4a14 14 0 0 0-9 25l3 5h12l3-5A14 14 0 0 0 24 4Z"/><path d="M18 39h12m-10 5h8" fill="none"/>',
+      };
+      graphic.innerHTML = paths[icon];
+      element.append(graphic);
+      toolLabels.set(element, node("span", "garden-tool-label", element));
+    }
     const notice = node("p", "garden-notice game-sr-only", root);
     notice.setAttribute("role", "status");
     const warning = node("p", "garden-warning", field);
@@ -181,7 +229,13 @@ WorkTimeApp.games.register({
       controls: tools,
       signal,
       text: () => t("help"),
+      onChange() {
+        stopMotion();
+        render();
+      },
     });
+    const motionLayer = node("div", "garden-motion", root);
+    motionLayer.setAttribute("aria-hidden", "true");
     const colors = [
       "#c85d52",
       "#bf942f",
@@ -214,14 +268,19 @@ WorkTimeApp.games.register({
     const symbolName = (type) => t("symbol" + type);
     let tileNodes = [];
     function buildBoard() {
+      const rows =
+        state.layoutVersion === 2 ? (state.level === 0 ? 5.4 : 7.4) : 6;
+      stage.style.setProperty("--garden-rows", rows);
+      root.dataset.layoutVersion = state.layoutVersion;
       board.replaceChildren();
       tileNodes = tiles.map((tile) => {
         const element = node("button", "garden-tile garden-token", board);
         element.type = "button";
         element.dataset.tile = tile.id;
         element.style.left = (tile.x / 6) * 100 + "%";
-        element.style.top = (tile.y / 6) * 100 + "%";
+        element.style.top = (tile.y / rows) * 100 + "%";
         element.style.zIndex = tile.z + 1;
+        element.dataset.pile = tile.pile || "main";
         paintToken(element, tile.id);
         return element;
       });
@@ -249,6 +308,247 @@ WorkTimeApp.games.register({
       );
       element.dataset.id = tile ? id : "";
     }
+    function stopMotion() {
+      motionRevision++;
+      animations.forEach((animation) => animation.cancel());
+      animations = [];
+      hiddenTokens.forEach((element) =>
+        element.style.removeProperty("visibility"),
+      );
+      hiddenTokens = [];
+      motionLayer.replaceChildren();
+      busy = false;
+      root.dataset.busy = "false";
+    }
+    function animate(
+      element,
+      frames,
+      duration,
+      easing = "cubic-bezier(.2,.75,.3,1)",
+    ) {
+      // animationCompat releases native fill effects at completion. Keep the
+      // endpoint in ordinary styles so a shorter track never snaps back while
+      // the rest of its group is still running.
+      for (const [name, value] of Object.entries(frames.at(-1))) {
+        if (!["offset", "easing", "composite"].includes(name))
+          element.style[name] = value;
+      }
+      if (!duration) return Promise.resolve();
+      const animation = compat.animate(element, frames, {
+        duration,
+        easing,
+        fill: "both",
+      });
+      animations.push(animation);
+      return animation.finished;
+    }
+    function positions() {
+      const result = new Map();
+      for (const element of [...tileNodes, ...traySlots, ...reserveSlots]) {
+        if (!element.hidden && element.dataset.id !== "")
+          result.set(
+            Number(element.dataset.id),
+            element.getBoundingClientRect(),
+          );
+      }
+      return result;
+    }
+    async function moveMotion(before, next, action, id, origins) {
+      if (reduced.matches || document.hidden) return;
+      const token = ++motionRevision;
+      busy = true;
+      root.dataset.busy = "true";
+      const rootBox = root.getBoundingClientRect();
+      const preview =
+        action === "store"
+          ? next.tray
+          : [...before.tray, id].sort((a, b) => tiles[a].type - tiles[b].type);
+      const matched = preview.filter((value) => !next.tray.includes(value));
+      const targets = new Map();
+      preview.forEach((value, index) =>
+        targets.set(value, traySlots[index].getBoundingClientRect()),
+      );
+      next.reserve.forEach((value, index) =>
+        targets.set(value, reserveSlots[index].getBoundingClientRect()),
+      );
+      const ghosts = [];
+      for (const [value, target] of targets) {
+        const from = origins.get(value);
+        if (!from) continue;
+        const ghost = node("div", "garden-token garden-flight", motionLayer);
+        paintToken(ghost, value);
+        Object.assign(ghost.style, {
+          left: from.left - rootBox.left + "px",
+          top: from.top - rootBox.top + "px",
+          width: from.width + "px",
+          height: from.height + "px",
+        });
+        const frame = (box, scale = 1) =>
+          `translate(${box.left - from.left + (box.width * (1 - scale)) / 2}px, ${box.top - from.top + (box.height * (1 - scale)) / 2}px) scale(${(box.width / from.width) * scale}, ${(box.height / from.height) * scale})`;
+        const destination = [...traySlots, ...reserveSlots].find(
+          (element) => element.dataset.id === String(value),
+        );
+        if (destination) {
+          destination.style.visibility = "hidden";
+          hiddenTokens.push(destination);
+        }
+        ghosts.push({ value, ghost, from, target, frame });
+      }
+      // Fly the picked tile into the rack while existing tiles slide into groups.
+      await Promise.all(
+        ghosts.map(({ value, ghost, target, frame }) =>
+          animate(
+            ghost,
+            [
+              { transform: "translate(0, 0) scale(1)", opacity: 1 },
+              { transform: frame(target), opacity: 1 },
+            ],
+            value === id ? 220 : 180,
+          ),
+        ),
+      );
+      if (token !== motionRevision) return;
+      if (matched.length === 3) {
+        const group = ghosts.filter(({ value }) => matched.includes(value));
+        const center = group[1]?.target;
+        await Promise.all(
+          group.map(({ ghost, target, frame }) =>
+            animate(
+              ghost,
+              [
+                { transform: frame(target), opacity: 1 },
+                { transform: frame(center, 1.06), opacity: 1 },
+              ],
+              85,
+            ),
+          ),
+        );
+        if (token !== motionRevision) return;
+        const burst = node("div", "garden-burst", motionLayer);
+        Object.assign(burst.style, {
+          left: center.left + center.width / 2 - rootBox.left + "px",
+          top: center.top + center.height / 2 - rootBox.top + "px",
+        });
+        const sparks = Array.from({ length: 8 }, (_, index) => {
+          const spark = node("i", "", burst);
+          const angle = (index * Math.PI) / 4;
+          return animate(
+            spark,
+            [
+              { transform: "translate(0,0) scale(.5)", opacity: 1 },
+              {
+                transform: `translate(${Math.cos(angle) * 35}px,${Math.sin(angle) * 35}px) scale(0)`,
+                opacity: 0,
+              },
+            ],
+            180,
+          );
+        });
+        await Promise.all([
+          ...sparks,
+          ...group.map(({ ghost, frame }) =>
+            animate(
+              ghost,
+              [
+                { transform: frame(center, 1.06), opacity: 1 },
+                { transform: frame(center, 0.08), opacity: 0 },
+              ],
+              150,
+            ),
+          ),
+        ]);
+        if (token !== motionRevision) return;
+        group.forEach(({ ghost }) => ghost.remove());
+      }
+      await Promise.all(
+        ghosts
+          .filter(({ value }) => next.tray.includes(value))
+          .map(({ value, ghost, target, frame }) => {
+            const final =
+              traySlots[next.tray.indexOf(value)].getBoundingClientRect();
+            return animate(
+              ghost,
+              [{ transform: frame(target) }, { transform: frame(final) }],
+              matched.length ? 130 : 0,
+            );
+          }),
+      );
+      if (token === motionRevision) stopMotion();
+    }
+    function dealMotion() {
+      if (reduced.matches || document.hidden || paused) return;
+      tileNodes
+        .filter((tile) => !tile.hidden && !tile.disabled)
+        .forEach((tile, index) => {
+          const animation = compat.animate(
+            tile,
+            [
+              { opacity: 0, transform: "translateY(-10px) scale(.92)" },
+              { opacity: 1, transform: "none" },
+            ],
+            {
+              duration: 210,
+              delay: Math.min(index * 8, 160),
+              easing: "cubic-bezier(.2,.85,.3,1.15)",
+            },
+          );
+          animations.push(animation);
+        });
+    }
+    async function restoreMotion(origins) {
+      if (reduced.matches || document.hidden) return;
+      const token = ++motionRevision;
+      const rootBox = root.getBoundingClientRect();
+      busy = true;
+      root.dataset.busy = "true";
+      const pending = [];
+      for (const element of [...tileNodes, ...traySlots, ...reserveSlots]) {
+        if (element.hidden || element.dataset.id === "") continue;
+        const id = Number(element.dataset.id),
+          target = element.getBoundingClientRect(),
+          from = origins.get(id);
+        if (!from) {
+          pending.push(
+            animate(
+              element,
+              [
+                { opacity: 0, transform: "scale(.8)" },
+                { opacity: 1, transform: "none" },
+              ],
+              180,
+            ),
+          );
+        } else if (
+          Math.abs(from.left - target.left) + Math.abs(from.top - target.top) >
+          1
+        ) {
+          const ghost = node("div", "garden-token garden-flight", motionLayer);
+          paintToken(ghost, id);
+          Object.assign(ghost.style, {
+            left: from.left - rootBox.left + "px",
+            top: from.top - rootBox.top + "px",
+            width: from.width + "px",
+            height: from.height + "px",
+          });
+          element.style.visibility = "hidden";
+          hiddenTokens.push(element);
+          pending.push(
+            animate(
+              ghost,
+              [
+                { transform: "none" },
+                {
+                  transform: `translate(${target.left - from.left}px, ${target.top - from.top}px) scale(${target.width / from.width}, ${target.height / from.height})`,
+                },
+              ],
+              220,
+            ),
+          );
+        }
+      }
+      await Promise.all(pending);
+      if (token === motionRevision) stopMotion();
+    }
     function save() {
       if (rules.phase(state, tiles) === "won")
         records[state.level] = Math.max(
@@ -256,7 +556,7 @@ WorkTimeApp.games.register({
           rules.stars(state, tiles),
         );
       try {
-        localStorage.setItem(
+        gameStorage.setItem(
           key,
           JSON.stringify({ version: 1, state, previous, records }),
         );
@@ -272,8 +572,9 @@ WorkTimeApp.games.register({
       return Math.max(level, state.level);
     }
     function start(level, seed) {
+      stopMotion();
       state = rules.create(level, seed);
-      tiles = rules.layout(level, seed).tiles;
+      tiles = rules.layout(level, seed, state.layoutVersion).tiles;
       previous = null;
       confirming = false;
       choosing = false;
@@ -283,13 +584,14 @@ WorkTimeApp.games.register({
       save();
       render();
       focusTile();
+      dealMotion();
     }
     function focusTile() {
       tileNodes
         .find((tile) => !tile.hidden && !tile.disabled)
         ?.focus({ preventScroll: true });
     }
-    function act(action, id) {
+    async function act(action, id) {
       if (
         paused ||
         disposed ||
@@ -301,6 +603,15 @@ WorkTimeApp.games.register({
         return;
       const next = rules.move(state, tiles, action, id);
       if (!next) return;
+      // A fresh valid pick takes priority over cosmetic motion. Commit the
+      // preceding visual state before measuring the next flight; never drop
+      // input or leave a delayed pick waiting behind a match animation.
+      if (busy) {
+        stopMotion();
+        render();
+      }
+      const origins = positions();
+      const before = rules.copy(state);
       const oldCount = state.tray.length + state.reserve.length;
       previous = rules.copy(state);
       state = next;
@@ -313,6 +624,11 @@ WorkTimeApp.games.register({
             ? "stored"
             : "ready";
       save();
+      render();
+      if (!reduced.matches && rules.phase(state, tiles) !== "playing")
+        cover.hidden = true;
+      await moveMotion(before, next, action, id, origins);
+      if (disposed || signal.aborted || paused || state !== next) return;
       render();
       if (rules.phase(state, tiles) === "won") primary.focus();
       else if (action === "pick") focusTile();
@@ -372,6 +688,16 @@ WorkTimeApp.games.register({
       board.inert = confirming || choosing;
       for (const tile of tiles) {
         const element = tileNodes[tile.id];
+        const coverLevel = tile.above.reduce(
+          (highest, id) =>
+            removed.has(id) ? highest : Math.max(highest, tiles[id].z),
+          tile.z,
+        );
+        element.dataset.covered = String(coverLevel > tile.z);
+        element.style.setProperty(
+          "--garden-cover-shade",
+          String(Math.min(3, coverLevel - tile.z)),
+        );
         element.hidden = removed.has(tile.id);
         element.disabled =
           !available.has(tile.id) ||
@@ -423,9 +749,30 @@ WorkTimeApp.games.register({
           );
           slot.title = slot.getAttribute("aria-label");
         });
-      undo.textContent = t("undo", { n: state.undoLeft });
+      toolLabels.get(store).textContent = t("storeTool");
+      store.disabled =
+        confirming ||
+        choosing ||
+        !state.tray.length ||
+        state.reserve.length >= 2;
+      store.dataset.count = String(2 - state.reserve.length);
+      store.title = t("reserveRule");
+      store.setAttribute(
+        "aria-label",
+        t("storeTool") + " · " + (2 - state.reserve.length),
+      );
+      reserveRow.hidden = state.reserve.length === 0;
+      toolLabels.get(undo).textContent = t("undo", { n: state.undoLeft }).split(
+        " · ",
+      )[0];
+      undo.dataset.count = String(state.undoLeft);
+      undo.setAttribute("aria-label", t("undo", { n: state.undoLeft }));
       undo.disabled = confirming || choosing || !previous || !state.undoLeft;
-      hint.textContent = t("hint", { n: state.hintsLeft });
+      toolLabels.get(hint).textContent = t("hint", {
+        n: state.hintsLeft,
+      }).split(" · ")[0];
+      hint.dataset.count = String(state.hintsLeft);
+      hint.setAttribute("aria-label", t("hint", { n: state.hintsLeft }));
       hint.disabled =
         confirming || choosing || !state.hintsLeft || phase !== "playing";
       notice.textContent = t(
@@ -526,19 +873,37 @@ WorkTimeApp.games.register({
       }
     });
     listen(document, "worktime:languagechange", render);
+    signal.addEventListener("abort", stopMotion, { once: true });
+    const unlistenMotion = compat.listen(reduced, () => {
+      stopMotion();
+      render();
+    });
     buildBoard();
     save();
     render();
+    dealMotion();
     return {
+      resize() {
+        stopMotion();
+        render();
+      },
       pause() {
+        stopMotion();
         paused = true;
         save();
+        render();
       },
       resume() {
         paused = false;
+        if (!entered) {
+          entered = true;
+          dealMotion();
+        }
       },
       dispose() {
         if (disposed) return;
+        stopMotion();
+        unlistenMotion();
         save();
         disposed = true;
         root.remove();

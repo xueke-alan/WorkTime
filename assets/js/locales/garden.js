@@ -340,6 +340,16 @@
     ],
   };
   extra["zh-HK"] = extra["zh-TW"];
+  const storeLabels = {
+    "zh-CN": "移出",
+    "zh-TW": "移出",
+    "zh-HK": "移出",
+    en: "Reserve",
+    ja: "保管",
+    ko: "보관",
+  };
+  for (const [language, label] of Object.entries(storeLabels))
+    WorkTimeApp.data.locales[language]["games.garden.storeTool"] = label;
   for (const [language, values] of Object.entries(extra))
     [
       "choose",

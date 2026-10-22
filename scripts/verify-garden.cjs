@@ -22,6 +22,26 @@ function verifyRules() {
       let state = rules.create(level, seed);
       const { tiles, solution } = rules.layout(level, seed);
       if (level < 3) assert.equal(tiles.length, [24, 60, 90][level]);
+      assert.ok(
+        tiles.every(
+          (tile) =>
+            tile.x >= 0 && tile.x + 1 <= 6 && tile.y >= 0 && tile.y + 1 <= 7.4,
+        ),
+      );
+      if (level > 0) {
+        const sides = tiles.filter((tile) => tile.pile.startsWith("side-"));
+        assert.ok(sides.length >= 6);
+        assert.equal(
+          rules
+            .available(tiles, [])
+            .filter((tile) => tile.pile.startsWith("side-")).length,
+          2,
+        );
+        assert.ok(
+          sides.every((tile) => tile.y > 5.5),
+          "Both side piles are detached from the shaped main stack",
+        );
+      }
       assert.equal(tiles.length % 3, 0);
       tiles.forEach((tile) => illustrations.add(tile.type));
       if (level >= 3)
@@ -63,6 +83,16 @@ function verifyRules() {
     }
   }
   assert.equal(illustrations.size, 27);
+  let legacy = { ...rules.create(2, 19), layoutVersion: 1 };
+  const old = rules.layout(legacy.level, legacy.seed, 1);
+  for (const id of old.solution.slice(0, 5))
+    legacy = rules.move(legacy, old.tiles, "pick", id);
+  delete legacy.layoutVersion;
+  assert.equal(
+    rules.restore(legacy).layoutVersion,
+    1,
+    "Unversioned old rounds retain their original geometry and legal history",
+  );
   const state = rules.create(2, 19),
     { tiles, solution } = rules.layout(2, 19);
   const coveredId = tiles.find((tile) => tile.above.length).id;
@@ -125,13 +155,18 @@ function verifyRules() {
   console.log(
     "144 seeded layouts across 18 levels solved; 27 illustrations, stars, geometry, tray capacity, reserve rescue and save validation verified.",
   );
-  return blocked;
+  return { ...blocked, legacy };
 }
 async function main() {
-  const blocked = verifyRules();
+  const motionOnly = process.argv.includes("--motion-only");
+  const blocked = motionOnly ? null : verifyRules();
   fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ headless: true });
   try {
+    if (motionOnly) {
+      await verifyMotion(browser);
+      return;
+    }
     const context = await browser.newContext({
       viewport: { width: 1440, height: 1080 },
       reducedMotion: "reduce",
@@ -153,6 +188,11 @@ async function main() {
     async function open() {
       await page.locator("#date-tab-games").click();
       await page.locator('#gamesPanel [data-game="game-garden"]').click();
+      await page
+        .locator('#gamesPanel [data-game="game-garden"]')
+        .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+        .locator(".game-menu-play")
+        .click();
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
@@ -269,6 +309,11 @@ async function main() {
       const state = (await load()).state;
       assert.equal(state.level, level);
       const { solution } = rules.layout(level, state.seed);
+      if ([0, 1, 2, 8, 17].includes(level)) {
+        await page.locator(".garden-stage").screenshot({
+          path: path.join(output, `stack-level-${level + 1}.png`),
+        });
+      }
       if (level === rules.levelCount - 1) {
         for (const [width, height] of [
           [1440, 1080],
@@ -391,6 +436,28 @@ async function main() {
     await page.evaluate((key) => localStorage.setItem(key, "{broken"), key);
     await open();
     assert.equal((await load()).state.level, 0);
+    await exit();
+    await page.evaluate(
+      ({ key, state }) =>
+        localStorage.setItem(
+          key,
+          JSON.stringify({ version: 1, state, records: [3, 3] }),
+        ),
+      { key, state: blocked.legacy },
+    );
+    await open();
+    assert.equal(
+      await page.locator(".game-garden").getAttribute("data-layout-version"),
+      "1",
+    );
+    assert.equal((await load()).state.removed.length, 5);
+    await action("restart").click();
+    await action("primary").click();
+    assert.equal(
+      await page.locator(".game-garden").getAttribute("data-layout-version"),
+      "2",
+    );
+    assert.equal((await load()).records[0], 3);
     assert.deepEqual(errors, []);
     const unavailable = await context.newPage();
     await unavailable.addInitScript(() => {
@@ -407,6 +474,11 @@ async function main() {
     );
     await unavailable.locator("#date-tab-games").click();
     await unavailable.locator('[data-game="game-garden"]').click();
+    await unavailable
+      .locator('[data-game="game-garden"]')
+      .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+      .locator(".game-menu-play")
+      .click();
     assert.ok(
       (await unavailable.locator(".garden-warning").innerText()).length,
     );
@@ -415,9 +487,245 @@ async function main() {
       "Garden UI: all rounds, reserve, undo, hints, retry, confirmation, save/resume, help, six languages, keyboard, mobile, corrupt/unavailable storage and offline entry verified: " +
         entry,
     );
+    await verifyMotion(browser);
   } finally {
     await browser.close();
   }
+}
+async function verifyMotion(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    reducedMotion: "no-preference",
+  });
+  const page = await context.newPage(),
+    errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route(/^https?:/, (route) => route.abort());
+  const initial = rules.create(0, 19),
+    { solution } = rules.layout(0, 19);
+  await page.addInitScript(
+    ({ key, initial }) =>
+      localStorage.setItem(key, JSON.stringify({ version: 1, state: initial })),
+    { key, initial },
+  );
+  await page.goto(pathToFileURL(entry).href);
+  await page.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  await page.locator("#date-tab-games").click();
+  await page.locator('[data-game="game-garden"]').click();
+  await page
+    .locator('[data-game="game-garden"]')
+    .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+    .locator(".game-menu-play")
+    .click();
+  await page.waitForFunction(
+    () => document.querySelector("#gameShell").dataset.state === "open",
+  );
+  const action = (name) => page.locator(`[data-garden-action="${name}"]`);
+  const tile = (id) => page.locator(`.garden-tile[data-tile="${id}"]`);
+  const settled = () =>
+    page.waitForFunction(
+      () =>
+        document.querySelector(".game-garden")?.dataset.busy !== "true" &&
+        !document.querySelector(".garden-flight"),
+    );
+  const load = () =>
+    page.evaluate((key) => JSON.parse(localStorage.getItem(key)).state, key);
+  await page.evaluate(() => {
+    const nativeAnimate = Element.prototype.animate;
+    window.gardenMotionAudit = {
+      samples: 0,
+      collapsed: 0,
+      bursts: 0,
+      particles: 0,
+      errors: [],
+    };
+    let lastBurst = null;
+    new MutationObserver(() => {
+      const burst = document.querySelector(".garden-burst");
+      if (burst && burst !== lastBurst) {
+        lastBurst = burst;
+        window.gardenMotionAudit.bursts++;
+        window.gardenMotionAudit.particles = burst.children.length;
+      }
+    }).observe(document.querySelector(".garden-motion"), {
+      childList: true,
+      subtree: true,
+    });
+    Element.prototype.animate = function (frames, options) {
+      const animation = nativeAnimate.call(this, frames, options);
+      if (this.matches(".garden-flight, .garden-burst > i")) {
+        const element = this,
+          endpoint = frames.at(-1);
+        animation.finished.then(
+          () =>
+            queueMicrotask(() => {
+              if (!element.isConnected) return;
+              const audit = window.gardenMotionAudit;
+              audit.samples++;
+              const actual = getComputedStyle(element);
+              if (endpoint.transform) {
+                const expected = new DOMMatrix(
+                  endpoint.transform,
+                ).toFloat64Array();
+                const painted = new DOMMatrix(
+                  actual.transform,
+                ).toFloat64Array();
+                if (
+                  expected.some(
+                    (value, i) => Math.abs(value - painted[i]) > 0.01,
+                  )
+                )
+                  audit.errors.push(
+                    "Track jumped after native fill was released",
+                  );
+              }
+              if (
+                endpoint.opacity !== undefined &&
+                Math.abs(Number(actual.opacity) - Number(endpoint.opacity)) >
+                  0.01
+              )
+                audit.errors.push("Completed match became visible again");
+              if (
+                element.classList.contains("garden-flight") &&
+                endpoint.opacity === 0
+              ) {
+                const burst = document
+                  .querySelector(".garden-burst")
+                  .getBoundingClientRect();
+                const box = element.getBoundingClientRect();
+                audit.collapsed++;
+                if (
+                  Math.hypot(
+                    box.x + box.width / 2 - burst.x,
+                    box.y + box.height / 2 - burst.y,
+                  ) > 0.5
+                )
+                  audit.errors.push(
+                    "Triple shrank away from the shared center",
+                  );
+              }
+            }),
+          () => {},
+        );
+      }
+      return animation;
+    };
+  });
+  await tile(solution[0]).click();
+  assert.equal(await page.locator('.game-garden[data-busy="true"]').count(), 1);
+  assert.ok(await page.locator(".garden-flight").count());
+  await page.screenshot({ path: path.join(output, "flight.png") });
+  await settled();
+  await action("store").click();
+  await settled();
+  assert.equal((await load()).reserve.length, 1);
+  await page.locator(".garden-reserve button:enabled").first().click();
+  await settled();
+  assert.equal((await load()).reserve.length, 0);
+  await action("undo").click();
+  await settled();
+  assert.equal((await load()).reserve.length, 1);
+  await page.locator(".garden-reserve button:enabled").first().click();
+  await settled();
+  let removed = 0,
+    sawBurst = false;
+  for (const id of solution.slice(1, 12)) {
+    const before = await load();
+    await tile(id).click();
+    const after = await load();
+    if (after.tray.length < before.tray.length) {
+      sawBurst = true;
+    }
+    await settled();
+    removed = after.removed.length;
+    if (sawBurst) break;
+  }
+  assert.ok(
+    sawBurst,
+    "A matched triple gathers and bursts before remaining tiles settle",
+  );
+  const motionAudit = await page.evaluate(() => window.gardenMotionAudit);
+  assert.ok(motionAudit.samples > 8 && motionAudit.collapsed >= 3);
+  assert.ok(motionAudit.bursts >= 1);
+  assert.equal(motionAudit.particles, 8);
+  assert.deepEqual(
+    motionAudit.errors,
+    [],
+    "Every completed track retains its exact endpoint between animation phases",
+  );
+  assert.equal(await page.locator('[style*="visibility: hidden"]').count(), 0);
+  const nextId = solution[removed];
+  await tile(nextId).click();
+  await page.setViewportSize({ width: 375, height: 667 });
+  await settled();
+  assert.equal((await load()).removed.length, removed + 1);
+  await tile(solution[removed + 1]).click();
+  await page.locator("#gameExitButton").click();
+  await page.waitForFunction(
+    () => document.querySelector("#gameShell").dataset.state === "closed",
+  );
+  assert.equal(await page.locator(".garden-motion").count(), 0);
+  await page.locator('[data-game="game-garden"]').click();
+  await page
+    .locator('[data-game="game-garden"]')
+    .locator('xpath=ancestor::div[contains(@class,"game-library")]')
+    .locator(".game-menu-play")
+    .click();
+  await page.waitForFunction(
+    () => document.querySelector("#gameShell").dataset.state === "open",
+  );
+  assert.equal((await load()).removed.length, removed + 2);
+  // Real hit testing while motion is running: no force-click or synthetic
+  // dispatch, which would miss a CSS pointer-events input lock regression.
+  const rapidStart = (await load()).removed.length;
+  const rapidIds = solution.slice(rapidStart, rapidStart + 8);
+  for (const id of rapidIds) {
+    const box = await tile(id).boundingBox();
+    assert.ok(box);
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    assert.equal(
+      (await load()).removed.at(-1),
+      id,
+      "Every rapid click is committed immediately, including newly exposed tiles",
+    );
+  }
+  await settled();
+  assert.deepEqual(
+    (await load()).removed.slice(rapidStart),
+    Array.from(rapidIds),
+  );
+  assert.equal(await page.locator('[style*="visibility: hidden"]').count(), 0);
+  assert.equal(await page.locator(".garden-flight").count(), 0);
+  assert.ok(
+    rules.restore(await load()),
+    "Rapid picks leave a valid restorable game",
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const saved = await load();
+  await tile(solution[saved.removed.length]).click();
+  await settled();
+  assert.equal(await page.locator(".garden-flight").count(), 0);
+  // Motion is optional: an unavailable native API must settle every phase.
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.evaluate(() => {
+    Element.prototype.animate = () => {
+      throw Error("Animation unavailable");
+    };
+  });
+  await tile(solution[(await load()).removed.length]).click();
+  await settled();
+  await action("levels").click();
+  await page
+    .locator(".garden-level-grid")
+    .screenshot({ path: path.join(output, "level-picker.png") });
+  await action("cancel").click();
+  assert.deepEqual(errors, []);
+  await context.close();
+  console.log(
+    "Garden motion: flight, triple gather/burst, rack compaction, reserve, reverse undo, resize/exit cleanup, reduced motion and unavailable animation APIs verified.",
+  );
 }
 main().catch((error) => {
   console.error(error);
