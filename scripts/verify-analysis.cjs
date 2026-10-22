@@ -190,7 +190,10 @@ async function verifyViewMotion(browser, url, state) {
   const finish = () =>
     page.evaluate(() => {
       const motions = window.viewMotions.splice(0);
-      for (const motion of motions) motion.animation.finish();
+      for (const motion of motions)
+        // A slow screenshot may outlive the compatibility fallback. Finishing
+        // its already-cancelled animation would recreate an orphaned fill effect.
+        if (motion.animation.playState !== "idle") motion.animation.finish();
     });
   const settled = () =>
     page.waitForFunction(() =>

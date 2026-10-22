@@ -156,6 +156,14 @@ async function main() {
     }, key);
     async function launch() {
       const url = pathToFileURL(entry).href;
+      if (page.url() === url) {
+        // Finish the old game's lifecycle before a new document consumes its
+        // fixture; pagehide cleanup must not race the next document's storage.
+        await page.locator("#gameExitButton").click();
+        await page.waitForFunction(
+          () => document.querySelector("#gameShell").dataset.state === "closed",
+        );
+      }
       if (page.url() === url) await page.reload();
       else await page.goto(url);
       await page.waitForFunction(
