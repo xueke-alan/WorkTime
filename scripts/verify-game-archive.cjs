@@ -530,7 +530,9 @@ async function ui() {
     await dialog.locator('input[type="file"]').setInputFiles({
       name: "games.json",
       mimeType: "application/json",
-      buffer: Buffer.from(raw.replace("50", "100")),
+      buffer: Buffer.from(
+        JSON.stringify({ ...JSON.parse(raw), games: { "game-jump": 100 } }),
+      ),
     });
     await page.waitForFunction(
       () => !document.querySelector(".game-archive-footer .primary").disabled,
