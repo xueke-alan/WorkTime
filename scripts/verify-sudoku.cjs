@@ -300,6 +300,19 @@ async function main() {
     await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
     for (const width of [390, 320]) {
       await page.setViewportSize({ width, height: 844 });
+      // The shell and game size are delivered by ResizeObserver. Viewport
+      // resizing can resolve before that callback has selected compact layout.
+      await page.waitForFunction(() => {
+        const game = document.querySelector(".game-sudoku"),
+          board = document
+            .querySelector(".sudoku-board")
+            .getBoundingClientRect();
+        return (
+          game.dataset.layout === "compact" &&
+          board.x >= 0 &&
+          board.right <= innerWidth + 1
+        );
+      });
       const bounds = await page.locator(".sudoku-board").boundingBox();
       assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width + 1);
       assert.equal(
