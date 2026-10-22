@@ -27,9 +27,6 @@
   flex-wrap: wrap;
   min-width: 0;
 }
-.analysis-title > .analysis-caption {
-  margin: 0;
-}
 .analysis-title h2,
 .analysis-chart-heading h2,
 .analysis-streak-heading h2 {
@@ -37,11 +34,6 @@
   font-weight: 600;
   line-height: 1.35;
   letter-spacing: 0.02em;
-}
-.analysis-caption {
-  color: var(--muted);
-  font-size: 12px;
-  margin: 5px 0 0;
 }
 .analysis-manual {
   display: inline-flex;
@@ -375,10 +367,6 @@
 .analysis-streak-heading {
   margin-top: 40px;
 }
-#analysisStreakSummary {
-  font-size: 12px;
-  color: var(--muted);
-}
 .analysis-streak {
   --analysis-marker-inset: 5px;
   min-width: 0;
@@ -556,12 +544,6 @@
   background: transparent;
   border-radius: 0;
   opacity: 0.4;
-}
-.analysis-empty {
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  color: var(--muted);
 }
 body .panel-head #analysisToggle {
   flex: 0 0 auto;

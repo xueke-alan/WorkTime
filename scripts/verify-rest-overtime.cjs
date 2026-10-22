@@ -60,6 +60,24 @@ async function verify() {
     await view.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
+    const counts = await view.evaluate((state) => {
+      return WorkTimeApp.domain.statistics.selectOvertimeRequirement(
+        state,
+        "2026-10-01",
+        "2026-10-31",
+      );
+    }, fixture);
+    assert.deepEqual(counts, {
+      actualDays: 3,
+      plannedDays: 1,
+      totalDays: 4,
+      tier: 4,
+      targetMinutes: fixture.overtimeRequirements[4],
+    });
+    assert.equal(
+      await view.locator("#targetCounts").textContent(),
+      "休息日加班：4 d",
+    );
     const card = (date) => view.locator(`.day[data-date="${date}"]`);
     for (const date of ["2026-10-11", "2026-10-25", "2026-10-01"]) {
       assert.equal(
@@ -75,6 +93,22 @@ async function verify() {
       await card("2026-10-11").locator(".record-source-dot.oa").count(),
       1,
     );
+    const button = view.locator("#plannedOvertimeToggle");
+    for (const date of ["2026-10-11", "2026-10-01"]) {
+      await card(date).click();
+      assert.equal(await button.isDisabled(), true);
+      assert.equal(await button.textContent(), "加班");
+      assert.equal(await button.getAttribute("aria-label"), "加班");
+      assert.equal(await button.getAttribute("aria-pressed"), "false");
+    }
+    for (const date of ["2026-10-17", "2026-10-18", "2026-10-25"]) {
+      await card(date).click();
+      assert.equal(await button.isEnabled(), true);
+      assert.equal(await button.textContent(), "计划加班");
+    }
+    await card("2026-10-24").click();
+    assert.equal(await button.isEnabled(), true);
+    assert.equal(await button.getAttribute("aria-pressed"), "true");
     assert.deepEqual(errors, []);
     await seeded.close();
     console.log(

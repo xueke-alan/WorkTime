@@ -14,7 +14,6 @@ WorkTimeApp.ui.createAnalysis = function ({
     lastSize = "",
     selectedDate = null;
   const number = (value) => WorkTimeApp.i18n.number(value);
-  const dayCount = (count) => t("days", { count: number(count) });
   const date = (value) =>
     WorkTimeApp.i18n.date(value, {
       year: undefined,
@@ -1263,13 +1262,6 @@ WorkTimeApp.ui.createAnalysis = function ({
     lastLanguage = language;
     lastSignature = signature;
     $("analysisManual").checked = view.analysisIncludeManual;
-    fadeText(
-      $("analysisCoverage"),
-      t("coverage", {
-        count: data.count,
-        manual: data.manualDays,
-      }),
-    );
     const earliest = data.earliest,
       latest = data.latest,
       range = data.longest.count
@@ -1309,11 +1301,6 @@ WorkTimeApp.ui.createAnalysis = function ({
       metric("longest", data.count ? number(data.longest.count) : "—", range) +
       "</div>";
     syncMarkup($("analysisMetrics"), metricsMarkup, 0);
-    $("analysisEmpty").hidden = data.count > 0;
-    $("analysisEmpty").textContent = t("emptyChart");
-    $("analysisEmpty").title = t(
-      view.analysisIncludeManual ? "empty" : "emptyOA",
-    );
     $("analysisDetails").hidden = false;
     currentData = data;
     lastSize = "";
@@ -1321,13 +1308,6 @@ WorkTimeApp.ui.createAnalysis = function ({
     $("analysisHover").replaceChildren();
     $("analysisHover").hidden = true;
     syncMarkup($("analysisTimelineLegend"), timelineLegend(), 220);
-    fadeText(
-      $("analysisStreakSummary"),
-      data.longest.count
-        ? t("longestRange", { count: dayCount(data.longest.count), range })
-        : t("noOvertime"),
-      220,
-    );
     syncMarkup($("analysisStreak"), timeline(data), 220);
     drawChart();
     if (sameMonth) {

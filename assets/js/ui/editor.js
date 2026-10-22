@@ -77,19 +77,30 @@ WorkTimeApp.ui.createEditor = function (options) {
       !day.sourcePriority;
   }
   function updatePlannedOvertime(day, info) {
-    const planned = !info.work && !!day.plannedOvertime,
-      label = planned
-        ? WorkTimeApp.i18n.t("copy.cd4a0376cd")
-        : WorkTimeApp.i18n.t("copy.3cf2307526"),
+    const recorded =
+        !info.work &&
+        C.complete(day.oa) &&
+        C.duration(day.oa, C.scheduleForDate(getState(), getView().selected)) >
+          0,
+      planned = !info.work && !!day.plannedOvertime,
+      label = recorded
+        ? WorkTimeApp.i18n.t("short.preview.ot")
+        : planned
+          ? WorkTimeApp.i18n.t("copy.cd4a0376cd")
+          : WorkTimeApp.i18n.t("copy.3cf2307526"),
       button = $("plannedOvertimeToggle");
     $("plannedOvertimeArea").classList.toggle("hidden", info.work);
     $("clearManual").classList.toggle("is-planned-reset", planned);
-    button.setAttribute("aria-pressed", String(planned));
+    button.disabled = recorded;
+    button.setAttribute("aria-pressed", String(planned && !recorded));
     button.setAttribute("aria-label", label);
     button.querySelector(".button-label").textContent = label;
     button
       .querySelector("use")
-      .setAttribute("href", planned ? "#ms-close" : "#ms-today");
+      .setAttribute(
+        "href",
+        recorded ? "#ms-check" : planned ? "#ms-close" : "#ms-today",
+      );
   }
   function renderEditor() {
     const state = getState();

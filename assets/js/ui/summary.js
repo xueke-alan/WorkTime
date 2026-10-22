@@ -257,8 +257,8 @@ WorkTimeApp.ui.createSummary = function (options) {
           : condition.tier === 4
             ? WorkTimeApp.i18n.t("copy.fea703e117")
             : condition.tier + WorkTimeApp.i18n.t("copy.77e1d94d23");
-    display.counts = WorkTimeApp.i18n.t("short.planned", {
-      count: condition.plannedDays,
+    display.counts = WorkTimeApp.i18n.t("short.restOvertimeDays", {
+      count: condition.totalDays,
     });
     display.target =
       condition.targetMinutes === null ? null : condition.targetMinutes / 60;

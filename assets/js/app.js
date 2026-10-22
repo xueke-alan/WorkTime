@@ -253,6 +253,8 @@ WorkTimeApp.services.bootstrap.run(
         attendanceHoursThrough: queries.attendanceHoursThrough,
         calculate: queries.calculate,
         calendarInfo: D.calendar.calendarInfo,
+        complete: D.records.complete,
+        duration: D.records.duration,
         editedDay: D.records.editedDay,
         employmentDay: D.time.employmentDay,
         cumulativeAverageOvertime: queries.cumulativeAverageOvertime,

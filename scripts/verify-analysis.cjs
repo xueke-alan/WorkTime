@@ -333,7 +333,7 @@ async function verifyViewMotion(browser, url, state) {
   await page.locator("#analysisToggle").click();
   await settled();
   assert.equal(await page.locator("#analysisPage").isVisible(), true);
-  assert.equal(await page.locator("#analysisEmpty").isVisible(), true);
+  assert.equal(await page.locator("#analysisEmpty").count(), 0);
   assert.deepEqual(errors, []);
   await context.close();
 }
@@ -1115,7 +1115,7 @@ async function verify() {
     await page.goto(url);
     await ready();
     await page.locator("#analysisToggle").click();
-    assert.equal(await page.locator("#analysisEmpty").isVisible(), true);
+    assert.equal(await page.locator("#analysisEmpty").count(), 0);
     assert.equal(await page.locator(".analysis-range").count(), 0);
     assert.equal(await page.locator(".analysis-lane").count(), 2);
     assert.equal(await page.locator(".analysis-day").count(), 31);
@@ -1522,7 +1522,7 @@ async function verify() {
       await view
         .locator(".analysis-streak-heading #analysisStreakSummary")
         .count(),
-      1,
+      0,
     );
     assert.equal(
       await view.locator(".analysis-distribution-summary").count(),
@@ -1599,7 +1599,7 @@ async function verify() {
       "Date links share the footer row, align right, and never resize cards",
     );
     await view.locator("#nextMonth").click();
-    assert.equal(await view.locator("#analysisEmpty").isVisible(), true);
+    assert.equal(await view.locator("#analysisEmpty").count(), 0);
     assert.equal(await view.locator("#analysisDetails").isVisible(), true);
     assert.equal(await view.locator(".analysis-lane").count(), 2);
     assert.equal(await view.locator(".analysis-range").count(), 0);
@@ -1803,7 +1803,7 @@ async function verify() {
     await view.waitForFunction(
       () => document.querySelectorAll(".analysis-range").length === 12,
     );
-    assert.match(await view.locator("#analysisCoverage").textContent(), /12/);
+    assert.equal(await view.locator("#analysisCoverage").count(), 0);
     await view.locator("#analysisManual").uncheck();
     assert.equal(await view.locator(".analysis-range").count(), 7);
     // Crossing a business date refreshes the same selected month's analysis.

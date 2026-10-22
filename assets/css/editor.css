@@ -2338,3 +2338,10 @@ body .editor #dayForm #clearManual.is-planned-reset:focus-visible {
     opacity: 0;
   }
 }
+
+body .editor #dayForm #plannedOvertimeToggle:disabled {
+  color: var(--muted);
+  background: var(--paper);
+  border-color: var(--line);
+  cursor: default;
+}
