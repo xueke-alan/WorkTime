@@ -46,18 +46,17 @@ jobs:
         env:
           WORKTIME_BROWSER_CHANNEL: chromium
         run: node scripts/verify-batch-month.cjs && node scripts/verify-reset-state.cjs && node scripts/verify-rest-overtime.cjs && node scripts/verify-source-priority.cjs
-      - name: Verify offline games
+      - name: Verify offline features and rendering
         env:
           WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-games.cjs && node scripts/verify-minesweeper.cjs && node scripts/verify-snake.cjs && node scripts/verify-sudoku.cjs && node scripts/verify-sokoban.cjs
-      - name: Verify analysis and rendering performance
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-analysis.cjs && node scripts/verify-performance.cjs
-      - name: Verify offline jump
-        env:
-          WORKTIME_BROWSER_CHANNEL: chromium
-        run: node scripts/verify-jump.cjs
+        run: |
+          failed=0
+          for feature in games minesweeper snake sudoku sokoban analysis performance jump; do
+            echo "::group::Verify $feature"
+            node "scripts/verify-$feature.cjs" || failed=1
+            echo "::endgroup::"
+          done
+          exit "$failed"
       - name: Prepare site
         run: |
           mkdir _site

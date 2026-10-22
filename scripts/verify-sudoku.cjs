@@ -155,7 +155,9 @@ async function main() {
       }
     }, key);
     async function launch() {
-      await page.goto(pathToFileURL(entry).href);
+      const url = pathToFileURL(entry).href;
+      if (page.url() === url) await page.reload();
+      else await page.goto(url);
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
@@ -176,8 +178,10 @@ async function main() {
         await page.locator(".sudoku-options > summary").click();
       await action(id).click();
     }
-    const saved = () =>
-      page.evaluate((k) => JSON.parse(localStorage.getItem(k)), key);
+    const saved = async () => {
+      await page.waitForFunction((k) => localStorage.getItem(k) !== null, key);
+      return page.evaluate((k) => JSON.parse(localStorage.getItem(k)), key);
+    };
     await launch();
     assert.equal(await page.locator(".sudoku-categories button").count(), 6);
     assert.equal(await page.locator(".sudoku-levels button").count(), 20);
