@@ -584,13 +584,62 @@ WorkTimeApp.services.gameArchive = (() => {
         games,
       };
     }
-    function exportArchive() {
+    function exportArchive({
+      allowEmpty = false,
+      includeDefaults = false,
+    } = {}) {
       const { games } = read();
       const saves = Object.fromEntries(
-        Object.entries(games).filter(([id, value]) => hasContent(id, value)),
+        Object.entries(games).filter(
+          ([id, value]) => includeDefaults || hasContent(id, value),
+        ),
       );
-      if (!Object.keys(saves).length) fail("empty");
+      if (!allowEmpty && !Object.keys(saves).length) fail("empty");
       return pack(saves);
+    }
+    async function replace(archive, apply) {
+      const incoming = validate(archive),
+        latest = read(),
+        storage = getStorage();
+      const revision =
+        Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+      storage.setItem(
+        BACKUP,
+        JSON.stringify({
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          raw: latest.raw,
+        }),
+      );
+      storage.setItem(
+        JOURNAL,
+        JSON.stringify({ version: 1, revision, before: latest.raw }),
+      );
+      let result;
+      try {
+        storage.setItem(REVISION, revision);
+        restoreRaw(
+          Object.fromEntries(
+            Object.keys(keys).map((id) => [
+              id,
+              Object.hasOwn(incoming.games, id)
+                ? JSON.stringify(incoming.games[id])
+                : null,
+            ]),
+          ),
+        );
+        result = await apply();
+        if (!result.persisted) {
+          recover();
+          return result;
+        }
+        storage.removeItem(JOURNAL);
+      } catch (error) {
+        if (!result?.persisted) recover();
+        throw error;
+      }
+      notify();
+      return result;
     }
     function preview(archive, choices = {}) {
       const incoming = validate(archive),
@@ -698,6 +747,7 @@ WorkTimeApp.services.gameArchive = (() => {
       read,
       recover,
       exportArchive,
+      replace,
       preview,
       commit,
       previousBackup,
@@ -731,5 +781,6 @@ WorkTimeApp.services.gameArchive = (() => {
     ...owner,
     initialize: () => exclusive(owner.recover),
     commit: (value) => exclusive(() => owner.commit(value)),
+    replace: (value, apply) => exclusive(() => owner.replace(value, apply)),
   };
 })();

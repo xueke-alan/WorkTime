@@ -1893,3 +1893,48 @@ for (const [language, labels] of Object.entries({
   WorkTimeApp.data.locales[language]["gameArchive.draftsAdded"] = labels[0];
   WorkTimeApp.data.locales[language]["gameArchive.completedAdded"] = labels[1];
 }
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "完整备份（含游戏存档）：点击复制，按住两秒下载",
+    "同时包含 {count} 个游戏存档，恢复将替换此浏览器中的全部游戏存档。",
+    "此备份仅恢复工作数据，游戏存档保持不变。",
+    "不支持此完整备份版本。",
+  ],
+  "zh-TW": [
+    "完整備份（含遊戲存檔）：點擊複製，按住兩秒下載",
+    "同時包含 {count} 個遊戲存檔，還原將取代此瀏覽器中的全部遊戲存檔。",
+    "此備份僅還原工作資料，遊戲存檔保持不變。",
+    "不支援此完整備份版本。",
+  ],
+  "zh-HK": [
+    "完整備份（含遊戲存檔）：點擊複製，按住兩秒下載",
+    "同時包含 {count} 個遊戲存檔，還原將取代此瀏覽器中的全部遊戲存檔。",
+    "此備份僅還原工作資料，遊戲存檔保持不變。",
+    "不支援此完整備份版本。",
+  ],
+  en: [
+    "Full backup including game saves: click to copy, hold for two seconds to download",
+    "Also includes {count} game saves. Restoring replaces all game saves in this browser.",
+    "This backup restores work data only. Game saves remain unchanged.",
+    "This full backup version is not supported.",
+  ],
+  ja: [
+    "ゲームのセーブを含む完全バックアップ：クリックでコピー、2秒長押しでダウンロード",
+    "ゲームのセーブ {count} 件も含まれます。復元すると、このブラウザーのすべてのゲームセーブが置き換わります。",
+    "このバックアップは勤務データのみを復元します。ゲームのセーブは変更されません。",
+    "この完全バックアップのバージョンには対応していません。",
+  ],
+  ko: [
+    "게임 저장을 포함한 전체 백업: 클릭하여 복사, 2초간 눌러 다운로드",
+    "게임 저장 {count}개도 포함됩니다. 복원하면 이 브라우저의 모든 게임 저장이 교체됩니다.",
+    "이 백업은 근무 데이터만 복원합니다. 게임 저장은 변경되지 않습니다.",
+    "지원하지 않는 전체 백업 버전입니다.",
+  ],
+})) {
+  const locale = WorkTimeApp.data.locales[language];
+  locale["copy.17860d9b22"] = labels[0];
+  locale["copy.f958aadb8e"] = labels[0];
+  locale["backup.includesGames"] = labels[1];
+  locale["backup.workOnly"] = labels[2];
+  locale["backup.unsupported"] = labels[3];
+}

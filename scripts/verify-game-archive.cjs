@@ -402,6 +402,91 @@ async function unit() {
     0,
     "empty pre-import backups can still be downloaded",
   );
+  const replacement = memory(),
+    replacementOwner = S.create(() => replacement);
+  assert.equal(
+    Object.keys(replacementOwner.exportArchive({ allowEmpty: true }).games)
+      .length,
+    0,
+  );
+  replacement.setItem(S.keys["game-jump"], "70");
+  replacement.setItem(S.keys["game-tank"], JSON.stringify(saves["game-tank"]));
+  const beforeReplacement = copy(replacementOwner.read().raw);
+  const workFailure = { persisted: false, error: Error("work storage full") };
+  assert.equal(
+    await replacementOwner.replace(
+      archive({ "game-jump": 10 }),
+      async () => workFailure,
+    ),
+    workFailure,
+  );
+  assert.deepEqual(copy(replacementOwner.read().raw), beforeReplacement);
+  await assert.rejects(
+    replacementOwner.replace(archive({ "game-jump": 10 }), async () => {
+      throw Error("work restore failed");
+    }),
+    /work restore failed/,
+  );
+  assert.deepEqual(copy(replacementOwner.read().raw), beforeReplacement);
+  const staleReplacement = replacementOwner.session();
+  let applyCalls = 0;
+  replacement.fault = (op, key) => {
+    if (op === "set" && key === S.BACKUP) throw Error("backup full");
+  };
+  await assert.rejects(
+    replacementOwner.replace(archive({ "game-jump": 10 }), async () => {
+      applyCalls++;
+      return { persisted: true };
+    }),
+    /backup full/,
+  );
+  replacement.fault = null;
+  assert.equal(applyCalls, 0);
+  assert.deepEqual(copy(replacementOwner.read().raw), beforeReplacement);
+  await replacementOwner.replace(archive({ "game-jump": 10 }), async () => ({
+    persisted: true,
+  }));
+  assert.equal(replacement.getItem(S.keys["game-jump"]), "10");
+  assert.equal(replacement.getItem(S.keys["game-tank"]), null);
+  assert.throws(() => staleReplacement.setItem(S.keys["game-jump"], "100"), {
+    code: "stale",
+  });
+  await replacementOwner.replace(archive({}), async () => ({
+    persisted: true,
+  }));
+  assert.equal(Object.keys(replacementOwner.read().games).length, 0);
+  await replacementOwner.replace(archive(saves), async () => ({
+    persisted: true,
+  }));
+  assert.deepEqual(
+    copy(replacementOwner.read().games),
+    copy(S.validate(archive(saves)).games),
+  );
+  assert.ok(
+    Object.keys(
+      fresh.exportArchive({ allowEmpty: true, includeDefaults: true }).games,
+    ).includes("game-2048"),
+  );
+  const rawFull = JSON.stringify({
+    format: "worktime-full-backup",
+    games: archive(saves),
+  });
+  const compact = await app.services.backup.encodeCompact(rawFull);
+  assert.ok(
+    compact.length <= (await app.services.backup.encode(rawFull)).length,
+  );
+  assert.deepEqual(
+    copy(await app.services.backup.decode(compact, (v) => v)),
+    JSON.parse(rawFull),
+  );
+  assert.equal(await app.services.backup.encodeCompact("1"), "1");
+  await assert.rejects(
+    () =>
+      app.services.backup.decode(compact, (v) => v, {
+        maxBytes: compact.length + 1,
+      }),
+    { code: "tooLarge" },
+  );
   console.log(
     "Nine-game transport, validation, merge policy, idempotence, preview isolation, rollback, recovery and stale sessions passed.",
   );

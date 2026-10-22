@@ -2,17 +2,29 @@
 /** Backup transport independent of DOM, storage and confirmation dialogs. */
 WorkTimeApp.services.backup = (() => {
   const PREFIX = "WORKTIME:GZIP:1:";
+  const DEFLATE_PREFIX = "WORKTIME:DEFLATE:1:";
   const MAX_BYTES = 100 * 1024 * 1024;
-  async function encode(raw) {
+  async function compress(raw, format, prefix) {
     const bytes = new Uint8Array(
       await new Response(
-        new Blob([raw]).stream().pipeThrough(new CompressionStream("gzip")),
+        new Blob([raw]).stream().pipeThrough(new CompressionStream(format)),
       ).arrayBuffer(),
     );
     let binary = "";
     for (let i = 0; i < bytes.length; i += 32768)
       binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
-    return PREFIX + btoa(binary);
+    return prefix + btoa(binary);
+  }
+  const encode = (raw) => compress(raw, "gzip", PREFIX);
+  async function encodeCompact(raw) {
+    if (typeof CompressionStream !== "function") return raw;
+    const candidates = [raw, await encode(raw)];
+    try {
+      candidates.push(await compress(raw, "deflate-raw", DEFLATE_PREFIX));
+    } catch {
+      // Older browsers still support the existing gzip transport.
+    }
+    return candidates.reduce((a, b) => (a.length <= b.length ? a : b));
   }
   async function decode(
     text,
@@ -37,12 +49,15 @@ WorkTimeApp.services.backup = (() => {
       return error;
     };
     if (new TextEncoder().encode(text).length > maxBytes) throw limitError();
-    if (text.startsWith(PREFIX)) {
-      const binary = atob(text.slice(PREFIX.length));
+    const prefix = [PREFIX, DEFLATE_PREFIX].find((p) => text.startsWith(p));
+    if (prefix) {
+      const binary = atob(text.slice(prefix.length));
       const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
       const reader = new Blob([bytes])
         .stream()
-        .pipeThrough(new DecompressionStream("gzip"))
+        .pipeThrough(
+          new DecompressionStream(prefix === PREFIX ? "gzip" : "deflate-raw"),
+        )
         .getReader();
       const chunks = [];
       let size = 0;
@@ -71,5 +86,5 @@ WorkTimeApp.services.backup = (() => {
     }
     return validate(value);
   }
-  return { PREFIX, MAX_BYTES, encode, decode };
+  return { PREFIX, MAX_BYTES, encode, encodeCompact, decode };
 })();

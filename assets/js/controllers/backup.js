@@ -17,6 +17,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
     exportArchive,
   } = options;
   let restoreData = null;
+  let restoreGames = null;
   let pendingTheme = null;
   let disposed = false;
   let generation = 0;
@@ -24,12 +25,34 @@ WorkTimeApp.ui.createBackupController = function (options) {
   let copyResetTimer = null,
     holdAction = null;
   const BACKUP_MAX_BYTES = WorkTimeApp.services.backup.MAX_BYTES;
-  const compressBackupText = WorkTimeApp.services.backup.encode;
+  const compressBackupText = WorkTimeApp.services.backup.encodeCompact;
+  const FULL_FORMAT = "worktime-full-backup";
+  async function exportFullArchive() {
+    await WorkTimeApp.games.prepareArchive();
+    return {
+      format: FULL_FORMAT,
+      version: 1,
+      work: await exportArchive(),
+      games: WorkTimeApp.services.gameArchive.exportArchive({
+        allowEmpty: true,
+        includeDefaults: true,
+      }),
+    };
+  }
   const readBackupText = (text) =>
-    WorkTimeApp.services.backup.decode(
-      text,
-      WorkTimeApp.services.archive.migrate,
-    );
+    WorkTimeApp.services.backup.decode(text, async (value) => {
+      if (value?.format !== FULL_FORMAT)
+        return {
+          work: WorkTimeApp.services.archive.migrate(value),
+          games: null,
+        };
+      if (value.version !== 1)
+        throw Error(WorkTimeApp.i18n.t("backup.unsupported"));
+      const work = WorkTimeApp.services.archive.migrate(value.work);
+      await WorkTimeApp.games.prepareArchive();
+      const games = WorkTimeApp.services.gameArchive.validate(value.games);
+      return { work, games };
+    });
   function updateRecovery() {
     const issue = model.loadIssue;
     $("exportCorruptStorage").hidden = getOriginalStorageText() === null;
@@ -58,11 +81,16 @@ WorkTimeApp.ui.createBackupController = function (options) {
     actions.toast(WorkTimeApp.i18n.t("copy.8e990e61b4"), "countdown");
   }
   async function backup() {
+    const lifetime = generation;
     try {
+      const text = await compressBackupText(
+        JSON.stringify(await exportFullArchive()),
+      );
+      if (disposed || lifetime !== generation) return;
       download(
-        WorkTimeApp.i18n.t("copy.35c89c4491") + model.today + ".json",
-        JSON.stringify(await exportArchive(), null, 2),
-        "application/json;charset=utf-8",
+        WorkTimeApp.i18n.t("copy.35c89c4491") + model.today + ".txt",
+        text,
+        "text/plain;charset=utf-8",
       );
       actions.toast(WorkTimeApp.i18n.t("copy.5091362c8b"), "countdown");
     } catch (error) {
@@ -80,11 +108,8 @@ WorkTimeApp.ui.createBackupController = function (options) {
     if (backupCopying) return;
     backupCopying = true;
     try {
-      const raw = JSON.stringify(await exportArchive());
-      const text =
-        typeof CompressionStream === "function"
-          ? await compressBackupText(raw)
-          : raw;
+      const raw = JSON.stringify(await exportFullArchive());
+      const text = await compressBackupText(raw);
       if (disposed || lifetime !== generation) return;
       await clipboard.writeText(text);
       if (disposed || lifetime !== generation) return;
@@ -110,9 +135,10 @@ WorkTimeApp.ui.createBackupController = function (options) {
       if (lifetime === generation) backupCopying = false;
     }
   }
-  function previewRestore(data, source) {
+  function previewRestore(data, source, games = null) {
     if (disposed) return;
     restoreData = data;
+    restoreGames = games;
     pendingTheme = null;
     $("restoreError").textContent = "";
     $("confirmRestore").disabled = false;
@@ -139,7 +165,10 @@ WorkTimeApp.ui.createBackupController = function (options) {
             ).name,
           ) +
           "。"
-        : "");
+        : "") +
+      WorkTimeApp.i18n.t(games ? "backup.includesGames" : "backup.workOnly", {
+        count: Object.keys(games?.games || {}).length,
+      });
     actions.open("restoreDialog");
   }
   async function restoreFromClipboard() {
@@ -148,12 +177,17 @@ WorkTimeApp.ui.createBackupController = function (options) {
     if (button.disabled) return;
     button.disabled = true;
     restoreData = null;
+    restoreGames = null;
     try {
       const text = await clipboard.readText();
       if (disposed || lifetime !== generation) return;
       const decoded = await readBackupText(text);
       if (disposed || lifetime !== generation) return;
-      previewRestore(decoded, WorkTimeApp.i18n.t("copy.c4eb94d079"));
+      previewRestore(
+        decoded.work,
+        WorkTimeApp.i18n.t("copy.c4eb94d079"),
+        decoded.games,
+      );
       actions.toast(WorkTimeApp.i18n.t("copy.32936d1ceb"));
     } catch (error) {
       if (disposed || lifetime !== generation) return;
@@ -294,6 +328,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
     });
     events.listen($("restoreDialog"), "close", () => {
       restoreData = null;
+      restoreGames = null;
       pendingTheme = null;
     });
     events.handler($("retryRestoreTheme"), "onclick", () => {
@@ -312,12 +347,17 @@ WorkTimeApp.ui.createBackupController = function (options) {
       const f = e.target.files[0];
       if (!f) return;
       restoreData = null;
+      restoreGames = null;
       try {
         if (f.size > BACKUP_MAX_BYTES)
           throw Error(WorkTimeApp.i18n.t("copy.c3b5086f19"));
         const decoded = await readBackupText(await f.text());
         if (disposed || lifetime !== generation) return;
-        previewRestore(decoded, WorkTimeApp.i18n.t("copy.49deaf7da2"));
+        previewRestore(
+          decoded.work,
+          WorkTimeApp.i18n.t("copy.49deaf7da2"),
+          decoded.games,
+        );
         actions.toast(WorkTimeApp.i18n.t("copy.32936d1ceb"));
       } catch (err) {
         if (disposed || lifetime !== generation) return;
@@ -332,10 +372,15 @@ WorkTimeApp.ui.createBackupController = function (options) {
     events.handler($("confirmRestore"), "onclick", async () => {
       if (!restoreData) return;
       const candidate = restoreData;
+      const games = restoreGames;
       $("confirmRestore").disabled = true;
       let result;
       try {
-        result = await application.restore(candidate);
+        result = games
+          ? await WorkTimeApp.services.gameArchive.replace(games, () =>
+              application.restore(candidate),
+            )
+          : await application.restore(candidate);
       } catch (error) {
         result = { persisted: false, error };
       }
@@ -348,6 +393,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
       }
       pendingTheme = candidate.preferences.pageTheme;
       restoreData = null;
+      restoreGames = null;
       actions.render();
       finishThemeRestore();
     });
@@ -360,6 +406,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
     bound = false;
     disposed = true;
     restoreData = null;
+    restoreGames = null;
     pendingTheme = null;
     holdAction?.dispose();
     clearTimeout(copyResetTimer);

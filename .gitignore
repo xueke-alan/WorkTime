@@ -66,6 +66,7 @@ __pycache__/
 !/scripts/verify-games.cjs
 !/scripts/verify-game-menu.cjs
 !/scripts/verify-game-archive.cjs
+!/scripts/verify-backup-clipboard.cjs
 !/scripts/verify-minesweeper.cjs
 !/scripts/verify-snake.cjs
 !/scripts/verify-sudoku.cjs
