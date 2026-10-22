@@ -637,6 +637,14 @@ async function verifyBrowser() {
     for (const width of [390, 320, 768, 1440]) {
       await page.setViewportSize({ width, height: width < 400 ? 844 : 1000 });
       await page.clock.runFor(150);
+      // Advancing the game clock does not flush native resize notifications.
+      // Wait for the measured board size to catch up with the actual viewport.
+      await page.waitForFunction(() => {
+        const board = document
+          .querySelector(".snake-board")
+          .getBoundingClientRect();
+        return board.x >= 0 && board.right <= innerWidth + 1;
+      });
       const b = await page.locator(".snake-board").boundingBox();
       assert.ok(
         b.x >= 0 && b.x + b.width <= width + 1,
