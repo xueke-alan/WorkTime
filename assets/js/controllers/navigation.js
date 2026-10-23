@@ -485,6 +485,21 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (model.batchMode) prepareBatchEditor();
       actions.renderCalendar();
     });
+    events.handler($("batchAutoSelect"), "onclick", () => {
+      if (resettingBatch || model.batchSaving || !model.batchMode) return;
+      model.batchDays.clear();
+      model.batchAnchor = null;
+      for (const card of $("calendar").querySelectorAll(".day[data-date]")) {
+        const date = card.dataset.date;
+        if (
+          date.slice(0, 7) === model.month &&
+          C.canBatchEditDate(model.state, date) &&
+          !C.complete(C.effectiveRecord(model.state.days[date], true))
+        )
+          model.batchDays.add(date);
+      }
+      refreshBatchPreview();
+    });
     events.handler($("batchCancel"), "onclick", () => {
       if (resettingBatch) return;
       stopTodayAttention();

@@ -3,6 +3,7 @@
   --ink: #233c3a;
   --muted: #738681;
   --accent: #157e68;
+  --theme-chart-secondary: #8963b8;
   --accent-light: #e7f5ef;
   --bg: #eef3f1;
   --line: #e4ece8;
@@ -97,6 +98,7 @@
 
 :root[data-theme="blue"] {
   --accent: #2563a6;
+  --theme-chart-secondary: #398374;
   --theme-rgb: 37, 99, 166;
   --ink: #24374d;
   --muted: #576d83;
@@ -104,6 +106,7 @@
 
 :root[data-theme="purple"] {
   --accent: #7652a3;
+  --theme-chart-secondary: #348574;
   --theme-rgb: 118, 82, 163;
   --ink: #3d304d;
   --muted: #71617f;
@@ -111,6 +114,7 @@
 
 :root[data-theme="orange"] {
   --accent: #a85616;
+  --theme-chart-secondary: #4c78a1;
   --theme-rgb: 168, 86, 22;
   --ink: #493629;
   --muted: #7f6755;
@@ -119,6 +123,7 @@
 :root[data-theme="rose"],
 :root[data-theme="slate"] {
   --accent: #a64165;
+  --theme-chart-secondary: #7156a6;
   --theme-rgb: 166, 65, 101;
   --ink: #24374d;
   --muted: #576d83;
@@ -126,11 +131,13 @@
 
 :root[data-theme="slate"] {
   --accent: #526979;
+  --theme-chart-secondary: #86639f;
   --theme-rgb: 82, 105, 121;
 }
 
 :root[data-theme="cyan"] {
   --accent: #087481;
+  --theme-chart-secondary: #7862aa;
   --theme-rgb: 8, 116, 129;
   --ink: #244247;
   --muted: #55757b;
@@ -138,6 +145,7 @@
 
 :root[data-theme="mint"] {
   --accent: #397a59;
+  --theme-chart-secondary: #5876a8;
   --theme-rgb: 57, 122, 89;
   --ink: #2d4034;
   --muted: #617869;
@@ -145,6 +153,7 @@
 
 :root[data-theme="olive"] {
   --accent: #6b742b;
+  --theme-chart-secondary: #288078;
   --theme-rgb: 107, 116, 43;
   --ink: #3b4029;
   --muted: #707654;
@@ -152,6 +161,7 @@
 
 :root[data-theme="gold"] {
   --accent: #846312;
+  --theme-chart-secondary: #4f78a0;
   --theme-rgb: 132, 99, 18;
   --ink: #453b25;
   --muted: #7b6d4e;
@@ -159,6 +169,7 @@
 
 :root[data-theme="red"] {
   --accent: #ad3e3e;
+  --theme-chart-secondary: #795ba4;
   --theme-rgb: 173, 62, 62;
   --ink: #4d2e2e;
   --muted: #855e5e;
@@ -166,6 +177,7 @@
 
 :root[data-theme="brown"] {
   --accent: #805b43;
+  --theme-chart-secondary: #377c82;
   --theme-rgb: 128, 91, 67;
   --ink: #40352e;
   --muted: #78695e;

@@ -1,5 +1,25 @@
 "use strict";
 for (const [language, labels] of Object.entries({
+  "zh-CN": ["自动选择", "选择本月所有可批量填写且信息不全的日期"],
+  "zh-TW": ["自動選取", "選取本月所有可批次填寫且資料不完整的日期"],
+  "zh-HK": ["自動選擇", "選擇本月所有可批量填寫且資料不完整的日期"],
+  en: [
+    "Auto-select",
+    "Select all eligible dates with incomplete records this month",
+  ],
+  ja: [
+    "自動選択",
+    "今月の一括入力可能な日付のうち、記録が不完全な日をすべて選択",
+  ],
+  ko: [
+    "자동 선택",
+    "이번 달 일괄 입력 가능한 날짜 중 기록이 불완전한 날짜 모두 선택",
+  ],
+})) {
+  WorkTimeApp.data.locales[language]["batch.autoSelect"] = labels[0];
+  WorkTimeApp.data.locales[language]["batch.autoSelectHint"] = labels[1];
+}
+for (const [language, labels] of Object.entries({
   "zh-CN": ["工时溢出", "工时仍欠"],
   "zh-TW": ["工時溢出", "工時仍欠"],
   "zh-HK": ["工時溢出", "工時仍欠"],

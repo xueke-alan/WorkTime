@@ -65,7 +65,7 @@ WorkTimeApp.ui.createAnalysisGraphics = function ({
     for (const lane of lanes) {
       const values = [
         ...lane.references,
-        ...data.days.map((day) => day[lane.key]),
+        ...data.chartDays.map((day) => day[lane.key]),
       ];
       lane.scale = scale(
         values,
@@ -158,7 +158,7 @@ WorkTimeApp.ui.createAnalysisGraphics = function ({
       svg += "</g>";
     }
     // One accessible target per observed date links both tracks and the detail strip.
-    for (const day of data.days) {
+    for (const day of data.chartDays) {
       const cx = x(Number(day.date.slice(8)) - 1),
         startY = lanes[0].scale.y(day.start),
         endY = lanes[1].scale.y(day.end),
@@ -182,6 +182,7 @@ WorkTimeApp.ui.createAnalysisGraphics = function ({
       svg +=
         '<g class="analysis-range' +
         (day.manual ? " is-manual" : "") +
+        (day.date > data.asOf ? " is-future" : "") +
         (!day.work ? " is-rest-overtime" : "") +
         '" tabindex="0" role="img" data-date="' +
         day.date +

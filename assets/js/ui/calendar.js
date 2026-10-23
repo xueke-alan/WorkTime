@@ -706,6 +706,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     );
     $("batchSave").disabled = !batchDraft?.canConfirm || batchSaving;
     $("batchCancel").disabled = $("batchToggle").disabled = !!batchSaving;
+    $("batchAutoSelect").disabled = !!batchSaving;
     const resetAll = !batchDays.size;
     $("batchReset").disabled =
       $("batchForm").getAttribute("aria-busy") === "true";

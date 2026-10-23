@@ -39,6 +39,7 @@ const WorkTimeDomainStatistics = (() => {
   ) {
     const [first, last] = WorkTimeApp.domain.time.monthBounds(month);
     const days = [],
+      chartDays = [],
       calendarDays = [];
     let run = [],
       longest = [];
@@ -53,9 +54,11 @@ const WorkTimeDomainStatistics = (() => {
         workStart: timeMin(schedule.workStart),
         workEnd: timeMin(schedule.workEnd),
       });
-      const record = effectiveRecord(day, includeManual);
+      const record = effectiveRecord(day, includeManual),
+        manual = !!(record?.manual || record?.filledStart || record?.filledEnd),
+        future = date > asOf;
       if (
-        date > asOf ||
+        (future && !(includeManual && manual)) ||
         (workdaysOnly && !work) ||
         !complete(record) ||
         (!includeManual &&
@@ -84,8 +87,14 @@ const WorkTimeDomainStatistics = (() => {
         minutes: result.minutes,
         overtime: result.overtime,
         work,
-        manual: !!(record.manual || record.filledStart || record.filledEnd),
+        manual,
       };
+      chartDays.push(item);
+      // Future manual plans are visible without changing observed statistics.
+      if (future) {
+        run = [];
+        continue;
+      }
       days.push(item);
       if (result.overtime > 0) {
         run.push(date);
@@ -116,6 +125,7 @@ const WorkTimeDomainStatistics = (() => {
       asOf,
       includeManual,
       calendarDays,
+      chartDays,
       days,
       count: days.length,
       manualDays: days.filter((day) => day.manual).length,

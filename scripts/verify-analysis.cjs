@@ -1091,6 +1091,94 @@ async function assertFullscreen(page, label) {
   await assertDailyConnections(page);
 }
 
+async function verifyFutureManual(browser, url, input) {
+  const context = await browser.newContext({
+    locale: "zh-CN",
+    reducedMotion: "reduce",
+    viewport: { width: 1920, height: 1080 },
+  });
+  try {
+    await context.route(/^https?:/, (route) => route.abort());
+    await context.addInitScript((input) => {
+      const state = structuredClone(input),
+        manual = { start: "08:30", end: "20:00", nextDay: false };
+      state.days = {
+        "2026-10-20": {
+          ...input.days["2026-10-13"],
+          oa: { ...input.days["2026-10-13"].oa, date: "2026-10-20" },
+        },
+        "2026-10-22": input.days["2026-10-22"],
+        "2026-10-23": { estimate: manual, kind: "work" },
+        "2026-10-24": { actual: manual, kind: "rest" },
+        "2026-10-25": { draft: { ...manual, end: "" } },
+        "2026-10-26": {
+          oa: {
+            ...input.days["2026-10-22"].oa,
+            date: "2026-10-26",
+            end: "",
+            status: "pending",
+          },
+          actual: manual,
+          kind: "work",
+        },
+        "2026-11-02": { estimate: manual, kind: "work" },
+      };
+      localStorage.setItem("worktime-local-v1", JSON.stringify(state));
+    }, input);
+    const page = await context.newPage();
+    await page.clock.setFixedTime(new Date("2026-10-21T04:00:00Z"));
+    await page.goto(url);
+    await page.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+    await page.locator("#analysisToggle").click();
+    assert.equal(await page.locator(".analysis-range").count(), 1);
+    const metrics = await page.locator("#analysisMetrics").textContent();
+    await page.locator("#analysisManual").check();
+    assert.deepEqual(
+      await page.locator(".analysis-range").evaluateAll((groups) =>
+        groups.map((group) => ({
+          date: group.dataset.date,
+          dashed:
+            getComputedStyle(group.querySelector(".analysis-connector"))
+              .strokeDasharray !== "none",
+        })),
+      ),
+      [
+        { date: "2026-10-20", dashed: false },
+        { date: "2026-10-23", dashed: true },
+        { date: "2026-10-24", dashed: true },
+        { date: "2026-10-26", dashed: true },
+      ],
+      "Future manual and manually completed records appear dashed; future OA and incomplete records stay excluded",
+    );
+    assert.equal(await page.locator("#analysisMetrics").textContent(), metrics);
+    await page.locator('.analysis-range[data-date="2026-10-23"]').focus();
+    assert.equal(await page.locator("#analysisHover").isVisible(), true);
+    assert.ok(
+      (await page.locator("#analysisHover").textContent()).includes("20:00"),
+    );
+    await page.locator("#analysisManual").uncheck();
+    assert.equal(await page.locator(".analysis-range.is-future").count(), 0);
+    const future = await page.evaluate(() => {
+      const state = JSON.parse(localStorage.getItem("worktime-local-v1"));
+      return WorkTimeApp.domain.statistics.monthlyAnalysis(
+        state,
+        "2026-11",
+        "2026-10-21",
+        true,
+      );
+    });
+    assert.equal(future.count, 0);
+    assert.deepEqual(
+      future.chartDays.map((day) => day.date),
+      ["2026-11-02"],
+    );
+  } finally {
+    await context.close();
+  }
+}
+
 async function verify() {
   const browser = await chromium.launch({
     channel: process.env.WORKTIME_BROWSER_CHANNEL || "msedge",
@@ -1540,6 +1628,51 @@ async function verify() {
       }),
       true,
       "Rest-day lines, endpoints (including late diamonds), manual records and distribution markers share a distinct legend color",
+    );
+    const themeColors = await view.evaluate(() => {
+      const root = document.documentElement,
+        previous = root.dataset.theme;
+      try {
+        return WorkTimeApp.domain.preferences.themes.map(({ id }) => {
+          root.dataset.theme = id;
+          const color = getComputedStyle(
+              document.querySelector(".analysis-legend-rest-overtime"),
+            ).backgroundColor,
+            range = document.querySelector(".analysis-range.is-rest-overtime");
+          return {
+            id,
+            color,
+            distinct: [".analysis-legend-dot", ".analysis-legend-manual"].every(
+              (selector) =>
+                getComputedStyle(document.querySelector(selector))
+                  .backgroundColor !== color,
+            ),
+            synchronized:
+              getComputedStyle(range.querySelector(".analysis-connector"))
+                .stroke === color &&
+              [
+                ...range.querySelectorAll(
+                  ".analysis-point, .analysis-point-alternate",
+                ),
+              ].every((point) => getComputedStyle(point).fill === color) &&
+              getComputedStyle(
+                document.querySelector(
+                  '.analysis-timeline-legend [data-state="restOvertime"] i',
+                ),
+              ).backgroundColor === color,
+          };
+        });
+      } finally {
+        if (previous === undefined) delete root.dataset.theme;
+        else root.dataset.theme = previous;
+      }
+    });
+    assert.equal(
+      new Set(themeColors.map((theme) => theme.color)).size,
+      themeColors.length,
+    );
+    assert.ok(
+      themeColors.every((theme) => theme.distinct && theme.synchronized),
     );
     assert.equal(
       await view.locator(".analysis-metric-ratio").getAttribute("aria-label"),
@@ -2007,6 +2140,7 @@ async function verify() {
       );
       await full.locator(".analysis-metric details summary").first().click();
     }
+    await verifyFutureManual(browser, url, results.state);
     await verifyViewMotion(browser, url, results.state);
     await verifyComponentMotion(browser, url, results.state);
     await dense.close();

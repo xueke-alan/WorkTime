@@ -498,6 +498,7 @@ WorkTimeApp.services.bootstrap.run(
           calendarInfo: D.calendar.calendarInfo,
           complete: D.records.complete,
           dateKey: D.time.dateKey,
+          effectiveRecord: D.records.effectiveRecord,
           endForDuration: D.records.endForDuration,
           localDate: D.time.localDate,
           scheduleForDate: D.schedule.scheduleForDate,

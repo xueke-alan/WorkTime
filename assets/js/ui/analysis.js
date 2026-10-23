@@ -119,7 +119,7 @@ WorkTimeApp.ui.createAnalysis = function ({
       ) + "px";
   }
   function selectDate(value) {
-    const day = currentData?.days.find((item) => item.date === value);
+    const day = currentData?.chartDays.find((item) => item.date === value);
     const next = day?.date || null;
     if (next === selectedDate && $("analysisHover").childElementCount) return;
     const appearing = Boolean(day && $("analysisHover").hidden);

@@ -313,14 +313,28 @@ body .notification-empty {
   color: var(--muted);
 }
 
+.batch-selection-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+}
 .batch-selection-count {
   margin: 0;
   padding-block: 0.857143rem;
   padding-inline-start: 8px;
-  border-bottom: 1px solid var(--line);
   color: var(--muted);
   font-size: var(--text-body);
   text-align: left;
+}
+.batch-selection-row #batchAutoSelect {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  min-height: 1.857143rem;
+  height: auto;
+  padding: 3px 8px;
+  font-size: var(--text-small);
 }
 .batch-editor h2 {
   font-size: 21px;

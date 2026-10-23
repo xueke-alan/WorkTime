@@ -5,7 +5,7 @@
 }
 .analysis-page {
   --analysis-late: var(--amber);
-  --analysis-rest-overtime: #8963b8;
+  --analysis-rest-overtime: var(--theme-chart-secondary);
   flex: 1;
   min-height: 0;
   padding: 28px 32px;
@@ -295,6 +295,9 @@
 }
 .analysis-range.is-manual {
   --analysis-record: var(--amber);
+}
+.analysis-range.is-future .analysis-connector {
+  stroke-dasharray: 5 5;
 }
 .analysis-range.is-rest-overtime {
   --analysis-record: var(--analysis-rest-overtime);

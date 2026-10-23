@@ -3,6 +3,8 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { pathToFileURL } = require("node:url");
+const { chromium } = require("playwright");
 const root = path.resolve(__dirname, "..");
 const realm = vm.createContext({});
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
@@ -38,6 +40,127 @@ initial.days["2026-10-20"] = {
 initial.days["2026-10-21"] = { leaveMinutes: 1440, note: "full leave" };
 initial.days["2026-10-11"] = { plannedOvertime: true, estimate: record };
 initial.days["2026-10-18"] = { plannedOvertime: true };
+async function verifyAutoSelection() {
+  const state = plain(D.state.defaultState()),
+    full = { ...record, effectiveMinutes: null },
+    oa = (date, end) => ({
+      date,
+      start: "08:00",
+      end,
+      nextDay: false,
+      status: end ? "complete" : "pending",
+      source: "test",
+      raw: "",
+    });
+  state.days = {
+    "2026-10-20": { kind: "work", oa: oa("2026-10-20", "18:00") },
+    "2026-10-21": { kind: "work", oa: oa("2026-10-21", "") },
+    "2026-10-22": { kind: "work", oa: oa("2026-10-22", ""), actual: full },
+    "2026-10-23": {
+      kind: "work",
+      leaveMinutes: state.settings.standardMinutes,
+    },
+    "2026-10-24": { kind: "rest" },
+    "2026-10-26": { kind: "work", plannedOvertime: true },
+    "2026-10-27": { kind: "work", draft: { ...full, end: "" } },
+    "2026-10-28": { kind: "work", actual: full },
+  };
+  const expected = Array.from(
+    { length: 31 },
+    (_, index) => month + "-" + String(index + 1).padStart(2, "0"),
+  ).filter(
+    (date) =>
+      D.schedule.canBatchEditDate(state, date) &&
+      !D.records.complete(D.records.effectiveRecord(state.days[date], true)),
+  );
+  const browser = await chromium.launch({
+    channel: process.env.WORKTIME_BROWSER_CHANNEL || "msedge",
+    headless: true,
+  });
+  try {
+    const context = await browser.newContext({
+      viewport: { width: 1365, height: 900 },
+      reducedMotion: "reduce",
+    });
+    await context.route(/^https?:/, (route) => route.abort());
+    await context.addInitScript((state) => {
+      localStorage.setItem("worktime-local-v1", JSON.stringify(state));
+    }, state);
+    const page = await context.newPage(),
+      errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.clock.setFixedTime(new Date("2026-10-23T04:00:00Z"));
+    await page.goto(pathToFileURL(path.join(root, "index.html")).href);
+    await page.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+    const saved = await page.evaluate(() =>
+      localStorage.getItem("worktime-local-v1"),
+    );
+    await page.locator("#batchToggle").click();
+    await page.locator('.day[data-date="2026-10-20"]').click();
+    const selected = () =>
+      page
+        .locator(".day.batchselected")
+        .evaluateAll((cards) => cards.map((card) => card.dataset.date));
+    await page.locator("#batchAutoSelect").click();
+    assert.deepEqual(await selected(), expected);
+    assert.ok(expected.includes("2026-10-21"));
+    assert.ok(expected.includes("2026-10-27"));
+    for (const day of ["20", "22", "23", "24", "26", "28"])
+      assert.ok(!expected.includes(month + "-" + day));
+    assert.ok(
+      (await page.locator("#batchSelectionCount").textContent()).includes(
+        String(expected.length),
+      ),
+    );
+    await page.locator("#batchStart").fill("08:00");
+    await page.locator("#batchEnd").fill("18:00");
+    await page.locator("#batchAutoSelect").click();
+    assert.deepEqual(
+      await selected(),
+      expected,
+      "Selection uses original records during preview",
+    );
+    assert.equal(
+      await page.evaluate(() => localStorage.getItem("worktime-local-v1")),
+      saved,
+      "Selection must not persist preview data",
+    );
+    for (const width of [1365, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const language of ["zh-CN", "en", "zh-TW", "zh-HK", "ja", "ko"]) {
+        await page.evaluate(
+          (language) => WorkTimeApp.i18n.setLanguage(language),
+          language,
+        );
+        const geometry = await page
+          .locator("#batchAutoSelect")
+          .evaluate((button) => {
+            const bounds = button.getBoundingClientRect(),
+              row = button.parentElement.getBoundingClientRect(),
+              count = document
+                .querySelector("#batchSelectionCount")
+                .getBoundingClientRect();
+            return {
+              text: button.textContent,
+              right: Math.abs(bounds.right - row.right),
+              overlap: count.right > bounds.left,
+              height: bounds.height,
+            };
+          });
+        assert.ok(geometry.text && !geometry.text.includes("batch.autoSelect"));
+        assert.ok(geometry.right < 2);
+        assert.equal(geometry.overlap, false);
+        assert.ok(geometry.height <= 34);
+      }
+    }
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+  }
+}
+
 async function verify() {
   const before = plain(initial);
   for (const reset of ["none", "selected", "all"]) {
@@ -158,6 +281,7 @@ async function verify() {
   assert.equal(cancel.dirty, false);
   await owner.cancelPlanned("2026-10-18");
   assert.equal(owner.state.days["2026-10-18"], undefined);
+  await verifyAutoSelection();
   console.log(
     "Batch month verified: preview, fill, selected/all reset, failed save and atomic confirmation preserve other months.",
   );
