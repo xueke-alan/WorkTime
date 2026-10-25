@@ -433,6 +433,27 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/arrow_forward/materialsymbolsrounded/arrow_forward_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "5a6d56dbb1ffcfc46756a2f2a59116de7eb80e4db7c5fb14c74c22abc8661d19"
+    },
+    {
+      "id": "ms-view-week",
+      "name": "view_week",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/view_week/materialsymbolsrounded/view_week_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "bd0694ca5ca6cee7056e3c45b9aaac0a58fc0638e640d4e749938183c57d0ab7"
+    },
+    {
+      "id": "ms-calendar-view-month",
+      "name": "calendar_view_month",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/calendar_view_month/materialsymbolsrounded/calendar_view_month_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "821d8116a512320c45522a519ec846130b01f186c6048a4e8f88629f8da53441"
+    },
+    {
+      "id": "ms-calendar-month",
+      "name": "calendar_month",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/calendar_month/materialsymbolsrounded/calendar_month_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "5e519e24938ba00d32b07f9cc16126584bfba6fe06e451b1ec3a17cdd286fe20"
     }
   ]
 }

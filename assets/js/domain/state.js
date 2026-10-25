@@ -28,6 +28,8 @@ const WorkTimeDomainState = (() => {
       },
       scheduleRanges: [],
       timeTemplates: [],
+      agenda: [],
+      memo: "",
       days: {},
       imports: [],
     };

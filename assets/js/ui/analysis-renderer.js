@@ -365,6 +365,47 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
       });
       return;
     }
+    if (element.matches?.(".analysis-metric-ratio")) {
+      const before = element.getAttribute("aria-label"),
+        after = target.getAttribute("aria-label");
+      if (
+        animateUpdate &&
+        before !== after &&
+        (before === "—" || after === "—")
+      ) {
+        WorkTimeApp.ui.numbers.settle(element);
+        const incoming = window.document.createElement("span"),
+          outgoing = window.document.createElement("span");
+        incoming.className = "analysis-ratio-row";
+        outgoing.className = "analysis-ratio-row analysis-ratio-outgoing";
+        incoming.setAttribute("aria-hidden", "true");
+        outgoing.setAttribute("aria-hidden", "true");
+        incoming.append(
+          ...[...target.children].map((child) => child.cloneNode(true)),
+        );
+        for (const numeric of incoming.querySelectorAll(
+          ".analysis-metric-value",
+        )) {
+          const value = numeric.textContent;
+          WorkTimeApp.ui.numbers.set(numeric, value, {
+            animateInitial: false,
+            motion: false,
+          });
+          numeric.dataset.value = value;
+        }
+        outgoing.append(...element.childNodes);
+        element.setAttribute("aria-label", after);
+        element.append(incoming, outgoing);
+        // One row carries numerator, SVG divider and denominator. Only the
+        // incoming row owns layout; the old placeholder cannot widen it.
+        queue((p) => {
+          incoming.style.transform = `translateY(${(1 - p) * 100}%)`;
+          outgoing.style.transform = `translateY(${-p * 100}%)`;
+        }, 0);
+        cleanups.push(() => element.replaceChildren(...incoming.childNodes));
+        return;
+      }
+    }
     if (element.matches?.(".analysis-metric-value")) {
       element.hidden = target.hidden;
       const value = target.textContent,

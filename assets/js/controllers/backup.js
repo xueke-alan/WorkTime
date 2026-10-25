@@ -28,6 +28,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
   const compressBackupText = WorkTimeApp.services.backup.encodeCompact;
   const FULL_FORMAT = "worktime-full-backup";
   async function exportFullArchive() {
+    await actions.prepareAgendaArchive();
     await WorkTimeApp.games.prepareArchive();
     return {
       format: FULL_FORMAT,
@@ -168,6 +169,15 @@ WorkTimeApp.ui.createBackupController = function (options) {
         : "") +
       WorkTimeApp.i18n.t(games ? "backup.includesGames" : "backup.workOnly", {
         count: Object.keys(games?.games || {}).length,
+      });
+    $("restoreSummary").textContent +=
+      " " +
+      WorkTimeApp.i18n.t("agenda.restore", {
+        count: (data.agenda || []).length,
+      }) +
+      " " +
+      WorkTimeApp.i18n.t("agenda.memoRestore", {
+        count: (data.memo || "").length,
       });
     actions.open("restoreDialog");
   }

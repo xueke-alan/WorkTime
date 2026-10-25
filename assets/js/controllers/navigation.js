@@ -4,6 +4,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   const events = WorkTimeApp.ui.createEventScope();
   const { core: C, model, actions, element: $, clock, application } = options;
   const animationCompat = WorkTimeApp.ui.animationCompat;
+  const calendarMotion = WorkTimeApp.ui.motion.calendar;
   const reducedMotion = animationCompat.preference();
   let todayAttention = null,
     analysisTransition = null,
@@ -24,7 +25,9 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       model.yearMode = false;
     }
     model.analysisMode = transition.target;
+    transition.beforeRender?.();
     actions.render();
+    transition.afterRender?.();
   }
 
   function stopAnalysisTransition(settle = true) {
@@ -40,12 +43,18 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     }
   }
 
-  async function toggleAnalysis() {
+  async function transitionAnalysis(
+    target,
+    beforeRender = null,
+    afterRender = null,
+  ) {
     if (resettingBatch || model.batchMode || analysisTransition) return;
     stopMonthTransition();
     stopTodayAttention();
     const transition = {
-      target: !model.analysisMode,
+      target,
+      beforeRender,
+      afterRender,
       committed: false,
       animations: [],
       elements: new Map(),
@@ -77,12 +86,10 @@ WorkTimeApp.ui.createNavigationController = function (options) {
           element,
           entering ? frames : frames.toReversed(),
           {
-            duration: entering ? 220 : 140,
-            easing: entering
-              ? getComputedStyle(element)
-                  .getPropertyValue("--motion-ease")
-                  .trim() || "cubic-bezier(0.22, 1, 0.36, 1)"
-              : "ease-in",
+            duration: entering
+              ? calendarMotion.analysisEnterDuration
+              : calendarMotion.analysisLeaveDuration,
+            easing: entering ? calendarMotion.easing : "ease-in",
             fill: "both",
           },
         );
@@ -103,6 +110,9 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     } finally {
       if (analysisTransition === transition) stopAnalysisTransition();
     }
+  }
+  function toggleAnalysis() {
+    return transitionAnalysis(!model.analysisMode);
   }
   function highlightToday() {
     stopTodayAttention();
@@ -172,8 +182,8 @@ WorkTimeApp.ui.createNavigationController = function (options) {
           { opacity: 1, transform: "none", clipPath: "inset(0)" },
         ],
         {
-          duration: 260,
-          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          duration: calendarMotion.navigationDuration,
+          easing: calendarMotion.easing,
           fill: "both",
         },
       ),
@@ -591,6 +601,13 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     dispose,
     updateBatchNextToggle,
     refreshBatchPreview,
+    transitionAnalysis,
+    animateCalendarNavigation: animateMonth,
+    finishCalendarNavigation() {
+      stopAnalysisTransition();
+      stopMonthTransition();
+      stopTodayAttention();
+    },
     hasDraft,
   };
 };

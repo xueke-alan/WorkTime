@@ -117,12 +117,12 @@ async function verifyViewMotion(browser, url, state) {
     Element.prototype.animate = function (frames, options) {
       const animation = animate.call(this, frames, options);
       if (
-        options.duration === 260 &&
+        options.duration === 320 &&
         frames.some((frame) => /translateX\(-?18px\)/.test(frame.transform))
       )
         window.monthMotions.push({ id: this.id, frames, animation });
       if (
-        [140, 220].includes(options.duration) &&
+        [180, 280].includes(options.duration) &&
         (this.id === "panelContent" ||
           this.parentElement?.classList.contains("calendar-footer"))
       ) {
@@ -167,7 +167,7 @@ async function verifyViewMotion(browser, url, state) {
       assert.equal(motion.options.duration, duration);
       if (motion.id === "panelContent")
         assert.equal(
-          motion.frames[duration === 140 ? 1 : 0].transform,
+          motion.frames[duration === 180 ? 1 : 0].transform,
           `translateY(${offset}px)`,
         );
       else
@@ -175,7 +175,7 @@ async function verifyViewMotion(browser, url, state) {
           motion.frames.every((frame) => !("transform" in frame)),
           "Footer content only fades",
         );
-      assert.equal(motion.frames[duration === 140 ? 1 : 0].opacity, 0);
+      assert.equal(motion.frames[duration === 180 ? 1 : 0].opacity, 0);
     }
     assert.equal(
       await page
@@ -206,7 +206,7 @@ async function verifyViewMotion(browser, url, state) {
           !element
             .getAnimations()
             .some((animation) =>
-              [140, 220].includes(animation.effect.getTiming().duration),
+              [180, 280].includes(animation.effect.getTiming().duration),
             )
         );
       }),
@@ -216,7 +216,7 @@ async function verifyViewMotion(browser, url, state) {
     for (const entering of [true, false]) {
       await page.locator("#analysisToggle").focus();
       await page.keyboard.press("Enter");
-      await phase(140, entering ? -24 : 24);
+      await phase(180, entering ? -24 : 24);
       // Repeated activation must not reverse or restart a transition.
       await page.locator("#analysisToggle").dispatchEvent("click");
       assert.equal(
@@ -224,7 +224,7 @@ async function verifyViewMotion(browser, url, state) {
         String(!entering),
       );
       await finish();
-      await phase(220, entering ? 24 : -24);
+      await phase(280, entering ? 24 : -24);
       assert.equal(
         await page.locator("#analysisToggle").getAttribute("aria-pressed"),
         String(entering),
@@ -259,12 +259,76 @@ async function verifyViewMotion(browser, url, state) {
     }
   }
   await page.setViewportSize({ width: 1920, height: 1080 });
+  for (const [view, count] of [
+    ["month", 0],
+    ["week", 7],
+    ["fortnight", 14],
+  ]) {
+    await page.locator("#agendaMode").click();
+    for (
+      let step = 0;
+      step < 3 &&
+      (await page.locator("#agendaViewToggle").getAttribute("data-view")) !==
+        view;
+      step++
+    )
+      await page.locator("#agendaViewToggle").click();
+    await page.locator("#agendaNew").click();
+    // Exercise view transitions with an unchanged form; dirty drafts require
+    // their own discard-confirmation flow before the transition can begin.
+    assert.equal(await page.locator("#analysisToggle").isEnabled(), true);
+    await page.locator("#analysisToggle").click();
+    await phase(180, -24);
+    await finish();
+    await phase(280, 24);
+    await finish();
+    await settled();
+    assert.equal(await page.locator("#analysisPage").isVisible(), true);
+    assert.equal(
+      await page.locator("#agendaMode").getAttribute("aria-pressed"),
+      "false",
+    );
+    await page.locator("#agendaMode").click();
+    await phase(180, 24);
+    await finish();
+    await phase(280, -24);
+    await finish();
+    await settled();
+    assert.equal(await page.locator("#analysisPage").isVisible(), false);
+    assert.equal(
+      await page.locator("#agendaMode").getAttribute("aria-pressed"),
+      "true",
+    );
+    assert.equal(await page.locator("#agendaTitle").inputValue(), "");
+    assert.equal(
+      await page.locator("#agendaViewToggle").getAttribute("data-view"),
+      view,
+    );
+    if (count)
+      assert.equal(
+        await page.locator("#calendar > [data-agenda-week]").count(),
+        count,
+      );
+    await page.locator("#agendaMode").click();
+  }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.locator("#agendaMode").click();
+  await page.locator("#analysisToggle").click();
+  assert.equal(await page.locator("#analysisPage").isVisible(), true);
+  await page.locator("#agendaMode").click();
+  assert.equal(await page.locator("#analysisPage").isVisible(), false);
+  assert.equal(
+    await page.locator("#agendaViewToggle").getAttribute("data-view"),
+    "fortnight",
+  );
+  await page.locator("#agendaMode").click();
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   for (const analysis of [false, true]) {
     if (analysis) {
       await page.locator("#analysisToggle").click();
-      await phase(140, -24);
+      await phase(180, -24);
       await finish();
-      await phase(220, 24);
+      await phase(280, 24);
       await finish();
       await settled();
     }
@@ -314,7 +378,7 @@ async function verifyViewMotion(browser, url, state) {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.locator("#monthTitle").click();
   await page.locator("#analysisToggle").click();
-  await phase(140, -24);
+  await phase(180, -24);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await settled();
   assert.equal(await page.locator("#analysisPage").isVisible(), true);
@@ -806,6 +870,7 @@ async function verifyComponentMotion(browser, url, input) {
     .locator(".analysis-metric details summary")
     .first()
     .evaluate((element) => element.click());
+  await page.clock.runFor(16);
   assert.equal(
     await page
       .locator(".analysis-metric details[open] p")
@@ -1515,18 +1580,18 @@ async function verify() {
       );
     await waitReady();
     assert.equal(
-      await view.locator("#todayButton + #analysisToggle").count(),
+      await view.locator("#todayButton + #agendaModes #analysisToggle").count(),
       1,
     );
     const calendarFooter = await view.locator("#calendarFoot").textContent();
     assert.equal(
       await view.locator("#analysisToggle use").getAttribute("href"),
-      "#ms-calendar",
+      "#ui-calendar-analysis",
     );
     await view.locator("#analysisToggle").click();
     assert.equal(
       await view.locator("#analysisToggle use").getAttribute("href"),
-      "#ms-table-chart-view",
+      "#ui-calendar-analysis",
     );
     assert.equal(await view.locator("#analysisPage").isVisible(), true);
     assert.equal(

@@ -413,10 +413,24 @@
   line-height: 1.1;
 }
 .analysis-metric-ratio {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.18em;
   height: 1.1em;
+  overflow: hidden;
+}
+.analysis-ratio-row {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: inherit;
+  height: 100%;
+}
+.analysis-ratio-outgoing {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 .analysis-ratio-divider {
   display: block;
@@ -502,7 +516,7 @@
   width: 9px;
   height: 9px;
   background: transparent;
-  border: 1.5px solid var(--muted);
+  border: 2px solid color-mix(in srgb, var(--muted) 78%, var(--paper));
   border-radius: 50%;
 }
 .analysis-day[data-state="future"] {
@@ -548,7 +562,7 @@
   width: 8px;
   height: 8px;
   background: transparent;
-  border: 1.5px solid var(--muted);
+  border: 2px solid color-mix(in srgb, var(--muted) 78%, var(--paper));
   border-radius: 50%;
 }
 .analysis-timeline-legend [data-state="future"] i {
@@ -561,11 +575,11 @@
 body .panel-head #analysisToggle {
   flex: 0 0 auto;
 }
-body .panel-head #analysisToggle.is-active {
+body .panel-head :is(#analysisToggle.is-active, #agendaMode[aria-pressed="true"]) {
   color: var(--theme-text-on-accent, var(--paper));
   background: var(--theme-accent-deep, var(--accent));
 }
-body .panel-head #analysisToggle.is-active .ui-icon {
+body .panel-head :is(#analysisToggle.is-active, #agendaMode[aria-pressed="true"]) .ui-icon {
   color: inherit;
 }
 @media (min-width: 1151px) {

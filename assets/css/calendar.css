@@ -22,10 +22,9 @@
 }
 body .panel-head > .row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
 }
-.calendar-today,
 body .editor .editor-day-header .editor-date {
   justify-self: center;
   justify-content: center;
@@ -82,18 +81,14 @@ body .editor .editor-day-header .editor-date {
   body .panel-head > .row {
     grid-template-columns: minmax(0, 1fr) auto;
   }
-  .calendar-today {
-    grid-column: 1 / -1;
-    grid-row: 1;
-  }
 }
 @media (max-width: 850px) {
   body .panel-head > .row {
     grid-template-columns: minmax(0, 1fr);
   }
-  .calendar-today {
-    grid-column: 1 / -1;
-    grid-row: 1;
+  body .panel-head .calendar-toolbar-actions {
+    grid-column: 1;
+    grid-row: 2;
   }
 }
 .month-title {
@@ -705,8 +700,9 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 .day.weekend:not([data-holiday]):not(.full-leave)::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: url("../images/weekend.svg") bottom center / cover no-repeat;
+  inset: auto 0 0;
+  aspect-ratio: 4 / 5;
+  background: url("../images/weekend.svg") bottom center / 100% auto no-repeat;
   opacity: 0.25;
   pointer-events: none;
   z-index: -1;
@@ -726,9 +722,10 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 .day[data-holiday]::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: auto 0 0;
+  aspect-ratio: 4 / 5;
   background-image: var(--holiday-art);
-  background-size: cover;
+  background-size: 100% auto;
   background-position: bottom center;
   background-repeat: no-repeat;
   opacity: 0.25;
@@ -804,7 +801,7 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
   content: "";
   position: absolute;
   left: 3%;
-  top: 29%;
+  bottom: 0;
   width: 62%;
   aspect-ratio: 4 / 3;
   background: url("../images/national-day-stars.svg") top left/contain no-repeat;
@@ -823,9 +820,8 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
   position: absolute;
   inset: auto 0 0 auto;
   width: 95px;
-  height: 95px;
+  aspect-ratio: 1;
   max-width: 88%;
-  max-height: 85%;
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2096%2096%22%3E%3Ccircle%20cx%3D%2276%22%20cy%3D%2220%22%20r%3D%2210%22%20fill%3D%22%23e5ddf0%22%2F%3E%3Cpath%20d%3D%22M14%2043q23-34%2047%200Z%22%20fill%3D%22%23dfd3ee%22%2F%3E%3Cpath%20d%3D%22M37%2025q-8%205-8%2018m8-18q8%205%208%2018M37%2044v34%22%20fill%3D%22none%22%20stroke%3D%22%23c5b5da%22%20stroke-width%3D%221.7%22%2F%3E%3Cpath%20d%3D%22m47%2051%2012%2019h22M51%2078l8-8m12%200%208%208M59%2070l-6-14h16%22%20fill%3D%22none%22%20stroke%3D%22%23c5b5da%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M10%2087q24-8%2073-1%22%20fill%3D%22none%22%20stroke%3D%22%23ded3ea%22%20stroke-width%3D%222%22%2F%3E%3C%2Fsvg%3E");
   background-position: bottom right;
   background-repeat: no-repeat;
@@ -841,7 +837,6 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 @media (min-width: 1800px) and (min-height: 900px) {
   .day.full-leave::before {
     width: 115px;
-    height: 115px;
   }
 }
 .day.full-leave::before {
@@ -982,6 +977,7 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 }
 @media (min-width: 1151px) {
   .workspace > section.panel > .panel-head {
+    --month-item-gap: 0.428571rem;
     height: var(--column-header-height);
     padding: 0 16px;
     display: flex;
@@ -1083,12 +1079,12 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
   border-color: color-mix(in srgb, var(--day-tone) 55%, var(--day-surface));
   box-shadow: none;
 }
-:is(.backup-button-group, .settings-button-group) {
+:is(.backup-button-group, .settings-button-group, .calendar-view-button-group) {
   display: inline-flex;
   flex: none;
   isolation: isolate;
 }
-:is(.backup-button-group, .settings-button-group) button:focus-visible {
+:is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button:focus-visible {
   position: relative;
   z-index: 1;
 }
@@ -1109,16 +1105,20 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
   height: 16px;
   flex: none;
 }
-body :is(.backup-button-group, .settings-button-group) {
+body :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) {
   gap: 0;
   overflow: visible;
   height: var(--control-height);
-  border: 1px solid var(--theme-border-soft, #d7e3de);
+  border: 1px solid var(--control-border);
   border-radius: var(--control-radius);
   background: white;
-  box-shadow: 0 1px 2px rgba(var(--theme-rgb, 32, 59, 54), 0.019608);
+  box-shadow: var(--control-shadow);
 }
-body .panel-head :is(.backup-button-group, .settings-button-group) button {
+/* The shared frame follows the same hover color as standalone controls. */
+body :is(.backup-button-group, .settings-button-group, .calendar-view-button-group):has(button:hover:not(:disabled)) {
+  border-color: var(--theme-border, #aecdbf);
+}
+body .panel-head :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button {
   /* Child controls stretch inside one shared border instead of ordinary fixed-height geometry. */
   border: 0;
   border-radius: 0 !important;
@@ -1128,16 +1128,16 @@ body .panel-head :is(.backup-button-group, .settings-button-group) button {
   max-height: none !important;
   box-shadow: none;
 }
-body .panel-head :is(.backup-button-group, .settings-button-group) button + button {
-  border-left: 1px solid var(--theme-border-soft, #d7e3de);
+body .panel-head :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button + button {
+  border-left: 1px solid var(--control-border);
 }
-body .panel-head :is(.backup-button-group, .settings-button-group) button:first-child {
+body .panel-head :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button:first-child {
   border-radius: calc(var(--control-radius) - 1px) 0 0 calc(var(--control-radius) - 1px) !important;
 }
-body .panel-head :is(.backup-button-group, .settings-button-group) button:last-child {
+body .panel-head :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button:last-child {
   border-radius: 0 calc(var(--control-radius) - 1px) calc(var(--control-radius) - 1px) 0 !important;
 }
-body :is(.backup-button-group, .settings-button-group) button:focus-visible {
+body :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button:focus-visible {
   outline: 0;
 }
 @media (min-width: 1800px) and (min-height: 820px) and (max-height: 1050px) {
@@ -1147,8 +1147,8 @@ body :is(.backup-button-group, .settings-button-group) button:focus-visible {
   }
 }
 .panel-head .calendar-toolbar-actions button {
-  border: 1px solid var(--theme-border-soft, #d7e3de);
-  box-shadow: 0 1px 2px rgba(var(--theme-rgb, 32, 59, 54), 0.019608);
+  border: 1px solid var(--control-border);
+  box-shadow: var(--control-shadow);
 }
 body .panel-head .calendar-toolbar-actions button.ui-button.primary {
   background: var(--accent-light);
@@ -1234,6 +1234,7 @@ body .calendar .daystatus:not(:empty) {
   }
 }
 body .month-controls .month-title {
+  justify-content: flex-start;
   min-width: 0;
   flex: none;
   gap: var(--month-item-gap);
@@ -1761,8 +1762,9 @@ body .calendar .day-date .daynum-text {
 .calendar .day[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background: var(--holiday-scenery) bottom center / 100% 100% no-repeat;
+  inset: auto 0 0;
+  aspect-ratio: 4 / 5;
+  background: var(--holiday-scenery) bottom center / 100% auto no-repeat;
   opacity: 0.55;
   pointer-events: none;
   z-index: -1;
@@ -1943,7 +1945,8 @@ body .workspace .calendar:not(.year-calendar) {
 }
 
 /* Toolbar actions keep navigation icon scale with slightly wider controls. */
-body .panel-head .calendar-toolbar-actions button.icon-only {
+body .panel-head .calendar-toolbar-actions button.icon-only,
+body .panel-head .calendar-view-button-group button.icon-only {
   width: calc(var(--control-height) * 1.4) !important;
   min-width: calc(var(--control-height) * 1.4) !important;
   max-width: calc(var(--control-height) * 1.4) !important;
@@ -1970,7 +1973,8 @@ body .panel-head #backup .backup-icon-slot {
   body .panel-head .calendar-toolbar-actions {
     gap: 4px;
   }
-  body .panel-head .calendar-toolbar-actions button.icon-only {
+  body .panel-head .calendar-toolbar-actions button.icon-only,
+  body .panel-head .calendar-view-button-group button.icon-only {
     width: var(--control-height) !important;
     min-width: var(--control-height) !important;
     max-width: var(--control-height) !important;

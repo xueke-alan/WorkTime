@@ -4,6 +4,8 @@ WorkTimeApp.services.archive = (() => {
   const FORMAT = "worktime-archive",
     VERSION = 1;
   const names = [
+    "agenda",
+    "memo",
     "profile",
     "rules",
     "schedule",
@@ -20,6 +22,22 @@ WorkTimeApp.services.archive = (() => {
   const registry = new Map(
     Object.values(ids).map((id) => [id, { version: 1, migrations: {} }]),
   );
+  registry.set(ids.agenda, {
+    version: 2,
+    migrations: {
+      1: (module) => ({
+        ...module,
+        version: 2,
+        records: module.records.map((record) => ({
+          ...record,
+          data: {
+            ...record.data,
+            endDate: record.data.endDate ?? record.data.date,
+          },
+        })),
+      }),
+    },
+  });
   function registerModule(id, { version, migrations = {} }) {
     check(
       typeof id === "string" &&
@@ -109,6 +127,7 @@ WorkTimeApp.services.archive = (() => {
     const record = (name, id, data, order = 0) =>
       buckets[name].push({ id, order, data });
     record("profile", "main", state.personal);
+    record("memo", "main", { text: state.memo ?? "" });
     record("rules", "main", {
       settings: state.settings,
       overtimeRequirements: state.overtimeRequirements,
@@ -118,6 +137,9 @@ WorkTimeApp.services.archive = (() => {
       ...state.preferences,
       forecastMode: state.preferences.forecastMode || "hourly",
     });
+    (state.agenda || []).forEach((item, order) =>
+      record("agenda", item.id, item, order),
+    );
     state.scheduleRanges.forEach((range, order) =>
       record("schedule", range.start, range, order),
     );
@@ -279,8 +301,11 @@ WorkTimeApp.services.archive = (() => {
       return records[0].data;
     };
     for (const name of names)
-      check(map.has(ids[name]), "缺少必要模块：" + name);
+      if (!["agenda", "memo"].includes(name))
+        check(map.has(ids[name]), "缺少必要模块：" + name);
     const defaults = WorkTimeApp.domain.state.defaultState();
+    const memo = map.has(ids.memo) ? single("memo").text : "";
+    check(typeof memo === "string" && memo.length <= 10000, "备忘录无效。");
     const rules = single("rules");
     const logs = rows("imports").map((item) => ({
       ...item.data,
@@ -335,6 +360,11 @@ WorkTimeApp.services.archive = (() => {
       ),
       timeTemplates: rows("templates").map((item) => {
         check(item.data.id === item.id, "模板身份无效。");
+        return item.data;
+      }),
+      memo,
+      agenda: rows("agenda").map((item) => {
+        check(item.id === item.data.id, "日程身份无效。");
         return item.data;
       }),
       imports: logs,

@@ -1,4 +1,34 @@
 "use strict";
+for (const [language, label] of Object.entries({
+  "zh-CN": "拖动右端调整结束日期",
+  "zh-TW": "拖曳右端調整結束日期",
+  "zh-HK": "拖曳右端調整結束日期",
+  en: "Drag the right edge to change the end date",
+  ja: "右端をドラッグして終了日を変更",
+  ko: "오른쪽 끝을 드래그하여 종료 날짜 변경",
+}))
+  WorkTimeApp.data.locales[language]["agenda.resizeEnd"] = label;
+for (const [language, label] of Object.entries({
+  "zh-CN": "完成",
+  "zh-TW": "完成",
+  "zh-HK": "完成",
+  en: "Done",
+  ja: "完了",
+  ko: "완료",
+}))
+  WorkTimeApp.data.locales[language]["agenda.pickerDone"] = label;
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["日期与时间", "同日结束"],
+  "zh-TW": ["日期與時間", "同日結束"],
+  "zh-HK": ["日期與時間", "同日結束"],
+  en: ["Date & time", "Same day"],
+  ja: ["日付と時刻", "同日に終了"],
+  ko: ["날짜 및 시간", "같은 날 종료"],
+})) {
+  ["dateTime", "sameDay"].forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+  });
+}
 for (const [language, labels] of Object.entries({
   "zh-CN": ["自动选择", "选择本月所有可批量填写且信息不全的日期"],
   "zh-TW": ["自動選取", "選取本月所有可批次填寫且資料不完整的日期"],
@@ -2043,3 +2073,590 @@ for (const [language, captions] of Object.entries({
       captions[index];
   });
 }
+
+// Personal agenda labels.
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "工时",
+    "日程",
+    "新增日程",
+    "标题",
+    "日期",
+    "全天",
+    "开始时间",
+    "结束时间（可选）",
+    "备注",
+    "取消编辑",
+    "保存",
+    "编辑日程",
+    "当天暂无日程",
+    "标记完成",
+    "撤销完成",
+    "删除日程",
+    "还有 {count} 条",
+    "本月共 {count} 条日程",
+    "日程概览",
+    "今日待办",
+    "近期安排",
+    "逾期未完成",
+    "暂无事项",
+    "放弃未保存的日程修改？",
+    "删除“{title}”？此操作无法撤销。",
+    "有未保存修改，切换日期或模式会保留草稿。",
+    "请填写有效标题和日期；定时日程需填写开始时间，结束时间须晚于开始时间。",
+    "保存失败，修改仍保留，请重试或检查存储状态。",
+    "日程已保存。",
+    "将恢复 {count} 条日程并替换现有日程；不含日程的旧备份会清空现有日程。",
+  ],
+  en: [
+    "Work time",
+    "Agenda",
+    "New event",
+    "Title",
+    "Date",
+    "All day",
+    "Start time",
+    "End time (optional)",
+    "Notes",
+    "Cancel edit",
+    "Save",
+    "Edit event",
+    "No events on this date",
+    "Mark complete",
+    "Undo completion",
+    "Delete event",
+    "{count} more",
+    "{count} events this month",
+    "Agenda overview",
+    "Today’s tasks",
+    "Upcoming",
+    "Overdue",
+    "No items",
+    "Discard unsaved event changes?",
+    "Delete “{title}”? This cannot be undone.",
+    "Unsaved changes. Switching dates or modes keeps this draft.",
+    "Enter a valid title and date. Timed events need a start; the end must be later than the start.",
+    "Save failed. Changes are kept; retry or check storage status.",
+    "Event saved.",
+    "Restore {count} events and replace existing events. Older backups without events will clear the current agenda.",
+  ],
+  "zh-TW": [
+    "工時",
+    "行程",
+    "新增行程",
+    "標題",
+    "日期",
+    "全天",
+    "開始時間",
+    "結束時間（選填）",
+    "備註",
+    "取消編輯",
+    "儲存",
+    "編輯行程",
+    "當天尚無行程",
+    "標記完成",
+    "取消完成",
+    "刪除行程",
+    "還有 {count} 筆",
+    "本月共 {count} 筆行程",
+    "行程總覽",
+    "今日待辦",
+    "近期安排",
+    "逾期未完成",
+    "尚無事項",
+    "捨棄尚未儲存的行程變更？",
+    "刪除「{title}」？此操作無法復原。",
+    "尚有未儲存變更，切換日期或模式會保留草稿。",
+    "請填寫有效標題及日期；定時行程需填寫開始時間，結束時間須晚於開始時間。",
+    "儲存失敗，變更仍保留，請重試或檢查儲存狀態。",
+    "行程已儲存。",
+    "將還原 {count} 筆行程並取代現有行程；不含行程的舊備份會清空現有行程。",
+  ],
+  "zh-HK": [
+    "工時",
+    "日程",
+    "新增日程",
+    "標題",
+    "日期",
+    "全日",
+    "開始時間",
+    "結束時間（選填）",
+    "備註",
+    "取消編輯",
+    "儲存",
+    "編輯日程",
+    "當日暫無日程",
+    "標記完成",
+    "取消完成",
+    "刪除日程",
+    "還有 {count} 項",
+    "本月共 {count} 項日程",
+    "日程概覽",
+    "今日待辦",
+    "近期安排",
+    "逾期未完成",
+    "暫無事項",
+    "放棄未儲存的日程修改？",
+    "刪除「{title}」？此操作無法還原。",
+    "有未儲存修改，切換日期或模式會保留草稿。",
+    "請填寫有效標題及日期；定時日程需填寫開始時間，結束時間須遲於開始時間。",
+    "儲存失敗，修改仍保留，請重試或檢查儲存狀態。",
+    "日程已儲存。",
+    "將還原 {count} 項日程並取代現有日程；不含日程的舊備份會清空現有日程。",
+  ],
+  ja: [
+    "勤務時間",
+    "予定",
+    "予定を追加",
+    "タイトル",
+    "日付",
+    "終日",
+    "開始時刻",
+    "終了時刻（任意）",
+    "メモ",
+    "編集を取り消す",
+    "保存",
+    "予定を編集",
+    "この日の予定はありません",
+    "完了にする",
+    "完了を取り消す",
+    "予定を削除",
+    "他 {count} 件",
+    "今月の予定：{count} 件",
+    "予定の概要",
+    "今日のタスク",
+    "今後の予定",
+    "期限切れ",
+    "項目はありません",
+    "未保存の予定の変更を破棄しますか？",
+    "「{title}」を削除しますか？元に戻せません。",
+    "未保存の変更があります。日付やモードを切り替えても下書きは保持されます。",
+    "有効なタイトルと日付を入力してください。時刻指定の予定には開始時刻が必要です。終了は開始より後にしてください。",
+    "保存できませんでした。変更は保持されています。再試行するか保存状態を確認してください。",
+    "予定を保存しました。",
+    "{count} 件の予定で既存の予定を置き換えます。予定を含まない古いバックアップでは現在の予定が削除されます。",
+  ],
+  ko: [
+    "근무 시간",
+    "일정",
+    "일정 추가",
+    "제목",
+    "날짜",
+    "종일",
+    "시작 시간",
+    "종료 시간 (선택)",
+    "메모",
+    "편집 취소",
+    "저장",
+    "일정 편집",
+    "이 날짜에 일정이 없습니다",
+    "완료 표시",
+    "완료 취소",
+    "일정 삭제",
+    "{count}개 더 보기",
+    "이번 달 일정 {count}개",
+    "일정 개요",
+    "오늘 할 일",
+    "다가오는 일정",
+    "기한 경과",
+    "항목 없음",
+    "저장하지 않은 일정 변경 사항을 버릴까요?",
+    "“{title}” 일정을 삭제할까요? 되돌릴 수 없습니다.",
+    "저장하지 않은 변경 사항이 있습니다. 날짜나 모드를 전환해도 초안은 유지됩니다.",
+    "유효한 제목과 날짜를 입력하세요. 시간 지정 일정에는 시작 시간이 필요하며 종료 시간은 시작 시간보다 늦어야 합니다.",
+    "저장하지 못했습니다. 변경 사항은 유지됩니다. 다시 시도하거나 저장 상태를 확인하세요.",
+    "일정을 저장했습니다.",
+    "일정 {count}개를 복원하여 기존 일정을 대체합니다. 일정이 없는 이전 백업을 복원하면 현재 일정이 삭제됩니다.",
+  ],
+})) {
+  const keys = [
+    "attendance",
+    "agenda",
+    "new",
+    "title",
+    "date",
+    "allDay",
+    "start",
+    "end",
+    "note",
+    "cancel",
+    "save",
+    "edit",
+    "empty",
+    "complete",
+    "undoComplete",
+    "delete",
+    "more",
+    "monthCount",
+    "overview",
+    "today",
+    "upcoming",
+    "overdue",
+    "none",
+    "discard",
+    "confirmDelete",
+    "draft",
+    "invalid",
+    "saveFailed",
+    "saved",
+    "restore",
+  ];
+  keys.forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+  });
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "周视图",
+    "月视图",
+    "上一周",
+    "下一周",
+    "{start} — {end} · 共 {count} 条日程",
+    "日历视图",
+  ],
+  "zh-TW": [
+    "週檢視",
+    "月檢視",
+    "上一週",
+    "下一週",
+    "{start} — {end} · 共 {count} 筆行程",
+    "日曆檢視",
+  ],
+  "zh-HK": [
+    "週檢視",
+    "月檢視",
+    "上一週",
+    "下一週",
+    "{start} — {end} · 共 {count} 項日程",
+    "日曆檢視",
+  ],
+  en: [
+    "Week",
+    "Month",
+    "Previous week",
+    "Next week",
+    "{start} — {end} · {count} events",
+    "Calendar view",
+  ],
+  ja: [
+    "週表示",
+    "月表示",
+    "前の週",
+    "次の週",
+    "{start} — {end} · 予定 {count} 件",
+    "カレンダー表示",
+  ],
+  ko: [
+    "주 보기",
+    "월 보기",
+    "이전 주",
+    "다음 주",
+    "{start} — {end} · 일정 {count}개",
+    "달력 보기",
+  ],
+})) {
+  const keys = [
+    "weekView",
+    "monthView",
+    "prevWeek",
+    "nextWeek",
+    "weekCount",
+    "view",
+  ];
+  keys.forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+  });
+}
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "返回本周",
+  "zh-TW": "返回本週",
+  "zh-HK": "返回本週",
+  en: "Return to this week",
+  ja: "今週に戻る",
+  ko: "이번 주로 돌아가기",
+})) {
+  WorkTimeApp.data.locales[language]["agenda.todayWeek"] = label;
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["双周视图", "切换为{view}"],
+  "zh-TW": ["雙週檢視", "切換為{view}"],
+  "zh-HK": ["雙週檢視", "切換為{view}"],
+  en: ["Two weeks", "Switch to {view}"],
+  ja: ["2週表示", "{view}に切り替え"],
+  ko: ["2주 보기", "{view}(으)로 전환"],
+})) {
+  WorkTimeApp.data.locales[language]["agenda.fortnightView"] = labels[0];
+  WorkTimeApp.data.locales[language]["agenda.switchView"] = labels[1];
+}
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "日程记录",
+  "zh-TW": "日程記錄",
+  "zh-HK": "日程記錄",
+  en: "Schedule records",
+  ja: "スケジュール記録",
+  ko: "일정 기록",
+})) {
+  WorkTimeApp.data.locales[language]["agenda.brand"] = label;
+}
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "已完成 {completed} / {total}",
+  "zh-TW": "已完成 {completed} / {total}",
+  "zh-HK": "已完成 {completed} / {total}",
+  en: "Completed {completed} / {total}",
+  ja: "完了 {completed} / {total}",
+  ko: "완료 {completed} / {total}",
+})) {
+  WorkTimeApp.data.locales[language]["agenda.progress"] = label;
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["其他待办", "其他日期暂无待办"],
+  "zh-TW": ["其他待辦", "其他日期暫無待辦"],
+  "zh-HK": ["其他待辦", "其他日期暫無待辦"],
+  en: ["Other pending events", "No pending events on other dates"],
+  ja: ["他の日の未完了の予定", "他の日に未完了の予定はありません"],
+  ko: ["다른 날짜의 할 일", "다른 날짜에 미완료 일정이 없습니다"],
+})) {
+  WorkTimeApp.data.locales[language]["agenda.otherPending"] = labels[0];
+  WorkTimeApp.data.locales[language]["agenda.otherPendingEmpty"] = labels[1];
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "备忘录",
+    "记下灵感、提醒或临时事项…",
+    "自动保存",
+    "保存中…",
+    "重试保存",
+  ],
+  "zh-TW": [
+    "備忘錄",
+    "記下靈感、提醒或臨時事項…",
+    "自動儲存",
+    "儲存中…",
+    "重試儲存",
+  ],
+  "zh-HK": [
+    "備忘錄",
+    "記下靈感、提醒或臨時事項…",
+    "自動儲存",
+    "儲存中…",
+    "重試儲存",
+  ],
+  en: [
+    "Memo",
+    "Capture ideas, reminders or quick notes…",
+    "Auto-save",
+    "Saving…",
+    "Retry saving",
+  ],
+  ja: [
+    "メモ",
+    "アイデアやリマインダーを書き留める…",
+    "自動保存",
+    "保存中…",
+    "再保存",
+  ],
+  ko: [
+    "메모",
+    "아이디어나 기억할 내용을 적어 보세요…",
+    "자동 저장",
+    "저장 중…",
+    "다시 저장",
+  ],
+})) {
+  ["memo", "memoHint", "memoAutoSave", "memoSaving", "memoRetry"].forEach(
+    (key, index) => {
+      WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+    },
+  );
+}
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "备忘录 {count} 字（将替换当前备忘录，0 字表示清空）。",
+  "zh-TW": "備忘錄 {count} 字（將取代目前備忘錄，0 字表示清空）。",
+  "zh-HK": "備忘錄 {count} 字（將取代目前備忘錄，0 字表示清空）。",
+  en: "Memo: {count} characters (replaces the current memo; 0 clears it).",
+  ja: "メモ：{count} 文字（現在のメモを置換。0 文字の場合は削除）。",
+  ko: "메모: {count}자 (현재 메모를 대체하며 0자이면 비워집니다).",
+})) {
+  WorkTimeApp.data.locales[language]["agenda.memoRestore"] = label;
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["待完成", "已完成"],
+  "zh-TW": ["待完成", "已完成"],
+  "zh-HK": ["待完成", "已完成"],
+  en: ["Pending", "Completed"],
+  ja: ["未完了", "完了"],
+  ko: ["미완료", "완료"],
+})) {
+  WorkTimeApp.data.locales[language]["agenda.statusPending"] = labels[0];
+  WorkTimeApp.data.locales[language]["agenda.statusCompleted"] = labels[1];
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["跨天", "结束日期"],
+  "zh-TW": ["跨日", "結束日期"],
+  "zh-HK": ["跨日", "結束日期"],
+  en: ["Multiple days", "End date"],
+  ja: ["複数日", "終了日"],
+  ko: ["여러 날", "종료 날짜"],
+})) {
+  WorkTimeApp.data.locales[language]["agenda.multiDay"] = labels[0];
+  WorkTimeApp.data.locales[language]["agenda.endDate"] = labels[1];
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["开始日期", "结束时间"],
+  "zh-TW": ["開始日期", "結束時間"],
+  "zh-HK": ["開始日期", "結束時間"],
+  en: ["Start date", "End time"],
+  ja: ["開始日", "終了時刻"],
+  ko: ["시작 날짜", "종료 시간"],
+})) {
+  WorkTimeApp.data.locales[language]["agenda.startDate"] = labels[0];
+  WorkTimeApp.data.locales[language]["agenda.endRequired"] = labels[1];
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "请先保存或取消右栏的日程修改，再拖动。",
+    "日程已更新或删除，请重新拖动。",
+    "无法移动到此位置",
+  ],
+  "zh-TW": [
+    "請先儲存或取消右欄的行程修改，再拖曳。",
+    "行程已更新或刪除，請重新拖曳。",
+    "無法移動到此位置",
+  ],
+  "zh-HK": [
+    "請先儲存或取消右欄的日程修改，再拖曳。",
+    "日程已更新或刪除，請重新拖曳。",
+    "無法移動到此位置",
+  ],
+  en: [
+    "Save or cancel the event edits before dragging.",
+    "This event changed or was deleted. Drag it again.",
+    "Cannot move here",
+  ],
+  ja: [
+    "右欄の予定の変更を保存またはキャンセルしてからドラッグしてください。",
+    "予定が変更または削除されました。再度ドラッグしてください。",
+    "ここには移動できません",
+  ],
+  ko: [
+    "오른쪽 일정 수정을 저장하거나 취소한 후 드래그하세요.",
+    "일정이 변경되었거나 삭제되었습니다. 다시 드래그하세요.",
+    "여기로 이동할 수 없습니다",
+  ],
+})) {
+  ["dragDraft", "dragChanged", "dragInvalid"].forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+  });
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["选择日程日期", "今天", "关闭"],
+  "zh-TW": ["選擇行程日期", "今天", "關閉"],
+  "zh-HK": ["選擇日程日期", "今天", "關閉"],
+  en: ["Choose event date", "Today", "Close"],
+  ja: ["予定の日付を選択", "今日", "閉じる"],
+  ko: ["일정 날짜 선택", "오늘", "닫기"],
+})) {
+  ["chooseDate", "pickerToday", "pickerClose"].forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+  });
+}
+
+// Agenda workspace navigation and global overview.
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "返回清单",
+    "返回当天日程",
+    "概览／备忘",
+    "日历视图",
+    "待办概览",
+    "暂无待办",
+    "展开全部 {count} 项",
+    "收起",
+  ],
+  "zh-TW": [
+    "返回清單",
+    "返回當天行程",
+    "概覽／備忘",
+    "日曆檢視",
+    "待辦概覽",
+    "暫無待辦",
+    "展開全部 {count} 項",
+    "收起",
+  ],
+  "zh-HK": [
+    "返回清單",
+    "返回當天日程",
+    "概覽／備忘",
+    "日曆檢視",
+    "待辦概覽",
+    "暫無待辦",
+    "展開全部 {count} 項",
+    "收起",
+  ],
+  en: [
+    "Back to list",
+    "Back to day",
+    "Overview / memo",
+    "Calendar view",
+    "Pending overview",
+    "No pending events",
+    "Show all {count}",
+    "Show less",
+  ],
+  ja: [
+    "一覧に戻る",
+    "当日の予定に戻る",
+    "概要／メモ",
+    "カレンダー表示",
+    "未完了の予定",
+    "未完了の予定はありません",
+    "全 {count} 件を表示",
+    "折りたたむ",
+  ],
+  ko: [
+    "목록으로",
+    "당일 일정으로",
+    "개요 / 메모",
+    "달력 보기",
+    "할 일 개요",
+    "미완료 일정이 없습니다",
+    "전체 {count}개 보기",
+    "접기",
+  ],
+})) {
+  [
+    "backToList",
+    "backToDay",
+    "overviewMemo",
+    "viewChoice",
+    "pendingOverview",
+    "pendingEmpty",
+    "showAll",
+    "showLess",
+  ].forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+  });
+}
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "收起抽屉",
+  "zh-TW": "收起抽屜",
+  "zh-HK": "收起抽屜",
+  en: "Close drawer",
+  ja: "パネルを閉じる",
+  ko: "서랍 닫기",
+}))
+  WorkTimeApp.data.locales[language]["agenda.collapseDrawer"] = label;

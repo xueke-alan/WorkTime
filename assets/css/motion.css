@@ -81,6 +81,7 @@ body .summary-sidebar.sidebar-navigation-instant .sidebar-oa-pane[open] {
 } /* Shared motion: animate surfaces, never the aligned text layers. */
 body button,
 body button.ui-button:not(.notification-tab):not(#importOpen),
+body :is(.backup-button-group, .settings-button-group, .calendar-view-button-group),
 body .calendar .day:is([data-holiday], .weekend, .full-leave) {
   transition:
     background var(--motion-fast),

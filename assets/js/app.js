@@ -62,6 +62,7 @@ WorkTimeApp.services.bootstrap.run(
       today: clock.today(),
     });
     const actions = {};
+    let agenda = null;
     const stateOwner = WorkTimeApp.services.application.createState({
       state: model.state,
       persistence,
@@ -136,6 +137,8 @@ WorkTimeApp.services.bootstrap.run(
       batchSaving: model.batchSaving,
       yearMode: model.yearMode,
       analysisMode: model.analysisMode,
+      agendaViewWeeks: model.agendaViewWeeks || 0,
+      agendaViewAnchor: model.agendaViewAnchor,
       analysisIncludeManual: model.analysisIncludeManual,
       viewYear: model.viewYear,
     });
@@ -285,6 +288,7 @@ WorkTimeApp.services.bootstrap.run(
       renderCalendar,
       renderEditor,
       refreshSettings: () => actions.refreshSettings(),
+      renderAgenda: () => agenda?.render(),
     });
     const { render, open, saveFeedback } = workspace;
     lifecycle.defer(() => workspace.dispose());
@@ -321,6 +325,9 @@ WorkTimeApp.services.bootstrap.run(
     lifecycle.defer(() => saveSession.dispose());
     const application = Object.fromEntries(
       [
+        "saveAgenda",
+        "saveMemo",
+        "removeAgenda",
         "saveDay",
         "togglePlanned",
         "cancelPlanned",
@@ -368,6 +375,7 @@ WorkTimeApp.services.bootstrap.run(
       window.removeEventListener("beforeunload", beforeUnload),
     );
     Object.assign(actions, {
+      prepareAgendaArchive: () => agenda?.prepareAgendaArchive(),
       controlIcon,
       clone: D.state.cloneState,
       saveFeedback,
@@ -525,6 +533,18 @@ WorkTimeApp.services.bootstrap.run(
       Object.assign(actions, commands);
     }
     for (const controller of controllers) controller.bind();
+    agenda = WorkTimeApp.ui.createAgenda({
+      ...controllerOptions,
+      document,
+      window,
+    });
+    controllers.push(agenda);
+    lifecycle.defer(() => agenda.dispose());
+    agenda.bind();
+    // Let the browser process the assembled controls before mounting the main
+    // calendar and measuring the shared footer, keeping startup responsive.
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    if (lifecycle.closed) return;
     workspace.mount();
     const games = WorkTimeApp.ui.createGamesController({ document, window });
     lifecycle.defer(() => games.dispose());
@@ -545,6 +565,7 @@ WorkTimeApp.services.bootstrap.run(
       renderStats();
       renderCalendar(true);
       renderEditor();
+      agenda.render();
       notifications.refreshLanguage();
       if (model.batchMode) actions.refreshBatchPreview();
       for (const { element, value, checked, start, end } of drafts) {

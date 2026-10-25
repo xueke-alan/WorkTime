@@ -107,11 +107,19 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
       container.replaceChildren(...candidates);
       calendarNodes.clear();
     }
+    const headerAlignment = [],
+      contentMotions = [],
+      sourceMotions = [];
     candidates.forEach((candidate, index) => {
       const key = nodeKey(candidate, index),
         previous = calendarNodes.get(key),
         source = candidate.outerHTML,
-        candidateContent = candidate.innerHTML;
+        candidateContent = candidate.innerHTML,
+        headerMarkup = candidate.querySelector(".daytop")?.outerHTML,
+        bodies = [...candidate.children].filter((element) =>
+          element.matches(".daytime, .dayhours, .day-footer"),
+        ),
+        bodyMarkup = bodies.map((element) => element.outerHTML);
       let element = candidate,
         sourceMotion;
       if (previous && previous.element.parentElement === container) {
@@ -153,21 +161,31 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
                 sourceToggle.setAttribute(attribute.name, attribute.value);
               nextSourceToggle.replaceWith(sourceToggle);
             }
+            const header = element.querySelector(".daytop"),
+              nextHeader = candidate.querySelector(".daytop"),
+              preserveHeader =
+                header && nextHeader && previous.headerMarkup === headerMarkup;
             const markers = element.querySelector(".date-markers"),
               nextMarkers = candidate.querySelector(".date-markers");
             if (
               markers &&
               nextMarkers &&
+              !preserveHeader &&
               markers.outerHTML === nextMarkers.outerHTML
             )
               nextMarkers.replaceWith(markers);
-            // Weather owns these persistent layers. Keep them attached so editing
-            // attendance neither reloads the SVG nor replays the weather fade.
+            // Selection only changes the day surface. Keep its already aligned
+            // header, otherwise the replacement's taller raw line boxes move
+            // agenda contents until the next alignment frame.
+            if (preserveHeader) nextHeader.replaceWith(header);
+            else if (nextHeader) headerAlignment.push(nextHeader);
+            // Weather and agenda own persistent layers. Selecting a different
+            // date must not destroy their nodes or restart their animations.
             for (const child of [...element.childNodes])
               if (
                 !(child instanceof Element) ||
                 !child.matches(
-                  ".calendar-weather-icon, .calendar-weather-outgoing",
+                  ".calendar-weather-icon, .calendar-weather-outgoing, .agenda-card-items",
                 )
               )
                 child.remove();
@@ -179,23 +197,35 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
             element.classList.add("has-weather");
         }
       }
+      if (element === candidate) {
+        const header = element.querySelector(".daytop");
+        if (header) headerAlignment.push(header);
+      }
       next.set(key, {
         element,
         source,
         content: candidateContent,
+        headerMarkup,
+        bodyMarkup,
         attributes: [...candidate.attributes].map(
           (attribute) => attribute.name,
         ),
       });
       if (container.children[index] !== element)
         container.insertBefore(element, container.children[index] || null);
-      for (const { dot, transform } of sourceMotion || []) {
-        for (const animation of dot.getAnimations?.() || []) animation.cancel();
-        WorkTimeApp.ui.animationCompat.animate(
-          dot,
-          [{ transform }, { transform: getComputedStyle(dot).transform }],
-          { duration: 260, easing: "cubic-bezier(0.2, 0.65, 0.3, 1)" },
+      // Animate changed attendance fields inside the shared card, leaving its date,
+      // weather and selection surface still. Agenda owns its own content transitions.
+      if (previous?.bodyMarkup && !container.closest(".agenda-mode")) {
+        const currentBodies = [...element.children].filter((child) =>
+          child.matches(".daytime, .dayhours, .day-footer"),
         );
+        currentBodies.forEach((child, bodyIndex) => {
+          if (previous.bodyMarkup[bodyIndex] !== bodyMarkup[bodyIndex])
+            contentMotions.push(child);
+        });
+      }
+      for (const { dot, transform } of sourceMotion || []) {
+        sourceMotions.push({ dot, transform });
       }
     });
     for (const [key, previous] of calendarNodes)
@@ -212,7 +242,26 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
     calendarNodes.clear();
     for (const [key, value] of next) calendarNodes.set(key, value);
     calendarMarkup = html;
+    // Agenda measures header geometry in this render, before observers run.
+    // Finish new/changed headers now so layout and animation share one height.
+    // Attendance can use the normal batched alignment frame. Only the agenda
+    // measures these headers synchronously to place its overlay lanes.
+    if (headerAlignment.length && container.closest(".agenda-mode"))
+      WorkTimeApp.ui.alignment?.refresh(headerAlignment);
     weatherLayer.refresh();
+    const plans = sourceMotions.map(({ dot, transform }) => ({
+      element: dot,
+      frames: [{ transform }, { transform: getComputedStyle(dot).transform }],
+      options: {
+        duration: WorkTimeApp.ui.motion.calendar.navigationDuration,
+        easing: WorkTimeApp.ui.motion.calendar.easing,
+      },
+    }));
+    for (const { dot } of sourceMotions)
+      for (const animation of dot.getAnimations?.() || []) animation.cancel();
+    WorkTimeApp.ui.motion.animateCalendar(plans);
+    for (const child of contentMotions)
+      WorkTimeApp.ui.motion.play(child, "motion-card-content");
   }
   return { updateHTML, updateText, updateCalendar };
 };

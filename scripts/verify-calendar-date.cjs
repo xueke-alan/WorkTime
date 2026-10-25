@@ -29,11 +29,30 @@ async function verify() {
           document.documentElement.dataset.appState === "ready" &&
           !document.documentElement.classList.contains("app-loading"),
       );
+      const retainedMarkers = await page.evaluate(() => {
+        const markers = [
+          ...document.querySelectorAll("#calendar .date-markers"),
+        ].map((node) => ({ node, date: node.closest(".day").dataset.date }));
+        if (!markers.length) throw Error("Expected October date markers");
+        for (const { date } of markers)
+          document.querySelector(`[data-date="${date}"] .day-select`).click();
+        document.querySelector("#todayButton").click();
+        return markers.every(
+          ({ node, date }) =>
+            document.querySelector(`[data-date="${date}"] .date-markers`) ===
+            node,
+        );
+      });
+      assert.equal(
+        retainedMarkers,
+        true,
+        "Selecting dates retains their holiday and schedule markers",
+      );
       for (const width of [1440, 1280, 390, 320]) {
         await page.setViewportSize({ width, height: 1000 });
         await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
         const result = await page.evaluate(() => {
-          const stamp = document.querySelector("#calendarToday"),
+          const stamp = document.querySelector("#editorDate"),
             date = stamp
               .querySelector(".calendar-today-date")
               .getBoundingClientRect(),
@@ -57,7 +76,7 @@ async function verify() {
             return y;
           });
           const box = stamp.getBoundingClientRect(),
-            host = stamp.closest(".panel-head").getBoundingClientRect();
+            host = stamp.closest(".editor-day-header").getBoundingClientRect();
           return {
             baselines,
             leftGap: dot.left - date.right,
@@ -70,34 +89,7 @@ async function verify() {
             weekday: stamp.querySelector(".calendar-today-weekday").textContent,
           };
         });
-        const headerStyles = await page.evaluate(() => {
-          const properties = [
-            "fontFamily",
-            "fontSize",
-            "fontWeight",
-            "lineHeight",
-            "letterSpacing",
-            "color",
-            "gap",
-            "height",
-            "transform",
-          ];
-          const describe = (selector) => {
-            const root = document.querySelector(selector);
-            return [root, ...root.querySelectorAll("span,svg")].map((node) => {
-              const style = getComputedStyle(node);
-              return Object.fromEntries(
-                properties.map((key) => [key, style[key]]),
-              );
-            });
-          };
-          return [describe("#calendarToday"), describe("#editorDate")];
-        });
-        assert.deepEqual(
-          headerStyles[1],
-          headerStyles[0],
-          language + " matching date headers at " + width,
-        );
+        assert.equal(await page.locator("#calendarToday").count(), 0);
         assert.equal(
           result.slashes,
           result.expectedSlashes,
@@ -125,7 +117,7 @@ async function verify() {
           );
         });
         assert.ok(controlsFit, language + " month controls fit at " + width);
-        await page.locator("#calendarToday").screenshot({
+        await page.locator("#editorDate").screenshot({
           path: path.join(output, language + "-" + width + ".png"),
         });
       }

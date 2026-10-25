@@ -318,14 +318,13 @@ async function verifyTemplates(page) {
   await page.locator("#monthTitle").click();
 }
 async function verifyCalendar(page) {
-  const today = page.locator("#calendarToday");
-  assert.equal(await today.getAttribute("datetime"), "2026-10-10");
+  assert.equal(await page.locator("#calendarToday").count(), 0);
   assert.equal(
-    await today.locator(".calendar-today-weekday").textContent(),
+    await page.locator("#editorDate .calendar-today-weekday").textContent(),
     "周六",
   );
   await page.locator("#prevMonth").click();
-  assert.equal(await today.getAttribute("datetime"), "2026-10-10");
+  assert.equal(await page.locator("#calendarToday").count(), 0);
   await page.locator("#todayButton").click();
   await page.emulateMedia({ reducedMotion: "no-preference" });
   for (const [date, end, overtime] of [

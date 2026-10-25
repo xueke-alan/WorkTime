@@ -67,6 +67,8 @@ const WorkTimeServiceApplication = (() => {
         "oaUrl",
         "scheduleRanges",
         "timeTemplates",
+        "agenda",
+        "memo",
       ])
         if (before[key] !== after[key]) changes[key] = true;
       if (before.days !== after.days && !changes.days)
@@ -292,6 +294,34 @@ const WorkTimeServiceApplication = (() => {
           ...state,
           timeTemplates: state.timeTemplates.filter((item) => item.id !== id),
         });
+      },
+      saveAgenda(item) {
+        const clean = WorkTimeApp.domain.agenda.validate(item);
+        const items = state.agenda || [];
+        const previous = items.find((entry) => entry.id === clean.id);
+        return commit(
+          {
+            ...state,
+            agenda: previous
+              ? items.map((entry) => (entry.id === clean.id ? clean : entry))
+              : [...items, clean],
+          },
+          { atomic: true },
+        );
+      },
+      saveMemo(text) {
+        if (typeof text !== "string" || text.length > 10000)
+          throw Error("Invalid memo");
+        return commit({ ...state, memo: text });
+      },
+      removeAgenda(id) {
+        return commit(
+          {
+            ...state,
+            agenda: (state.agenda || []).filter((entry) => entry.id !== id),
+          },
+          { atomic: true },
+        );
       },
       replaceTemplates(templates) {
         const clean = WorkTimeApp.services.templateShare

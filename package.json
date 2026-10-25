@@ -1,6 +1,6 @@
 {
   "name": "worktime",
-  "version": "1.3.39",
+  "version": "1.3.40",
   "private": true,
   "description": "Offline work time records; development tools do not affect file:// use.",
   "scripts": {
@@ -22,12 +22,14 @@
   },
   "devDependencies": {
     "acorn": "8.18.0",
+    "clean-css": "5.3.3",
     "eslint": "10.11.0",
     "globals": "17.13.0",
     "opencc-js": "1.0.5",
     "playwright": "1.62.1",
     "postcss": "8.5.28",
     "prettier": "3.9.9",
+    "terser": "5.51.2",
     "typescript": "5.4.2"
   }
 }

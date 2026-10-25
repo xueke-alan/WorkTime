@@ -11,12 +11,15 @@
     "#importOpen .import-main > span",
     ".month-title-year",
     ".month-title-month",
+    ".month-title-week-label",
     ".calendar-today-number",
     ".calendar-today-weekday",
     ".calendar .daystatus .pill-text",
     ".year-day>span",
     ".day-date .daynum-text",
     ".calendar .daykind",
+    ".agenda-chip-title-text",
+    ".agenda-chip-time",
     ".calendar .day-average > span",
     ".summary-sidebar .card-label",
     metricSelector,
@@ -226,7 +229,7 @@
         metrics: cachedMetrics(style, text),
         // Mixed Latin/CJK legends also need hinted pixel bounds, not outline metrics.
         dateBounds: element.matches(
-          ".day-date .daynum-text,.calendar .daykind,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span",
+          ".day-date .daynum-text,.calendar .daykind,.agenda-chip-title-text,.agenda-chip-time,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span",
         )
           ? dateInkHeight(style, text)
           : null,
@@ -357,6 +360,10 @@
     observe();
   }
   function queue(scope = null) {
+    // Startup reveals only after fonts and application mounting finish. Its
+    // explicit refresh owns the first layout; measuring partially mounted
+    // panels here forces the same text and line boxes through layout twice.
+    if (document.documentElement.dataset.appState === "initializing") return;
     if (scope) pendingScopes.add(scope);
     else fullRefresh = true;
     if (!disposed && !suspended && !document.hidden && !scheduled) {
@@ -434,6 +441,7 @@
     "batch-eligible",
     "batchselected",
     "selected",
+    "agenda-week-leaving",
   ]);
   function isMotionMetadata(record) {
     if (record.type !== "attributes") return false;
@@ -464,6 +472,34 @@
       before.removeProperty(property);
       after.removeProperty(property);
     }
+    // Calendar motion owns surface geometry. Font and line-height changes still
+    // invalidate ink metrics; moving or clipping an already aligned surface does not.
+    if (
+      element.matches(
+        ".calendar,.calendar > .day,.agenda-week-lane,.agenda-lane-content,.agenda-chip",
+      )
+    ) {
+      for (const property of [
+        "position",
+        "left",
+        "top",
+        "height",
+        "width",
+        "margin",
+        "z-index",
+        "overflow",
+        "flex",
+        "grid-auto-rows",
+        "grid-template-rows",
+        "opacity",
+        "transform",
+        "clip-path",
+        "--agenda-span-mask",
+      ]) {
+        before.removeProperty(property);
+        after.removeProperty(property);
+      }
+    }
     // Game fades and slides preserve text geometry. Shell size and typography
     // changes still reach alignment through the remaining style properties.
     if (element.matches(".game-surface,.game-toolbar,.game-content")) {
@@ -486,6 +522,19 @@
           ? record.target
           : record.target.parentElement;
       if (!element) continue;
+      // Snapshots already contain the source's aligned text. Their insertion,
+      // animation and removal must not trigger another pass over the live dates.
+      if (element.closest(".agenda-content-outgoing,.agenda-mode-exit-clip"))
+        continue;
+      if (
+        record.type === "childList" &&
+        [...record.addedNodes, ...record.removedNodes].every(
+          (node) =>
+            node instanceof Element &&
+            node.matches(".agenda-content-outgoing,.agenda-mode-exit-clip"),
+        )
+      )
+        continue;
       // Analysis geometry owns its coordinates. Its animation frames do not
       // change the single-line text metrics handled by this observer.
       if (

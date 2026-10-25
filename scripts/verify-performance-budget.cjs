@@ -105,11 +105,12 @@ async function verify() {
         );
         assert.ok(
           startup.totalLongTask < budgets.totalLongTaskMs,
-          "total startup long task budget exceeded",
+          "total startup long task budget exceeded: " + JSON.stringify(startup),
         );
         assert.ok(
           startup.largestLongTask < budgets.largestLongTaskMs,
-          "single startup long task budget exceeded",
+          "single startup long task budget exceeded: " +
+            JSON.stringify(startup),
         );
         if (run === 0) {
           const large = await page.evaluate(async (years) => {

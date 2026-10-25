@@ -305,14 +305,6 @@ WorkTimeApp.ui.createCalendar = function (options) {
       $(id).disabled = batchMode;
     $("monthTitle").setAttribute("aria-disabled", String(batchMode));
     $("monthTitle").tabIndex = batchMode ? -1 : 0;
-    const weekday = WorkTimeApp.i18n.weekday(today);
-    const dateLabel = WorkTimeApp.i18n.date(today).replace(/\s*\/\s*/g, " / ");
-    updateHTML($("calendarToday"), WorkTimeApp.ui.headerDateMarkup(today, esc));
-    $("calendarToday").setAttribute(
-      "aria-label",
-      WorkTimeApp.i18n.t("copy.723d1e7f20") + dateLabel + " " + weekday,
-    );
-    $("calendarToday").dateTime = today;
     for (const date of batchDays)
       if (
         date.slice(0, 7) !== month ||
@@ -336,12 +328,6 @@ WorkTimeApp.ui.createCalendar = function (options) {
     $("analysisToggle").disabled = batchMode;
     $("analysisToggle").setAttribute("aria-pressed", String(!!analysisMode));
     $("analysisToggle").classList.toggle("is-active", !!analysisMode);
-    $("analysisToggle")
-      .querySelector("use")
-      .setAttribute(
-        "href",
-        analysisMode ? "#ms-table-chart-view" : "#ms-calendar",
-      );
     const analysisLabel = analysisMode
       ? "analysis.calendar"
       : "analysis.toggle";
@@ -677,6 +663,18 @@ WorkTimeApp.ui.createCalendar = function (options) {
       const preview = C.localDate(last);
       preview.setDate(preview.getDate() + i);
       html += adjacentDayCard(C.dateKey(preview));
+    }
+    // A fortnight anchored in the month's last row needs the following week.
+    // Generate those dates with the same adjacent-day component and keyed renderer.
+    if (getView().agendaViewWeeks === 2) {
+      const end = C.localDate(getView().agendaViewAnchor || selected);
+      end.setDate(end.getDate() - ((end.getDay() + 6) % 7) + 13);
+      const next = C.localDate(last);
+      next.setDate(next.getDate() + weeks * 7 - offset - total + 1);
+      while (next <= end) {
+        html += adjacentDayCard(C.dateKey(next));
+        next.setDate(next.getDate() + 1);
+      }
     }
     $("calendar").dataset.weeks = weeks;
     updateCalendar(html);

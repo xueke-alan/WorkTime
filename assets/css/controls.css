@@ -200,12 +200,12 @@ body #batchAddTimeTemplate {
   min-width: var(--control-height) !important;
   padding: 0 !important;
 }
-/* Joined backup buttons keep one outside border rather than duplicate borders. */
-body :is(.backup-button-group, .settings-button-group) button.ui-button {
+/* Joined button groups share one outside border and a single inner divider. */
+body :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button.ui-button {
   border: 0 !important;
-  box-shadow: none;
+  box-shadow: none !important;
 }
-body :is(.backup-button-group, .settings-button-group) button.ui-button + button {
+body :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button.ui-button + button {
   border-left: 1px solid var(--control-border) !important;
 }
 /* Keep OA text and symbols on stable raster sizes at desktop scaling. */

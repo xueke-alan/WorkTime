@@ -469,6 +469,7 @@ WorkTimeApp.services.indexedStorage = (() => {
           imports: [],
           scheduleRanges: [],
           timeTemplates: [],
+          agenda: [],
         },
         selected = new Set();
       if (changes.days) {
@@ -491,6 +492,14 @@ WorkTimeApp.services.indexedStorage = (() => {
       if (changes.scheduleRanges) {
         subset.scheduleRanges = state.scheduleRanges;
         selected.add(A.ids.schedule);
+      }
+      if (changes.agenda) {
+        subset.agenda = state.agenda || [];
+        selected.add(A.ids.agenda);
+      }
+      if (changes.memo) {
+        subset.memo = state.memo ?? "";
+        selected.add(A.ids.memo);
       }
       if (changes.timeTemplates) {
         subset.timeTemplates = state.timeTemplates;
@@ -585,6 +594,12 @@ WorkTimeApp.services.indexedStorage = (() => {
             });
           } else {
             for (const module of modules) {
+              // A newly introduced optional module may have no header in an older database.
+              const { records, ...header } = module;
+              tx.objectStore("modules").put({
+                ...header,
+                archiveId: stored.archive.id,
+              });
               const store = tx.objectStore("records");
               if (module.id === A.ids.days) {
                 for (const id of changes.days)
@@ -609,7 +624,9 @@ WorkTimeApp.services.indexedStorage = (() => {
                   }
                 }
               } else if (
-                [A.ids.schedule, A.ids.templates].includes(module.id)
+                [A.ids.schedule, A.ids.templates, A.ids.agenda].includes(
+                  module.id,
+                )
               ) {
                 const keys = await request(
                   store

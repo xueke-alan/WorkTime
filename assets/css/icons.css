@@ -29,8 +29,8 @@ body #importOpen .import-main > .ui-icon > use[href="#ms-chevron-left"] {
   transform-box: view-box;
   transform: translateX(-20%);
 }
-body .panel-head .month-controls :is(#prevMonth, #nextMonth, #todayButton, #analysisToggle) .ui-icon,
-body .panel-head .calendar-toolbar-actions :is(#batchToggle, #settingsOpen, #backup, #restore, #personalSettingsOpen, #pageSettingsOpen) .ui-icon,
+body .panel-head .month-controls :is(#prevMonth, #nextMonth, #todayButton, #analysisToggle, #agendaMode) .ui-icon,
+body .panel-head .calendar-toolbar-actions :is(#agendaViewToggle, #batchToggle, #settingsOpen, #backup, #restore, #personalSettingsOpen, #pageSettingsOpen) .ui-icon,
 body #importOpen .ui-icon,
 body #sourceDialog.import-detail-view .dialog-foot button[data-detail-step] .ui-icon,
 body .editor :is(.nextday-toggle, #addTimeTemplate, #batchAddTimeTemplate, #batchCalculateEnd) .ui-icon,

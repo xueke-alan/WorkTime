@@ -11,6 +11,7 @@ WorkTimeApp.ui.createWorkspace = function ({
   renderCalendar,
   renderEditor,
   refreshSettings,
+  renderAgenda = () => {},
 }) {
   let disposed = false,
     observer = null;
@@ -26,6 +27,7 @@ WorkTimeApp.ui.createWorkspace = function ({
     renderStats();
     renderCalendar();
     renderEditor();
+    renderAgenda();
     notifications.updateNotificationEmptyState();
   }
   function leaveBatch() {
@@ -103,6 +105,7 @@ WorkTimeApp.ui.createWorkspace = function ({
       notifications.renderOAStaleNotice();
       renderStats();
       renderCalendar(true);
+      renderAgenda();
       notifications.updateNotificationEmptyState();
     },
   };

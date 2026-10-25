@@ -248,6 +248,13 @@ const WorkTimeDomainValidation = (() => {
     )
       fail("oaUrl", "备份中的 OA 链接无效。");
     const clean = defaultState();
+    clean.agenda = WorkTimeApp.domain.agenda.validateItems(input.agenda);
+    if (
+      input.memo !== undefined &&
+      (typeof input.memo !== "string" || input.memo.length > 10000)
+    )
+      fail("memo", "备份中的备忘录无效。");
+    clean.memo = input.memo ?? "";
     clean.settings = { configured: input.settings.configured, ...schedule };
     clean.personal = { employmentDate, workCity };
     const storedLanguage = input.preferences.language ?? "auto";

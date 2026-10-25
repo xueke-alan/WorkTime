@@ -67,7 +67,7 @@ async function main() {
   const directory = path.resolve(__dirname, "../assets/css");
   for (const name of fs
     .readdirSync(directory)
-    .filter((file) => file.endsWith(".css"))) {
+    .filter((file) => file.endsWith(".css") && file !== "site-runtime.css")) {
     const file = path.join(directory, name),
       root = postcss.parse(fs.readFileSync(file, "utf8"), { from: file });
     const stats = clean(root);
@@ -77,6 +77,7 @@ async function main() {
     );
     console.log(name, stats);
   }
+  require("./prepare-assets.cjs").prepareAssets();
 }
 /** Optional component consolidation. Only remove supported declarations shadowed by
  * a later supported value of the same property, selector, condition and priority.

@@ -3,8 +3,28 @@
   "use strict";
   const reduced = WorkTimeApp.ui.animationCompat.preference();
   const running = new Map();
+  // Date surfaces share one rhythm across navigation, layout and content changes.
+  const calendar = Object.freeze({
+    duration: 520,
+    leaveDuration: 400,
+    navigationDuration: 320,
+    contentDuration: 300,
+    contentLeaveDuration: 200,
+    analysisEnterDuration: 280,
+    analysisLeaveDuration: 180,
+    easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+  });
+  function animateCalendar(plans) {
+    // All geometry must be read before this write-only phase. Pending native
+    // animations resolve together on the next frame, without backdating their
+    // clocks to the document-timeline timestamp from before a costly render.
+    return plans.map(({ element, frames, options }) =>
+      WorkTimeApp.ui.animationCompat.animate(element, frames, options),
+    );
+  }
   const contentMotions = new Set([
     "motion-content",
+    "motion-card-content",
     "motion-sidebar-forward",
     "motion-sidebar-back",
     "motion-calendar-view",
@@ -44,21 +64,24 @@
         if (running.get(parent)?.animation) return;
       for (const child of running.keys())
         if (element.contains(child)) stop(child);
-      const style = getComputedStyle(element);
-      const distance = style
-        .getPropertyValue("--motion-direction")
-        .trim()
-        .startsWith("-")
-        ? "-6px"
-        : "6px";
+      const distance =
+        name === "motion-calendar-year" &&
+        getComputedStyle(element)
+          .getPropertyValue("--motion-direction")
+          .trim()
+          .startsWith("-")
+          ? "-6px"
+          : "6px";
       const transform =
-        name === "motion-sidebar-forward"
-          ? "translateX(6px)"
-          : name === "motion-sidebar-back"
-            ? "translateX(-6px)"
-            : name === "motion-calendar-year"
-              ? `translateX(${distance})`
-              : "translateY(4px)";
+        name === "motion-card-content"
+          ? "translateX(-6px)"
+          : name === "motion-sidebar-forward"
+            ? "translateX(6px)"
+            : name === "motion-sidebar-back"
+              ? "translateX(-6px)"
+              : name === "motion-calendar-year"
+                ? `translateX(${distance})`
+                : "translateY(4px)";
       const animation = WorkTimeApp.ui.animationCompat.animate(
         element,
         [
@@ -66,8 +89,15 @@
           { opacity: 1, transform: "none" },
         ],
         {
-          duration: 240,
-          easing: "cubic-bezier(0.2, 0.65, 0.3, 1)",
+          duration: name.startsWith("motion-calendar")
+            ? calendar.navigationDuration
+            : name === "motion-card-content"
+              ? calendar.contentDuration
+              : 240,
+          easing:
+            name.startsWith("motion-calendar") || name === "motion-card-content"
+              ? calendar.easing
+              : "cubic-bezier(0.2, 0.65, 0.3, 1)",
           fill: "backwards",
         },
       );
@@ -119,6 +149,15 @@
     unlisten = WorkTimeApp.ui.animationCompat.listen(reduced, onPreference);
     document.addEventListener("visibilitychange", onVisibility);
   }
-  WorkTimeApp.ui.motion = { play, stop, isAnimating, initial, mount, dispose };
+  WorkTimeApp.ui.motion = {
+    calendar,
+    animateCalendar,
+    play,
+    stop,
+    isAnimating,
+    initial,
+    mount,
+    dispose,
+  };
   mount();
 })();

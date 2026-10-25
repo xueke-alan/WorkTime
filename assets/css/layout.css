@@ -6,8 +6,10 @@
 }
 .workspace {
   --column-header-background: var(--theme-surface-paper, #f8fbf9);
+  --summary-sidebar-width: 236px;
+  --editor-sidebar-width: 300px;
   display: grid;
-  grid-template-columns: 236px minmax(0, 1fr) 300px;
+  grid-template-columns: var(--summary-sidebar-width) minmax(0, 1fr) var(--editor-sidebar-width);
   gap: 18px;
   align-items: stretch;
 }
@@ -34,7 +36,7 @@ footer {
 }
 @media (max-width: 1150px) {
   .workspace {
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) var(--editor-sidebar-width);
   }
 }
 @media (max-width: 850px) {
@@ -142,7 +144,9 @@ body footer {
     gap: 0.857143rem;
   }
   body .workspace {
-    grid-template-columns: 20rem minmax(0, 1fr) 22rem;
+    --summary-sidebar-width: 20rem;
+    --editor-sidebar-width: 22rem;
+    grid-template-columns: var(--summary-sidebar-width) minmax(0, 1fr) var(--editor-sidebar-width);
     gap: 1.142857rem;
     --column-header-height: 4.857143rem;
   }

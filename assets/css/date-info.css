@@ -171,14 +171,18 @@ body .editor > .notification-tabs .notification-tab:hover {
 }
 @media (min-width: 1151px) {
   body .editor .date-info-area {
-    flex: 0 0 calc(100% * 7 / 24);
-    min-height: calc(18.514286rem + 1px);
+    --date-info-height: calc(100% * 7 / 24);
+    --date-info-min-height: calc(18.514286rem + 1px);
+    flex: 0 0 var(--date-info-height);
+    min-height: var(--date-info-min-height);
     overflow: hidden;
   }
 }
 @media (max-width: 1150px) {
   body .editor .date-info-area {
-    height: 260px;
+    --date-info-height: 260px;
+    --date-info-min-height: 0px;
+    height: var(--date-info-height);
     flex: none;
   }
 }

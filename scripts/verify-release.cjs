@@ -19,6 +19,23 @@ function verify(feature, published = false) {
     published ? path.join(root, "_site") : root,
   );
 }
+const agendaChecks = [
+  "agenda",
+  "agenda-week",
+  "agenda-span",
+  "agenda-drag",
+  "agenda-resize",
+  "agenda-workspace",
+  "agenda-motion",
+  "agenda-entry-motion",
+  "toolbar-motion",
+  "agenda-border",
+  "agenda-text",
+  "agenda-status",
+  "agenda-selection",
+  "agenda-position",
+  "analysis-ratio",
+];
 try {
   run(path.join(root, "scripts/check-site.cjs"));
   run(path.join(root, "node_modules/typescript/bin/tsc"), [
@@ -53,6 +70,8 @@ try {
     ],
   );
   for (const feature of [
+    ...agendaChecks,
+    "lunar-runtime",
     "offline",
     "loading",
     "performance-budget",
@@ -79,6 +98,8 @@ try {
     verify(feature);
   run(path.join(root, "scripts/prepare-site.cjs"));
   for (const feature of [
+    ...agendaChecks,
+    "lunar-runtime",
     "startup",
     "loading",
     "performance-budget",
