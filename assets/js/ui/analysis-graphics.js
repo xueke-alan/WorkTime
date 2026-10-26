@@ -302,6 +302,8 @@ WorkTimeApp.ui.createAnalysisGraphics = function ({
             (longest.has(day.date) ? " is-longest" : "") +
             '" data-date="' +
             day.date +
+            '" data-workday="' +
+            day.work +
             '" data-state="' +
             status +
             '" tabindex="0" title="' +

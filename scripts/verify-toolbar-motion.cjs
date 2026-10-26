@@ -26,7 +26,7 @@ async function verify() {
       page.waitForFunction(
         () =>
           !document
-            .querySelector(".agenda-toolbar-region")
+            .querySelector(".agenda-toolbar-region:not(.agenda-modes-region)")
             .getAnimations({ subtree: true }).length &&
           !document.querySelector(".agenda-toolbar-outgoing") &&
           !document.querySelector("#panelContent").inert,
@@ -38,7 +38,9 @@ async function verify() {
       await settle();
       for (const forward of [true, false]) {
         const frames = await page.evaluate(async (forward) => {
-          const region = document.querySelector(".agenda-toolbar-region");
+          const region = document.querySelector(
+            ".agenda-toolbar-region:not(.agenda-modes-region)",
+          );
           const backup = document.querySelector("#backup");
           const incoming = document.querySelector(
             forward ? "#agendaViewToggle" : "#batchToggle",
@@ -136,10 +138,12 @@ async function verify() {
       }
       await click("agendaMode");
       await settle();
-      for (const view of ["week", "fortnight", "month"]) {
+      for (const view of ["week", "fortnight", "threeweek", "month"]) {
         const transition = await page.evaluate(async () => {
           const button = document.querySelector("#agendaViewToggle");
-          const region = document.querySelector(".agenda-toolbar-region");
+          const region = document.querySelector(
+            ".agenda-toolbar-region:not(.agenda-modes-region)",
+          );
           const backup = document.querySelector("#backup");
           const baseline = button.getBoundingClientRect();
           const backupX = backup.getBoundingClientRect().x;
@@ -175,8 +179,10 @@ async function verify() {
           return result;
         });
         assert.equal(transition.view, view);
-        assert.notEqual(transition.incoming, transition.before);
-        assert.equal(transition.iconAnimating, true);
+        assert.equal(
+          transition.iconAnimating,
+          transition.incoming !== transition.before,
+        );
         assert.equal(transition.buttonAnimations, 0);
         assert.equal(transition.regionAnimations, 0);
         assert.equal(transition.ghosts, 0);
@@ -194,7 +200,9 @@ async function verify() {
         const continuity = await page.evaluate(async (delay) => {
           document.querySelector("#agendaMode").click();
           await new Promise((resolve) => setTimeout(resolve, delay));
-          const region = document.querySelector(".agenda-toolbar-region");
+          const region = document.querySelector(
+            ".agenda-toolbar-region:not(.agenda-modes-region)",
+          );
           const nodes = [...region.querySelectorAll("button")].filter(
             (node) => !node.hidden,
           );
@@ -229,7 +237,9 @@ async function verify() {
           await settle();
         }
         const collapse = await page.evaluate(async () => {
-          const region = document.querySelector(".agenda-toolbar-region");
+          const region = document.querySelector(
+            ".agenda-toolbar-region:not(.agenda-modes-region)",
+          );
           const backup = document.querySelector("#backup");
           const initial = region.getBoundingClientRect().width;
           const baseline = backup.getBoundingClientRect().x;
@@ -280,6 +290,39 @@ async function verify() {
         }
       }
     }
+    // Batch mode also animates its mode group. Interruptions settle that group
+    // immediately, including while its collapse is still in the delay phase.
+    for (const interruption of ["motion", "resize", "visibility"]) {
+      await click("batchToggle");
+      if (interruption === "motion")
+        await page.emulateMedia({ reducedMotion: "reduce" });
+      else
+        await page.evaluate((kind) => {
+          if (kind === "resize") window.dispatchEvent(new Event("resize"));
+          else {
+            Object.defineProperty(document, "hidden", {
+              configurable: true,
+              value: true,
+            });
+            document.dispatchEvent(new Event("visibilitychange"));
+          }
+        }, interruption);
+      const modes = await page
+        .locator(".agenda-modes-region")
+        .evaluate((node) => ({
+          hidden: node.hidden,
+          animations: node.getAnimations({ subtree: true }).length,
+          width: node.style.width,
+        }));
+      assert.deepEqual(modes, { hidden: true, animations: 0, width: "" });
+      await click("batchCancel");
+      await page.evaluate(() => {
+        delete document.hidden;
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await settle();
+    }
     await page.evaluate(() => {
       document.querySelector("#batchToggle").focus();
       document.querySelector("#agendaMode").click();
@@ -298,7 +341,9 @@ async function verify() {
     await click("analysisToggle");
     await settle();
     assert.equal(
-      await page.locator(".agenda-toolbar-region").isVisible(),
+      await page
+        .locator(".agenda-toolbar-region:not(.agenda-modes-region)")
+        .isVisible(),
       false,
     );
     await click("analysisToggle");
@@ -327,9 +372,26 @@ async function verify() {
     await click("analysisToggle");
     await settle();
     assert.equal(
-      await page.locator(".agenda-toolbar-region").isVisible(),
+      await page
+        .locator(".agenda-toolbar-region:not(.agenda-modes-region)")
+        .isVisible(),
       false,
     );
+    await click("analysisToggle");
+    await settle();
+    // Longer month slots must leave the shared mode buttons inside the panel.
+    for (const language of ["en", "ja"]) {
+      await page.evaluate((id) => WorkTimeApp.i18n.setLanguage(id), language);
+      for (const width of [320, 390, 540]) {
+        await page.setViewportSize({ width, height: 1000 });
+        const fits = await page.locator("#agendaMode").evaluate((node) => {
+          const button = node.getBoundingClientRect();
+          const panel = node.closest(".panel").getBoundingClientRect();
+          return button.left >= panel.left && button.right <= panel.right;
+        });
+        assert.equal(fits, true, language + " mode controls at " + width);
+      }
+    }
     assert.deepEqual(errors, []);
     console.log(
       "Toolbar directions, timing, rapid reversal, analysis collapse, stable actions, narrow layouts, focus, reduced motion and missing animation API verified.",

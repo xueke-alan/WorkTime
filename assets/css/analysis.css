@@ -331,9 +331,6 @@
   opacity: 1;
   stroke-width: 3.5;
 }
-.analysis-plot .analysis-date.is-future {
-  opacity: 0.45;
-}
 .analysis-plot .analysis-date.is-today {
   fill: var(--accent);
   font-weight: 700;
@@ -402,6 +399,12 @@
   color: var(--muted);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
+}
+.analysis-day[data-workday="true"] > span:first-child {
+  font-weight: 700;
+}
+.analysis-day[data-workday="false"] > span:first-child {
+  color: color-mix(in srgb, var(--muted) 55%, var(--paper));
 }
 .analysis-text-changing {
   position: relative;
@@ -519,10 +522,8 @@
   border: 2px solid color-mix(in srgb, var(--muted) 78%, var(--paper));
   border-radius: 50%;
 }
-.analysis-day[data-state="future"] {
-  opacity: 0.4;
-}
 .analysis-marker-shape[data-state="future"] {
+  opacity: 0.4;
   height: 1px;
   background: transparent;
   border-top: 1px dashed var(--muted);

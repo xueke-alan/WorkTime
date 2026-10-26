@@ -24,11 +24,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
     numbers,
     weatherLayer,
   } = options;
-  let renderedMonth = null,
-    renderedMode = null,
+  let renderedMode = null,
     renderedSelection = null,
-    renderedYearMode = null,
-    renderedViewYear = null;
+    renderedYearMode = null;
 
   const { updateHTML, updateText, updateCalendar } =
     WorkTimeApp.ui.createCalendarRenderer({
@@ -192,7 +190,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
       const number = title.querySelector(selector);
       numbers.set(number, value, {
         animateInitial: !(wordMonth && selector === ".month-title-month"),
-        animateWhole: wordMonth && selector === ".month-title-month",
+        animateWhole: selector === ".month-title-month",
       });
     }
     title.classList.toggle("is-year-title", yearMode);
@@ -246,6 +244,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
   }
   function adjacentDayCard(k) {
     const state = getState();
+    const view = getView();
+    const highlighted =
+      view.calendarSelected === undefined
+        ? view.selected
+        : view.calendarSelected;
     const info = C.calendarInfo(k, state.days[k] || {}),
       date = C.localDate(k),
       scheduleChanged = hasScheduleChange(state, k),
@@ -254,6 +257,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const classes = [
       "day",
       "adjacent",
+      !view.batchMode && highlighted === k ? "selected" : "",
       !info.work ? "restday" : "",
       info.weekend ? "weekend" : "",
     ]
@@ -293,13 +297,13 @@ WorkTimeApp.ui.createCalendar = function (options) {
       today,
       month,
       selected,
+      calendarSelected = selected,
       batchMode,
       batchDays,
       batchDraft,
       batchSaving,
       yearMode,
       analysisMode,
-      viewYear,
     } = getView();
     for (const id of ["prevMonth", "nextMonth", "todayButton"])
       $(id).disabled = batchMode;
@@ -326,6 +330,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
     $("yearLegend").classList.toggle("hidden", !yearMode);
     $("batchToggle").disabled = yearMode || analysisMode;
     $("analysisToggle").disabled = batchMode;
+    const agendaMode = $("agendaMode");
+    if (agendaMode) agendaMode.disabled = batchMode;
     $("analysisToggle").setAttribute("aria-pressed", String(!!analysisMode));
     $("analysisToggle").classList.toggle("is-active", !!analysisMode);
     const analysisLabel = analysisMode
@@ -387,24 +393,14 @@ WorkTimeApp.ui.createCalendar = function (options) {
         : WorkTimeApp.i18n.t("copy.8c9b38e26d"),
     );
     if (yearMode) {
-      const yearChanged =
-          renderedViewYear !== null && renderedViewYear !== viewYear,
-        direction = viewYear > renderedViewYear ? "12px" : "-12px";
       renderYear();
-      if (viewChanged) {
+      if (viewChanged)
         WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-view");
-      } else if (yearChanged) {
-        $("calendar").style.setProperty("--motion-direction", direction);
-        WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-year");
-      }
-      renderedViewYear = viewYear;
       return;
     }
-    const monthChanged = renderedMonth !== null && renderedMonth !== month,
-      modeChanged = renderedMode !== null && renderedMode !== batchMode,
+    const modeChanged = renderedMode !== null && renderedMode !== batchMode,
       selectionChanged =
-        renderedSelection !== null && renderedSelection !== selected;
-    const direction = month > renderedMonth ? "8px" : "-8px";
+        renderedSelection !== null && renderedSelection !== calendarSelected;
     const monthViewYear = month.slice(0, 4),
       yearNotice = $("yearNotice");
     updateMonthTitle(Number(monthViewYear), Number(month.slice(5)), false);
@@ -471,7 +467,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
           : day.leaveMinutes
             ? "partial-leave"
             : "",
-        selected === k && !batchMode ? "selected" : "",
+        calendarSelected === k && !batchMode ? "selected" : "",
         batchDays.has(k) && batchMode ? "batchselected" : "",
         k === today ? "today" : "",
       ]
@@ -546,7 +542,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         (info.holiday ? ' data-holiday="' + esc(info.holiday) + '"' : "") +
         (info.festival ? ' data-festival="' + esc(info.festival) + '"' : "") +
         ' aria-pressed="' +
-        (batchMode ? batchDays.has(k) : selected === k) +
+        (batchMode ? batchDays.has(k) : calendarSelected === k) +
         '" aria-label="' +
         k +
         " " +
@@ -664,11 +660,16 @@ WorkTimeApp.ui.createCalendar = function (options) {
       preview.setDate(preview.getDate() + i);
       html += adjacentDayCard(C.dateKey(preview));
     }
-    // A fortnight anchored in the month's last row needs the following week.
+    // Multiweek views may extend beyond the month's final calendar row.
     // Generate those dates with the same adjacent-day component and keyed renderer.
-    if (getView().agendaViewWeeks === 2) {
+    if (getView().agendaViewWeeks > 1) {
       const end = C.localDate(getView().agendaViewAnchor || selected);
-      end.setDate(end.getDate() - ((end.getDay() + 6) % 7) + 13);
+      end.setDate(
+        end.getDate() -
+          ((end.getDay() + 6) % 7) +
+          getView().agendaViewWeeks * 7 -
+          1,
+      );
       const next = C.localDate(last);
       next.setDate(next.getDate() + weeks * 7 - offset - total + 1);
       while (next <= end) {
@@ -677,7 +678,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
       }
     }
     $("calendar").dataset.weeks = weeks;
-    updateCalendar(html);
+    // Batch mode only changes controls and selection, not attendance content.
+    updateCalendar(html, { animateContent: !modeChanged });
     updateText(
       $("calendarFoot"),
       WorkTimeApp.i18n.t("copy.222e6cef7c") +
@@ -764,10 +766,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         : "",
     );
     $("cards").classList.toggle("is-batch-preview", batchMode);
-    if (monthChanged && !viewChanged) {
-      $("calendar").style.setProperty("--motion-direction", direction);
-      WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-year");
-    } else if (selectionChanged && !batchMode)
+    if (selectionChanged && !batchMode)
       WorkTimeApp.ui.motion?.play(
         $("calendar").querySelector(".selected"),
         "motion-selection",
@@ -780,13 +779,17 @@ WorkTimeApp.ui.createCalendar = function (options) {
     }
     if (viewChanged)
       WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-view");
-    renderedMonth = month;
     renderedMode = batchMode;
-    renderedSelection = selected;
+    renderedSelection = calendarSelected;
   }
   function renderYear() {
     const state = getState();
-    const { today, selected, viewYear } = getView();
+    const {
+      today,
+      selected,
+      calendarSelected = selected,
+      viewYear,
+    } = getView();
 
     updateMonthTitle(viewYear, Number(getView().month.slice(5)), true);
     const notice = $("yearNotice");
@@ -832,9 +835,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
               .map(
                 (d) =>
                   '<button type="button" class="year-day' +
-                  (d.date === selected ? " selected" : "") +
+                  (d.date === calendarSelected ? " selected" : "") +
                   '" aria-pressed="' +
-                  (d.date === selected) +
+                  (d.date === calendarSelected) +
                   '" style="background:' +
                   d.color.background +
                   ";color:" +
@@ -897,7 +900,6 @@ WorkTimeApp.ui.createCalendar = function (options) {
       WorkTimeApp.i18n.t("copy.3f712eac83"),
     );
     $("batchToggle").querySelector("use").setAttribute("href", "#ms-stacks");
-    renderedMonth = null;
     renderedMode = false;
     renderedSelection = selected;
     updateNotificationEmptyState();

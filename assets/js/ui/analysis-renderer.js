@@ -603,13 +603,11 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
             ? Number(child.getAttribute("opacity"))
             : child.matches(".analysis-rest-band")
               ? 0.025
-              : child.matches('.analysis-day[data-state="future"]')
-                ? 0.4
-                : child.matches(".analysis-date.is-future")
-                  ? 0.45
-                  : child.matches('.analysis-marker-shape[data-active="false"]')
-                    ? 0
-                    : 1;
+              : child.matches('.analysis-marker-shape[data-active="false"]')
+                ? 0
+                : child.matches('.analysis-marker-shape[data-state="future"]')
+                  ? 0.4
+                  : 1;
           queue(
             (p) => {
               added.style.opacity = String(p * opacity);

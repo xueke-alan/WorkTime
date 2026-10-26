@@ -16,6 +16,7 @@ const WorkTimeServiceApplication = (() => {
       today: input.today,
       month: input.today.slice(0, 7),
       selected: input.today,
+      calendarSelected: input.today,
       batchMode: false,
       batchDays: new Set(),
       batchAnchor: null,

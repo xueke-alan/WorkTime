@@ -117,8 +117,9 @@ async function verifyViewMotion(browser, url, state) {
     Element.prototype.animate = function (frames, options) {
       const animation = animate.call(this, frames, options);
       if (
-        options.duration === 320 &&
-        frames.some((frame) => /translateX\(-?18px\)/.test(frame.transform))
+        [320, 520].includes(options.duration) &&
+        this.id === "calendar" &&
+        frames.some((frame) => /translateY\(-?[\d.]+px\)/.test(frame.transform))
       )
         window.monthMotions.push({ id: this.id, frames, animation });
       if (
@@ -349,10 +350,11 @@ async function verifyViewMotion(browser, url, state) {
       analysis ? [] : Array(3).fill("calendar"),
     );
     assert.deepEqual(
-      motion.map((item) => item.offset),
-      analysis
-        ? []
-        : ["translateX(18px)", "translateX(18px)", "translateX(-18px)"],
+      motion
+        .map((item) => /^translateY\((-?[\d.]+)px\)$/.exec(item.offset)?.[1])
+        .map(Number)
+        .map(Math.sign),
+      analysis ? [] : [1, 1, -1],
     );
     assert.deepEqual(
       motion.slice(0, 2).map((item) => item.state),
@@ -1579,10 +1581,7 @@ async function verify() {
         () => document.documentElement.dataset.appState === "ready",
       );
     await waitReady();
-    assert.equal(
-      await view.locator("#todayButton + #agendaModes #analysisToggle").count(),
-      1,
-    );
+    assert.equal(await view.locator("#agendaModes #analysisToggle").count(), 1);
     const calendarFooter = await view.locator("#calendarFoot").textContent();
     assert.equal(
       await view.locator("#analysisToggle use").getAttribute("href"),

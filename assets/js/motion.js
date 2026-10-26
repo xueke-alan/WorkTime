@@ -8,6 +8,8 @@
     duration: 520,
     leaveDuration: 400,
     navigationDuration: 320,
+    pageNavigationDuration: 520,
+    pageNavigationEasing: "cubic-bezier(0.4, 0, 0.2, 1)",
     contentDuration: 300,
     contentLeaveDuration: 200,
     analysisEnterDuration: 280,

@@ -31,7 +31,7 @@ WorkTimeApp.ui.createAgendaDrag = function ({
       item.end,
       item.title,
       item.note,
-      item.completed,
+      item.status,
       item.allDay,
       item.updatedAt,
     ]);

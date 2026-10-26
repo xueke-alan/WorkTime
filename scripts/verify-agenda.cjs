@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -126,7 +127,7 @@ async function verify() {
     await page.locator("#agendaNew").click();
     // The themed picker owns selection while the editable native field owns value.
     await openSchedule();
-    await page.locator("#agendaDateInput").fill("2028-02-28");
+    await setScheduleRange(page, "2028-02-28");
     await page.locator("#agendaDateOpen").click();
     await page.keyboard.press("ArrowRight");
     assert.equal(
@@ -135,7 +136,7 @@ async function verify() {
     );
     await page.keyboard.press("Enter");
     assert.equal(
-      await page.locator("#agendaDateInput").inputValue(),
+      await page.locator("#agendaEndDateInput").inputValue(),
       "2028-02-29",
     );
     await page.locator("#agendaDateOpen").click();
@@ -144,7 +145,7 @@ async function verify() {
       .locator(":popover-open [data-picker-date='2028-03-03']:visible")
       .click();
     assert.equal(
-      await page.locator("#agendaDateInput").inputValue(),
+      await page.locator("#agendaEndDateInput").inputValue(),
       "2028-03-03",
     );
     for (const [date, step] of [
@@ -152,7 +153,7 @@ async function verify() {
       ["9999-12-31", "1"],
     ]) {
       await openSchedule();
-      await page.locator("#agendaDateInput").fill(date);
+      await setScheduleRange(page, date);
       await page.locator("#agendaDateOpen").click();
       assert.equal(
         await page
@@ -166,9 +167,10 @@ async function verify() {
     await page.locator(":popover-open [data-schedule-today]").click();
     assert.equal(await page.locator("#agendaDateInput").inputValue(), today);
     // One compact entry opens the full linked date/time range picker.
-    await page.locator("#agendaDateInput").fill("2028-02-28");
+    await setScheduleRange(page, "2028-02-28");
     await page.locator("#agendaDateOpen").click();
-    await page.locator("#agendaMultiDay").check();
+    await page.keyboard.press("Escape");
+    await openSchedule();
     assert.equal(
       await page.locator(".agenda-inline-calendar:visible").count(),
       2,
@@ -233,7 +235,7 @@ async function verify() {
       /2028-02-27 09:00.*2028-03-04 18:00/,
     );
     await openSchedule();
-    await page.locator("#agendaMultiDay").uncheck();
+    await setScheduleRange(page, "2028-02-27");
     await page.keyboard.press("Escape");
     assert.equal(
       await page
@@ -441,26 +443,28 @@ async function verify() {
       .locator("#calendar .day.selected")
       .evaluate((card) => card.style.removeProperty("height"));
     await page.locator("#agendaList .agenda-complete").first().click();
+    await page.locator('[data-agenda-status-choice="completed"]').click();
     await page.waitForFunction(
       () =>
         document
           .querySelector("#agendaList .agenda-complete")
-          .getAttribute("aria-pressed") === "true",
+          .getAttribute("data-status") === "completed",
     );
     assert.equal(
       await page
         .locator(
-          "#calendar .day.selected .agenda-chip.is-complete .agenda-chip-status[aria-label='已完成'] svg",
+          "#calendar .day.selected .agenda-chip.is-complete .agenda-chip-status[aria-label='已完成']",
         )
         .count(),
       1,
     );
     await page.locator("#agendaList .agenda-complete").first().click();
+    await page.locator('[data-agenda-status-choice="pending"]').click();
     await page.waitForFunction(
       () =>
         document
           .querySelector("#agendaList .agenda-complete")
-          .getAttribute("aria-pressed") === "false",
+          .getAttribute("data-status") === "pending",
     );
     // Moving an existing event across months updates both calendars and its identity.
     const movedDate = await page.evaluate((date) => {
@@ -474,7 +478,7 @@ async function verify() {
         .filter({ hasText: "下午讨论" })
         .click();
       await openSchedule();
-      await page.locator("#agendaDateInput").fill(date);
+      await setScheduleRange(page, date);
       if (
         await page
           .locator("#agendaSchedulePopup")
@@ -546,8 +550,14 @@ async function verify() {
       await page.evaluate((id) => WorkTimeApp.i18n.setLanguage(id), language);
       await openSchedule();
       assert.equal(
-        await page.locator(":popover-open .agenda-picker-day:visible").count(),
-        42,
+        await page.locator(":popover-open .agenda-picker-day").count(),
+        84,
+      );
+      assert.equal(
+        await page
+          .locator(":popover-open .agenda-inline-calendar:visible")
+          .count(),
+        2,
       );
       assert.equal(
         await page.locator(":popover-open [data-schedule-today]").textContent(),
@@ -912,11 +922,12 @@ async function verify() {
       window.agendaAnimations = [];
     });
     await page.locator("#agendaList .agenda-complete").click();
+    await page.locator('[data-agenda-status-choice="completed"]').click();
     await page.waitForFunction(
       () =>
         document
           .querySelector("#agendaList .agenda-complete")
-          .getAttribute("aria-pressed") === "true",
+          .getAttribute("data-status") === "completed",
     );
     assert.equal(
       await page.evaluate(() =>

@@ -2,7 +2,7 @@
 /**
  * Runtime data contracts. Minutes are the internal unit; missing and null do not mean zero.
  * OA raw fields store compact date/weekday/punch/status evidence, not full page text.
- * @typedef {{id:string,title:string,date:string,endDate?:string,allDay:boolean,start:string,end:string,note:string,completed:boolean,createdAt:string,updatedAt:string}} WorkAgendaItem
+ * @typedef {{id:string,title:string,date:string,endDate?:string,allDay:boolean,start:string,end:string,note:string,status:'pending'|'completed'|'in-progress'|'cancelled',completed:boolean,createdAt:string,updatedAt:string}} WorkAgendaItem
  * @typedef {{start:number,end:number}} WorkBreak
  * @typedef {{configured:boolean,workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[]}} WorkSettings
  * @typedef {{employmentDate:string,workCity:string}} WorkPersonal
@@ -26,7 +26,7 @@
  * @typedef {{memo?:string,agenda?:WorkAgendaItem[],scheduleRanges:WorkScheduleRange[],schemaVersion:3,personal:WorkPersonal,preferences:WorkPreferences,overtimeRequirements:(number|null)[],oaUrl:string,settings:WorkSettings,timeTemplates:WorkTimeTemplate[],days:Object<string,WorkDay>,imports:WorkImportLog[],_archive?:{recordExtras?:Object,dataExtras?:Object}}} WorkStateData
  * @typedef {{reset:'none'|'selected'|'all',month:string,dates:string[],record:WorkManualRecord|null,valid:boolean,canConfirm:boolean}} WorkBatchDraft
  * @typedef {{base:WorkStateData,state:WorkStateData}} WorkBatchPreview
- * @typedef {{today:string,month:string,selected:string,batchMode:boolean,batchDays:Set<string>,batchDraft:WorkBatchDraft|null,batchSaving:boolean,yearMode:boolean,viewYear:number,analysisMode:boolean,analysisIncludeManual:boolean,agendaViewWeeks?:0|1|2,agendaViewAnchor?:string}} WorkViewState
+ * @typedef {{today:string,month:string,selected:string,calendarSelected?:string|null,batchMode:boolean,batchDays:Set<string>,batchDraft:WorkBatchDraft|null,batchSaving:boolean,yearMode:boolean,viewYear:number,analysisMode:boolean,analysisIncludeManual:boolean,agendaViewWeeks?:0|1|2|3,agendaViewAnchor?:string}} WorkViewState
  * @typedef {'unavailable'|'unsupported'|'corrupt'|null} WorkStorageLoadIssue
  * @typedef {WorkViewState & {state:WorkStateData,revision:number,storageFailed:boolean,loadCorrupt:boolean,loadIssue:WorkStorageLoadIssue,batchAnchor:string|null,batchPreview:WorkBatchPreview|null,returnMonth:string}} WorkApplicationModel
  * @typedef {{core:Object,element:function(string):HTMLElement,escape:function(*):string,getState:function():WorkStateData,getView:function():WorkViewState,document:Document,window:Window}} WorkViewDependencies

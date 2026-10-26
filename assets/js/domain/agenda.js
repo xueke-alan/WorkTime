@@ -10,6 +10,14 @@ WorkTimeApp.domain.agenda = (() => {
       });
     };
     if (!item || typeof item !== "object" || Array.isArray(item)) fail();
+    const status =
+      item.status === undefined && typeof item.completed === "boolean"
+        ? item.completed
+          ? "completed"
+          : "pending"
+        : item.status;
+    if (!["pending", "completed", "in-progress", "cancelled"].includes(status))
+      fail();
     const endDate = item.endDate ?? item.date;
     if (
       typeof item.id !== "string" ||
@@ -22,7 +30,6 @@ WorkTimeApp.domain.agenda = (() => {
       !WorkTimeApp.domain.time.validDate(endDate) ||
       endDate < item.date ||
       typeof item.allDay !== "boolean" ||
-      typeof item.completed !== "boolean" ||
       typeof item.note !== "string" ||
       item.note.length > 5000 ||
       typeof item.start !== "string" ||
@@ -42,7 +49,13 @@ WorkTimeApp.domain.agenda = (() => {
       )
     )
       fail();
-    return { ...item, endDate, title: item.title.trim() };
+    return {
+      ...item,
+      endDate,
+      status,
+      completed: status === "completed",
+      title: item.title.trim(),
+    };
   }
   /** @param {*} items @returns {WorkAgendaItem[]} */
   function validateItems(items) {

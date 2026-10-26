@@ -7,6 +7,7 @@ WorkTimeApp.ui.createDatePicker = function ({
   inline = false,
   onChoose,
   onMonthChange,
+  onPreview,
   range,
 }) {
   const scope = new AbortController();
@@ -76,8 +77,12 @@ WorkTimeApp.ui.createDatePicker = function ({
       ) + "px";
   }
   function render() {
-    button.setAttribute("aria-label", t("chooseDate"));
-    button.title = t("chooseDate");
+    const label = range && input.labels?.[0]?.textContent;
+    const accessibleLabel = label
+      ? t("chooseDate") + ": " + label
+      : t("chooseDate");
+    button.setAttribute("aria-label", accessibleLabel);
+    button.title = accessibleLabel;
     popup.setAttribute("aria-label", t("chooseDate"));
     if (!month) return;
     const signature = JSON.stringify([
@@ -92,6 +97,9 @@ WorkTimeApp.ui.createDatePicker = function ({
     ]);
     if (signature === rendered) return;
     rendered = signature;
+    const activeDate = popup.contains(document.activeElement)
+      ? document.activeElement.dataset.pickerDate
+      : "";
     const first = time.localDate(month + "-01");
     popup.querySelector(".agenda-picker-month").textContent =
       new Intl.DateTimeFormat(i18n.locale, {
@@ -125,17 +133,33 @@ WorkTimeApp.ui.createDatePicker = function ({
       date.setDate(start.getDate() + index);
       const key = time.dateKey(date);
       const selected = selectedRange
-        ? key === selectedRange.start || key === selectedRange.end
+        ? selectedRange.pending
+          ? key === selectedRange.anchor
+          : key === selectedRange.start || key === selectedRange.end
         : key === input.value;
       const inRange =
-        selectedRange && key > selectedRange.start && key < selectedRange.end;
-      return `<button type="button" role="gridcell" data-picker-date="${key}" class="agenda-picker-day${key.slice(0, 7) !== month ? " is-adjacent" : ""}${inRange ? " is-in-range" : ""}" aria-label="${escape(time.validDate(key) ? i18n.date(key) : String(date.getDate()))}" aria-selected="${selected}"${key === today() ? ' aria-current="date"' : ""} tabindex="${key === focused ? 0 : -1}"${valid(key) ? "" : " disabled"}>${escape(i18n.number(date.getDate()))}</button>`;
+        selectedRange &&
+        !selectedRange.pending &&
+        key > selectedRange.start &&
+        key < selectedRange.end;
+      const previewRange = selectedRange?.preview;
+      const inPreview =
+        previewRange && key >= previewRange.start && key <= previewRange.end;
+      const startEndpoint =
+        selectedRange && !selectedRange.pending && key === selectedRange.start;
+      const endEndpoint =
+        selectedRange && !selectedRange.pending && key === selectedRange.end;
+      return `<button type="button" role="gridcell" data-picker-date="${key}" class="agenda-picker-day${key.slice(0, 7) !== month ? " is-adjacent" : ""}${inRange ? " is-in-range" : ""}${inPreview ? " is-range-preview" : ""}${startEndpoint ? " is-range-start" : ""}${endEndpoint ? " is-range-end" : ""}" aria-label="${escape(time.validDate(key) ? i18n.date(key) : String(date.getDate()))}" aria-selected="${selected}"${key === today() ? ' aria-current="date"' : ""} tabindex="${key === focused ? 0 : -1}"${valid(key) ? "" : " disabled"}><span>${escape(i18n.number(date.getDate()))}</span></button>`;
     });
     popup.querySelector(".agenda-picker-grid").innerHTML = Array.from(
       { length: 6 },
       (_, row) =>
         `<div role="row">${cells.slice(row * 7, row * 7 + 7).join("")}</div>`,
     ).join("");
+    if (activeDate)
+      popup
+        .querySelector(`[data-picker-date="${activeDate}"]`)
+        ?.focus({ preventScroll: true });
     if (open()) place();
   }
   function focusDate(date) {
@@ -144,6 +168,7 @@ WorkTimeApp.ui.createDatePicker = function ({
     month = date.slice(0, 7);
     onMonthChange?.(month);
     render();
+    onPreview?.(date);
     popup
       .querySelector(`[data-picker-date="${date}"]`)
       ?.focus({ preventScroll: true });
@@ -151,6 +176,7 @@ WorkTimeApp.ui.createDatePicker = function ({
   function choose(date) {
     if (!valid(date)) return;
     if (onChoose) {
+      focused = date;
       onChoose(date);
       return;
     }
@@ -205,6 +231,13 @@ WorkTimeApp.ui.createDatePicker = function ({
       render();
     }
   });
+  if (onPreview) {
+    listen(popup, "pointermove", (event) => {
+      const day = event.target.closest("[data-picker-date]");
+      if (day && !day.disabled) onPreview(day.dataset.pickerDate);
+    });
+    listen(popup, "pointerleave", () => onPreview(""));
+  }
   listen(popup, "keydown", (event) => {
     if (event.key === "Escape") {
       event.preventDefault();
@@ -264,7 +297,12 @@ WorkTimeApp.ui.createDatePicker = function ({
     setMonth(value, focus) {
       month = value;
       focused =
-        focus ?? (focused.slice(0, 7) === value ? focused : input.value);
+        focus ??
+        (focused.slice(0, 7) === value
+          ? focused
+          : input.value.slice(0, 7) === value
+            ? input.value
+            : value + "-01");
       render();
     },
     dispose() {

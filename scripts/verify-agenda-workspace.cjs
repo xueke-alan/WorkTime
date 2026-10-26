@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -90,9 +91,8 @@ async function verify() {
       await page.locator("#agendaNew").click();
       await page.locator("#agendaTitle").fill(title);
       await page.locator("#agendaScheduleOpen").click();
-      await page.locator("#agendaDateInput").fill(date);
+      await setScheduleRange(page, date);
       if (endDate) {
-        await page.locator("#agendaMultiDay").check();
         await page.locator("#agendaEndDateInput").fill(endDate);
       }
       await page.locator("[data-schedule-close]").click();
@@ -136,6 +136,7 @@ async function verify() {
     accept = true;
     await page.locator("#agendaBack").click();
     await page.locator("#agendaList .agenda-complete").first().click();
+    await page.locator('[data-agenda-status-choice="completed"]').click();
     await page.waitForFunction(() =>
       document.querySelector("#agendaList .is-complete"),
     );
@@ -227,7 +228,7 @@ async function verify() {
         .querySelector("#agendaMemoStatus")
         .textContent.includes("已保存"),
     );
-    for (const view of ["week", "fortnight", "month"]) {
+    for (const view of ["week", "fortnight", "threeweek", "month"]) {
       await page.locator("#agendaViewToggle").click();
       assert.equal(
         await page.locator("#agendaViewToggle").getAttribute("data-view"),
@@ -458,7 +459,7 @@ async function verify() {
           "#monthTitleMonth .number-roll-up, #monthTitleMonth .number-roll-down",
         ),
     );
-    for (const view of ["week", "fortnight", "month"]) {
+    for (const view of ["week", "fortnight", "threeweek", "month"]) {
       const titleMotion = await page.evaluate(async () => {
         const title = document.querySelector("#monthTitle");
         const slots = [
@@ -519,14 +520,16 @@ async function verify() {
         );
       const start = titleMotion.widths[0],
         end = titleMotion.widths.at(-1);
-      assert.ok(
-        titleMotion.widths.some(
-          (width) =>
-            width > Math.min(start, end) + 1 &&
-            width < Math.max(start, end) - 1,
-        ),
-        "Title width changes gradually",
-      );
+      // Fortnight and three-week suffixes can have the same measured width.
+      if (Math.abs(start - end) > 2)
+        assert.ok(
+          titleMotion.widths.some(
+            (width) =>
+              width > Math.min(start, end) + 1 &&
+              width < Math.max(start, end) - 1,
+          ),
+          "Title width changes gradually",
+        );
     }
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.locator("#agendaMode").click();

@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -157,10 +158,9 @@ async function verify() {
       await page.locator("#agendaNew").click();
       await page.locator("#agendaTitle").fill(title);
       await openSchedule();
-      await page.locator("#agendaDateInput").fill(date);
+      await setScheduleRange(page, date);
       if (endDate) {
         await openSchedule();
-        await page.locator("#agendaMultiDay").check();
         assert.equal(
           await page.locator("#agendaEndDateInput").isVisible(),
           true,
@@ -271,6 +271,7 @@ async function verify() {
       await page.locator("[data-schedule-close]").click();
     await page.locator("#agendaCancel").click();
     await page.locator("#agendaList .agenda-complete").click();
+    await page.locator('[data-agenda-status-choice="completed"]').click();
     await page.waitForFunction(
       () =>
         document.querySelectorAll(
@@ -278,6 +279,7 @@ async function verify() {
         ).length === 2,
     );
     await page.locator("#agendaList .agenda-complete").click();
+    await page.locator('[data-agenda-status-choice="pending"]').click();
     await create("午夜结束", "2026-10-31", "2026-11-01", "22:00", "00:00");
     assert.equal(
       await chip("午夜结束").getAttribute("data-agenda-segment-end"),

@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -95,8 +96,7 @@ async function verify() {
       await page.locator("#agendaNew").click();
       await page.locator("#agendaTitle").fill("跨日日程边框检查");
       await page.locator("#agendaScheduleOpen").click();
-      await page.locator("#agendaDateInput").fill("2026-10-14");
-      await page.locator("#agendaMultiDay").check();
+      await setScheduleRange(page, "2026-10-14");
       await page.locator("#agendaEndDateInput").fill("2026-10-17");
       await page.locator("[data-schedule-close]").click();
       await page.locator("#agendaSave").click();

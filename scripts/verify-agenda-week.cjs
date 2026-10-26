@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -37,7 +38,7 @@ async function verify() {
       await page.locator("#agendaNew").click();
       await page.locator("#agendaTitle").fill(title);
       await page.locator("#agendaScheduleOpen").click();
-      await page.locator("#agendaDateInput").fill(date);
+      await setScheduleRange(page, date);
       await page.locator("#agendaNote").fill(note);
       if (
         await page
@@ -62,13 +63,15 @@ async function verify() {
           .map((card) => card.dataset.date || card.dataset.previewDate),
       );
     const setView = async (view) => {
-      for (let index = 0; index < 3; index++) {
+      for (let index = 0; index < 4; index++) {
         if (
           (await page
             .locator("#agendaViewToggle")
             .evaluate(
               (node) =>
-                ["month", "week", "fortnight"][Number(node.dataset.agendaView)],
+                ["month", "week", "fortnight", "threeweek"][
+                  Number(node.dataset.agendaView)
+                ],
             )) === view
         )
           return;
@@ -81,7 +84,9 @@ async function verify() {
           .locator("#agendaViewToggle")
           .evaluate(
             (node) =>
-              ["month", "week", "fortnight"][Number(node.dataset.agendaView)],
+              ["month", "week", "fortnight", "threeweek"][
+                Number(node.dataset.agendaView)
+              ],
           ),
         view,
       );
@@ -100,7 +105,39 @@ async function verify() {
               ),
             ),
       );
+    while (!(await page.locator('[data-date="2026-11-01"]').count())) {
+      const month = await page
+        .locator("#calendar [data-date]")
+        .first()
+        .getAttribute("data-date");
+      await page
+        .locator(month < "2026-11" ? "#nextMonth" : "#prevMonth")
+        .click();
+    }
     await create("跨月安排", "2026-11-01");
+    const monthLabel = await page.locator("#monthTitle").textContent();
+    await page
+      .locator('[data-preview-date="2026-10-31"] .day-select')
+      .click({ position: { x: 8, y: 8 } });
+    assert.equal(
+      await page
+        .locator('#calendar [data-date="2026-11-01"] .agenda-chip')
+        .count(),
+      1,
+      "Month selection keeps the current month and its events",
+    );
+    assert.equal(await page.locator("#monthTitle").textContent(), monthLabel);
+    assert.equal(
+      await page
+        .locator('#calendar [data-preview-date="2026-10-31"].selected')
+        .count(),
+      1,
+      "Selecting a previous-month card does not switch month views",
+    );
+    await page
+      .locator('[data-date="2026-11-01"] .day-select')
+      .click({ position: { x: 8, y: 8 } });
+    assert.equal(await page.locator("#agendaList .agenda-item").count(), 1);
     await page.evaluate(() => {
       window.monthCards = new Map(
         [...document.querySelectorAll("#calendar > .day")].map((card) => [
@@ -139,6 +176,38 @@ async function verify() {
       "2026-10-31",
       "2026-11-01",
     ]);
+    const weekLabel = await page.locator("#monthTitle").textContent();
+    await page.evaluate(() => {
+      window.crossMonthMotions = [];
+      window.crossMonthPlay = WorkTimeApp.ui.motion.play;
+      WorkTimeApp.ui.motion.play = function (element, name, ...args) {
+        if (element?.id === "calendar") window.crossMonthMotions.push(name);
+        return window.crossMonthPlay.call(this, element, name, ...args);
+      };
+    });
+    await page
+      .locator('[data-preview-date="2026-10-30"] .day-select')
+      .click({ position: { x: 8, y: 8 } });
+    assert.deepEqual(
+      await page.evaluate(() => window.crossMonthMotions),
+      [],
+      "Selecting a previous-month date within the week does not animate navigation",
+    );
+    assert.equal(await page.locator("#monthTitle").textContent(), weekLabel);
+    assert.equal(
+      await page
+        .locator('#calendar [data-preview-date="2026-10-30"].selected')
+        .count(),
+      1,
+      "Selection keeps the displayed month and adjacent card",
+    );
+    await page
+      .locator('[data-date="2026-11-01"] .day-select')
+      .click({ position: { x: 8, y: 8 } });
+    assert.deepEqual(await page.evaluate(() => window.crossMonthMotions), []);
+    await page.evaluate(() => {
+      WorkTimeApp.ui.motion.play = window.crossMonthPlay;
+    });
     assert.equal(
       await page.evaluate(
         () =>
@@ -171,7 +240,9 @@ async function verify() {
         .locator("#agendaViewToggle")
         .evaluate(
           (node) =>
-            ["month", "week", "fortnight"][Number(node.dataset.agendaView)],
+            ["month", "week", "fortnight", "threeweek"][
+              Number(node.dataset.agendaView)
+            ],
         ),
       "week",
     );
@@ -191,7 +262,38 @@ async function verify() {
       0,
     );
     // Navigate through a selectable adjacent-month day and back.
+    await page.locator("#prevMonth").click();
     await create("十月安排", "2026-10-31");
+    const adjacent = page.locator('[data-preview-date="2026-11-01"]');
+    for (const selected of [false, true]) {
+      await adjacent.evaluate((card, selected) => {
+        card.classList.toggle("selected", selected);
+      }, selected);
+      await adjacent.hover({ position: { x: 8, y: 8 } });
+      const { actual, expected } = await adjacent.evaluate((card) => {
+        const properties = [
+          "borderTopWidth",
+          "borderTopStyle",
+          "borderTopColor",
+          "boxShadow",
+          "opacity",
+          "pointerEvents",
+        ];
+        const read = () =>
+          properties.map((property) => getComputedStyle(card)[property]);
+        const actual = read();
+        card.classList.remove("adjacent");
+        const expected = read();
+        card.classList.add("adjacent");
+        return { actual, expected };
+      });
+      assert.deepEqual(
+        actual,
+        expected,
+        "Adjacent week cards share normal hover and selection borders",
+      );
+    }
+    await adjacent.evaluate((card) => card.classList.remove("selected"));
     await page
       .locator('[data-preview-date="2026-11-01"] .day-select')
       .click({ position: { x: 8, y: 8 } });
@@ -384,12 +486,11 @@ async function verify() {
         (item) =>
           !item.snapshot &&
           item.options.duration === 320 &&
-          item.frames[0].opacity === 0.3 &&
-          item.frames[0].transform === "translateX(18px)" &&
-          item.frames[0].clipPath === "inset(0 18px 0 0)" &&
-          item.frames[1].clipPath === "inset(0)",
+          /^translateY\([\d.]+px\)$/.test(item.frames[0].transform) &&
+          item.frames[1].transform === "translateY(0px)" &&
+          item.frames.every((frame) => frame.opacity === undefined),
       ),
-      "Week navigation uses the shared month entrance",
+      "Week navigation uses the shared opaque vertical slide",
     );
     assert.equal(await page.locator(".agenda-week-snapshot").count(), 0);
     assert.ok(
@@ -484,6 +585,8 @@ async function verify() {
     )
       await page.locator("[data-schedule-close]").click();
     await page.locator("#agendaCancel").click();
+    await setView("threeweek");
+    await settled();
     await page.evaluate(() => {
       window.weekAnimations = [];
       window.agendaHeaderSamples = [];
@@ -514,7 +617,7 @@ async function verify() {
     const closing = await page.evaluate(() =>
       window.weekAnimations.filter((item) => item.frames[0].height),
     );
-    assert.equal(closing.length, 14);
+    assert.equal(closing.length, 21);
     assert.ok(
       closing.every(
         (item) =>
@@ -533,8 +636,8 @@ async function verify() {
       for (let index = 0; index < 3; index++) {
         for (
           let step = 0;
-          step < 3 &&
-          ["month", "week", "fortnight"][
+          step < 4 &&
+          ["month", "week", "fortnight", "threeweek"][
             Number(
               document.querySelector("#agendaViewToggle").dataset.agendaView,
             )
@@ -544,8 +647,8 @@ async function verify() {
           document.querySelector("#agendaViewToggle").click();
         for (
           let step = 0;
-          step < 3 &&
-          ["month", "week", "fortnight"][
+          step < 4 &&
+          ["month", "week", "fortnight", "threeweek"][
             Number(
               document.querySelector("#agendaViewToggle").dataset.agendaView,
             )
@@ -619,8 +722,8 @@ async function verify() {
       Element.prototype.animate = undefined;
       for (
         let step = 0;
-        step < 3 &&
-        ["month", "week", "fortnight"][
+        step < 4 &&
+        ["month", "week", "fortnight", "threeweek"][
           Number(document.querySelector("#agendaViewToggle").dataset.agendaView)
         ] !== "month";
         step++
@@ -632,8 +735,8 @@ async function verify() {
     await page.evaluate(() => {
       for (
         let step = 0;
-        step < 3 &&
-        ["month", "week", "fortnight"][
+        step < 4 &&
+        ["month", "week", "fortnight", "threeweek"][
           Number(document.querySelector("#agendaViewToggle").dataset.agendaView)
         ] !== "week";
         step++
@@ -675,7 +778,9 @@ async function verify() {
         .locator("#agendaViewToggle")
         .evaluate(
           (node) =>
-            ["month", "week", "fortnight"][Number(node.dataset.agendaView)],
+            ["month", "week", "fortnight", "threeweek"][
+              Number(node.dataset.agendaView)
+            ],
         ),
       "fortnight",
     );
@@ -735,7 +840,7 @@ async function verify() {
             WorkTimeApp.i18n.t("agenda.fortnightView") +
             " · " +
             WorkTimeApp.i18n.t("agenda.switchView", {
-              view: WorkTimeApp.i18n.t("agenda.monthView"),
+              view: WorkTimeApp.i18n.t("agenda.threeWeekView"),
             }),
         ),
       );
@@ -831,6 +936,7 @@ async function verify() {
       ["month", 0],
       ["week", 7],
       ["fortnight", 14],
+      ["threeweek", 21],
     ]) {
       await setView(view);
       await reopen();
@@ -843,7 +949,9 @@ async function verify() {
           .locator("#agendaViewToggle")
           .evaluate(
             (node) =>
-              ["month", "week", "fortnight"][Number(node.dataset.agendaView)],
+              ["month", "week", "fortnight", "threeweek"][
+                Number(node.dataset.agendaView)
+              ],
           ),
         view,
       );

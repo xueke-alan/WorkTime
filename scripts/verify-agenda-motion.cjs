@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -35,14 +36,13 @@ async function verify() {
         .locator("#agendaNote")
         .fill("备注随日期卡片同步展开\n第二行备注");
       await page.locator("#agendaScheduleOpen").click();
-      await page.locator("#agendaDateInput").fill(date);
+      await setScheduleRange(page, date);
       if (timed) {
         await page.locator("#agendaAllDay").uncheck();
         await page.locator("#agendaStart").fill("09:00");
         await page.locator("#agendaEnd").fill("10:00");
       }
       if (endDate) {
-        await page.locator("#agendaMultiDay").check();
         await page.locator("#agendaEndDateInput").fill(endDate);
       }
       await page.locator("[data-schedule-close]").click();
@@ -62,7 +62,7 @@ async function verify() {
             .length && !document.querySelector(".agenda-week-leaving"),
       );
     async function cycle(label) {
-      for (const expected of ["week", "fortnight", "month"]) {
+      for (const expected of ["week", "fortnight", "threeweek", "month"]) {
         await settled();
         const result = await page.evaluate(async () => {
           const calendar = document.querySelector("#calendar");
@@ -224,7 +224,7 @@ async function verify() {
     await cycle("scrollbar");
     await settled();
     await page.evaluate(() => {
-      for (let i = 0; i < 6; i++)
+      for (let i = 0; i < 8; i++)
         document.querySelector("#agendaViewToggle").click();
     });
     await settled();

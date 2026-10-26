@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -30,9 +31,8 @@ const { chromium } = require("playwright");
         await page.locator("#agendaNew").click();
         await page.locator("#agendaTitle").fill(title);
         await page.locator("#agendaScheduleOpen").click();
-        await page.locator("#agendaDateInput").fill(start);
+        await setScheduleRange(page, start);
         if (end !== start) {
-          await page.locator("#agendaMultiDay").check();
           await page.locator("#agendaEndDateInput").fill(end);
         }
         await page.locator("[data-schedule-close]").click();

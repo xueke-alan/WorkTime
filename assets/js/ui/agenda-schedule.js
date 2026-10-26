@@ -15,20 +15,20 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
   root.innerHTML = `
     <label for="${prefix}ScheduleOpen" data-schedule-label="dateTime"></label>
     <button id="${prefix}ScheduleOpen" type="button" class="agenda-schedule-input">${icon}<span id="${prefix}ScheduleSummary"></span><svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-right"/></svg></button>
-    <div id="${prefix}SchedulePopup" class="agenda-date-picker agenda-schedule agenda-schedule-popup" popover="auto" role="dialog">
+    <div id="${prefix}SchedulePopup" class="agenda-date-picker agenda-schedule agenda-schedule-popup is-range" popover="auto" role="dialog">
     <div class="agenda-schedule-heading"><strong id="${prefix}ScheduleLabel">${icon}<span data-schedule-label="dateTime"></span></strong></div>
     <div class="agenda-schedule-options">
       <label class="agenda-schedule-toggle"><input id="${prefix}AllDay" type="checkbox" role="switch" checked><span class="agenda-schedule-toggle-track" aria-hidden="true"></span><span data-schedule-label="allDay"></span></label>
-      <label class="agenda-schedule-toggle"><input id="${prefix}MultiDay" type="checkbox" role="switch"><span class="agenda-schedule-toggle-track" aria-hidden="true"></span><span data-schedule-label="multiDay"></span></label>
     </div>
-    <div class="agenda-schedule-calendars"><div id="${prefix}StartCalendar"></div><div id="${prefix}EndCalendar" hidden></div></div>
-    <div class="agenda-schedule-row">
-      <div class="agenda-field"><label for="${prefix}DateInput"></label>${dateField("DateInput", "DateOpen")}</div>
+    <div class="agenda-schedule-range" role="group">
+      <div class="agenda-field" data-schedule-endpoint="start"><label for="${prefix}DateInput" data-schedule-label="startDate"></label>${dateField("DateInput", "DateOpen")}</div>
+      <span class="agenda-range-separator" aria-hidden="true">→</span>
+      <div class="agenda-field" data-schedule-endpoint="end"><label for="${prefix}EndDateInput" data-schedule-label="endDate"></label>${dateField("EndDateInput", "EndDateOpen")}</div>
+    </div>
+    <div id="${prefix}RangeStatus" class="agenda-schedule-status" role="status" aria-live="polite"></div>
+    <div class="agenda-schedule-calendars"><div id="${prefix}StartCalendar"></div><div id="${prefix}EndCalendar"></div></div>
+    <div class="agenda-schedule-row agenda-schedule-times">
       <div class="agenda-field agenda-schedule-time" hidden><label for="${prefix}Start" data-schedule-label="start"></label><input id="${prefix}Start" type="time"></div>
-    </div>
-    <div class="agenda-schedule-row agenda-schedule-end" hidden>
-      <div id="${prefix}EndDateField" class="agenda-field" hidden><label for="${prefix}EndDateInput" data-schedule-label="endDate"></label>${dateField("EndDateInput", "EndDateOpen")}</div>
-      <div class="agenda-schedule-same-day" data-schedule-label="sameDay" hidden></div>
       <div class="agenda-field agenda-schedule-time" hidden><label for="${prefix}End"></label><input id="${prefix}End" type="time"></div>
     </div><div class="agenda-picker-footer"><button type="button" class="ui-button" data-schedule-today data-schedule-label="pickerToday"></button><button type="button" class="ui-button primary" data-schedule-close data-schedule-label="pickerDone"></button></div></div>`;
   field("DateInput").required = true;
@@ -38,17 +38,27 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
   trigger.setAttribute("aria-haspopup", "dialog");
   trigger.setAttribute("aria-expanded", "false");
   let month = "",
-    choosingEnd = false;
+    activeEndpoint = "start",
+    editingEndpoint = false,
+    anchor = "",
+    preview = "",
+    previousRange = null;
+  const ordered = (start, end) =>
+    start <= end ? { start, end } : { start: end, end: start };
+  const completeRange = () => ({
+    start: field("DateInput").value,
+    end: field("EndDateInput").value,
+  });
   const offsetMonth = (value, offset) => {
     const date = time.localDate(value + "-01");
     date.setMonth(date.getMonth() + offset);
     return time.dateKey(date).slice(0, 7);
   };
   const range = () => ({
-    start: field("DateInput").value,
-    end: field("MultiDay").checked
-      ? field("EndDateInput").value
-      : field("DateInput").value,
+    ...completeRange(),
+    pending: Boolean(anchor),
+    anchor,
+    preview: anchor && preview ? ordered(anchor, preview) : null,
   });
   const pickers = [0, 1].map((index) =>
     WorkTimeApp.ui.createDatePicker({
@@ -58,6 +68,11 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
       inline: true,
       range,
       onChoose: choose,
+      onPreview(date) {
+        if (!anchor || preview === date) return;
+        preview = date;
+        render();
+      },
       onMonthChange(value) {
         month = index ? offsetMonth(value, -1) : value;
         if (month < "1900-01") month = "1900-01";
@@ -68,14 +83,14 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
   const isOpen = () => popup.matches(":popover-open");
   function close(restoreFocus = false) {
     if (!isOpen()) return;
+    resetSelection();
     popup.hidePopover();
     if (restoreFocus) trigger.focus({ preventScroll: true });
   }
   function place() {
     if (!isOpen()) return;
     const rect = trigger.getBoundingClientRect();
-    popup.style.width =
-      Math.min(field("MultiDay").checked ? 620 : 330, innerWidth - 24) + "px";
+    popup.style.width = Math.min(620, innerWidth - 24) + "px";
     popup.style.left =
       Math.max(
         12,
@@ -102,7 +117,7 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
       0,
       7,
     );
-    choosingEnd = false;
+    resetSelection();
     popup.showPopover();
     render();
     popup
@@ -111,30 +126,121 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
       )
       ?.focus({ preventScroll: true });
   }
-  function choose(date) {
-    if (!field("MultiDay").checked) field("DateInput").value = date;
-    else if (!choosingEnd) {
-      field("DateInput").value = date;
-      field("EndDateInput").value = date;
-      choosingEnd = true;
-    } else {
-      const start = field("DateInput").value;
-      field("DateInput").value = date < start ? date : start;
-      field("EndDateInput").value = date < start ? start : date;
-      choosingEnd = false;
+  function cancelPending() {
+    if (anchor && previousRange) {
+      field("DateInput").value = previousRange.start;
+      field("EndDateInput").value = previousRange.end;
     }
+    anchor = preview = "";
+    previousRange = null;
+  }
+  function resetSelection() {
+    cancelPending();
+    activeEndpoint = "start";
+    editingEndpoint = false;
+    render();
+  }
+  function commit(start, end) {
+    const value = ordered(start, end);
+    field("DateInput").value = value.start;
+    field("EndDateInput").value = value.end;
+    anchor = preview = "";
+    activeEndpoint = "start";
+    editingEndpoint = false;
     field("DateInput").dispatchEvent(new Event("input", { bubbles: true }));
+    previousRange = null;
+    field("EndDateInput").dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  function choose(date) {
+    const value = completeRange();
+    const other = activeEndpoint === "start" ? value.end : value.start;
+    if (editingEndpoint && time.validDate(other)) {
+      commit(
+        activeEndpoint === "start" ? date : value.start,
+        activeEndpoint === "end" ? date : value.end,
+      );
+    } else if (!anchor) {
+      previousRange = completeRange();
+      anchor = date;
+      field("DateInput").value = date;
+      field("EndDateInput").value = "";
+      preview = "";
+      activeEndpoint = "end";
+    } else commit(anchor, date);
     render();
     popup
       .querySelector(`[data-picker-date="${date}"]:not(.is-adjacent)`)
       ?.focus({ preventScroll: true });
+  }
+  function activate(endpoint, focusCalendar = false) {
+    if (anchor && endpoint === "end") {
+      activeEndpoint = "end";
+      if (focusCalendar) {
+        month = anchor.slice(0, 7);
+        render();
+        popup
+          .querySelector(`[data-picker-date="${anchor}"]:not(.is-adjacent)`)
+          ?.focus({ preventScroll: true });
+      }
+      return;
+    }
+    cancelPending();
+    activeEndpoint = endpoint;
+    editingEndpoint = true;
+    const date = field(
+      endpoint === "start" ? "DateInput" : "EndDateInput",
+    ).value;
+    if (time.validDate(date))
+      month =
+        endpoint === "start"
+          ? date.slice(0, 7)
+          : offsetMonth(date.slice(0, 7), -1);
+    render();
+    if (focusCalendar && time.validDate(date)) {
+      pickers[endpoint === "start" ? 0 : 1].setMonth(
+        endpoint === "start" ? month : offsetMonth(month, 1),
+        date,
+      );
+      popup
+        .querySelector(`[data-picker-date="${date}"]:not(.is-adjacent)`)
+        ?.focus({ preventScroll: true });
+    }
+  }
+  for (const [name, endpoint] of [
+    ["DateInput", "start"],
+    ["EndDateInput", "end"],
+  ]) {
+    for (const event of ["focus", "click"]) {
+      field(name).addEventListener(event, () => activate(endpoint), {
+        signal: scope.signal,
+      });
+    }
+    field(name).setAttribute("aria-describedby", prefix + "RangeStatus");
+    field(endpoint === "start" ? "DateOpen" : "EndDateOpen").addEventListener(
+      "click",
+      () => activate(endpoint, true),
+      { signal: scope.signal },
+    );
+    field(name).addEventListener(
+      "change",
+      () => {
+        const value = completeRange();
+        if (time.validDate(value.start) && time.validDate(value.end))
+          commit(value.start, value.end);
+        render();
+      },
+      { signal: scope.signal },
+    );
   }
   trigger.addEventListener("click", () => (isOpen() ? close(true) : show()), {
     signal: scope.signal,
   });
   popup.addEventListener(
     "toggle",
-    () => trigger.setAttribute("aria-expanded", String(isOpen())),
+    () => {
+      trigger.setAttribute("aria-expanded", String(isOpen()));
+      if (!isOpen()) resetSelection();
+    },
     { signal: scope.signal },
   );
   popup.addEventListener(
@@ -167,8 +273,8 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
     () => {
       const today = time.businessDate(new Date());
       month = today.slice(0, 7);
-      choosingEnd = false;
-      choose(today);
+      commit(today, today);
+      render();
     },
     { signal: scope.signal },
   );
@@ -189,10 +295,8 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
   );
   function values() {
     return {
-      date: field("DateInput").value,
-      endDate: field("MultiDay").checked
-        ? field("EndDateInput").value
-        : field("DateInput").value,
+      date: (anchor && previousRange ? previousRange : completeRange()).start,
+      endDate: (anchor && previousRange ? previousRange : completeRange()).end,
       allDay: field("AllDay").checked,
       start: field("Start").value,
       end: field("End").value,
@@ -200,25 +304,32 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
   }
   function render() {
     const allDay = field("AllDay").checked,
-      multiDay = field("MultiDay").checked;
+      multiDay = values().endDate > values().date;
     popup.classList.toggle("is-timed", !allDay);
-    popup.classList.toggle("is-range", multiDay);
-    field("EndCalendar").hidden = !multiDay;
     for (const label of root.querySelectorAll("[data-schedule-label]"))
       label.textContent = t(label.dataset.scheduleLabel);
-    root.querySelector(`label[for="${prefix}DateInput"]`).textContent = t(
-      multiDay ? "startDate" : "date",
-    );
     root.querySelector(`label[for="${prefix}End"]`).textContent = t(
       multiDay ? "endRequired" : "end",
     );
-    root.querySelector(".agenda-schedule-end").hidden = allDay && !multiDay;
-    root.querySelector(".agenda-schedule-same-day").hidden = multiDay || allDay;
-    field("EndDateField").hidden = !multiDay;
-    field("EndDateInput").required = multiDay;
-    field("EndDateInput").disabled = !multiDay;
-    field("EndDateInput").min = field("DateInput").value || "1900-01-01";
-    field("EndDateOpen").disabled = !multiDay;
+    field("EndDateInput").required = true;
+    popup.querySelector("[data-schedule-close]").disabled =
+      Boolean(anchor) ||
+      !time.validDate(field("DateInput").value) ||
+      !time.validDate(field("EndDateInput").value);
+    for (const node of popup.querySelectorAll("[data-schedule-endpoint]"))
+      node.classList.toggle(
+        "is-active",
+        node.dataset.scheduleEndpoint === activeEndpoint,
+      );
+    popup.querySelector(".agenda-schedule-status").textContent = t(
+      anchor
+        ? "selectRangeEnd"
+        : editingEndpoint
+          ? activeEndpoint === "start"
+            ? "editRangeStart"
+            : "editRangeEnd"
+          : "selectRangeStart",
+    );
     for (const node of root.querySelectorAll(".agenda-schedule-time"))
       node.hidden = allDay;
     field("Start").required = !allDay;
@@ -240,12 +351,13 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
     popup.setAttribute("aria-label", t("dateTime"));
     if (!month)
       month = (value.date || time.businessDate(new Date())).slice(0, 7);
-    if (multiDay && month >= "9999-12") month = "9999-11";
+    if (month >= "9999-12") month = "9999-11";
+    if (month < "1900-01") month = "1900-01";
     // Date grids are needed only while the editor's popover is visible.
     // Attendance startup and ordinary saves must not build hidden calendars.
     if (isOpen()) {
       pickers[0].setMonth(month);
-      pickers[1].setMonth(multiDay ? offsetMonth(month, 1) : month);
+      pickers[1].setMonth(offsetMonth(month, 1));
       place();
     }
   }
@@ -264,19 +376,6 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
         time.validDate(field("EndDateInput").value)
       )
         month = offsetMonth(field("EndDateInput").value.slice(0, 7), -1);
-      if (
-        event.target === field("MultiDay") &&
-        field("MultiDay").checked &&
-        field("EndDateInput").value <= field("DateInput").value
-      ) {
-        const start = field("DateInput").value;
-        if (time.validDate(start)) {
-          const next = time.localDate(start);
-          next.setDate(next.getDate() + 1);
-          const end = time.dateKey(next);
-          field("EndDateInput").value = time.validDate(end) ? end : start;
-        }
-      }
       render();
     },
     { signal: scope.signal },
@@ -290,7 +389,10 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
       month = (value.date || time.businessDate(new Date())).slice(0, 7);
       field("DateInput").value = value.date || "";
       field("EndDateInput").value = value.endDate || value.date || "";
-      field("MultiDay").checked = (value.endDate || value.date) > value.date;
+      anchor = preview = "";
+      previousRange = null;
+      activeEndpoint = "start";
+      editingEndpoint = false;
       field("AllDay").checked = value.allDay ?? true;
       field("Start").value = value.start || "";
       field("End").value = value.end || "";

@@ -120,6 +120,7 @@ Thumbs.db
 
 !/scripts/verify-agenda.cjs
 !/scripts/verify-agenda-week.cjs
+!/scripts/verify-agenda-three-week.cjs
 !/scripts/verify-agenda-span.cjs
 !/scripts/verify-agenda-drag.cjs
 !/scripts/verify-agenda-resize.cjs
@@ -135,3 +136,11 @@ Thumbs.db
 !/scripts/verify-agenda-position.cjs
 !/scripts/verify-analysis-ratio.cjs
 !/scripts/verify-lunar-runtime.cjs
+
+!/scripts/lib/agenda-test-range.cjs
+!/scripts/verify-agenda-range.cjs
+
+!/scripts/verify-agenda-states.cjs
+!/scripts/verify-agenda-completion.cjs
+
+!/scripts/verify-calendar-navigation.cjs

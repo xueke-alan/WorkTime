@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -30,17 +31,18 @@ const { chromium } = require("playwright");
           !document.documentElement.classList.contains("app-loading"),
       );
       await page.locator("#agendaMode").click();
-      for (const [title, start, end] of [
-        ["跨周测试", "2026-10-14", "2026-10-22"],
-        ["发DVD v", "2026-10-15", "2026-10-23"],
-        ["单日事项", "2026-10-18", "2026-10-18"],
+      for (const [title, start, end, status] of [
+        ["跨周测试", "2026-10-14", "2026-10-22", "pending"],
+        ["发DVD v", "2026-10-15", "2026-10-23", "completed"],
+        ["单日事项", "2026-10-18", "2026-10-18", "in-progress"],
+        ["取消事项", "2026-10-18", "2026-10-18", "cancelled"],
       ]) {
         await page.locator("#agendaNew").click();
         await page.locator("#agendaTitle").fill(title);
+        await page.locator("#agendaItemStatus").selectOption(status);
         await page.locator("#agendaScheduleOpen").click();
-        await page.locator("#agendaDateInput").fill(start);
+        await setScheduleRange(page, start);
         if (end !== start) {
-          await page.locator("#agendaMultiDay").check();
           await page.locator("#agendaEndDateInput").fill(end);
         }
         await page.locator("[data-schedule-close]").click();
@@ -50,7 +52,7 @@ const { chromium } = require("playwright");
       await page.evaluate((zoom) => {
         document.body.style.zoom = String(zoom);
       }, zoom);
-      for (const view of ["month", "week", "fortnight"]) {
+      for (const view of ["month", "week", "fortnight", "three-week"]) {
         if (view !== "month") await page.locator("#agendaViewToggle").click();
         // Narrow month cards collapse these three items into the overflow count.
         // Their expanded week views expose the circles for alignment checks.
@@ -76,6 +78,15 @@ const { chromium } = require("playwright");
                   .getBoundingClientRect();
               return {
                 classes: node.className,
+                status: node.dataset.status,
+                icons: node.querySelector(".agenda-chip-status")
+                  .childElementCount,
+                color: getComputedStyle(
+                  node.querySelector(".agenda-chip-status"),
+                ).backgroundColor,
+                circleBorder: getComputedStyle(
+                  node.querySelector(".agenda-chip-status"),
+                ).borderTopColor,
                 right: box.right,
                 border: getComputedStyle(node).borderRightWidth,
                 cx: circle.x + circle.width / 2,
@@ -85,7 +96,33 @@ const { chromium } = require("playwright");
               };
             }),
         );
-        assert.equal(metrics.length, 3, `${width} ${scale} ${zoom} ${view}`);
+        assert.ok(
+          metrics.length >= (view === "month" ? 3 : 4),
+          `${width} ${scale} ${zoom} ${view}`,
+        );
+        assert.ok(metrics.every((metric) => metric.icons === 0));
+        assert.equal(
+          new Set(metrics.map((metric) => metric.color)).size,
+          metrics.length,
+        );
+        assert.ok(
+          metrics.every((metric) =>
+            metric.status === "pending"
+              ? metric.color === "rgba(0, 0, 0, 0)"
+              : metric.color !== "rgba(0, 0, 0, 0)" &&
+                metric.color !== metric.circleBorder,
+          ),
+        );
+        for (const metric of metrics.filter(
+          (metric) => metric.status !== "pending",
+        )) {
+          const fill = metric.color.match(/\d+/g).map(Number);
+          const edge = metric.circleBorder.match(/\d+/g).map(Number);
+          assert.ok(
+            edge.every((channel, index) => channel < fill[index]),
+            "Solid status edges stay darker than fills",
+          );
+        }
         const centers = metrics.map((metric) => metric.cx);
         if (Math.max(...centers) - Math.min(...centers) > 0.1)
           console.log({ width, scale, zoom, view, metrics });

@@ -131,6 +131,7 @@ WorkTimeApp.services.bootstrap.run(
       today: model.today,
       month: model.month,
       selected: model.selected,
+      calendarSelected: model.calendarSelected,
       batchMode: model.batchMode,
       batchDays: model.batchDays,
       batchDraft: model.batchDraft,

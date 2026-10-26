@@ -19,6 +19,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
     disposed = false;
   const scrolls = new Map();
   const rowSignatures = new WeakMap();
+  const layoutSignatures = new WeakMap();
   const contentSignatures = new WeakMap();
   const chipSignatures = new WeakMap();
   const watched = new Set();
@@ -60,13 +61,22 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       return;
     }
     if (state.transitioning) return;
+    const leftExtension =
+      parseFloat(
+        getComputedStyle(calendar).getPropertyValue(
+          "--agenda-card-left-extension",
+        ),
+      ) || 0;
     const groups = rows();
     const geometry = groups.map((cards) => {
       const metrics = cards.map((card) => {
         const style = getComputedStyle(card);
         return {
           left:
-            card.offsetLeft + card.clientLeft + parseFloat(style.paddingLeft),
+            card.offsetLeft +
+            card.clientLeft +
+            parseFloat(style.paddingLeft) -
+            leftExtension,
           right:
             card.offsetLeft +
             card.offsetWidth -
@@ -82,7 +92,8 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       const left =
         first.offsetLeft +
         first.clientLeft +
-        parseFloat(getComputedStyle(first).paddingLeft);
+        parseFloat(getComputedStyle(first).paddingLeft) -
+        leftExtension;
       const right =
         last.offsetLeft +
         last.offsetWidth -
@@ -175,10 +186,28 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         state.items.filter((item) => rules.overlaps(item, dates[0], dates[6])),
         WorkTimeApp.i18n.locale,
       ]);
+      const rowItems = state.items.filter((item) =>
+        rules.overlaps(item, dates[0], dates[6]),
+      );
       const contentSignature = JSON.stringify([
         state.weeks,
-        state.items.filter((item) => rules.overlaps(item, dates[0], dates[6])),
+        rowItems.map(
+          ({
+            status: _status,
+            completed: _completed,
+            updatedAt: _updatedAt,
+            ...content
+          }) => content,
+        ),
         WorkTimeApp.i18n.locale,
+      ]);
+      const layoutSignature = JSON.stringify([
+        left,
+        top,
+        width,
+        height,
+        edges,
+        contentSignature,
       ]);
       const contentChanged =
         contentSignatures.has(row) &&
@@ -186,6 +215,34 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       if (row.parentElement !== layer) layer.append(row);
       if (rowSignatures.get(row) === rowSignature) continue;
       rowSignatures.set(row, rowSignature);
+      // A status change cannot affect lane placement, clipping or overflow.
+      // Patch existing chips without rebuilding slices or replaying entrances.
+      if (layoutSignatures.get(row) === layoutSignature) {
+        const itemsById = new Map(rowItems.map((item) => [item.id, item]));
+        for (const button of row.querySelectorAll(".agenda-chip")) {
+          const item = itemsById.get(button.dataset.agendaEdit);
+          if (!item) continue;
+          const template = document.createElement("template");
+          const html = chip(item);
+          template.innerHTML = html;
+          const candidate = template.content.firstElementChild;
+          for (const name of ["continues-before", "continues-after"])
+            candidate.classList.toggle(name, button.classList.contains(name));
+          if (button.classList.contains("continues-after"))
+            candidate.querySelector(".agenda-resize-handle")?.remove();
+          updateCompletion(button, candidate);
+          chipSignatures.set(
+            button,
+            JSON.stringify([
+              html,
+              button.classList.contains("continues-before"),
+              button.classList.contains("continues-after"),
+            ]),
+          );
+        }
+        continue;
+      }
+      layoutSignatures.set(row, layoutSignature);
       contentSignatures.set(row, contentSignature);
       row.className =
         "agenda-week-lane" + (state.weeks ? " is-scrollable" : "");

@@ -65,7 +65,7 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
     return true;
   }
 
-  function updateCalendar(html) {
+  function updateCalendar(html, { animateContent = true } = {}) {
     if (html === calendarMarkup) return;
     const focused = document.activeElement,
       focusDate = focused?.closest(".day[data-date]")?.dataset.date,
@@ -215,7 +215,11 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
         container.insertBefore(element, container.children[index] || null);
       // Animate changed attendance fields inside the shared card, leaving its date,
       // weather and selection surface still. Agenda owns its own content transitions.
-      if (previous?.bodyMarkup && !container.closest(".agenda-mode")) {
+      if (
+        animateContent &&
+        previous?.bodyMarkup &&
+        !container.closest(".agenda-mode")
+      ) {
         const currentBodies = [...element.children].filter((child) =>
           child.matches(".daytime, .dayhours, .day-footer"),
         );

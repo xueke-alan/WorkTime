@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -38,8 +39,7 @@ async function verify() {
         await page.locator("#agendaNew").click();
         await page.locator("#agendaTitle").fill(title);
         await page.locator("#agendaScheduleOpen").click();
-        await page.locator("#agendaDateInput").fill("2026-10-14");
-        await page.locator("#agendaMultiDay").check();
+        await setScheduleRange(page, "2026-10-14");
         await page.locator("#agendaEndDateInput").fill("2026-10-22");
         await page.locator("#agendaAllDay").uncheck();
         await page.locator("#agendaStart").fill("09:00");
@@ -184,8 +184,9 @@ async function verify() {
         );
         await page.locator("#agendaCancel").click();
         const id = await strip.getAttribute("data-agenda-edit");
-        const complete = page.locator(`[data-agenda-complete="${id}"]`);
+        const complete = page.locator(`[data-agenda-status="${id}"]`);
         await complete.click();
+        await page.locator('[data-agenda-status-choice="completed"]').click();
         await page.waitForFunction(
           (id) =>
             [...document.querySelectorAll(".agenda-chip")]
@@ -200,10 +201,11 @@ async function verify() {
           assert.equal(await segment.locator(".agenda-chip-status").count(), 1);
           assert.equal(
             await segment.locator(".agenda-chip-status svg").count(),
-            1,
+            0,
           );
         }
         await complete.click();
+        await page.locator('[data-agenda-status-choice="pending"]').click();
         await page.waitForFunction(
           (id) =>
             [...document.querySelectorAll(".agenda-chip")]

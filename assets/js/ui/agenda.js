@@ -10,6 +10,16 @@ WorkTimeApp.ui.createAgenda = function ({
   window,
 }) {
   const rules = WorkTimeApp.domain.agenda;
+  const statuses = ["pending", "completed", "in-progress", "cancelled"];
+  const statusLabel = (status) =>
+    t(
+      {
+        pending: "statusPending",
+        completed: "statusCompleted",
+        "in-progress": "statusInProgress",
+        cancelled: "statusCancelled",
+      }[status],
+    );
   const scope = new AbortController();
   const workspace = document.querySelector(".workspace");
   const editor = document.querySelector(".workspace > .editor");
@@ -38,7 +48,7 @@ WorkTimeApp.ui.createAgenda = function ({
     if (
       saved &&
       ["attendance", "agenda"].includes(saved.mode) &&
-      [0, 1, 2].includes(saved.weeks)
+      [0, 1, 2, 3].includes(saved.weeks)
     ) {
       active = saved.mode === "agenda";
       weekView = saved.weeks;
@@ -73,6 +83,20 @@ WorkTimeApp.ui.createAgenda = function ({
     '<button type="button" id="agendaMode" class="ui-button icon-only" aria-pressed="false" aria-controls="calendar agendaEditor"><svg class="ui-icon" aria-hidden="true"><use href="#ms-event-note"/></svg></button>';
   modes.setAttribute("role", "group");
   modes.prepend($("analysisToggle"));
+  const modesRegion = document.createElement("div");
+  modesRegion.className = "agenda-toolbar-region agenda-modes-region";
+  const modesDivider = document.createElement("span");
+  modesDivider.className = "agenda-toolbar-divider";
+  modesDivider.setAttribute("aria-hidden", "true");
+  modes.before(modesRegion);
+  modesRegion.append(modesDivider, modes);
+  let modesHidden = null;
+  let modesAnimations = [];
+  const modesObserver = new MutationObserver(renderModes);
+  modesObserver.observe($("batchToggle"), {
+    attributes: true,
+    attributeFilter: ["aria-pressed"],
+  });
   const viewToggle = document.createElement("button");
   viewToggle.id = "agendaViewToggle";
   viewToggle.type = "button";
@@ -108,6 +132,7 @@ WorkTimeApp.ui.createAgenda = function ({
   const transferChips = new Map();
   const snapshotScroll = new WeakMap();
   const renderedContents = new Map();
+  let renderedAgendaContent = "";
   let dateItemsSource = null,
     dateItemsKey = "",
     dateItems = new Map();
@@ -137,8 +162,10 @@ WorkTimeApp.ui.createAgenda = function ({
     outgoing.delete(card);
   }
   function finishTransitions(event) {
-    if (disposed || !canAnimate() || event?.type === "resize")
+    if (disposed || !canAnimate() || event?.type === "resize") {
       stopToolbarMotion();
+      stopModesMotion();
+    }
     agendaDrag?.cancel();
     stopIncoming();
     agendaLayout?.stop();
@@ -161,7 +188,7 @@ WorkTimeApp.ui.createAgenda = function ({
     weekNavigation = null;
     actions.finishCalendarNavigation();
   }
-  function navigateAgenda(date) {
+  function navigateAgenda(date, retainSelection = true) {
     if (!leaveForm()) return;
     const previous = weekView ? weekDates()[0] : model.month;
     const next = WorkTimeApp.domain.time.localDate(date);
@@ -171,17 +198,17 @@ WorkTimeApp.ui.createAgenda = function ({
       : date.slice(0, 7);
     finishTransitions();
     actions.finishCalendarNavigation();
-    // Render once, then use the exact same entrance as month navigation. There
-    // is no outgoing copy to overlap dates, labels or agenda contents.
-    switchingMode = true;
-    try {
-      select(date, false, true);
-    } finally {
-      switchingMode = false;
-    }
-    motion?.stop(calendar.querySelector(".selected"));
     actions.animateCalendarNavigation(
       start === previous ? 0 : start > previous ? 1 : -1,
+      () => {
+        switchingMode = true;
+        try {
+          select(date, false, true, retainSelection);
+        } finally {
+          switchingMode = false;
+        }
+        motion?.stop(calendar.querySelector(".selected"));
+      },
     );
     weekNavigation = true;
   }
@@ -419,9 +446,7 @@ WorkTimeApp.ui.createAgenda = function ({
     });
   }
   function weekDates(weeks = weekView || 1) {
-    const start = WorkTimeApp.domain.time.localDate(
-      weekView === 2 ? model.agendaViewAnchor : model.selected,
-    );
+    const start = WorkTimeApp.domain.time.localDate(model.agendaViewAnchor);
     start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
     return Array.from({ length: weeks * 7 }, (_, index) => {
       const date = new Date(start);
@@ -486,14 +511,15 @@ WorkTimeApp.ui.createAgenda = function ({
     }
     const first = WorkTimeApp.domain.time.localDate(model.month + "-01");
     const offset = (first.getDay() + 6) % 7;
-    const anchor = weekView === 2 ? model.agendaViewAnchor : model.selected;
+    const anchor = model.agendaViewAnchor;
     const number = Math.floor((offset + Number(anchor.slice(8)) - 1) / 7) + 1;
-    const value = "w" + number + (weekView === 2 ? "-" + (number + 1) : "");
+    const value =
+      "w" + number + (weekView > 1 ? "-" + (number + weekView - 1) : "");
     const appearing = !weekLabelText;
     const extending = !!weekLabelText && value.startsWith(weekLabelText + "-");
     const label = weekLabelNode.lastElementChild;
     const nextMonth =
-      weekView === 2 && weekDates()[7].slice(0, 7) > model.month;
+      weekView > 1 && weekDates()[(weekView - 1) * 7].slice(0, 7) > model.month;
     const previousNextMonth = label.dataset.nextMonth === "true";
     if (value !== weekLabelText) {
       weekLabelReveal?.cancel();
@@ -504,10 +530,10 @@ WorkTimeApp.ui.createAgenda = function ({
       motion:
         !appearing &&
         !extending &&
-        weekLabelText.includes("-") === (weekView === 2),
+        weekLabelText.includes("-") === weekView > 1,
     });
     const visual = label.querySelector(".summary-number-visual");
-    if (weekView === 2) {
+    if (weekView > 1) {
       let range = visual.querySelector(".month-title-week-range");
       if (!range) {
         range = document.createElement("span");
@@ -557,7 +583,7 @@ WorkTimeApp.ui.createAgenda = function ({
     weekLabelNode.hidden = false;
     title.style.setProperty(
       "--week-label-width",
-      weekView === 2 ? "4.5ch" : "2.8ch",
+      weekView > 1 ? "4.5ch" : "2.8ch",
     );
     weekLabelText = value;
     // Complete ink alignment before the first visible frame; opacity never
@@ -583,9 +609,10 @@ WorkTimeApp.ui.createAgenda = function ({
     else delete calendar.dataset.agendaRows;
     for (const card of dayCards()) {
       const visible = dates.has(cardDate(card));
+      const selectable = active && (!weekView || visible);
       card.toggleAttribute("data-agenda-week", visible);
       let button = card.querySelector(".agenda-week-select");
-      if (visible && card.dataset.previewDate && !button) {
+      if (selectable && card.dataset.previewDate && !button) {
         button = document.createElement("button");
         button.type = "button";
         button.className = "day-select agenda-week-select";
@@ -594,19 +621,29 @@ WorkTimeApp.ui.createAgenda = function ({
           WorkTimeApp.i18n.date(cardDate(card)),
         );
         card.prepend(button);
-      } else if (!visible) {
+      } else if (!selectable) {
         button?.remove();
         if (card.dataset.previewDate)
           card.querySelector(".agenda-card-items")?.remove();
       }
-      if (card.dataset.previewDate) {
+      if (card.dataset.previewDate && active) {
         card.classList.toggle(
           "selected",
-          visible && cardDate(card) === model.selected,
+          selectable &&
+            cardDate(card) ===
+              (model.calendarSelected === undefined
+                ? model.selected
+                : model.calendarSelected),
         );
         button?.setAttribute(
           "aria-pressed",
-          String(visible && cardDate(card) === model.selected),
+          String(
+            selectable &&
+              cardDate(card) ===
+                (model.calendarSelected === undefined
+                  ? model.selected
+                  : model.calendarSelected),
+          ),
         );
       }
     }
@@ -869,6 +906,7 @@ WorkTimeApp.ui.createAgenda = function ({
       <fieldset id="agendaFields">
         <legend><span id="agendaFormTitle"></span></legend>
         <div class="agenda-field agenda-title-field"><label for="agendaTitle" data-agenda-text="title"></label><input id="agendaTitle" maxlength="120" required autocomplete="off"></div>
+        <div class="agenda-field"><label for="agendaItemStatus" data-agenda-text="status"></label><select id="agendaItemStatus">${statuses.map((status) => `<option value="${status}">${esc(statusLabel(status))}</option>`).join("")}</select></div>
         <div id="agendaSchedule" class="agenda-schedule-fields"></div>
         <div class="agenda-field agenda-note-field"><label for="agendaNote" data-agenda-text="note"></label><textarea id="agendaNote" rows="4" maxlength="5000"></textarea></div>
         <p id="agendaDraft" class="muted" hidden data-agenda-text="draft"></p>
@@ -878,6 +916,87 @@ WorkTimeApp.ui.createAgenda = function ({
     </div>
     <p id="agendaError" class="warnings" role="alert"></p>
     <p id="agendaStatus" role="status" aria-live="polite"></p>`;
+  const statusMenu = make(
+    "div",
+    "agendaStatusMenu",
+    "agenda-status-menu",
+    pane,
+  );
+  statusMenu.setAttribute("popover", "auto");
+  statusMenu.setAttribute("role", "menu");
+  let statusTrigger = null;
+  function closeStatusMenu(restoreFocus = false) {
+    if (statusMenu.matches(":popover-open")) statusMenu.hidePopover();
+    if (restoreFocus) statusTrigger?.focus({ preventScroll: true });
+  }
+  function openStatusMenu(button) {
+    closeStatusMenu();
+    statusTrigger = button;
+    statusMenu.dataset.agendaId = button.dataset.agendaStatus;
+    statusMenu.setAttribute("aria-label", t("changeStatus"));
+    statusMenu.innerHTML = statuses
+      .map(
+        (status) =>
+          `<button type="button" role="menuitemradio" aria-checked="${status === button.dataset.status}" data-agenda-status-choice="${status}"><span class="agenda-status-dot" data-status="${status}" aria-hidden="true"></span>${esc(statusLabel(status))}</button>`,
+      )
+      .join("");
+    const rect = button.getBoundingClientRect();
+    statusMenu.showPopover();
+    button.setAttribute("aria-expanded", "true");
+    statusMenu.style.left =
+      Math.max(
+        8,
+        Math.min(rect.left, window.innerWidth - statusMenu.offsetWidth - 8),
+      ) + "px";
+    statusMenu.style.top =
+      Math.max(
+        8,
+        Math.min(
+          rect.bottom + 6,
+          window.innerHeight - statusMenu.offsetHeight - 8,
+        ),
+      ) + "px";
+    statusMenu.querySelector('[aria-checked="true"]').focus();
+  }
+  statusMenu.addEventListener(
+    "toggle",
+    () => {
+      if (!statusMenu.matches(":popover-open"))
+        statusTrigger?.setAttribute("aria-expanded", "false");
+    },
+    { signal: scope.signal },
+  );
+  statusMenu.addEventListener(
+    "keydown",
+    (event) => {
+      const buttons = [...statusMenu.querySelectorAll("button")];
+      const index = buttons.indexOf(document.activeElement);
+      if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+        event.preventDefault();
+        buttons[
+          event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? buttons.length - 1
+              : (index +
+                  (event.key === "ArrowDown" ? 1 : -1) +
+                  buttons.length) %
+                buttons.length
+        ].focus();
+      } else if (event.key === "Escape" || event.key === "Tab") {
+        if (event.key === "Escape") event.preventDefault();
+        closeStatusMenu(true);
+      }
+    },
+    { signal: scope.signal },
+  );
+  window.addEventListener("resize", () => closeStatusMenu(), {
+    signal: scope.signal,
+  });
+  pane.addEventListener("scroll", () => closeStatusMenu(), {
+    capture: true,
+    signal: scope.signal,
+  });
   const schedule = WorkTimeApp.ui.createAgendaSchedule({
     root: $("agendaSchedule"),
   });
@@ -1135,6 +1254,7 @@ WorkTimeApp.ui.createAgenda = function ({
       title: $("agendaTitle").value,
       ...schedule.values(),
       note: $("agendaNote").value,
+      status: $("agendaItemStatus").value,
     };
   }
   const hasDraft = () => JSON.stringify(values()) !== baseline;
@@ -1143,11 +1263,13 @@ WorkTimeApp.ui.createAgenda = function ({
     $("agendaDraft").hidden = !hasDraft();
   }
   function reset(item = null) {
+    closeStatusMenu();
     schedule.close();
     editingId = item?.id || null;
     $("agendaTitle").value = item?.title || "";
     schedule.setValue({ ...item, date: item?.date || model.selected });
     $("agendaNote").value = item?.note || "";
+    $("agendaItemStatus").value = item?.status || "pending";
     baseline = JSON.stringify(values());
     $("agendaError").textContent = "";
     $("agendaFormTitle").textContent = t(item ? "edit" : "new");
@@ -1167,10 +1289,10 @@ WorkTimeApp.ui.createAgenda = function ({
       : item.start + (item.end ? "–" + item.end : "");
   }
   function entry(item) {
-    return `<div class="agenda-item${item.completed ? " is-complete" : ""}">
-      <button type="button" class="agenda-complete" data-agenda-complete="${esc(item.id)}" aria-pressed="${item.completed}" aria-label="${esc(t(item.completed ? "undoComplete" : "complete") + ": " + item.title)}"${busy ? " disabled" : ""}><span aria-hidden="true">${item.completed ? "✓" : ""}</span></button>
+    return `<div class="agenda-item${item.status === "completed" ? " is-complete" : ""}">
+      <button type="button" class="agenda-complete" data-agenda-status="${esc(item.id)}" data-status="${item.status}" aria-haspopup="menu" aria-controls="agendaStatusMenu" aria-expanded="false" title="${esc(statusLabel(item.status))}" aria-label="${esc(t("changeStatus") + ": " + statusLabel(item.status) + " · " + item.title)}"${busy && !completingAgenda ? " disabled" : ""}></button>
       <button type="button" class="agenda-item-copy" data-agenda-edit="${esc(item.id)}"><strong>${esc(item.title)}</strong><small>${esc(labelTime(item))}</small>${item.note ? `<span class="agenda-note">${esc(item.note)}</span>` : ""}</button>
-      <button type="button" class="agenda-delete" data-agenda-delete="${esc(item.id)}" aria-label="${esc(t("delete") + ": " + item.title)}"${busy ? " disabled" : ""}><span aria-hidden="true">×</span></button></div>`;
+      <button type="button" class="agenda-delete" data-agenda-delete="${esc(item.id)}" aria-label="${esc(t("delete") + ": " + item.title)}"${busy && !completingAgenda ? " disabled" : ""}><span aria-hidden="true">×</span></button></div>`;
   }
   function updateMarkup(node, html) {
     if (node.innerHTML === html) return;
@@ -1181,7 +1303,45 @@ WorkTimeApp.ui.createAgenda = function ({
         )
       : null;
     const scrollTop = node.scrollTop;
-    if (node.classList.contains("agenda-card-items")) {
+    if (node.id === "agendaList") {
+      const template = document.createElement("template");
+      template.innerHTML = html;
+      const previous = new Map(
+        [...node.querySelectorAll(":scope > .agenda-item")].map((entry) => [
+          entry.querySelector("[data-agenda-status]").dataset.agendaStatus,
+          entry,
+        ]),
+      );
+      const children = [...template.content.children].map((candidate) => {
+        const id = candidate.querySelector("[data-agenda-status]")?.dataset
+          .agendaStatus;
+        const old = previous.get(id);
+        if (
+          !old ||
+          old.querySelector(".agenda-item-copy").innerHTML !==
+            candidate.querySelector(".agenda-item-copy").innerHTML
+        )
+          return candidate;
+        old.className = candidate.className;
+        const oldButtons = [...old.querySelectorAll("button")];
+        [...candidate.querySelectorAll("button")].forEach((button, index) => {
+          const current = oldButtons[index];
+          for (const attribute of [...current.attributes])
+            if (!button.hasAttribute(attribute.name))
+              current.removeAttribute(attribute.name);
+          for (const attribute of button.attributes)
+            if (current.getAttribute(attribute.name) !== attribute.value)
+              current.setAttribute(attribute.name, attribute.value);
+        });
+        return old;
+      });
+      children.forEach((child, index) => {
+        if (node.children[index] !== child)
+          node.insertBefore(child, node.children[index] || null);
+      });
+      for (const child of [...node.children])
+        if (!children.includes(child)) child.remove();
+    } else if (node.classList.contains("agenda-card-items")) {
       const template = document.createElement("template");
       template.innerHTML = html;
       const key = (button) =>
@@ -1221,11 +1381,50 @@ WorkTimeApp.ui.createAgenda = function ({
         ?.focus({ preventScroll: true });
   }
   function updateCompletion(previous, candidate) {
-    if (!completingAgenda || previous.dataset.agendaEdit !== completingAgenda)
+    // Status/selection are paint changes. Reuse chips independently of the
+    // save's lifetime, including form saves and deferred ResizeObserver renders.
+    if (previous.dataset.agendaEdit !== candidate.dataset.agendaEdit)
+      return false;
+    for (const name of ["continues-before", "continues-after"])
+      if (
+        previous.classList.contains(name) !== candidate.classList.contains(name)
+      )
+        return false;
+    for (const key of ["agendaSegmentStart", "agendaSegmentEnd"])
+      if (
+        candidate.dataset[key] &&
+        previous.dataset[key] !== candidate.dataset[key]
+      )
+        return false;
+    for (const selector of [
+      ".agenda-chip-title-text",
+      ".agenda-chip-time",
+      ".agenda-chip-note",
+    ])
+      if (
+        previous.querySelector(selector)?.textContent !==
+        candidate.querySelector(selector)?.textContent
+      )
+        return false;
+    if (
+      !!previous.querySelector(".agenda-resize-handle") !==
+      !!candidate.querySelector(".agenda-resize-handle")
+    )
       return false;
     const status = previous.querySelector(".agenda-chip-status");
     const nextStatus = candidate.querySelector(".agenda-chip-status");
     if (!status || !nextStatus) return false;
+    previous.classList.toggle(
+      "is-selected",
+      candidate.classList.contains("is-selected"),
+    );
+    previous.setAttribute(
+      "aria-current",
+      candidate.getAttribute("aria-current"),
+    );
+    previous.dataset.status = candidate.dataset.status;
+    previous.title = candidate.title;
+    status.dataset.status = nextStatus.dataset.status;
     previous.classList.toggle(
       "is-complete",
       candidate.classList.contains("is-complete"),
@@ -1237,7 +1436,7 @@ WorkTimeApp.ui.createAgenda = function ({
   }
   function chipMarkup(item) {
     const selected = formOpen && editingId === item.id;
-    return `<button type="button" class="agenda-chip${item.completed ? " is-complete" : ""}${selected ? " is-selected" : ""}" aria-current="${selected}" data-agenda-edit="${esc(item.id)}" title="${esc(item.allDay ? item.title : labelTime(item) + " · " + item.title)}">${weekView && !item.allDay ? `<span class="agenda-chip-time">${esc(labelTime(item, true))}</span>` : ""}<span class="agenda-chip-title"><span class="agenda-chip-title-text">${esc(item.title)}</span><span class="agenda-chip-status" role="img" aria-label="${esc(t(item.completed ? "statusCompleted" : "statusPending"))}">${item.completed ? '<svg aria-hidden="true"><use href="#ms-check"/></svg>' : ""}</span></span>${weekView && item.note.trim() ? `<span class="agenda-chip-note">${esc(item.note)}</span>` : ""}${item.allDay || item.end ? `<span class="agenda-resize-handle" data-agenda-resize="end" aria-hidden="true" title="${esc(t("resizeEnd"))}"></span>` : ""}</button>`;
+    return `<button type="button" class="agenda-chip${item.status === "completed" ? " is-complete" : ""}${selected ? " is-selected" : ""}" aria-current="${selected}" data-agenda-edit="${esc(item.id)}" data-status="${item.status}" title="${esc((item.allDay ? item.title : labelTime(item) + " · " + item.title) + " · " + statusLabel(item.status))}">${weekView && !item.allDay ? `<span class="agenda-chip-time">${esc(labelTime(item, true))}</span>` : ""}<span class="agenda-chip-title"><span class="agenda-chip-title-text">${esc(item.title)}</span><span class="agenda-chip-status" data-status="${item.status}" role="img" aria-label="${esc(statusLabel(item.status))}"></span></span>${weekView && item.note.trim() ? `<span class="agenda-chip-note">${esc(item.note)}</span>` : ""}${item.allDay || item.end ? `<span class="agenda-resize-handle" data-agenda-resize="end" aria-hidden="true" title="${esc(t("resizeEnd"))}"></span>` : ""}</button>`;
   }
   const agendaLayout = WorkTimeApp.ui.createAgendaLayout({
     calendar,
@@ -1287,7 +1486,7 @@ WorkTimeApp.ui.createAgenda = function ({
         const candidate = { ...item, updatedAt: new Date().toISOString() };
         if (!(await perform(() => application.saveAgenda(candidate))))
           return false;
-        model.selected = target;
+        model.selected = model.calendarSelected = target;
         openForm();
         reset(candidate);
         actions.render();
@@ -1339,8 +1538,105 @@ WorkTimeApp.ui.createAgenda = function ({
     toolbarDivider.style.removeProperty("opacity");
     toolbarRegion.hidden = toolbarKey === "analysis";
   }
+  function stopModesMotion() {
+    for (const animation of modesAnimations) animation.cancel();
+    modesAnimations = [];
+    modesRegion.hidden = !!model.batchMode;
+    modesRegion.style.removeProperty("width");
+    modesRegion.style.removeProperty("margin-right");
+    modes.style.removeProperty("opacity");
+    modes.style.removeProperty("transform");
+  }
+  function renderModes() {
+    const hidden = !!model.batchMode;
+    if (modesHidden === hidden) return;
+    const animate = modesHidden !== null && canAnimate();
+    const width = modesRegion.getBoundingClientRect().width;
+    const margin = getComputedStyle(modesRegion).marginRight;
+    const painted = getComputedStyle(modes);
+    const from = { opacity: painted.opacity, transform: painted.transform };
+    for (const animation of modesAnimations) animation.cancel();
+    modesAnimations = [];
+    modesHidden = hidden;
+    modesRegion.inert = hidden;
+    modesRegion.setAttribute("aria-hidden", String(hidden));
+    modesRegion.hidden = false;
+    modesRegion.style.removeProperty("width");
+    modesRegion.style.removeProperty("margin-right");
+    modes.style.removeProperty("opacity");
+    modes.style.removeProperty("transform");
+    const expandedWidth = modesRegion.getBoundingClientRect().width;
+    if (!animate) {
+      modesRegion.hidden = hidden;
+      return;
+    }
+    const gap =
+      parseFloat(getComputedStyle(modesRegion.parentElement).columnGap) || 0;
+    modesRegion.style.width = hidden ? "0px" : expandedWidth + "px";
+    modesRegion.style.marginRight = hidden ? -gap + "px" : "0px";
+    modes.style.opacity = hidden ? "0" : "1";
+    modes.style.transform = hidden ? "translateX(-8px)" : "none";
+    const startTime = document.timeline?.currentTime;
+    const animations = [
+      animationCompat.animate(
+        modes,
+        [
+          width ? from : { opacity: 0, transform: "translateX(-8px)" },
+          { opacity: modes.style.opacity, transform: modes.style.transform },
+        ],
+        {
+          duration: hidden ? 160 : 200,
+          delay: hidden ? 0 : 40,
+          easing: hidden
+            ? "cubic-bezier(0.4, 0, 0.8, 1)"
+            : "cubic-bezier(0.2, 0.65, 0.3, 1)",
+          fill: "both",
+        },
+        startTime,
+      ),
+      animationCompat.animate(
+        modesRegion,
+        [
+          { width: width + "px", marginRight: width ? margin : -gap + "px" },
+          {
+            width: modesRegion.style.width,
+            marginRight: modesRegion.style.marginRight,
+          },
+        ],
+        {
+          duration: 200,
+          delay: hidden ? 160 : 0,
+          easing: "cubic-bezier(0.2, 0.65, 0.3, 1)",
+          fill: "both",
+        },
+        startTime,
+      ),
+      animationCompat.animate(
+        modesDivider,
+        [{ opacity: hidden ? 1 : 0 }, { opacity: hidden ? 0 : 1 }],
+        {
+          duration: 160,
+          delay: hidden ? 160 : 40,
+          easing: "ease-out",
+          fill: "both",
+        },
+        startTime,
+      ),
+    ];
+    modesAnimations = animations;
+    Promise.all(animations.map((animation) => animation.finished)).then(() => {
+      if (modesAnimations !== animations) return;
+      stopModesMotion();
+    });
+  }
   function renderToolbar() {
-    const viewNames = ["monthView", "weekView", "fortnightView"];
+    renderModes();
+    const viewNames = [
+      "monthView",
+      "weekView",
+      "fortnightView",
+      "threeWeekView",
+    ];
     const mode = model.analysisMode
       ? "analysis"
       : active
@@ -1432,13 +1728,16 @@ WorkTimeApp.ui.createAgenda = function ({
         });
       button.hidden = hidden;
     }
-    viewToggle.dataset.view = ["month", "week", "fortnight"][weekView];
+    viewToggle.dataset.view = ["month", "week", "fortnight", "threeweek"][
+      weekView
+    ];
     viewToggle.dataset.agendaView = String(weekView);
     const icon = viewToggle.querySelector("svg");
     const use = icon.querySelector("use");
     const iconHref = [
       "#ms-calendar-month",
       "#ms-view-week",
+      "#ms-calendar-view-month",
       "#ms-calendar-view-month",
     ][weekView];
     if (use.getAttribute("href") !== iconHref) {
@@ -1460,7 +1759,7 @@ WorkTimeApp.ui.createAgenda = function ({
       t(viewNames[weekView]) +
       " · " +
       t("switchView", {
-        view: t(viewNames[(weekView + 1) % 3]),
+        view: t(viewNames[(weekView + 1) % 4]),
       });
     viewToggle.setAttribute("aria-label", viewToggle.title);
     viewToggle.disabled = busy;
@@ -1579,6 +1878,7 @@ WorkTimeApp.ui.createAgenda = function ({
     renderToolbar();
     updateOaActions();
     if (!active || busy) {
+      closeStatusMenu();
       schedule.close();
     }
     schedule.render();
@@ -1629,6 +1929,8 @@ WorkTimeApp.ui.createAgenda = function ({
     }
     for (const node of pane.querySelectorAll("[data-agenda-text]"))
       node.textContent = t(node.dataset.agendaText);
+    for (const option of $("agendaItemStatus").options)
+      option.textContent = statusLabel(option.value);
     $("agendaFormTitle").textContent = t(editingId ? "edit" : "new");
     const dateMarkup = WorkTimeApp.ui.headerDateMarkup(model.selected, esc);
     if (dateMarkup !== renderedDateHeader) {
@@ -1637,10 +1939,20 @@ WorkTimeApp.ui.createAgenda = function ({
     }
     $("agendaFields").disabled = busy || model.loadIssue === "unsupported";
     const items = model.state.agenda || [];
-    const cards = [
-      ...calendar.querySelectorAll(
-        ".day[data-date], .day[data-preview-date][data-agenda-week]",
+    const agendaContent = JSON.stringify(
+      items.map(
+        ({
+          status: _status,
+          completed: _completed,
+          updatedAt: _updatedAt,
+          ...content
+        }) => content,
       ),
+    );
+    const agendaContentChanged = renderedAgendaContent !== agendaContent;
+    renderedAgendaContent = agendaContent;
+    const cards = [
+      ...calendar.querySelectorAll(".day[data-date], .day[data-preview-date]"),
     ];
     const datesKey = [model.selected, ...cards.map(cardDate)].join(",");
     if (items !== dateItemsSource || datesKey !== dateItemsKey) {
@@ -1652,7 +1964,13 @@ WorkTimeApp.ui.createAgenda = function ({
       dateItemsKey = datesKey;
     }
     const selectedItems = dateItems.get(model.selected);
-    const completed = selectedItems.filter((item) => item.completed).length;
+    const countedItems = selectedItems.filter(
+      (item) => item.status !== "cancelled",
+    );
+    const total = countedItems.length;
+    const completed = countedItems.filter(
+      (item) => item.status === "completed",
+    ).length;
     $("agendaDayDetails").setAttribute(
       "aria-label",
       WorkTimeApp.i18n.date(model.selected) + " · " + t("agenda"),
@@ -1660,7 +1978,7 @@ WorkTimeApp.ui.createAgenda = function ({
     $("agendaProgress").hidden = false;
     updateMarkup(
       $("agendaProgress"),
-      `<div class="agenda-progress-copy"><span>${esc(t("progress", { completed, total: selectedItems.length }))}</span><span aria-hidden="true">${Math.round((completed / (selectedItems.length || 1)) * 100)}%</span></div><div class="agenda-progress-track" aria-hidden="true"><span style="width:${(completed / (selectedItems.length || 1)) * 100}%"></span></div>`,
+      `<div class="agenda-progress-copy"><span>${esc(t("progress", { completed, total }))}</span><span aria-hidden="true">${Math.round((completed / (total || 1)) * 100)}%</span></div><div class="agenda-progress-track" aria-hidden="true"><span style="width:${(completed / (total || 1)) * 100}%"></span></div>`,
     );
     updateMarkup(
       $("agendaList"),
@@ -1709,6 +2027,7 @@ WorkTimeApp.ui.createAgenda = function ({
       const changed =
         previous !== undefined &&
         previous !== html &&
+        agendaContentChanged &&
         !switchingMode &&
         !movingAgenda &&
         !completingAgenda;
@@ -1774,7 +2093,7 @@ WorkTimeApp.ui.createAgenda = function ({
     $("batchToggle").disabled = true;
     // Global pending groups are independent of the currently selected day.
     const otherPending = items
-      .filter((item) => !item.completed)
+      .filter((item) => ["pending", "in-progress"].includes(item.status))
       .sort(
         (a, b) =>
           a.date.localeCompare(b.date) ||
@@ -1817,18 +2136,33 @@ WorkTimeApp.ui.createAgenda = function ({
     times();
     agendaDrag?.refresh();
   }
-  function select(date, keepEditor = false, navigate = false) {
+  function select(
+    date,
+    keepEditor = false,
+    navigate = false,
+    retainSelection = false,
+  ) {
     if (!keepEditor && date !== model.selected && !leaveForm()) return;
     if (!keepEditor && date !== model.selected) listScroll = 0;
     agendaDrag?.cancel();
     finishWeekNavigation();
     const inRange =
-      active && weekView === 2 && !navigate && weekDates().includes(date);
-    model.selected = date;
+      active &&
+      !navigate &&
+      (weekView
+        ? weekDates().includes(date)
+        : dayCards().some((card) => cardDate(card) === date));
+    if (!inRange && !navigate && !keepEditor) {
+      navigateAgenda(date, false);
+      return;
+    }
     if (!inRange) {
       model.agendaViewAnchor = date;
       model.month = date.slice(0, 7);
     }
+    if (navigate && retainSelection)
+      actions.retainCalendarSelection(weekView ? weekDates() : null, date);
+    else model.selected = model.calendarSelected = date;
     if (!hasDraft() && !keepEditor) reset();
     actions.render();
   }
@@ -1839,7 +2173,7 @@ WorkTimeApp.ui.createAgenda = function ({
     openForm();
     reset(item);
     if (date || rules.overlaps(item, model.selected, model.selected)) {
-      if (date) model.selected = date;
+      if (date) model.selected = model.calendarSelected = date;
       actions.render();
     } else select(item.date, true);
     // Editing an event already highlights its strip. The calendar's temporary
@@ -1856,6 +2190,8 @@ WorkTimeApp.ui.createAgenda = function ({
   }
   async function perform(operation) {
     if (busy) return false;
+    $("agendaError").textContent = "";
+    $("agendaStatus").textContent = "";
     busy = true;
     render();
     try {
@@ -1888,23 +2224,37 @@ WorkTimeApp.ui.createAgenda = function ({
     if (button.dataset.agendaDate) select(button.dataset.agendaDate);
     if (button.dataset.agendaEdit) edit(button.dataset.agendaEdit);
     if (button.dataset.agendaJump) edit(button.dataset.agendaJump);
-    const id = button.dataset.agendaComplete || button.dataset.agendaDelete;
-    const item = (model.state.agenda || []).find((entry) => entry.id === id);
-    if (!item) return;
-    if (button.dataset.agendaComplete) {
+    if (button.dataset.agendaStatus) {
+      openStatusMenu(button);
+      return;
+    }
+    if (button.dataset.agendaStatusChoice) {
+      const id = statusMenu.dataset.agendaId;
+      const item = (model.state.agenda || []).find((entry) => entry.id === id);
+      const status = button.dataset.agendaStatusChoice;
+      closeStatusMenu(true);
+      if (!item || item.status === status) return;
       completingAgenda = item.id;
       try {
         await perform(() =>
           application.saveAgenda({
             ...item,
-            completed: !item.completed,
+            status,
             updatedAt: new Date().toISOString(),
           }),
         );
       } finally {
         completingAgenda = null;
+        pane
+          .querySelector(`[data-agenda-status="${CSS.escape(item.id)}"]`)
+          ?.focus({ preventScroll: true });
       }
-    } else if (window.confirm(t("confirmDelete", { title: item.title }))) {
+      return;
+    }
+    const id = button.dataset.agendaDelete;
+    const item = (model.state.agenda || []).find((entry) => entry.id === id);
+    if (!item) return;
+    if (window.confirm(t("confirmDelete", { title: item.title }))) {
       if (editingId === item.id && hasDraft() && !window.confirm(t("discard")))
         return;
       if (await perform(() => application.removeAgenda(item.id))) {
@@ -2029,7 +2379,7 @@ WorkTimeApp.ui.createAgenda = function ({
           navigateAgenda(model.today);
         } else if (weekView) {
           const next = WorkTimeApp.domain.time.localDate(
-            weekView === 2 ? model.agendaViewAnchor : model.selected,
+            model.agendaViewAnchor,
           );
           next.setDate(next.getDate() + (id === "nextMonth" ? 7 : -7));
           const date = WorkTimeApp.domain.time.dateKey(next);
@@ -2053,7 +2403,7 @@ WorkTimeApp.ui.createAgenda = function ({
       (event) => {
         if (!active) return;
         const card = event.target.closest(
-          ".day[data-date], .day[data-preview-date][data-agenda-week]",
+          ".day[data-date], .day[data-preview-date]",
         );
         const button = event.target.closest("button");
         if (!card) return;
@@ -2066,7 +2416,7 @@ WorkTimeApp.ui.createAgenda = function ({
       { capture: true },
     );
     for (const node of [pane, summary]) listen(node, "click", click);
-    listen(viewToggle, "click", () => switchWeek((weekView + 1) % 3));
+    listen(viewToggle, "click", () => switchWeek((weekView + 1) % 4));
     listen(window, "resize", () => {
       syncOverviewHost();
       settleDrawer();
@@ -2155,7 +2505,7 @@ WorkTimeApp.ui.createAgenda = function ({
         id: editingId || WorkTimeApp.services.archive.uuid(),
         start: fields.allDay ? "" : fields.start,
         end: fields.allDay ? "" : fields.end,
-        completed: old?.completed || false,
+        completed: fields.status === "completed",
         createdAt: old?.createdAt || now,
         updatedAt: now,
       };
@@ -2165,12 +2515,23 @@ WorkTimeApp.ui.createAgenda = function ({
         $("agendaError").textContent = t("invalid");
         return;
       }
+      const statusOnly =
+        old &&
+        Object.entries(fields).every(
+          ([key, value]) => key === "status" || old[key] === value,
+        );
       if (await perform(() => application.saveAgenda(candidate))) {
         reset();
         formOpen = false;
-        if (rules.overlaps(candidate, model.selected, model.selected))
+        if (rules.overlaps(candidate, model.selected, model.selected)) {
+          model.calendarSelected = model.selected;
           actions.render();
-        else select(candidate.date);
+        } else select(candidate.date);
+        if (statusOnly)
+          for (const chip of calendar.querySelectorAll(".agenda-chip"))
+            if (chip.dataset.agendaEdit === candidate.id)
+              for (const animation of chip.getAnimations())
+                if ("transitionProperty" in animation) animation.finish();
         $("agendaList").scrollTop = listScroll;
         const savedEntry = returnFocus?.dataset.agendaEdit
           ? [...$("agendaList").querySelectorAll("[data-agenda-edit]")].find(
@@ -2203,6 +2564,7 @@ WorkTimeApp.ui.createAgenda = function ({
       unlistenMotion();
       scope.abort();
       noticeObserver.disconnect();
+      modesObserver.disconnect();
       drawerAnimation?.cancel();
       drawerGeometry.disconnect();
       if (originalAreaTabIndex === null)
@@ -2216,11 +2578,13 @@ WorkTimeApp.ui.createAgenda = function ({
       );
       for (const tab of editor.querySelectorAll(".notification-tab"))
         tab.removeAttribute("aria-expanded");
-      modes.before($("analysisToggle"));
+      for (const animation of modesAnimations) animation.cancel();
+      modesRegion.before($("analysisToggle"));
       toolbarRegion.before($("batchToggle"));
       $("batchToggle").hidden = false;
       for (const node of [
         modes,
+        modesRegion,
         pane,
         summary,
         controls,

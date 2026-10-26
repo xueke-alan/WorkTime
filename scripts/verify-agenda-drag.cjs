@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -84,11 +85,11 @@ async function verify() {
         await page.locator("#agendaBack").click();
       await page.locator("#agendaNew").click();
       await page.locator("#agendaTitle").fill(title);
+      await page.locator("#agendaItemStatus").selectOption("in-progress");
       await openSchedule();
-      await page.locator("#agendaDateInput").fill(date);
+      await setScheduleRange(page, date);
       if (endDate) {
         await openSchedule();
-        await page.locator("#agendaMultiDay").check();
         await page.locator("#agendaEndDateInput").fill(endDate);
       }
       if (start) {
@@ -208,7 +209,8 @@ async function verify() {
         start: "22:00",
         end: "00:00",
         allDay: false,
-        completed: true,
+        completed: false,
+        status: "in-progress",
         note: "notes",
         createdAt: "2026-01-01T00:00:00Z",
         updatedAt: "2026-01-01T00:00:00Z",
@@ -242,6 +244,7 @@ async function verify() {
       "end",
       "note",
       "completed",
+      "status",
       "createdAt",
       "updatedAt",
     ])
@@ -267,6 +270,7 @@ async function verify() {
     const moved = (await snapshot()).find((item) => item.id === before.id);
     assert.equal(moved.date, "2026-10-22");
     assert.equal(moved.note, before.note);
+    assert.equal(moved.status, "in-progress");
     await begin("拖动单日", "2026-10-22");
     await hover("2026-10-22");
     await page.mouse.up();

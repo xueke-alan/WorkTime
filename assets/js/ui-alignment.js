@@ -353,6 +353,8 @@
         element.parentElement.matches(metricSelector)
       )
         return;
+      // Outgoing date surfaces already carry the source's measured ink offsets.
+      if (element.closest(".calendar-navigation-copy")) return;
       // Components declare text layers; alignment never changes their structure.
       targets.add(element);
     });
@@ -494,6 +496,7 @@
         "opacity",
         "transform",
         "clip-path",
+        "will-change",
         "--agenda-span-mask",
       ]) {
         before.removeProperty(property);
@@ -524,17 +527,50 @@
       if (!element) continue;
       // Snapshots already contain the source's aligned text. Their insertion,
       // animation and removal must not trigger another pass over the live dates.
-      if (element.closest(".agenda-content-outgoing,.agenda-mode-exit-clip"))
+      if (
+        element.closest(
+          ".agenda-content-outgoing,.agenda-mode-exit-clip,.calendar-navigation-copy",
+        )
+      )
         continue;
       if (
         record.type === "childList" &&
         [...record.addedNodes, ...record.removedNodes].every(
           (node) =>
             node instanceof Element &&
-            node.matches(".agenda-content-outgoing,.agenda-mode-exit-clip"),
+            node.matches(
+              ".agenda-content-outgoing,.agenda-mode-exit-clip,.calendar-navigation-copy,.calendar-navigation-viewport",
+            ),
         )
       )
         continue;
+      // Reparenting the live calendar into/out of a temporary clipping viewport
+      // changes no text metrics. Actual date/header mutations are handled above
+      // and below at their ordinary component scopes.
+      if (record.type === "childList") {
+        const nodes = [...record.addedNodes, ...record.removedNodes];
+        if (
+          nodes.length &&
+          nodes.every(
+            (node) =>
+              node instanceof Element &&
+              (node.matches(
+                ".calendar-navigation-copy,.calendar-navigation-viewport",
+              ) ||
+                (node.id === "calendar" &&
+                  (element.matches(".calendar-navigation-viewport") ||
+                    node.parentElement?.matches(
+                      ".calendar-navigation-viewport",
+                    ) ||
+                    nodes.some(
+                      (other) =>
+                        other instanceof Element &&
+                        other.matches(".calendar-navigation-viewport"),
+                    )))),
+          )
+        )
+          continue;
+      }
       // Analysis geometry owns its coordinates. Its animation frames do not
       // change the single-line text metrics handled by this observer.
       if (

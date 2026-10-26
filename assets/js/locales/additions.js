@@ -2393,6 +2393,17 @@ for (const [language, labels] of Object.entries({
 }
 
 for (const [language, label] of Object.entries({
+  "zh-CN": "三周视图",
+  "zh-TW": "三週檢視",
+  "zh-HK": "三週檢視",
+  en: "Three weeks",
+  ja: "3週表示",
+  ko: "3주 보기",
+})) {
+  WorkTimeApp.data.locales[language]["agenda.threeWeekView"] = label;
+}
+
+for (const [language, label] of Object.entries({
   "zh-CN": "日程记录",
   "zh-TW": "日程記錄",
   "zh-HK": "日程記錄",
@@ -2660,3 +2671,67 @@ for (const [language, label] of Object.entries({
   ko: "서랍 닫기",
 }))
   WorkTimeApp.data.locales[language]["agenda.collapseDrawer"] = label;
+
+// Date range selection instructions, shared by pointer and keyboard interaction.
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "选择开始日期，再选择结束日期",
+    "请选择结束日期",
+    "正在修改开始日期",
+    "正在修改结束日期",
+  ],
+  "zh-TW": [
+    "選擇開始日期，再選擇結束日期",
+    "請選擇結束日期",
+    "正在修改開始日期",
+    "正在修改結束日期",
+  ],
+  "zh-HK": [
+    "選擇開始日期，再選擇結束日期",
+    "請選擇結束日期",
+    "正在修改開始日期",
+    "正在修改結束日期",
+  ],
+  en: [
+    "Choose a start date, then an end date",
+    "Choose an end date",
+    "Editing start date",
+    "Editing end date",
+  ],
+  ja: [
+    "開始日、終了日の順に選択",
+    "終了日を選択してください",
+    "開始日を編集中",
+    "終了日を編集中",
+  ],
+  ko: [
+    "시작일을 선택한 다음 종료일을 선택하세요",
+    "종료일을 선택하세요",
+    "시작일 수정 중",
+    "종료일 수정 중",
+  ],
+})) {
+  [
+    "selectRangeStart",
+    "selectRangeEnd",
+    "editRangeStart",
+    "editRangeEnd",
+  ].forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+  });
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["状态", "切换状态", "进行中", "已取消"],
+  "zh-TW": ["狀態", "切換狀態", "進行中", "已取消"],
+  "zh-HK": ["狀態", "切換狀態", "進行中", "已取消"],
+  en: ["Status", "Change status", "In progress", "Cancelled"],
+  ja: ["状態", "状態を変更", "進行中", "キャンセル済み"],
+  ko: ["상태", "상태 변경", "진행 중", "취소됨"],
+})) {
+  ["status", "changeStatus", "statusInProgress", "statusCancelled"].forEach(
+    (key, index) => {
+      WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+    },
+  );
+}

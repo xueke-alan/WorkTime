@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -38,7 +39,8 @@ async function verify() {
         start: "",
         end: "",
         note: "preserved",
-        completed: true,
+        completed: false,
+        status: "cancelled",
         createdAt: "2026-01-01T00:00:00Z",
         updatedAt: "2026-01-01T00:00:00Z",
       };
@@ -90,6 +92,7 @@ async function verify() {
       "title",
       "note",
       "completed",
+      "status",
       "createdAt",
       "updatedAt",
     ])
@@ -99,10 +102,10 @@ async function verify() {
         await page.locator("#agendaBack").click();
       await page.locator("#agendaNew").click();
       await page.locator("#agendaTitle").fill(title);
+      await page.locator("#agendaItemStatus").selectOption("cancelled");
       await page.locator("#agendaScheduleOpen").click();
-      await page.locator("#agendaDateInput").fill(date);
+      await setScheduleRange(page, date);
       if (endDate) {
-        await page.locator("#agendaMultiDay").check();
         await page.locator("#agendaEndDateInput").fill(endDate);
       }
       if (start) {

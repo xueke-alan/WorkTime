@@ -1,4 +1,5 @@
 "use strict";
+const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -30,9 +31,8 @@ async function profile() {
         await page.locator("#agendaNew").click();
         await page.locator("#agendaTitle").fill("动画性能样本 " + i);
         await page.locator("#agendaScheduleOpen").click();
-        await page.locator("#agendaDateInput").fill("2026-10-20");
+        await setScheduleRange(page, "2026-10-20");
         if (i % 2 === 0) {
-          await page.locator("#agendaMultiDay").check();
           await page.locator("#agendaEndDateInput").fill("2026-10-28");
         }
         await page.locator("[data-schedule-close]").click();

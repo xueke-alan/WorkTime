@@ -335,7 +335,7 @@ body .editor .editor-day-header .editor-date {
 }
 .day.restday {
   background: var(--theme-surface-soft, #f6f8f6);
-  border-color: var(--theme-border-soft, #e8ede8);
+  border-color: var(--theme-border-soft, #e6ede8);
 }
 .day.selected,
 .day.selected:hover {
@@ -716,7 +716,7 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 }
 .day[data-holiday] {
   background-color: var(--holiday-base);
-  border-color: #e8e8df;
+  border-color: var(--theme-border-soft, #e6ede8);
   isolation: isolate;
 }
 .day[data-holiday]::before {
@@ -747,7 +747,7 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
   border-color: #8295ce;
   box-shadow: inset 0 0 0 1px #8295ce;
 }
-.calendar .day.adjacent {
+:where(.workspace:not(.agenda-mode)) .calendar .day.adjacent {
   border: 1px solid var(--theme-border-soft, #e6ede8);
   --day-opacity: 0.4;
   opacity: var(--day-opacity);
@@ -1071,12 +1071,12 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 }
 .day.weekend:not([data-holiday]):not(.selected):not(.batchselected) {
   background: var(--day-surface);
-  border-color: var(--day-edge);
+  border-color: var(--theme-border-soft, #e6ede8);
   box-shadow: none;
 }
 .day.weekend:not([data-holiday]):not(.selected):not(.batchselected):hover {
   background: color-mix(in srgb, var(--day-surface) 92%, var(--day-tone));
-  border-color: color-mix(in srgb, var(--day-tone) 55%, var(--day-surface));
+  border-color: var(--theme-border, #bfd7c8);
   box-shadow: none;
 }
 :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) {
@@ -1272,6 +1272,10 @@ body .month-controls .month-title {
 .month-title-month .summary-number-digit {
   text-align: left;
 }
+/* Center numeric months in the fixed slot, including both rolling rows. */
+html:is([lang^="zh"], [lang="ja"], [lang="ko"]) .month-title-month .summary-number-digit {
+  text-align: center;
+}
 /* Keep title nodes in place so toggling can reverse an in-flight transition. */
 body .month-controls .month-title {
   overflow: hidden;
@@ -1354,7 +1358,7 @@ body .calendar .day.full-leave {
 }
 body .calendar .day:is([data-holiday], .weekend, .full-leave) {
   background: var(--day-surface);
-  border-color: var(--day-edge);
+  border-color: var(--theme-border-soft, #e6ede8);
   color: var(--ink);
   transition:
     background 0.15s,
@@ -1365,14 +1369,15 @@ body
   .calendar
   .day:is([data-holiday], .weekend, .full-leave):hover:not(:disabled) {
   background: color-mix(in srgb, var(--day-surface) 92%, var(--day-tone));
-  border-color: color-mix(in srgb, var(--day-tone) 55%, var(--day-surface));
+  border-color: var(--theme-border, #bfd7c8);
 }
 body
   .calendar
-  .day:is([data-holiday], .weekend, .full-leave):is(.selected, .batchselected) {
+  .day:is([data-holiday], .weekend, .full-leave):is(.selected, .batchselected),
+body .calendar .day:is([data-holiday], .weekend, .full-leave):is(.selected, .batchselected):hover {
   background: var(--day-surface);
-  border-color: var(--day-tone);
-  box-shadow: inset 0 0 0 1px var(--day-tone);
+  border-color: var(--theme-edge, #439e7f);
+  box-shadow: inset 0 0 0 1px var(--theme-edge, #439e7f);
 }
 body
   .calendar
@@ -1381,6 +1386,12 @@ body
     .batchselected
   ):hover {
   background: color-mix(in srgb, var(--day-surface) 94%, var(--day-tone));
+}
+/* Selection borders follow the shared calendar state, independent of date type. */
+body .calendar .day:is([data-holiday], .weekend, .full-leave).batchselected,
+body .calendar .day:is([data-holiday], .weekend, .full-leave).batchselected:hover {
+  border-color: var(--theme-border, #91a6d8);
+  box-shadow: inset 0 0 0 1px var(--theme-edge, #91a6d8);
 }
 body .calendar .day:is([data-holiday], .weekend, .full-leave):focus-visible {
   outline: 0;
@@ -1987,10 +1998,8 @@ body .calendar .day[data-festival] .daykind {
   font-weight: 700;
 }
 
-/* Unavailable batch dates stay dim and do not respond to pointer hover. */
+/* Unavailable batch dates do not respond to pointer hover. */
 body .calendar.is-batch-editing > .day[aria-disabled="true"] {
-  --day-opacity: 0.55;
-  opacity: var(--day-opacity);
   cursor: default;
 }
 
@@ -2053,16 +2062,49 @@ body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
     height: 8px;
   }
 }
-/* Batch previews stay within the current month until confirmed or cancelled. */
-.calendar.is-batch-editing .day > .daytime,
-.calendar.is-batch-editing .day > .dayhours,
-.calendar.is-batch-editing .day > .day-footer {
-  opacity: 0.6;
+/* Batch previews dim only rest-day content, preserving card surfaces and borders. */
+.calendar.is-batch-editing .day.restday .daynum-text,
+.calendar.is-batch-editing .day.restday .daykind,
+.calendar.is-batch-editing .day.restday > .daytime,
+.calendar.is-batch-editing .day.restday > .dayhours,
+.calendar.is-batch-editing .day.restday > .day-footer {
+  opacity: 0.55;
 }
 body #monthTitle[aria-disabled="true"] {
   cursor: default;
   pointer-events: none;
 }
-body:has(#calendar.is-batch-editing) #monthTitle[aria-disabled="true"] {
-  opacity: 0.45;
+
+/* Date navigation clips two opaque pages while labels and sidebars stay still. */
+.calendar-navigation-viewport {
+  position: relative;
+  overflow: clip;
+  flex: none;
+  min-width: 0;
+}
+.calendar-navigation-copy,
+.calendar-navigation-copy * {
+  pointer-events: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+/* A retained selection remains recognizable on the month grid's adjacent dates. */
+.workspace:not(.agenda-mode) .calendar .day.adjacent.selected {
+  --day-opacity: 1;
+  opacity: 1;
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* Keep page travel on composited layers; discard these hints with the snapshot. */
+.calendar-navigation-viewport {
+  contain: layout paint;
+}
+.calendar-navigation-copy {
+  will-change: transform;
+}
+
+.calendar-navigation-copy .day > .agenda-card-items {
+  z-index: 3;
 }

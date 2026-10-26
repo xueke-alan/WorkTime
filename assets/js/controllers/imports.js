@@ -214,7 +214,7 @@ WorkTimeApp.ui.createImportController = function (options) {
     ).persisted;
     if (focusDate) {
       model.month = focusDate.slice(0, 7);
-      model.selected = focusDate;
+      model.selected = model.calendarSelected = focusDate;
     }
     actions.render();
     renderImportHistory();
