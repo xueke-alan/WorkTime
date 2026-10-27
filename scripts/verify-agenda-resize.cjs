@@ -211,8 +211,11 @@ async function verify() {
     );
     assert.equal(await page.locator(".agenda-drag-preview").count(), 0);
     await finish();
-    // Preview follows pixels within one date; only release expands to that date's edge.
-    await begin("长度调整");
+    // Preview follows the grabbed edge's displacement; release fills the date.
+    const grabbed = await begin("长度调整");
+    const liveEdge = await chips("长度调整").last().boundingBox();
+    const grabOffset =
+      grabbed.x + grabbed.width / 2 - (liveEdge.x + liveEdge.width);
     const targetBounds = await card("2026-10-22").boundingBox();
     const firstX = targetBounds.x + targetBounds.width * 0.3;
     const secondX = targetBounds.x + targetBounds.width * 0.7;
@@ -221,7 +224,9 @@ async function verify() {
       .locator(".agenda-resize-segment")
       .last()
       .boundingBox();
-    assert.ok(Math.abs(firstPreview.x + firstPreview.width - firstX) < 1);
+    assert.ok(
+      Math.abs(firstPreview.x + firstPreview.width - (firstX - grabOffset)) < 1,
+    );
     await page.evaluate(() => {
       window.smoothPreview = document.querySelector(".agenda-resize-segment");
     });
@@ -230,7 +235,10 @@ async function verify() {
       .locator(".agenda-resize-segment")
       .last()
       .boundingBox();
-    assert.ok(Math.abs(secondPreview.x + secondPreview.width - secondX) < 1);
+    assert.ok(
+      Math.abs(secondPreview.x + secondPreview.width - (secondX - grabOffset)) <
+        1,
+    );
     assert.ok(secondPreview.width > firstPreview.width + 10);
     assert.ok(
       await page.evaluate(
@@ -261,7 +269,7 @@ async function verify() {
       await page.locator("#agendaEndDateInput").inputValue(),
       "2026-10-20",
     );
-    // Invalid dates, same-date release, Escape, gaps, blur, resize and mode changes.
+    // Invalid dates, same-date release, Escape, gutter snapping, blur and mode changes.
     await begin("长度调整");
     await hover("2026-10-19");
     assert.equal(await page.locator(".agenda-drop-target").count(), 0);
@@ -276,12 +284,15 @@ async function verify() {
     const a = await card("2026-10-21").boundingBox(),
       b = await card("2026-10-22").boundingBox();
     await begin("长度调整");
-    await page.mouse.move((a.x + a.width + b.x) / 2, a.y + 15, { steps: 8 });
+    await page.mouse.move((a.x + a.width) * 0.75 + b.x * 0.25, a.y + 15, {
+      steps: 8,
+    });
     await finish();
     assert.equal(
       await page.locator("#agendaEndDateInput").inputValue(),
-      "2026-10-20",
+      "2026-10-21",
     );
+    await resize("长度调整", "2026-10-20");
     for (const cancel of [
       () => page.evaluate(() => window.dispatchEvent(new Event("blur"))),
       () => page.setViewportSize({ width: 1470, height: 1000 }),
@@ -311,6 +322,9 @@ async function verify() {
     await resize("定时长度", "2026-10-23");
     assert.equal(await page.locator("#agendaStart").inputValue(), "09:00");
     assert.equal(await page.locator("#agendaEnd").inputValue(), "10:00");
+    // These accumulated fixtures exceed the compact month's visible lane limit.
+    // Keep the real endpoint visible while testing midnight and failed writes.
+    await page.setViewportSize({ width: 1470, height: 1600 });
     await create("午夜长度", "2026-10-20", "2026-10-21", "22:00", "00:00");
     await resize("午夜长度", "2026-10-22");
     assert.equal(
@@ -339,6 +353,7 @@ async function verify() {
     await page.evaluate(() => {
       IDBTransaction.prototype.objectStore = window.resizeStore;
     });
+    await page.setViewportSize({ width: 1470, height: 1000 });
     await create("跨周长度", "2026-10-23", "2026-10-28");
     assert.equal(
       await chips("跨周长度").locator(".agenda-resize-handle").count(),

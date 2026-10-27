@@ -45,7 +45,10 @@ WorkTimeApp.ui.createDatePicker = function ({
       ...options,
       signal: scope.signal,
     });
-  const open = () => inline || popup.matches(":popover-open");
+  const popover = inline
+    ? null
+    : WorkTimeApp.ui.popover.create(popup, { trigger: () => button });
+  const open = () => inline || popover.isOpen();
   const valid = (date) =>
     time.validDate(date) &&
     date >= (range ? "1900-01-01" : input.min) &&
@@ -54,7 +57,7 @@ WorkTimeApp.ui.createDatePicker = function ({
   function close(restoreFocus = false) {
     if (inline) return;
     if (!open()) return;
-    popup.hidePopover();
+    popover.hide();
     if (restoreFocus) button.focus({ preventScroll: true });
   }
   function place() {
@@ -197,7 +200,7 @@ WorkTimeApp.ui.createDatePicker = function ({
         ?.focus({ preventScroll: true });
       return;
     }
-    popup.showPopover();
+    popover.show();
     place();
     popup
       .querySelector(`[data-picker-date="${focused}"]`)
@@ -307,6 +310,7 @@ WorkTimeApp.ui.createDatePicker = function ({
     },
     dispose() {
       close();
+      popover?.destroy();
       scope.abort();
       popup.remove();
     },

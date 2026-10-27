@@ -132,7 +132,7 @@ WorkTimeApp.ui.createAgenda = function ({
   const transferChips = new Map();
   const snapshotScroll = new WeakMap();
   const renderedContents = new Map();
-  let renderedAgendaContent = "";
+  let renderedAgendaIds = new Set();
   let dateItemsSource = null,
     dateItemsKey = "",
     dateItems = new Map();
@@ -898,24 +898,21 @@ WorkTimeApp.ui.createAgenda = function ({
   pane.setAttribute("aria-labelledby", "agendaDate");
   pane.innerHTML = `
     <div class="editor-day-header editor-mode-header agenda-heading"><div id="agendaDate" class="editor-date"></div></div>
-    <div class="agenda-day-toolbar" hidden><button id="agendaBack" type="button" class="ui-button" data-agenda-text="backToList" hidden></button></div>
+    <div class="agenda-day-toolbar" hidden><button id="agendaBack" type="button" class="ui-button icon-only" hidden><svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-left"/></svg></button><h2 id="agendaFormTitle"></h2></div>
     <div id="agendaCritical" class="agenda-critical" role="alert" hidden></div>
     <section id="agendaDayDetails" class="agenda-day-details"><div id="agendaList" class="agenda-list" tabindex="0"></div><div class="agenda-list-actions"><button id="agendaNew" type="button" class="ui-button primary" data-agenda-text="new"></button></div></section>
     <div class="agenda-editor-body">
-    <form id="agendaForm" class="agenda-form">
+    <form id="agendaForm" class="agenda-form" aria-labelledby="agendaFormTitle">
       <fieldset id="agendaFields">
-        <legend><span id="agendaFormTitle"></span></legend>
         <div class="agenda-field agenda-title-field"><label for="agendaTitle" data-agenda-text="title"></label><input id="agendaTitle" maxlength="120" required autocomplete="off"></div>
-        <div class="agenda-field"><label for="agendaItemStatus" data-agenda-text="status"></label><select id="agendaItemStatus">${statuses.map((status) => `<option value="${status}">${esc(statusLabel(status))}</option>`).join("")}</select></div>
+        <div class="agenda-properties"><div class="agenda-field agenda-status-field"><label for="agendaItemStatus" data-agenda-text="status"></label><div class="agenda-status-input"><span class="agenda-status-dot" aria-hidden="true"></span><select id="agendaItemStatus">${statuses.map((status) => `<option value="${status}">${esc(statusLabel(status))}</option>`).join("")}</select></div></div>
         <div id="agendaSchedule" class="agenda-schedule-fields"></div>
-        <div class="agenda-field agenda-note-field"><label for="agendaNote" data-agenda-text="note"></label><textarea id="agendaNote" rows="4" maxlength="5000"></textarea></div>
-        <p id="agendaDraft" class="muted" hidden data-agenda-text="draft"></p>
-        <div class="agenda-actions"><button id="agendaCancel" type="button" class="ui-button" data-agenda-text="cancel"></button><button id="agendaSave" type="submit" class="ui-button primary" data-agenda-text="save"></button></div>
+        </div><div class="agenda-field agenda-note-field"><label for="agendaNote" data-agenda-text="note"></label><textarea id="agendaNote" rows="3" maxlength="5000"></textarea></div>
       </fieldset>
     </form>
     </div>
-    <p id="agendaError" class="warnings" role="alert"></p>
-    <p id="agendaStatus" role="status" aria-live="polite"></p>`;
+    <div class="agenda-feedback"><p id="agendaError" class="warnings" role="alert"></p><p id="agendaStatus" role="status" aria-live="polite"></p></div>
+    <div class="agenda-editor-footer" hidden><p id="agendaDraft" class="muted" role="status" hidden data-agenda-text="unsavedChanges"></p><div class="agenda-actions"><button id="agendaCancel" type="button" class="ui-button" data-agenda-text="cancel"></button><button id="agendaSave" form="agendaForm" type="submit" class="ui-button primary" aria-keyshortcuts="Control+Enter Meta+Enter"></button></div></div>`;
   const statusMenu = make(
     "div",
     "agendaStatusMenu",
@@ -925,8 +922,11 @@ WorkTimeApp.ui.createAgenda = function ({
   statusMenu.setAttribute("popover", "auto");
   statusMenu.setAttribute("role", "menu");
   let statusTrigger = null;
+  const statusPopover = WorkTimeApp.ui.popover.create(statusMenu, {
+    trigger: () => statusTrigger,
+  });
   function closeStatusMenu(restoreFocus = false) {
-    if (statusMenu.matches(":popover-open")) statusMenu.hidePopover();
+    if (statusPopover.isOpen()) statusPopover.hide();
     if (restoreFocus) statusTrigger?.focus({ preventScroll: true });
   }
   function openStatusMenu(button) {
@@ -941,7 +941,7 @@ WorkTimeApp.ui.createAgenda = function ({
       )
       .join("");
     const rect = button.getBoundingClientRect();
-    statusMenu.showPopover();
+    statusPopover.show();
     button.setAttribute("aria-expanded", "true");
     statusMenu.style.left =
       Math.max(
@@ -961,7 +961,7 @@ WorkTimeApp.ui.createAgenda = function ({
   statusMenu.addEventListener(
     "toggle",
     () => {
-      if (!statusMenu.matches(":popover-open"))
+      if (!statusPopover.isOpen())
         statusTrigger?.setAttribute("aria-expanded", "false");
     },
     { signal: scope.signal },
@@ -1036,13 +1036,6 @@ WorkTimeApp.ui.createAgenda = function ({
   );
   drawerGrip.type = "button";
   auxiliaryArea.prepend(drawerGrip);
-  const progress = make(
-    "div",
-    "agendaProgress",
-    "agenda-progress agenda-footer-progress",
-    editor,
-  );
-  editor.querySelector(".notification-tabs").before(progress);
   let drawerTab = null,
     drawerAnimation = null,
     drawerTarget = false;
@@ -1143,6 +1136,7 @@ WorkTimeApp.ui.createAgenda = function ({
     if (!formOpen) listScroll = $("agendaList").scrollTop;
     returnFocus = document.activeElement;
     formOpen = true;
+    $("agendaStatus").textContent = "";
     setAuxiliary(false);
     overviewDialog.close();
   }
@@ -1261,6 +1255,23 @@ WorkTimeApp.ui.createAgenda = function ({
   function times() {
     schedule.render();
     $("agendaDraft").hidden = !hasDraft();
+    pane.querySelector(".agenda-status-input").dataset.status =
+      $("agendaItemStatus").value;
+    $("agendaTitle").placeholder = t("titlePlaceholder");
+    $("agendaNote").placeholder = t("notePlaceholder");
+    $("agendaSave").textContent = t(editingId ? "saveChanges" : "createItem");
+    $("agendaSave").title = $("agendaSave").textContent + " (Ctrl/⌘ + Enter)";
+    $("agendaSave").disabled =
+      busy ||
+      model.loadIssue === "unsupported" ||
+      !$("agendaTitle").value.trim();
+    $("agendaCancel").disabled = busy;
+    const note = $("agendaNote");
+    if (note.getClientRects().length) {
+      note.style.height = "auto";
+      note.style.height =
+        Math.min(240, Math.max(104, note.scrollHeight)) + "px";
+    }
   }
   function reset(item = null) {
     closeStatusMenu();
@@ -1473,14 +1484,15 @@ WorkTimeApp.ui.createAgenda = function ({
       agendaLayout.stop();
       motion?.stop(calendar);
       for (const node of calendar.querySelectorAll(
-        ".agenda-card-items, .agenda-lane-content",
+        ".agenda-card-items, .agenda-lane-content, .day.motion-selection",
       ))
         motion?.stop(node);
     },
     notify(text) {
       $("agendaStatus").textContent = text;
     },
-    async save(item, target, operation) {
+    moreLabel: (count) => t("more", { count }),
+    async save(item, target) {
       movingAgenda = true;
       try {
         const candidate = { ...item, updatedAt: new Date().toISOString() };
@@ -1495,10 +1507,7 @@ WorkTimeApp.ui.createAgenda = function ({
             node.dataset.agendaEdit === item.id && node.getClientRects().length,
         );
         button?.focus({ preventScroll: true });
-        // Resizing already animates the trailing edge; keep the head stationary.
-        if (operation !== "resizeEnd")
-          for (const segment of calendar.querySelectorAll(".agenda-chip"))
-            if (segment.dataset.agendaEdit === item.id) revealIncoming(segment);
+        // The drag controller owns release-to-destination motion and handoff.
         return true;
       } finally {
         movingAgenda = false;
@@ -1907,12 +1916,15 @@ WorkTimeApp.ui.createAgenda = function ({
     overviewDialog.querySelector("h2").textContent = t("overviewMemo");
     $("agendaOverviewClose").textContent = t("pickerClose");
     drawerGrip.setAttribute("aria-label", t("pickerClose"));
-    progress.hidden = !active;
     setAuxiliary(auxiliaryOpen);
     pane.querySelector(".agenda-editor-body").hidden = !formOpen;
     $("agendaDayDetails").hidden = formOpen;
     pane.querySelector(".agenda-day-toolbar").hidden = !formOpen;
+    pane.querySelector(".agenda-editor-footer").hidden = !formOpen;
     $("agendaBack").hidden = !formOpen;
+    $("agendaBack").title = t("backToList");
+    $("agendaBack").setAttribute("aria-label", t("backToList"));
+    $("agendaFormTitle").textContent = t(editingId ? "edit" : "new");
     for (const node of modes.querySelectorAll("[data-agenda-text]"))
       node.textContent = t(node.dataset.agendaText);
     $("agendaMode").title = t(active ? "attendance" : "agenda");
@@ -1939,18 +1951,17 @@ WorkTimeApp.ui.createAgenda = function ({
     }
     $("agendaFields").disabled = busy || model.loadIssue === "unsupported";
     const items = model.state.agenda || [];
-    const agendaContent = JSON.stringify(
-      items.map(
-        ({
-          status: _status,
-          completed: _completed,
-          updatedAt: _updatedAt,
-          ...content
-        }) => content,
-      ),
+    const addedIds = new Set(
+      items
+        .filter((item) => !renderedAgendaIds.has(item.id))
+        .map((item) => item.id),
     );
-    const agendaContentChanged = renderedAgendaContent !== agendaContent;
-    renderedAgendaContent = agendaContent;
+    const nextAgendaIds = new Set(items.map((item) => item.id));
+    const removedSelector = [...renderedAgendaIds]
+      .filter((id) => !nextAgendaIds.has(id))
+      .map((id) => `.agenda-chip[data-agenda-edit="${CSS.escape(id)}"]`)
+      .join(",");
+    renderedAgendaIds = nextAgendaIds;
     const cards = [
       ...calendar.querySelectorAll(".day[data-date], .day[data-preview-date]"),
     ];
@@ -1964,21 +1975,9 @@ WorkTimeApp.ui.createAgenda = function ({
       dateItemsKey = datesKey;
     }
     const selectedItems = dateItems.get(model.selected);
-    const countedItems = selectedItems.filter(
-      (item) => item.status !== "cancelled",
-    );
-    const total = countedItems.length;
-    const completed = countedItems.filter(
-      (item) => item.status === "completed",
-    ).length;
     $("agendaDayDetails").setAttribute(
       "aria-label",
       WorkTimeApp.i18n.date(model.selected) + " · " + t("agenda"),
-    );
-    $("agendaProgress").hidden = false;
-    updateMarkup(
-      $("agendaProgress"),
-      `<div class="agenda-progress-copy"><span>${esc(t("progress", { completed, total }))}</span><span aria-hidden="true">${Math.round((completed / (total || 1)) * 100)}%</span></div><div class="agenda-progress-track" aria-hidden="true"><span style="width:${(completed / (total || 1)) * 100}%"></span></div>`,
     );
     updateMarkup(
       $("agendaList"),
@@ -2027,11 +2026,14 @@ WorkTimeApp.ui.createAgenda = function ({
       const changed =
         previous !== undefined &&
         previous !== html &&
-        agendaContentChanged &&
+        addedIds.size > 0 &&
         !switchingMode &&
         !movingAgenda &&
         !completingAgenda;
-      const snapshots = changed ? captureContent(card) : [];
+      const removed =
+        removedSelector && !switchingMode && !movingAgenda
+          ? captureContent(card, removedSelector)
+          : [];
       if (previous !== html || !host.childElementCount)
         updateMarkup(host, html);
       renderedContents.set(date, html);
@@ -2039,7 +2041,10 @@ WorkTimeApp.ui.createAgenda = function ({
         observedHosts.add(host);
         contentObserver.observe(host);
       }
-      if (changed) revealContent(card, snapshots);
+      if (changed)
+        for (const chip of host.querySelectorAll(".agenda-chip"))
+          if (addedIds.has(chip.dataset.agendaEdit)) revealIncoming(chip);
+      if (removed.length) revealContent(card, removed, 0, []);
     }
     for (const host of observedHosts) {
       if (!calendar.contains(host)) {
@@ -2142,7 +2147,7 @@ WorkTimeApp.ui.createAgenda = function ({
     navigate = false,
     retainSelection = false,
   ) {
-    if (!keepEditor && date !== model.selected && !leaveForm()) return;
+    if (!keepEditor && !leaveForm()) return;
     if (!keepEditor && date !== model.selected) listScroll = 0;
     agendaDrag?.cancel();
     finishWeekNavigation();
@@ -2416,6 +2421,10 @@ WorkTimeApp.ui.createAgenda = function ({
       { capture: true },
     );
     for (const node of [pane, summary]) listen(node, "click", click);
+    listen(statusMenu, "click", (event) => {
+      event.stopPropagation();
+      void click(event);
+    });
     listen(viewToggle, "click", () => switchWeek((weekView + 1) % 4));
     listen(window, "resize", () => {
       syncOverviewHost();
@@ -2486,6 +2495,22 @@ WorkTimeApp.ui.createAgenda = function ({
     });
     listen($("agendaBack"), "click", returnToList);
     listen($("agendaCancel"), "click", returnToList);
+    listen(pane, "keydown", (event) => {
+      if (!formOpen || busy || event.isComposing || event.defaultPrevented)
+        return;
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        if (!$("agendaSave").disabled)
+          $("agendaForm").requestSubmit($("agendaSave"));
+      } else if (
+        event.key === "Escape" &&
+        !WorkTimeApp.ui.popover.anyOpen() &&
+        event.target.tagName !== "SELECT"
+      ) {
+        event.preventDefault();
+        returnToList();
+      }
+    });
     listen($("agendaForm"), "input", () => {
       $("agendaError").textContent = "";
       $("agendaStatus").textContent = "";
@@ -2556,6 +2581,7 @@ WorkTimeApp.ui.createAgenda = function ({
       agendaDrag.dispose();
       agendaLayout.dispose();
       schedule.dispose();
+      statusPopover.destroy();
       updateBrand(false);
       contentObserver.disconnect();
       observedHosts.clear();
@@ -2593,7 +2619,6 @@ WorkTimeApp.ui.createAgenda = function ({
         toolbarDivider,
         toolbarRegion,
         overviewDialog,
-        progress,
         drawerGrip,
       ])
         node.remove();

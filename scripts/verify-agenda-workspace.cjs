@@ -87,6 +87,26 @@ async function verify() {
     const today = await page.evaluate(() =>
       WorkTimeApp.domain.time.businessDate(new Date()),
     );
+    const todayCard = page.locator(
+      `#calendar .day[data-date="${today}"] .day-select`,
+    );
+    await page.locator("#agendaNew").click();
+    await todayCard.click();
+    assert.equal(await page.locator("#agendaForm").isVisible(), false);
+    assert.equal(await page.locator("#agendaList").isVisible(), true);
+    await page.locator("#agendaNew").click();
+    await page.locator("#agendaTitle").fill("未保存的新安排");
+    accept = false;
+    await todayCard.click();
+    assert.equal(await page.locator("#agendaForm").isVisible(), true);
+    assert.equal(
+      await page.locator("#agendaTitle").inputValue(),
+      "未保存的新安排",
+    );
+    accept = true;
+    await todayCard.click();
+    assert.equal(await page.locator("#agendaForm").isVisible(), false);
+    assert.equal(await page.locator("#agendaList").isVisible(), true);
     const create = async (title, date = today, endDate = "") => {
       await page.locator("#agendaNew").click();
       await page.locator("#agendaTitle").fill(title);
@@ -140,7 +160,7 @@ async function verify() {
     await page.waitForFunction(() =>
       document.querySelector("#agendaList .is-complete"),
     );
-    assert.match(await page.locator("#agendaProgress").textContent(), /1 \/ 6/);
+    assert.equal(await page.locator(".agenda-footer-progress").count(), 0);
     await page.locator("#agendaList").evaluate((node) => {
       node.style.maxHeight = "180px";
       node.scrollTop = 100;
@@ -255,18 +275,15 @@ async function verify() {
         const box = (selector) =>
           document.querySelector(selector).getBoundingClientRect();
         const drawer = box(".date-info-area"),
-          footer = box("#agendaProgress"),
           tabs = box(".notification-tabs"),
           heading = box(".agenda-heading");
         return (
           drawer.top > heading.bottom &&
-          drawer.top < footer.top &&
-          drawer.bottom >= footer.bottom - 1 &&
           Math.abs(drawer.bottom - tabs.top) <= 2 &&
           !!document
             .elementFromPoint(
-              footer.left + footer.width / 2,
-              footer.top + footer.height / 2,
+              drawer.left + drawer.width / 2,
+              drawer.top + drawer.height / 2,
             )
             ?.closest(".date-info-area")
         );
@@ -274,7 +291,7 @@ async function verify() {
       assert.equal(
         geometry,
         true,
-        `Drawer leaves heading visible, covers progress and opens above the tabs at ${width}`,
+        `Drawer leaves heading visible, opens above the tabs at ${width}`,
       );
       const drawerSize = await page.evaluate(() => {
         const area = document.querySelector(".date-info-area"),
@@ -396,7 +413,7 @@ async function verify() {
     );
     await page.locator("#date-tab-notifications").click();
     await page.locator(".date-info-area").waitFor({ state: "hidden" });
-    assert.equal(await page.locator("#agendaProgress").isVisible(), true);
+    assert.equal(await page.locator(".agenda-footer-progress").count(), 0);
     for (let mode = 0; mode < 2; mode++) {
       const monthModeStable = await page.evaluate(async () => {
         const title = document.querySelector("#monthTitle");

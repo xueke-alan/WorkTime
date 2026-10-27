@@ -8,3 +8,4 @@ tests/fixtures/
 # Reproducible JSON catalogs emitted by prepare-assets.
 assets/js/locales/runtime/
 assets/js/games/catalog.js
+assets/js/ui/agenda-runtime.min.js

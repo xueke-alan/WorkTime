@@ -567,7 +567,7 @@ async function verify() {
       assert.equal(await page.locator("#agendaTitle").inputValue(), "无效时段");
       assert.equal(
         await page.locator("#agendaSave").textContent(),
-        await page.evaluate(() => WorkTimeApp.i18n.t("agenda.save")),
+        await page.evaluate(() => WorkTimeApp.i18n.t("agenda.createItem")),
       );
     }
     if (

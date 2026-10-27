@@ -8,7 +8,14 @@ const site = path.join(root, "_site");
 // Only this fixed generated directory may be replaced.
 fs.rmSync(site, { recursive: true, force: true });
 fs.mkdirSync(site);
-for (const entry of ["index.html", "assets", "licenses", "tools", "data"]) {
+for (const entry of [
+  "index.html",
+  "rescue.html",
+  "assets",
+  "licenses",
+  "tools",
+  "data",
+]) {
   const source = path.join(root, entry);
   if (entry === "data" && !fs.existsSync(source)) continue;
   fs.cpSync(source, path.join(site, entry), { recursive: true });

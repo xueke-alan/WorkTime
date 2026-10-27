@@ -124,6 +124,15 @@ Thumbs.db
 !/scripts/verify-agenda-span.cjs
 !/scripts/verify-agenda-drag.cjs
 !/scripts/verify-agenda-resize.cjs
+!/scripts/verify-agenda-resize-reorder.cjs
+!/scripts/verify-agenda-resize-stable-order.cjs
+!/scripts/verify-agenda-move-landing.cjs
+!/scripts/verify-agenda-edit-motion.cjs
+!/scripts/verify-agenda-editor-ux.cjs
+!/scripts/verify-agenda-resize-cross-week.cjs
+!/scripts/verify-agenda-resize-preview-motion.cjs
+!/scripts/verify-agenda-preview-regressions.cjs
+!/scripts/verify-agenda-resize-left-start.cjs
 !/scripts/verify-agenda-workspace.cjs
 !/scripts/verify-agenda-motion.cjs
 !/scripts/verify-agenda-entry-motion.cjs
@@ -144,3 +153,8 @@ Thumbs.db
 !/scripts/verify-agenda-completion.cjs
 
 !/scripts/verify-calendar-navigation.cjs
+
+!/scripts/verify-popover.cjs
+
+!/rescue.html
+!/scripts/verify-rescue.cjs

@@ -67,8 +67,6 @@ const setScheduleRange = require("./lib/agenda-test-range.cjs");
           nodes.map((node) => [node.dataset.status, node.dataset.agendaStatus]),
         ),
       );
-    assert.match(await page.locator("#agendaProgress").textContent(), /1 \/ 3/);
-    assert.match(await page.locator("#agendaProgress").textContent(), /33%/);
     assert.equal(
       await page.locator("#agendaOverview [data-agenda-jump]").count(),
       2,
@@ -256,8 +254,6 @@ const setScheduleRange = require("./lib/agenda-test-range.cjs");
     );
     for (const status of statuses.slice(0, 3))
       await change(ids[status], "cancelled");
-    assert.match(await page.locator("#agendaProgress").textContent(), /0 \/ 0/);
-    assert.match(await page.locator("#agendaProgress").textContent(), /0%/);
     assert.equal(
       await page.locator("#agendaOverview [data-agenda-jump]").count(),
       0,
@@ -282,7 +278,7 @@ const setScheduleRange = require("./lib/agenda-test-range.cjs");
       fullPage: true,
     });
     console.log(
-      "Four states: create/edit/menu/keyboard, atomic write failure, reload, legacy and backup, move/resize preservation, cancellation progress, six languages and mobile menu verified.",
+      "Four states: create/edit/menu/keyboard, atomic write failure, reload, legacy and backup, move/resize preservation, cancellation, six languages and mobile menu verified.",
     );
   } finally {
     await browser.close();

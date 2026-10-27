@@ -71,20 +71,23 @@ WorkTimeApp.ui.createAgendaLayout = function ({
     const geometry = groups.map((cards) => {
       const metrics = cards.map((card) => {
         const style = getComputedStyle(card);
+        const rect = card.getBoundingClientRect();
         return {
           left:
             card.offsetLeft +
             card.clientLeft +
             parseFloat(style.paddingLeft) -
             leftExtension,
+          rect,
+          borderLeft: parseFloat(style.borderLeftWidth),
+          borderRight: parseFloat(style.borderRightWidth),
+          selected: card.classList.contains("selected"),
+          holiday: card.hasAttribute("data-holiday"),
           right:
             card.offsetLeft +
             card.offsetWidth -
             card.clientLeft -
             parseFloat(style.paddingRight),
-          rect: card.getBoundingClientRect(),
-          borderLeft: parseFloat(style.borderLeftWidth),
-          borderRight: parseFloat(style.borderRightWidth),
         };
       });
       const first = cards[0],
@@ -106,8 +109,8 @@ WorkTimeApp.ui.createAgendaLayout = function ({
             card.offsetTop +
             head.offsetTop +
             head.offsetHeight +
-            parseFloat(getComputedStyle(card).rowGap || "0") +
-            4
+            parseFloat(getComputedStyle(card).rowGap || "0") -
+            1
           );
         }),
       );
@@ -117,7 +120,11 @@ WorkTimeApp.ui.createAgendaLayout = function ({
             card.offsetTop +
             card.offsetHeight -
             card.clientTop -
-            parseFloat(getComputedStyle(card).paddingBottom),
+            // Month overflow sits close to the card edge to leave another
+            // compact agenda row visible above the count.
+            (state.weeks
+              ? parseFloat(getComputedStyle(card).paddingBottom)
+              : 2),
         ),
       );
       return {
@@ -176,6 +183,9 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       const key = dates.join(",");
       const row = previousRows.get(key) || document.createElement("div");
       previousRows.delete(key);
+      const rowItems = state.items.filter((item) =>
+        rules.overlaps(item, dates[0], dates[6]),
+      );
       const rowSignature = JSON.stringify([
         state.weeks,
         left,
@@ -183,12 +193,9 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         width,
         height,
         edges,
-        state.items.filter((item) => rules.overlaps(item, dates[0], dates[6])),
+        rowItems,
         WorkTimeApp.i18n.locale,
       ]);
-      const rowItems = state.items.filter((item) =>
-        rules.overlaps(item, dates[0], dates[6]),
-      );
       const contentSignature = JSON.stringify([
         state.weeks,
         rowItems.map(
@@ -216,7 +223,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       if (rowSignatures.get(row) === rowSignature) continue;
       rowSignatures.set(row, rowSignature);
       // A status change cannot affect lane placement, clipping or overflow.
-      // Patch existing chips without rebuilding slices or replaying entrances.
+      // Patch existing chips without replaying entrances.
       if (layoutSignatures.get(row) === layoutSignature) {
         const itemsById = new Map(rowItems.map((item) => [item.id, item]));
         for (const button of row.querySelectorAll(".agenda-chip")) {
@@ -323,6 +330,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
             ? takeChip(segment.item)
             : null;
         const previous = previousButtons.get(segment.item.id) || borrowed;
+        const added = !previous;
         if (
           previous &&
           (chipSignatures.get(previous) === chipSignature ||
@@ -348,9 +356,11 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         button.hidden = false;
         if (content.children[index] !== button)
           content.insertBefore(button, content.children[index] || null);
-        return { ...segment, button };
+        return { ...segment, button, added };
       });
       for (const button of previousButtons.values()) button.remove();
+      // Keep native date strokes visible between background-only ribbon pieces.
+      // Content remains a single accessible button; selected ribbons paint whole.
       // Ink alignment changes title/time line heights. Settle them before lane
       // placement and note animation endpoints are measured, so releasing the
       // animated height returns to the exact same natural card geometry.
@@ -523,7 +533,9 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         !state.moving &&
         !state.completing
       )
-        WorkTimeApp.ui.motion?.play(content, "motion-card-content");
+        for (const { button, added } of placements)
+          if (added && !button.hidden)
+            WorkTimeApp.ui.motion?.play(button, "motion-card-content");
     }
     for (const row of previousRows.values()) row.remove();
     if (focused)

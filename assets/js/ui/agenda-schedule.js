@@ -4,7 +4,7 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
   const scope = new AbortController();
   const time = WorkTimeApp.domain.time;
   const t = (key) => WorkTimeApp.i18n.t("agenda." + key);
-  const field = (name) => root.querySelector("#" + prefix + name);
+  const field = (name) => fields.get(prefix + name);
   const icon =
     '<svg class="ui-icon" aria-hidden="true"><use href="#ms-calendar"/></svg>';
   const dateField = (name, open) =>
@@ -31,6 +31,10 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
       <div class="agenda-field agenda-schedule-time" hidden><label for="${prefix}Start" data-schedule-label="start"></label><input id="${prefix}Start" type="time"></div>
       <div class="agenda-field agenda-schedule-time" hidden><label for="${prefix}End"></label><input id="${prefix}End" type="time"></div>
     </div><div class="agenda-picker-footer"><button type="button" class="ui-button" data-schedule-today data-schedule-label="pickerToday"></button><button type="button" class="ui-button primary" data-schedule-close data-schedule-label="pickerDone"></button></div></div>`;
+  const fields = new Map(
+    [...root.querySelectorAll("[id]")].map((node) => [node.id, node]),
+  );
+  const labels = [...root.querySelectorAll("[data-schedule-label]")];
   field("DateInput").required = true;
   const popup = field("SchedulePopup"),
     trigger = field("ScheduleOpen");
@@ -80,11 +84,14 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
       },
     }),
   );
-  const isOpen = () => popup.matches(":popover-open");
+  const popover = WorkTimeApp.ui.popover.create(popup, {
+    trigger: () => trigger,
+  });
+  const isOpen = () => popover.isOpen();
   function close(restoreFocus = false) {
     if (!isOpen()) return;
     resetSelection();
-    popup.hidePopover();
+    popover.hide();
     if (restoreFocus) trigger.focus({ preventScroll: true });
   }
   function place() {
@@ -118,7 +125,7 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
       7,
     );
     resetSelection();
-    popup.showPopover();
+    popover.show();
     render();
     popup
       .querySelector(
@@ -250,6 +257,21 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
         event.preventDefault();
         close(true);
       }
+      if (
+        !root.contains(popup) &&
+        event.key === "Enter" &&
+        (event.ctrlKey || event.metaKey)
+      ) {
+        const forwarded = new KeyboardEvent("keydown", {
+          key: event.key,
+          ctrlKey: event.ctrlKey,
+          metaKey: event.metaKey,
+          isComposing: event.isComposing,
+          bubbles: true,
+          cancelable: true,
+        });
+        if (!root.dispatchEvent(forwarded)) event.preventDefault();
+      }
     },
     { signal: scope.signal },
   );
@@ -306,9 +328,9 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
     const allDay = field("AllDay").checked,
       multiDay = values().endDate > values().date;
     popup.classList.toggle("is-timed", !allDay);
-    for (const label of root.querySelectorAll("[data-schedule-label]"))
+    for (const label of labels)
       label.textContent = t(label.dataset.scheduleLabel);
-    root.querySelector(`label[for="${prefix}End"]`).textContent = t(
+    popup.querySelector(`label[for="${prefix}End"]`).textContent = t(
       multiDay ? "endRequired" : "end",
     );
     field("EndDateInput").required = true;
@@ -330,7 +352,7 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
             : "editRangeEnd"
           : "selectRangeStart",
     );
-    for (const node of root.querySelectorAll(".agenda-schedule-time"))
+    for (const node of popup.querySelectorAll(".agenda-schedule-time"))
       node.hidden = allDay;
     field("Start").required = !allDay;
     field("Start").disabled = allDay;
@@ -361,7 +383,7 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
       place();
     }
   }
-  root.addEventListener(
+  popup.addEventListener(
     "input",
     (event) => {
       if (
@@ -377,8 +399,18 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
       )
         month = offsetMonth(field("EndDateInput").value.slice(0, 7), -1);
       render();
+      // Portaled controls still notify the form/editor that owns their values.
+      if (!root.contains(popup))
+        root.dispatchEvent(new Event("input", { bubbles: true }));
     },
     { signal: scope.signal },
+  );
+  popup.addEventListener(
+    "invalid",
+    () => {
+      if (!root.contains(popup)) show();
+    },
+    { capture: true, signal: scope.signal },
   );
   return {
     values,
@@ -400,6 +432,7 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
     },
     dispose() {
       close();
+      popover.destroy();
       scope.abort();
       pickers.forEach((picker) => picker.dispose());
     },

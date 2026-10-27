@@ -2414,17 +2414,6 @@ for (const [language, label] of Object.entries({
   WorkTimeApp.data.locales[language]["agenda.brand"] = label;
 }
 
-for (const [language, label] of Object.entries({
-  "zh-CN": "已完成 {completed} / {total}",
-  "zh-TW": "已完成 {completed} / {total}",
-  "zh-HK": "已完成 {completed} / {total}",
-  en: "Completed {completed} / {total}",
-  ja: "完了 {completed} / {total}",
-  ko: "완료 {completed} / {total}",
-})) {
-  WorkTimeApp.data.locales[language]["agenda.progress"] = label;
-}
-
 for (const [language, labels] of Object.entries({
   "zh-CN": ["其他待办", "其他日期暂无待办"],
   "zh-TW": ["其他待辦", "其他日期暫無待辦"],
@@ -2735,3 +2724,53 @@ for (const [language, labels] of Object.entries({
     },
   );
 }
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["日程标题", "添加备注、链接或待办细节…", "保存修改", "创建日程"],
+  "zh-TW": ["日程標題", "新增備註、連結或待辦細節…", "儲存修改", "建立日程"],
+  "zh-HK": ["日程標題", "新增備註、連結或待辦細節…", "儲存修改", "建立日程"],
+  en: [
+    "Event title",
+    "Add notes, links or details…",
+    "Save changes",
+    "Create event",
+  ],
+  ja: [
+    "予定のタイトル",
+    "メモやリンク、詳細を追加…",
+    "変更を保存",
+    "予定を作成",
+  ],
+  ko: [
+    "일정 제목",
+    "메모, 링크 또는 세부 정보 추가…",
+    "변경 저장",
+    "일정 만들기",
+  ],
+})) {
+  ["titlePlaceholder", "notePlaceholder", "saveChanges", "createItem"].forEach(
+    (key, index) => {
+      WorkTimeApp.data.locales[language]["agenda." + key] = labels[index];
+    },
+  );
+}
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "尚未保存",
+  "zh-TW": "尚未儲存",
+  "zh-HK": "尚未儲存",
+  en: "Unsaved changes",
+  ja: "未保存の変更",
+  ko: "저장하지 않은 변경 사항",
+}))
+  WorkTimeApp.data.locales[language]["agenda.unsavedChanges"] = label;
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "应急备份",
+  "zh-TW": "應急備份",
+  "zh-HK": "應急備份",
+  en: "Emergency backup",
+  ja: "緊急バックアップ",
+  ko: "긴급 백업",
+}))
+  WorkTimeApp.data.locales[language]["backup.emergency"] = label;

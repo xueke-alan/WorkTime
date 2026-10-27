@@ -766,7 +766,12 @@ WorkTimeApp.ui.createCalendar = function (options) {
         : "",
     );
     $("cards").classList.toggle("is-batch-preview", batchMode);
-    if (selectionChanged && !batchMode)
+    // Dragging owns the visual feedback. Saving a move or resize is not a day click.
+    if (
+      selectionChanged &&
+      !batchMode &&
+      !document.body.classList.contains("agenda-is-dragging")
+    )
       WorkTimeApp.ui.motion?.play(
         $("calendar").querySelector(".selected"),
         "motion-selection",

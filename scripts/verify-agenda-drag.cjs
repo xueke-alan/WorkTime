@@ -287,13 +287,26 @@ async function verify() {
       0,
     );
     await begin("拖动单日", "2026-10-22");
-    const left = await dateCard("2026-10-22").boundingBox(),
-      right = await dateCard("2026-10-23").boundingBox();
-    await page.mouse.move((left.x + left.width + right.x) / 2, left.y + 15, {
-      steps: 8,
-    });
-    assert.equal(await page.locator(".agenda-drop-target").count(), 0);
+    const left = await dateCard("2026-10-23").boundingBox(),
+      right = await dateCard("2026-10-24").boundingBox();
+    await page.mouse.move(
+      (left.x + left.width) * 0.75 + right.x * 0.25,
+      left.y + 15,
+      {
+        steps: 8,
+      },
+    );
+    assert.equal(await page.locator(".agenda-drop-target").count(), 1);
     await page.mouse.up();
+    await page.waitForFunction(
+      () => !document.querySelector(".agenda-drag-preview"),
+    );
+    assert.equal(
+      await page.locator("#agendaDateInput").inputValue(),
+      "2026-10-23",
+      "Releasing inside a column gutter commits the preview date",
+    );
+    await drag("拖动单日", "2026-10-23", "2026-10-22");
     await begin("拖动单日", "2026-10-22");
     await hover("2026-10-23");
     await page.mouse.move(0, 0);

@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>应急备份 · HWorkTime</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #edf3f0;
+        color: #203b36;
+        font:
+          16px/1.7 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 760px;
+        margin: 6vh auto;
+        padding: 28px;
+        background: white;
+        border: 1px solid #cbdad3;
+        border-radius: 16px;
+      }
+      h1 {
+        font-size: 26px;
+        margin-top: 0;
+      }
+      p {
+        overflow-wrap: anywhere;
+      }
+      button,
+      a {
+        font: inherit;
+      }
+      button {
+        padding: 10px 16px;
+        border: 1px solid #24775f;
+        border-radius: 8px;
+        background: #24775f;
+        color: white;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      a {
+        color: #20664f;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        background: #f3f6f4;
+        padding: 16px;
+        border-radius: 8px;
+      }
+      small {
+        display: block;
+        margin-top: 16px;
+      }
+      button:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #b0721d;
+        outline-offset: 4px;
+      }
+      @media (max-width: 800px) {
+        main {
+          margin: 16px;
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>应急备份</h1>
+      <p>
+        主页面打不开时，可在这里只读导出浏览器已保存的存档。请使用原浏览器、原用户配置和原站点地址。本页不会迁移、覆盖或清空存档。
+      </p>
+      <p>
+        工作存档备份可通过主页面的恢复入口导入；完整救援资料包含原始数据库、历史快照及本地设置和游戏数据，供进一步救援使用，不能作为普通备份直接导入。
+      </p>
+      <pre id="status" role="status" aria-live="polite">
+正在读取已保存的数据……</pre>
+      <div class="actions">
+        <button id="work" disabled>下载工作存档备份</button>
+        <button id="raw" disabled>下载完整救援资料</button>
+        <button id="retry" disabled>重新读取</button>
+      </div>
+      <p id="result" role="status" aria-live="polite"></p>
+      <small
+        >无法导出主页面尚未保存的修改，也无法找回已被浏览器清除的数据。若数据库读取失败，仍可下载已读取的资料，文件会记录缺失项。本地文件模式下，请从原
+        index.html
+        同目录打开；浏览器对本地文件的存储隔离可能使本页无法访问原存档，显示为空不代表原文件没有数据。</small
+      >
+      <p><a href="index.html">返回主页面</a></p>
+      <noscript
+        >请启用 JavaScript 后重新打开本页，才能读取浏览器存档。</noscript
+      >
+    </main>
+    <script>
+      "use strict";
+      (() => {
+        const TIMEOUT = 10000;
+        const element = (id) => document.getElementById(id);
+        let report, workText;
+        function message(error) {
+          return error?.message || String(error);
+        }
+        function openDatabase() {
+          return new Promise((resolve, reject) => {
+            let settled = false;
+            const finish = (error, value) => {
+              if (settled) {
+                value?.close();
+                return;
+              }
+              settled = true;
+              clearTimeout(timer);
+              if (error) reject(error);
+              else resolve(value);
+            };
+            const timer = setTimeout(
+              () => finish(Error("数据库打开超时，请关闭其他旧页面后重试。")),
+              TIMEOUT,
+            );
+            let request;
+            try {
+              request = indexedDB.open("worktime-archive");
+            } catch (error) {
+              finish(error);
+              return;
+            }
+            let missing = false;
+            request.onupgradeneeded = () => {
+              missing = true;
+              request.transaction.abort();
+            };
+            request.onsuccess = () => finish(null, request.result);
+            request.onerror = () =>
+              missing ? finish(null, null) : finish(request.error);
+            request.onblocked = () =>
+              finish(Error("数据库被其他页面阻塞，请关闭旧页面后重试。"));
+          });
+        }
+        async function readDatabase() {
+          const db = await openDatabase();
+          if (!db) return { state: "absent", stores: {}, errors: [] };
+          try {
+            const names = Array.from(db.objectStoreNames);
+            if (!names.length)
+              return { state: "empty", stores: {}, errors: [] };
+            return await new Promise((resolve, reject) => {
+              const stores = {},
+                errors = [];
+              const tx = db.transaction(names, "readonly");
+              const timer = setTimeout(() => {
+                tx.abort();
+                reject(Error("数据库读取超时；本次数据库内容未导出，请重试。"));
+              }, TIMEOUT);
+              tx.oncomplete = () => {
+                clearTimeout(timer);
+                resolve({
+                  state: errors.length ? "partial" : "read",
+                  stores,
+                  errors,
+                });
+              };
+              tx.onabort = () => {
+                clearTimeout(timer);
+                reject(tx.error || Error("数据库读取已中止。"));
+              };
+              tx.onerror = () => {};
+              for (const name of names) {
+                const request = tx.objectStore(name).getAll();
+                request.onsuccess = () => {
+                  stores[name] = request.result;
+                };
+                request.onerror = (event) => {
+                  event.preventDefault();
+                  errors.push(name + ": " + message(request.error));
+                };
+              }
+            });
+          } finally {
+            db.close();
+          }
+        }
+        function reconstruct(database) {
+          const { archives, modules, records } = database.stores;
+          if (![archives, modules, records].every(Array.isArray))
+            throw Error("数据库缺少工作存档仓库，请下载完整救援资料。");
+          const meta = archives.find((row) => row.key === "active");
+          if (!meta) {
+            if (archives.length || modules.length || records.length)
+              throw Error("工作存档元信息缺失，请下载完整救援资料。");
+            return null;
+          }
+          if (!meta.archive?.id || !Number.isInteger(meta.formatVersion))
+            throw Error("工作存档元信息损坏，请下载完整救援资料。");
+          const headers = modules.filter(
+            (row) => row.archiveId === meta.archive.id,
+          );
+          const rows = records.filter(
+            (row) => row.archiveId === meta.archive.id,
+          );
+          const ids = new Set(headers.map((row) => row.id));
+          if (
+            !headers.length ||
+            ids.size !== headers.length ||
+            rows.some((row) => !ids.has(row.moduleId))
+          )
+            throw Error("工作存档模块不完整，请下载完整救援资料。");
+          return JSON.stringify({
+            ...meta.envelope,
+            format: "worktime-archive",
+            formatVersion: meta.formatVersion,
+            archive: meta.archive,
+            exportedAt: new Date().toISOString(),
+            modules: headers.map(({ archiveId, ...module }) => ({
+              ...module,
+              records: rows
+                .filter((row) => row.moduleId === module.id)
+                .map(({ archiveId, moduleId, owner, ...row }) => row),
+            })),
+          });
+        }
+        async function read() {
+          for (const id of ["work", "raw", "retry"])
+            element(id).disabled = true;
+          element("status").textContent = "正在读取已保存的数据……";
+          element("result").textContent = "";
+          workText = null;
+          report = {
+            format: "worktime-emergency-recovery",
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            database: null,
+            localStorage: {},
+            errors: [],
+          };
+          let localRead = false;
+          try {
+            const storage = window.localStorage;
+            const keys = Array.from({ length: storage.length }, (_, i) =>
+              storage.key(i),
+            );
+            for (const key of keys.filter(
+              (key) => key && /^worktime(?:[.-]|$)/.test(key),
+            )) {
+              try {
+                report.localStorage[key] = storage.getItem(key);
+              } catch (error) {
+                report.errors.push(
+                  "localStorage " + key + ": " + message(error),
+                );
+              }
+            }
+            localRead = true;
+          } catch (error) {
+            report.errors.push("localStorage 读取失败：" + message(error));
+          }
+          try {
+            report.database = await readDatabase();
+          } catch (error) {
+            report.errors.push("IndexedDB 读取失败：" + message(error));
+          }
+          const lines = [];
+          if (report.database) {
+            report.errors.push(...report.database.errors);
+            const { state, stores } = report.database;
+            lines.push(
+              state === "absent"
+                ? "此地址下没有 IndexedDB 存档（未创建数据库）。"
+                : "数据库读取结果：" +
+                    ({
+                      read: "读取完成",
+                      partial: "部分读取成功",
+                      empty: "数据库为空",
+                    }[state] || state),
+            );
+            for (const [name, rows] of Object.entries(stores))
+              lines.push(name + "：" + rows.length + " 条");
+            const meta = stores.archives?.find((row) => row.key === "active");
+            if (meta) lines.push("存档保存时间：" + (meta.updatedAt || "未知"));
+            try {
+              if (state !== "absent" && state !== "empty")
+                workText = reconstruct(report.database);
+              if (
+                !workText &&
+                localRead &&
+                typeof report.localStorage["worktime-local-v1"] === "string"
+              ) {
+                workText = report.localStorage["worktime-local-v1"];
+                lines.push(
+                  "工作备份来源：旧版 localStorage 原文（数据时间未知）。",
+                );
+              }
+            } catch (error) {
+              report.errors.push(message(error));
+            }
+          }
+          if (localRead)
+            lines.push(
+              "已读取本地存储：" +
+                Object.keys(report.localStorage).length +
+                " 项",
+            );
+          if (workText === null)
+            lines.push(
+              "未生成可直接导入的工作备份。请查看读取结果，或下载救援资料。",
+            );
+          if (report.errors.length)
+            lines.push("读取不完整或存在异常：", ...report.errors);
+          lines.push("本次读取时间：" + report.exportedAt);
+          element("status").textContent = lines.join("\n");
+          element("work").disabled = workText === null;
+          element("raw").disabled = false;
+          element("retry").disabled = false;
+        }
+        function download(text, kind) {
+          let url;
+          try {
+            url = URL.createObjectURL(
+              new Blob([text], { type: "application/json;charset=utf-8" }),
+            );
+            const a = document.createElement("a");
+            a.href = url;
+            a.download =
+              "worktime-" +
+              kind +
+              "-" +
+              new Date().toISOString().replace(/[:.]/g, "-") +
+              ".json";
+            document.body.append(a);
+            a.click();
+            a.remove();
+            element("result").textContent = "已发起下载，请确认文件已保存。";
+          } catch (error) {
+            element("result").textContent = "下载失败：" + message(error);
+          } finally {
+            if (url) setTimeout(() => URL.revokeObjectURL(url), 60000);
+          }
+        }
+        element("work").onclick = () => {
+          if (workText !== null) download(workText, "backup");
+        };
+        element("raw").onclick = () => {
+          try {
+            download(JSON.stringify(report, null, 2), "rescue");
+          } catch (error) {
+            element("result").textContent =
+              "救援资料生成失败：" + message(error);
+          }
+        };
+        element("retry").onclick = read;
+        read();
+      })();
+    </script>
+  </body>
+</html>

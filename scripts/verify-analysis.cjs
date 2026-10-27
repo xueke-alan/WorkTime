@@ -5,6 +5,24 @@ const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 
+async function assertTimelineMarkers(page) {
+  const invalid = await page.locator(".analysis-day").evaluateAll((days) =>
+    days.flatMap((day) => {
+      const visible = [...day.querySelectorAll(".analysis-marker-shape")]
+        .filter((shape) => Number(getComputedStyle(shape).opacity) > 0)
+        .map((shape) => shape.dataset.state);
+      return visible.length === 1 && visible[0] === day.dataset.state
+        ? []
+        : [{ date: day.dataset.date, expected: day.dataset.state, visible }];
+    }),
+  );
+  assert.deepEqual(
+    invalid,
+    [],
+    "Each date shows only its current state marker",
+  );
+}
+
 async function assertDailyConnections(page) {
   const result = await page.evaluate(() => {
     const near = (left, right) => Math.abs(left - right) < 0.001,
@@ -1276,6 +1294,7 @@ async function verify() {
     assert.equal(await page.locator(".analysis-range").count(), 0);
     assert.equal(await page.locator(".analysis-lane").count(), 2);
     assert.equal(await page.locator(".analysis-day").count(), 31);
+    await assertTimelineMarkers(page);
     assert.equal(await page.locator(".analysis-metric").count(), 8);
     for (const [width, height] of [
       [1920, 1080],
@@ -1859,6 +1878,7 @@ async function verify() {
       assert.ok(
         await view.locator('.analysis-day[data-state="' + state + '"]').count(),
       );
+    await assertTimelineMarkers(view);
     await assertDailyConnections(view);
     const hoverRange = view.locator(".analysis-range").first();
     await hoverRange.hover();
