@@ -13,8 +13,7 @@
   color: var(--ink);
 }
 .analysis-heading,
-.analysis-chart-heading,
-.analysis-streak-heading {
+.analysis-chart-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -29,8 +28,7 @@
   min-width: 0;
 }
 .analysis-title h2,
-.analysis-chart-heading h2,
-.analysis-streak-heading h2 {
+.analysis-chart-heading h2 {
   font-size: 20px;
   font-weight: 600;
   line-height: 1.35;
@@ -94,27 +92,40 @@
 }
 .analysis-metrics {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 3fr) minmax(0, 2fr);
-  gap: 12px;
-  padding: 16px 0 26px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 0 14px;
 }
 .analysis-metric-group {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   min-width: 0;
   position: relative;
-  padding: 12px 0;
+  padding: 10px 4px;
+  align-content: start;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--theme-surface-subtle, color-mix(in srgb, var(--accent) 3%, var(--paper)));
 }
-.analysis-metric-group-overtime {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.analysis-metric-group-Overtime {
+  grid-column: span 2;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.analysis-metric-group > h3 {
+  grid-column: 1 / -1;
+  margin: 0 10px 8px;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 650;
+  color: var(--ink);
+}
+.analysis-metric-group-Comparison .analysis-metric > strong {
+  font-size: clamp(14px, 1.4cqi, 18px);
 }
 .analysis-metric {
   min-width: 0;
   display: grid;
-  grid-template-rows: 36px 48px 18px;
+  grid-template-rows: minmax(18px, auto) 44px 16px;
   padding: 0 10px;
 }
 .analysis-metric + .analysis-metric {
@@ -125,7 +136,7 @@
   display: block;
 }
 .analysis-metric > span {
-  font-size: 12px;
+  font-size: 11px;
   line-height: 18px;
   color: var(--muted);
 }
@@ -140,9 +151,9 @@
 }
 .analysis-metric-next {
   display: block;
-  height: 16px;
-  font-size: 11px;
-  line-height: 16px;
+  height: 12px;
+  font-size: 10px;
+  line-height: 12px;
   color: var(--muted);
 }
 .analysis-metric-footer {
@@ -150,7 +161,7 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  height: 18px;
+  height: 16px;
 }
 .analysis-metric-footer > small {
   flex: 0 1 auto;
@@ -158,16 +169,16 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 11px;
+  line-height: 16px;
   color: var(--muted);
 }
 .analysis-metric details {
   flex: 0 0 auto;
   min-width: 0;
   margin-inline-start: auto;
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 11px;
+  line-height: 16px;
 }
 .analysis-metric summary {
   display: block;
@@ -255,10 +266,7 @@
 }
 .analysis-plot text {
   fill: var(--muted);
-  font:
-    12px "Segoe UI",
-    "Microsoft YaHei",
-    sans-serif;
+  font: 12px var(--font-numeric);
   font-variant-numeric: tabular-nums;
 }
 .analysis-grid line {
@@ -331,8 +339,10 @@
   opacity: 1;
   stroke-width: 3.5;
 }
-.analysis-plot .analysis-date.is-today {
+.analysis-plot .analysis-date.is-today[data-workday] {
   fill: var(--accent);
+}
+.analysis-plot .analysis-date[data-workday="true"] {
   font-weight: 700;
 }
 .analysis-hover {
@@ -368,43 +378,25 @@
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
-.analysis-streak-heading {
-  margin-top: 40px;
-}
-.analysis-streak {
-  --analysis-marker-inset: 5px;
-  min-width: 0;
-  overflow: clip;
-}
-.analysis-distribution-body {
-  margin-top: 16px;
-  padding: 4px 0 8px;
-}
-.analysis-streak-dates {
-  margin-inline: calc(-1 * var(--analysis-marker-inset));
-  overflow: clip;
-  overflow-clip-margin: 3px;
-  position: relative;
-  height: 69px;
-}
 .analysis-day {
-  position: absolute;
-  top: 0;
-  min-width: 0;
-  display: grid;
-  grid-template-rows: 18px 9px;
-  place-items: center;
-  gap: 14px;
-  padding: 12px 0 16px;
-  color: var(--muted);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  outline: none;
 }
-.analysis-day[data-workday="true"] > span:first-child {
-  font-weight: 700;
+.analysis-axis-hit {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
 }
-.analysis-day[data-workday="false"] > span:first-child {
-  color: color-mix(in srgb, var(--muted) 55%, var(--paper));
+.analysis-day:focus-visible .analysis-axis-hit {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.analysis-date {
+  pointer-events: none;
+}
+.analysis-plot .analysis-date[data-workday="false"],
+.analysis-plot .analysis-date.is-future {
+  fill: color-mix(in srgb, var(--muted) 55%, var(--paper));
 }
 .analysis-text-changing {
   position: relative;
@@ -479,63 +471,43 @@
   color: inherit;
 }
 .analysis-longest-band {
-  position: absolute;
-  inset-block: 0;
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
-  box-shadow: inset 0 -2px var(--accent);
+  fill: color-mix(in srgb, var(--accent) 7%, transparent);
   pointer-events: none;
 }
-.analysis-marker {
-  display: block;
-  position: relative;
-  width: calc(100% - 2 * var(--analysis-marker-inset));
-  min-width: 4px;
-  height: 10px;
+.analysis-longest-underline {
+  stroke: var(--accent);
+  stroke-width: 2;
+  pointer-events: none;
 }
 .analysis-marker-shape {
-  --analysis-marker-scale: 1;
-  display: block;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) scale(var(--analysis-marker-scale));
-  width: 100%;
-  min-width: 4px;
-  height: 9px;
-  border-radius: 2px;
-  background: var(--line);
+  fill: var(--line);
+  pointer-events: none;
 }
 .analysis-marker-shape[data-active="false"] {
-  --analysis-marker-scale: 0.78;
   opacity: 0;
 }
 .analysis-marker-shape[data-state="workedOvertime"] {
-  background: var(--accent);
+  fill: var(--accent);
 }
 .analysis-marker-shape[data-state="restOvertime"] {
-  background: var(--analysis-rest-overtime);
+  fill: var(--analysis-rest-overtime);
 }
 .analysis-marker-shape[data-state="missing"] {
-  width: 9px;
-  height: 9px;
-  background: transparent;
-  border: 2px solid color-mix(in srgb, var(--muted) 78%, var(--paper));
-  border-radius: 50%;
+  fill: none;
+  stroke: color-mix(in srgb, var(--muted) 78%, var(--paper));
+  stroke-width: 2;
 }
 .analysis-marker-shape[data-state="future"] {
-  height: 1px;
-  background: transparent;
-  border-top: 1px dashed var(--muted);
-  border-radius: 0;
+  stroke: var(--muted);
+  stroke-dasharray: 3 2;
 }
 .analysis-marker-shape[data-state="future"][data-active="true"] {
   opacity: 0.4;
 }
-.analysis-day:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
 .analysis-timeline-legend {
+  overflow: clip;
+  margin-top: 8px;
+  min-height: 20px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
@@ -545,6 +517,8 @@
   color: var(--muted);
 }
 .analysis-timeline-legend > span {
+  flex: none;
+  white-space: nowrap;
   display: inline-flex;
   gap: 6px;
   align-items: center;
@@ -593,11 +567,11 @@ body .panel-head :is(#analysisToggle.is-active, #agendaMode[aria-pressed="true"]
     padding: 32px 36px;
   }
   .analysis-metrics {
-    padding: 16px 0 26px;
+    padding: 10px 0 14px;
   }
   #analysisDetails {
     display: grid;
-    grid-template-rows: auto minmax(280px, 1fr) auto auto;
+    grid-template-rows: auto minmax(320px, 1fr) auto;
     min-height: 0;
   }
   .analysis-chart-heading {
@@ -624,8 +598,41 @@ body .panel-head :is(#analysisToggle.is-active, #agendaMode[aria-pressed="true"]
   .analysis-hover {
     flex: none;
   }
-  .analysis-streak-heading {
-    margin-top: 41px;
+}
+/* Fit the complete routine view into common full-screen desktop windows. */
+@media (min-width: 1151px) and (min-height: 900px) {
+  .analysis-page {
+    padding: 22px 28px;
+  }
+  .analysis-metrics {
+    padding: 8px 0 12px;
+    gap: 8px;
+  }
+  .analysis-metric-group {
+    padding: 10px 4px;
+    align-content: start;
+  }
+  .analysis-metric-group > h3 {
+    margin-bottom: 8px;
+  }
+  .analysis-metric {
+    grid-template-rows: minmax(18px, auto) 42px 16px;
+    padding-inline: 10px;
+  }
+  .analysis-metric > strong {
+    font-size: clamp(20px, 2.1cqi, 26px);
+  }
+  .analysis-metric-group-Comparison .analysis-metric > strong {
+    font-size: clamp(13px, 1.35cqi, 18px);
+  }
+  .analysis-metric-next {
+    height: 12px;
+    font-size: 10px;
+    line-height: 12px;
+  }
+  .analysis-chart-heading {
+    padding-top: 8px;
+    margin-bottom: 8px;
   }
 }
 @container calendar-panel (max-width: 720px) {
@@ -633,17 +640,19 @@ body .panel-head :is(#analysisToggle.is-active, #agendaMode[aria-pressed="true"]
     grid-template-columns: 1fr;
     gap: 18px 14px;
   }
+  .analysis-metric-group-Overtime {
+    grid-column: auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+  .analysis-metric-group-Overtime .analysis-metric:nth-of-type(3n + 1) {
+    border-inline-start: 0;
+  }
   .analysis-metric > strong {
     font-size: 24px;
   }
 }
 @container calendar-panel (max-width: 400px) {
-  .analysis-streak {
-    overflow-x: auto;
-  }
-  .analysis-streak-dates {
-    min-width: 520px;
-  }
   .analysis-page {
     padding: 20px 18px;
   }
@@ -655,13 +664,6 @@ body .panel-head :is(#analysisToggle.is-active, #agendaMode[aria-pressed="true"]
   }
   .analysis-metric > strong {
     font-size: 21px;
-  }
-  .analysis-marker-shape[data-state="missing"] {
-    width: 7px;
-    height: 7px;
-  }
-  .analysis-day {
-    font-size: 10px;
   }
 }
 

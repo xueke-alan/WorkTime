@@ -46,7 +46,7 @@ WorkTimeApp.ui.createAnalysisGraphics = function ({
   function chart(data, width, height) {
     const right = width,
       top = 18,
-      bottom = height - 31,
+      bottom = height - 76,
       startHeight = (bottom - top - 64) * 0.36,
       lanes = [
         {
@@ -90,11 +90,15 @@ WorkTimeApp.ui.createAnalysisGraphics = function ({
     const context = window.document.createElement("canvas").getContext("2d");
     if (context)
       context.font = '12px "Segoe UI", "Microsoft YaHei", sans-serif';
-    // Keep the axis gutter stable when a month gains or loses next-day records.
-    const labelWidths = [0, 1440].map((tick) =>
-      context ? context.measureText(clock(tick)).width : clock(tick).length * 7,
-    );
-    const left = Math.max(44, Math.ceil(Math.max(...labelWidths)) + 18),
+    // Fit the gutter to visible labels, including next-day times only when shown.
+    const labelWidths = lanes
+      .flatMap((lane) => [...lane.labels])
+      .map((tick) =>
+        context
+          ? context.measureText(clock(tick)).width
+          : clock(tick).length * 7,
+      );
+    const left = Math.max(44, Math.ceil(Math.max(...labelWidths)) + 8),
       step = (right - left) / data.calendarDays.length,
       x = (index) => left + (index + 0.5) * step;
     let svg =
@@ -244,100 +248,145 @@ WorkTimeApp.ui.createAnalysisGraphics = function ({
         'l6.5 6.5 -6.5 6.5 -6.5 -6.5Z"/>';
       svg += "</g>";
     }
-    for (const [index, day] of data.calendarDays.entries())
-      svg +=
+    return svg + dateAxis(data, left, step, height) + "</svg>";
+  }
+
+  function dateAxis(data, left, step, height) {
+    const records = new Map(data.days.map((day) => [day.date, day])),
+      longest = new Set(data.longest.dates),
+      axisTop = height - 64,
+      markerWidth = Math.max(4, step - 10);
+    let markup =
+      '<rect class="analysis-longest-band" data-key="longest-band" aria-hidden="true" x="' +
+      (left +
+        (data.longest.start ? Number(data.longest.start.slice(8)) - 1 : 0) *
+          step) +
+      '" y="' +
+      axisTop +
+      '" width="' +
+      data.longest.count * step +
+      '" height="56"/><line class="analysis-longest-underline" data-key="longest-underline" aria-hidden="true" x1="' +
+      (left +
+        (data.longest.start ? Number(data.longest.start.slice(8)) - 1 : 0) *
+          step) +
+      '" x2="' +
+      (left +
+        (data.longest.start ? Number(data.longest.start.slice(8)) - 1 : 0) *
+          step +
+        data.longest.count * step) +
+      '" y1="' +
+      (height - 8) +
+      '" y2="' +
+      (height - 8) +
+      '" opacity="' +
+      (data.longest.count ? 1 : 0) +
+      '"/>';
+    for (const [index, day] of data.calendarDays.entries()) {
+      const record = records.get(day.date),
+        status =
+          day.date > data.asOf
+            ? "future"
+            : !record
+              ? "missing"
+              : record.overtime > 0
+                ? day.work
+                  ? "workedOvertime"
+                  : "restOvertime"
+                : "recorded",
+        label =
+          date(day.date) +
+          " · " +
+          t(status) +
+          (longest.has(day.date) ? " · " + t("longest") : ""),
+        cx = step / 2;
+      markup +=
         '<text data-key="date-' +
         index +
         '" class="analysis-date' +
         (day.date > data.asOf ? " is-future" : "") +
         (day.date === data.asOf ? " is-today" : "") +
+        '" data-workday="' +
+        day.work +
         '" x="' +
-        x(index) +
+        (left + (index + 0.5) * step) +
         '" y="' +
-        (height - 8) +
-        '" text-anchor="middle">' +
+        (axisTop + 20) +
+        '" text-anchor="middle" aria-hidden="true">' +
         esc(number(index + 1)) +
-        "</text>";
-    return svg + "</svg>";
+        "</text>" +
+        '<svg class="analysis-day' +
+        (longest.has(day.date) ? " is-longest" : "") +
+        '" x="' +
+        (left + index * step) +
+        '" y="' +
+        axisTop +
+        '" width="' +
+        step +
+        '" height="56" overflow="visible" data-date="' +
+        day.date +
+        '" data-state="' +
+        status +
+        '" data-workday="' +
+        day.work +
+        '" tabindex="0" role="img" aria-label="' +
+        esc(label) +
+        '"><title>' +
+        esc(label) +
+        '</title><rect class="analysis-axis-hit" x="1" y="1" width="' +
+        Math.max(0, step - 2) +
+        '" height="54" rx="3"/><g class="analysis-marker" aria-hidden="true">' +
+        ["workedOvertime", "restOvertime", "recorded", "missing", "future"]
+          .map((shape) => {
+            const attributes =
+              ' class="analysis-marker-shape" data-key="' +
+              shape +
+              '" data-state="' +
+              shape +
+              '" data-active="' +
+              (shape === status) +
+              '"';
+            if (shape === "missing")
+              return (
+                "<circle" + attributes + ' cx="' + cx + '" cy="38" r="3.5"/>'
+              );
+            if (shape === "future")
+              return (
+                "<line" +
+                attributes +
+                ' x1="' +
+                (cx - markerWidth / 2) +
+                '" x2="' +
+                (cx + markerWidth / 2) +
+                '" y1="38" y2="38"/>'
+              );
+            return (
+              "<rect" +
+              attributes +
+              ' x="' +
+              (cx - markerWidth / 2) +
+              '" y="33.5" width="' +
+              markerWidth +
+              '" height="9" rx="2"/>'
+            );
+          })
+          .join("") +
+        "</g></svg>";
+    }
+    return markup;
   }
 
-  function timeline(data) {
-    const records = new Map(data.days.map((day) => [day.date, day])),
-      longest = new Set(data.longest.dates);
-    return (
-      '<div class="analysis-streak-dates" style="--analysis-month-days:' +
-      data.calendarDays.length +
-      '"><span class="analysis-longest-band" data-key="longest-band" aria-hidden="true" style="left:' +
-      (data.longest.start
-        ? ((Number(data.longest.start.slice(8)) - 1) * 100) /
-          data.calendarDays.length
-        : 0) +
-      "%;width:" +
-      (data.longest.count * 100) / data.calendarDays.length +
-      '%"></span>' +
-      data.calendarDays
-        .map((day, index) => {
-          const record = records.get(day.date),
-            status =
-              day.date > data.asOf
-                ? "future"
-                : !record
-                  ? "missing"
-                  : record.overtime > 0
-                    ? day.work
-                      ? "workedOvertime"
-                      : "restOvertime"
-                    : "recorded",
-            label =
-              date(day.date) +
-              " · " +
-              t(status) +
-              (longest.has(day.date) ? " · " + t("longest") : "");
-          return (
-            '<span style="left:' +
-            (index * 100) / data.calendarDays.length +
-            "%;width:" +
-            100 / data.calendarDays.length +
-            '%" class="analysis-day' +
-            (longest.has(day.date) ? " is-longest" : "") +
-            '" data-date="' +
-            day.date +
-            '" data-workday="' +
-            day.work +
-            '" data-state="' +
-            status +
-            '" tabindex="0" title="' +
-            esc(label) +
-            '" aria-label="' +
-            esc(label) +
-            '"><span>' +
-            esc(number(index + 1)) +
-            '</span><span class="analysis-marker" aria-hidden="true">' +
-            ["workedOvertime", "restOvertime", "recorded", "missing", "future"]
-              .map(
-                (shape) =>
-                  '<i class="analysis-marker-shape" data-key="' +
-                  shape +
-                  '" data-state="' +
-                  shape +
-                  '" data-active="' +
-                  (shape === status) +
-                  '"></i>',
-              )
-              .join("") +
-            "</span></span>"
-          );
-        })
-        .join("") +
-      "</div>"
-    );
-  }
-
-  function timelineLegend() {
+  function timelineLegend(data) {
     return ["workedOvertime", "restOvertime", "recorded", "missing", "future"]
+      .filter(
+        (status) =>
+          status !== "future" ||
+          data.calendarDays.some((day) => day.date > data.asOf),
+      )
       .map(
         (status) =>
-          '<span data-state="' +
+          '<span data-key="' +
+          status +
+          '" data-state="' +
           status +
           '"><i aria-hidden="true"></i>' +
           '<span class="analysis-legend-label">' +
@@ -346,5 +395,5 @@ WorkTimeApp.ui.createAnalysisGraphics = function ({
       )
       .join("");
   }
-  return { clock, chart, timeline, timelineLegend };
+  return { clock, chart, timelineLegend };
 };

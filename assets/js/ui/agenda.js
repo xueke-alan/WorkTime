@@ -4,6 +4,7 @@ WorkTimeApp.ui.createAgenda = function ({
   model,
   application,
   actions,
+  clock,
   element: $,
   escape: esc,
   document,
@@ -26,6 +27,7 @@ WorkTimeApp.ui.createAgenda = function ({
   const oaActions = document.querySelector(".sidebar-actions");
   const t = (key, values) => WorkTimeApp.i18n.t("agenda." + key, values);
   let active = false,
+    analysisReturnAgenda = false,
     formOpen = false,
     auxiliaryOpen = false,
     listScroll = 0,
@@ -43,8 +45,10 @@ WorkTimeApp.ui.createAgenda = function ({
     weekLabelExit = null,
     weekLabelReveal = null;
   const viewStorageKey = "worktime.calendarView";
+  let lastSavedView = null;
   try {
-    const saved = JSON.parse(window.localStorage.getItem(viewStorageKey));
+    const raw = window.localStorage.getItem(viewStorageKey);
+    const saved = JSON.parse(raw);
     if (
       saved &&
       ["attendance", "agenda"].includes(saved.mode) &&
@@ -52,17 +56,27 @@ WorkTimeApp.ui.createAgenda = function ({
     ) {
       active = saved.mode === "agenda";
       weekView = saved.weeks;
+      model.analysisMode = saved.analysis === true;
+      if (model.analysisMode) {
+        analysisReturnAgenda = active;
+        active = false;
+      }
+      lastSavedView = raw;
     }
   } catch {}
   function rememberView() {
     try {
-      window.localStorage.setItem(
-        viewStorageKey,
-        JSON.stringify({
-          mode: active ? "agenda" : "attendance",
-          weeks: weekView,
-        }),
-      );
+      const saved = JSON.stringify({
+        mode:
+          active || (model.analysisMode && analysisReturnAgenda)
+            ? "agenda"
+            : "attendance",
+        weeks: weekView,
+        analysis: model.analysisMode,
+      });
+      if (saved === lastSavedView) return;
+      window.localStorage.setItem(viewStorageKey, saved);
+      lastSavedView = saved;
     } catch {}
   }
   const make = (tag, id, className, parent) => {
@@ -697,7 +711,6 @@ WorkTimeApp.ui.createAgenda = function ({
     model.agendaViewWeeks = enabled;
     model.agendaViewAnchor = model.selected;
     model.month = model.selected.slice(0, 7);
-    rememberView();
     switchingMode = true;
     preparingWeekLayout = true;
     try {
@@ -1516,8 +1529,12 @@ WorkTimeApp.ui.createAgenda = function ({
   });
   function updateBrand(agendaMode) {
     const subtitle = document.querySelector(".sidebar-brand-subtitle");
-    const key = agendaMode ? "agenda.brand" : "short.brand";
-    const titleKey = agendaMode ? key : "copy.5754e634a8";
+    const key = model.analysisMode
+      ? "analysis.toggle"
+      : agendaMode
+        ? "agenda.brand"
+        : "short.brand";
+    const titleKey = model.analysisMode || agendaMode ? key : "copy.5754e634a8";
     // This shared rolling view owns the text; locale renders must not replace it.
     subtitle.removeAttribute("data-i18n-text");
     subtitle.setAttribute("data-i18n-title", titleKey);
@@ -1884,6 +1901,8 @@ WorkTimeApp.ui.createAgenda = function ({
   }
   function render() {
     if (disposed) return;
+    if (!model.analysisMode) analysisReturnAgenda = false;
+    rememberView();
     renderToolbar();
     updateOaActions();
     if (!active || busy) {
@@ -2275,7 +2294,6 @@ WorkTimeApp.ui.createAgenda = function ({
       model.month = model.selected.slice(0, 7);
     }
     model.agendaViewWeeks = active ? weekView : 0;
-    rememberView();
   }
   function bind() {
     reset();
@@ -2350,8 +2368,22 @@ WorkTimeApp.ui.createAgenda = function ({
       document.querySelector(".panel-head"),
       "click",
       (event) => {
-        if (!active) return;
         const id = event.target.closest("button,[role=button]")?.id;
+        if (
+          model.analysisMode &&
+          analysisReturnAgenda &&
+          id === "analysisToggle"
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          actions.transitionAnalysis(
+            false,
+            () => setActive(true),
+            revealSidebars,
+          );
+          return;
+        }
+        if (!active) return;
         if (
           ![
             "prevMonth",
@@ -2370,7 +2402,10 @@ WorkTimeApp.ui.createAgenda = function ({
           finishTransitions();
           actions.transitionAnalysis(
             true,
-            () => setActive(false),
+            () => {
+              analysisReturnAgenda = true;
+              setActive(false);
+            },
             revealSidebars,
           );
           return;
@@ -2381,7 +2416,13 @@ WorkTimeApp.ui.createAgenda = function ({
         )
           return;
         if (id === "todayButton") {
-          navigateAgenda(model.today);
+          if (!leaveForm()) return;
+          model.today = clock.today();
+          finishTransitions();
+          actions.finishCalendarNavigation();
+          select(model.today);
+          motion?.stop(calendar.querySelector(".selected"));
+          actions.highlightToday();
         } else if (weekView) {
           const next = WorkTimeApp.domain.time.localDate(
             model.agendaViewAnchor,

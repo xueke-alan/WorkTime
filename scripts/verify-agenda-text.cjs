@@ -5,7 +5,10 @@ const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 async function verify() {
-  const browser = await chromium.launch({ channel: "msedge", headless: true });
+  const browser = await chromium.launch({
+    channel: process.env.WORKTIME_BROWSER_CHANNEL || "msedge",
+    headless: true,
+  });
   try {
     for (const [scale, zoom] of [
       [1, 1],
@@ -24,7 +27,9 @@ async function verify() {
       page.on("pageerror", (error) => errors.push(error.message));
       await page.route(/^https?:/, (route) => route.abort());
       await page.clock.setFixedTime(new Date("2026-10-20T04:00:00Z"));
-      await page.goto(pathToFileURL(path.resolve("index.html")).href);
+      await page.goto(
+        pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
+      );
       await page.waitForFunction(
         () =>
           document.documentElement.dataset.appState === "ready" &&
@@ -170,6 +175,36 @@ async function verify() {
         }
       }
       if (scale === 1 && zoom === 1) {
+        const laneOffsets = () =>
+          page
+            .locator(".agenda-week-lane")
+            .first()
+            .evaluate((row) =>
+              [...row.querySelectorAll(".agenda-chip")].map((chip) =>
+                parseFloat(chip.style.top),
+              ),
+            );
+        const beforeFont = await laneOffsets();
+        const fontMetrics = await page.addStyleTag({
+          content: ".agenda-chip-title { padding-block: 12px !important; }",
+        });
+        await page.evaluate(async () => {
+          document.fonts.dispatchEvent(new Event("loadingdone"));
+          await new Promise(requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
+        });
+        const afterFont = await laneOffsets();
+        assert.ok(
+          afterFont[1] >= beforeFont[1] + 20,
+          "Font metric invalidation must remeasure chip heights and reposition later lanes",
+        );
+        await fontMetrics.evaluate((node) => node.remove());
+        await page.evaluate(async () => {
+          document.fonts.dispatchEvent(new Event("loadingdone"));
+          await new Promise(requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
+        });
+        assert.deepEqual(await laneOffsets(), beforeFont);
         const strip = page
           .locator(".agenda-week-lane .agenda-chip:visible")
           .first();

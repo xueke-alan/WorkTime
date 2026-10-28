@@ -1579,3 +1579,8 @@ body .agenda-mode .panel-head .calendar-toolbar-actions {
 .agenda-chip.agenda-sliced:is(.is-selected, .agenda-reorder-moving, .agenda-preview-peer) > .agenda-slice { display: none; }
 .agenda-sliced:is(.is-selected, .agenda-reorder-moving, .agenda-preview-peer).continues-before::before,
 .agenda-sliced:is(.is-selected, .agenda-reorder-moving, .agenda-preview-peer).continues-after::after { content: ""; }
+
+/* Keep weekly text fixed at the segment start and clip notes to that date. */
+.agenda-week-lane .agenda-chip > :is(.agenda-chip-time, .agenda-chip-note) {
+  clip-path: inset(0 max(0px, calc(100% - var(--agenda-text-width, 100%))) 0 0);
+}

@@ -18,10 +18,11 @@ WorkTimeApp.ui.createAgendaLayout = function ({
     signature = "",
     disposed = false;
   const scrolls = new Map();
-  const rowSignatures = new WeakMap();
-  const layoutSignatures = new WeakMap();
+  let rowSignatures = new WeakMap();
+  let layoutSignatures = new WeakMap();
   const contentSignatures = new WeakMap();
   const chipSignatures = new WeakMap();
+  let selectionLayouts = new WeakMap();
   const watched = new Set();
   function stop() {
     if (frame !== null) cancelAnimationFrame(frame);
@@ -44,6 +45,109 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       dates: row.dataset.dates.split(","),
       rect: row.getBoundingClientRect(),
     }));
+  }
+  function paintDatePieces(measurements, metrics, edges, dates) {
+    const heights = [];
+    for (const {
+      segment,
+      bounds,
+      width: chipWidth,
+      padding,
+      radius,
+      borderWidth,
+      title,
+      rightTextEdge,
+      titleLeft,
+    } of measurements) {
+      const { button } = segment;
+      heights[segment.lane] = Math.max(
+        heights[segment.lane] || 0,
+        bounds.height,
+      );
+      if (segment.end === segment.start) continue;
+      const scaleX = bounds.width / parseFloat(chipWidth);
+      const border = parseFloat(borderWidth);
+      // Each ordinary overflow container paints only inside one date. The
+      // original button remains the single focus, drag and resize target.
+      const pixelRatio = window.devicePixelRatio || 1;
+      const localEdge = (screen, inward) =>
+        ((inward
+          ? Math.ceil(screen * pixelRatio)
+          : Math.floor(screen * pixelRatio)) /
+          pixelRatio -
+          bounds.left) /
+        scaleX;
+      const slices = [...button.querySelectorAll(":scope > .agenda-slice")];
+      let sliceIndex = 0;
+      const addSlice = (start, end, bridge = false) => {
+        const slice = slices[sliceIndex++] || document.createElement("span");
+        slice.className = "agenda-slice" + (bridge ? " agenda-bridge" : "");
+        slice.setAttribute("aria-hidden", "true");
+        Object.assign(slice.style, {
+          left: start - border + "px",
+          width: Math.max(0, end - start) + "px",
+        });
+        const face = slice.firstElementChild || document.createElement("span");
+        face.className = "agenda-chip-face";
+        Object.assign(face.style, {
+          left: -start + "px",
+          width: chipWidth,
+          padding,
+          borderLeftWidth: borderWidth,
+          borderRadius: radius,
+        });
+        if (face.parentElement !== slice) slice.append(face);
+        if (slice.parentElement !== button) button.append(slice);
+      };
+      for (let column = segment.start; column <= segment.end; column++) {
+        const card = metrics[column];
+        const start =
+          column === segment.start
+            ? 0
+            : localEdge(
+                card.rect.left +
+                  (card.borderLeft + (edges[column] ? 1 : 0)) * scaleX,
+                true,
+              );
+        const end =
+          column === segment.end
+            ? bounds.width / scaleX
+            : localEdge(
+                card.rect.right -
+                  (card.borderRight + (edges[column] ? 1 : 0)) * scaleX,
+                false,
+              );
+        addSlice(start, end);
+        if (column < segment.end) {
+          // Use the same fill in the gutter and meet the exact date edges.
+          // Extra rounding/clearance creates visible white strips at seams.
+          addSlice(
+            localEdge(card.rect.right, true),
+            localEdge(metrics[column + 1].rect.left, false),
+            true,
+          );
+        }
+      }
+      for (const slice of slices.slice(sliceIndex)) slice.remove();
+      // Date selection changes seam clearance, never the text position.
+      // Keep each weekly segment anchored to its first visible date.
+      const targetColumn = segment.start;
+      button.dataset.agendaTextDate = dates[targetColumn];
+      if (title && titleLeft !== undefined) {
+        const target = metrics[targetColumn];
+        const available = Math.min(
+          target.right - target.left - (titleLeft - bounds.left) / scaleX,
+          (rightTextEdge - titleLeft) / scaleX,
+        );
+        title.style.maxWidth = Math.max(0, available) + "px";
+        button.style.setProperty(
+          "--agenda-text-width",
+          Math.max(0, available) + "px",
+        );
+      }
+      button.classList.add("agenda-sliced");
+    }
+    return heights;
   }
   function render({ animate = true } = {}) {
     if (disposed) return;
@@ -222,9 +326,37 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       if (row.parentElement !== layer) layer.append(row);
       if (rowSignatures.get(row) === rowSignature) continue;
       rowSignatures.set(row, rowSignature);
+      // Selection changes only date seam clearance.
+      // Reuse measured geometry and existing paint nodes instead of rebuilding
+      // templates and refreshing every text alignment on the animation's first frame.
+      const selectionKey = JSON.stringify([
+        state.weeks,
+        dates,
+        left,
+        top,
+        width,
+        height,
+        rowItems,
+        WorkTimeApp.i18n.locale,
+        metrics.map(({ rect }) => [
+          rect.left,
+          rect.top,
+          rect.width,
+          rect.height,
+        ]),
+      ]);
+      const cached = selectionLayouts.get(row);
+      if (cached?.key === selectionKey) {
+        paintDatePieces(cached.measurements, metrics, edges, dates);
+        continue;
+      }
+
       // A status change cannot affect lane placement, clipping or overflow.
       // Patch existing chips without replaying entrances.
       if (layoutSignatures.get(row) === layoutSignature) {
+        // A later undo may restore the exact item data of a cached selection.
+        // Its measurements must not bypass repainting the current status.
+        selectionLayouts.delete(row);
         const itemsById = new Map(rowItems.map((item) => [item.id, item]));
         for (const button of row.querySelectorAll(".agenda-chip")) {
           const item = itemsById.get(button.dataset.agendaEdit);
@@ -381,6 +513,10 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         const { button } = segment;
         const bounds = button.getBoundingClientRect();
         const style = getComputedStyle(button);
+        const title = button.querySelector(".agenda-chip-title-text");
+        const textShift = title
+          ? parseFloat(getComputedStyle(title).translate) || 0
+          : 0;
         return {
           segment,
           bounds,
@@ -388,100 +524,30 @@ WorkTimeApp.ui.createAgendaLayout = function ({
           padding: style.padding,
           radius: style.borderRadius,
           borderWidth: style.borderLeftWidth,
-          title: button.querySelector(".agenda-chip-title-text"),
-          titleLeft: button
-            .querySelector(".agenda-chip-title-text")
-            ?.getBoundingClientRect().left,
+          title,
+          rightTextEdge: Math.min(
+            Infinity,
+            ...[
+              ...button.querySelectorAll(
+                ":scope > .agenda-chip-title > .agenda-chip-status, :scope > .agenda-chip-title > .agenda-chip-continuation:last-child",
+              ),
+            ].map(
+              (icon) =>
+                icon.getBoundingClientRect().left -
+                ((parseFloat(getComputedStyle(icon.parentElement).columnGap) ||
+                  0) *
+                  bounds.width) /
+                  parseFloat(style.width),
+            ),
+          ),
+          titleLeft: title
+            ? title.getBoundingClientRect().left -
+              (textShift * bounds.width) / parseFloat(style.width)
+            : undefined,
         };
       });
-      for (const {
-        segment,
-        bounds,
-        width: chipWidth,
-        padding,
-        radius,
-        borderWidth,
-        title,
-        titleLeft,
-      } of measurements) {
-        const { button } = segment;
-        heights[segment.lane] = Math.max(
-          heights[segment.lane] || 0,
-          bounds.height,
-        );
-        if (segment.end === segment.start) continue;
-        const scaleX = bounds.width / parseFloat(chipWidth);
-        const border = parseFloat(borderWidth);
-        // Each ordinary overflow container paints only inside one date. The
-        // original button remains the single focus, drag and resize target.
-        const pixelRatio = window.devicePixelRatio || 1;
-        const localEdge = (screen, inward) =>
-          ((inward
-            ? Math.ceil(screen * pixelRatio)
-            : Math.floor(screen * pixelRatio)) /
-            pixelRatio -
-            bounds.left) /
-          scaleX;
-        const addSlice = (start, end, bridge = false) => {
-          const slice = document.createElement("span");
-          slice.className = "agenda-slice" + (bridge ? " agenda-bridge" : "");
-          slice.setAttribute("aria-hidden", "true");
-          Object.assign(slice.style, {
-            left: start - border + "px",
-            width: Math.max(0, end - start) + "px",
-          });
-          const face = document.createElement("span");
-          face.className = "agenda-chip-face";
-          Object.assign(face.style, {
-            left: -start + "px",
-            width: chipWidth,
-            padding,
-            borderLeftWidth: borderWidth,
-            borderRadius: radius,
-          });
-          slice.append(face);
-          button.append(slice);
-        };
-        for (let column = segment.start; column <= segment.end; column++) {
-          const card = metrics[column];
-          const start =
-            column === segment.start
-              ? 0
-              : localEdge(
-                  card.rect.left +
-                    (card.borderLeft + (edges[column] ? 1 : 0)) * scaleX,
-                  true,
-                );
-          const end =
-            column === segment.end
-              ? bounds.width / scaleX
-              : localEdge(
-                  card.rect.right -
-                    (card.borderRight + (edges[column] ? 1 : 0)) * scaleX,
-                  false,
-                );
-          addSlice(start, end);
-          if (column < segment.end) {
-            // Use the same fill in the gutter and meet the exact date edges.
-            // Extra rounding/clearance creates visible white strips at seams.
-            addSlice(
-              localEdge(card.rect.right, true),
-              localEdge(metrics[column + 1].rect.left, false),
-              true,
-            );
-          }
-        }
-        // Keep the heading in the first visible date of this week segment.
-        // The continuation icon consumes space naturally through titleLeft;
-        // the status and trailing continuation stay at the far end of the strip.
-        if (title && titleLeft !== undefined) {
-          const first = metrics[segment.start];
-          const available =
-            first.right - first.left - (titleLeft - bounds.left) / scaleX;
-          title.style.maxWidth = Math.max(0, available) + "px";
-        }
-        button.classList.add("agenda-sliced");
-      }
+      heights.push(...paintDatePieces(measurements, metrics, edges, dates));
+      selectionLayouts.set(row, { key: selectionKey, measurements });
       const positions = [];
       let total = 0;
       for (const laneHeight of heights) {
@@ -553,6 +619,11 @@ WorkTimeApp.ui.createAgendaLayout = function ({
   const observer = new ResizeObserver(schedule);
   observer.observe(calendar);
   const invalidate = () => {
+    // A font can change chip height without changing any date-card geometry.
+    // Clear every layout shortcut so the next render actually remeasures it.
+    rowSignatures = new WeakMap();
+    layoutSignatures = new WeakMap();
+    selectionLayouts = new WeakMap();
     signature = "";
     schedule();
   };

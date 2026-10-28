@@ -7,6 +7,9 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   const calendarMotion = WorkTimeApp.ui.motion.calendar;
   const reducedMotion = animationCompat.preference();
   let todayAttention = null,
+    todayGlow = null,
+    todayGlowAnimation = null,
+    todayGlowFrame = null,
     analysisTransition = null,
     monthAnimations = [],
     monthTransition = null,
@@ -16,6 +19,12 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   function stopTodayAttention() {
     todayAttention?.cancel();
     todayAttention = null;
+    todayGlowAnimation?.cancel();
+    todayGlowAnimation = null;
+    if (todayGlowFrame !== null) cancelAnimationFrame(todayGlowFrame);
+    todayGlowFrame = null;
+    todayGlow?.remove();
+    todayGlow = null;
   }
 
   function commitAnalysisTransition(transition) {
@@ -147,13 +156,61 @@ WorkTimeApp.ui.createNavigationController = function (options) {
           { offset: 0.3, backgroundColor: bright, boxShadow: ring(3, 10, 32) },
           { offset: 1, backgroundColor: background, boxShadow: ring(8, 16, 0) },
         ];
-    const attention = animationCompat.animate(card, frames, {
+    const timing = {
       duration: 800,
       easing: "ease-out",
-    });
+      // Let the page arrive first; overlap only its final 120ms with the glow.
+      delay: Math.max(
+        0,
+        ...(monthTransition?.element.getAnimations() || []).map(
+          (animation) =>
+            animation.effect.getComputedTiming().endTime -
+            Number(animation.currentTime || 0) -
+            120,
+        ),
+      ),
+    };
+    const agenda = $("calendar").closest(".agenda-mode") !== null;
+    if (agenda) {
+      // Paint outside the clipped calendar/navigation page and above event lanes.
+      // This transparent layer follows the live card without intercepting events.
+      const host = $("panelContent"),
+        glow = document.createElement("span");
+      glow.className = "calendar-today-glow";
+      glow.setAttribute("aria-hidden", "true");
+      glow.style.borderRadius = style.borderRadius;
+      host.append(glow);
+      todayGlow = glow;
+      const follow = () => {
+        if (todayGlow !== glow) return;
+        if (!card.isConnected) return stopTodayAttention();
+        const bounds = card.getBoundingClientRect(),
+          origin = host.getBoundingClientRect();
+        Object.assign(glow.style, {
+          left: bounds.left - origin.left + "px",
+          top: bounds.top - origin.top + "px",
+          width: bounds.width + "px",
+          height: bounds.height + "px",
+        });
+        todayGlowFrame = requestAnimationFrame(follow);
+      };
+      follow();
+      todayGlowAnimation = animationCompat.animate(
+        glow,
+        frames.map(({ offset, boxShadow }) => ({ offset, boxShadow })),
+        timing,
+      );
+    }
+    const attention = animationCompat.animate(
+      card,
+      agenda
+        ? frames.map((frame) => ({ ...frame, boxShadow: style.boxShadow }))
+        : frames,
+      timing,
+    );
     todayAttention = attention;
     attention.finished.then(() => {
-      if (todayAttention === attention) todayAttention = null;
+      if (todayAttention === attention) stopTodayAttention();
     });
   }
 
@@ -658,6 +715,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     events.handler($("todayButton"), "onclick", () => {
       if (model.batchMode) return;
       model.today = clock.today();
+      model.selected = model.calendarSelected = model.today;
       navigateMonth(model.today.slice(0, 7));
       if (!model.analysisMode) highlightToday();
     });
@@ -790,6 +848,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     transitionAnalysis,
     animateCalendarNavigation: animateMonth,
     retainCalendarSelection,
+    highlightToday,
     finishCalendarNavigation() {
       stopAnalysisTransition();
       stopMonthTransition();

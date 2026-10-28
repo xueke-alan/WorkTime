@@ -119,6 +119,16 @@ const WorkTimeDomainStatistics = (() => {
         ? values[middle]
         : (values[middle - 1] + values[middle]) / 2;
     };
+    const overtimeDays = days.filter((day) => day.overtime > 0),
+      overtimeMinutes = overtimeDays.reduce(
+        (sum, day) => sum + day.overtime,
+        0,
+      ),
+      maximumOvertime = overtimeDays.length
+        ? extreme("overtime", Math.max)
+        : days.length
+          ? { minutes: 0, dates: [] }
+          : null;
     return {
       first,
       last,
@@ -139,7 +149,16 @@ const WorkTimeDomainStatistics = (() => {
       averageEnd: days.length
         ? days.reduce((sum, day) => sum + day.end, 0) / days.length
         : null,
-      overtimeDays: days.filter((day) => day.overtime > 0).length,
+      overtimeDays: overtimeDays.length,
+      overtimeMinutes,
+      averageOvertime: days.length
+        ? overtimeMinutes / (overtimeDays.length || 1)
+        : null,
+      maximumOvertime,
+      lateCounts: [1140, 1200, 1260].map((threshold) => ({
+        threshold,
+        count: days.filter((day) => day.end > threshold).length,
+      })),
       medianStart: median("start"),
       medianEnd: median("end"),
       lateDays: days.filter((day) => day.end > 1260).length,
@@ -149,6 +168,59 @@ const WorkTimeDomainStatistics = (() => {
         start: longest[0] || null,
         end: longest.at(-1) || null,
       },
+    };
+  }
+  /** Compare observed workdays at the same calendar-date progress. */
+  /** @param {WorkStateData} state @param {string} month @param {string} asOf @param {boolean} [includeManual] */
+  function monthlyAnalysisComparison(
+    state,
+    month,
+    asOf,
+    includeManual = false,
+  ) {
+    const [year, monthNumber] = month.split("-").map(Number),
+      previousMonth = dateKey(new Date(year, monthNumber - 2, 1)).slice(0, 7),
+      [, previousLast] = WorkTimeApp.domain.time.monthBounds(previousMonth),
+      current = monthlyAnalysis(state, month, asOf, includeManual, {
+        workdaysOnly: true,
+      }),
+      previousEnd =
+        month === asOf.slice(0, 7)
+          ? previousMonth +
+            "-" +
+            String(
+              Math.min(Number(asOf.slice(8)), Number(previousLast.slice(8))),
+            ).padStart(2, "0")
+          : previousLast,
+      previous = monthlyAnalysis(
+        state,
+        previousMonth,
+        previousEnd < asOf ? previousEnd : asOf,
+        includeManual,
+        {
+          workdaysOnly: true,
+        },
+      ),
+      comparable = current.count > 0 && previous.count > 0;
+    return {
+      currentStart: current.first,
+      currentEnd:
+        current.last < asOf || current.first > asOf ? current.last : asOf,
+      previousStart: previous.first,
+      previousEnd,
+      currentCount: current.count,
+      previousCount: previous.count,
+      averageEndChange: comparable
+        ? current.averageEnd - previous.averageEnd
+        : null,
+      overtimeRatioChange: comparable
+        ? 100 *
+          (current.overtimeDays / current.count -
+            previous.overtimeDays / previous.count)
+        : null,
+      overtimeMinutesChange: comparable
+        ? current.overtimeMinutes - previous.overtimeMinutes
+        : null,
     };
   }
   /** @param {WorkStateData} state */
@@ -357,6 +429,7 @@ const WorkTimeDomainStatistics = (() => {
   }
   return {
     monthlyAnalysis,
+    monthlyAnalysisComparison,
     oaStaleness,
     attendanceHoursThrough,
     cumulativeAverageOvertime,

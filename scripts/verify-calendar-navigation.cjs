@@ -159,10 +159,12 @@ async function verify() {
         if (sample.visibleDates.length && !id.startsWith("[data-year-date")) {
           assert.deepEqual(
             sample.selectedDates,
-            sample.visibleDates.includes(sample.previousSelection)
-              ? [sample.previousSelection]
-              : [],
-            "Keep the original visible card selected; clear selection when it leaves, without selecting a replacement",
+            id === "todayButton"
+              ? ["2026-10-20"]
+              : sample.visibleDates.includes(sample.previousSelection)
+                ? [sample.previousSelection]
+                : [],
+            "Returning to today selects today; other navigation retains only a still-visible selection",
           );
         }
         if (!sample.weekView) {

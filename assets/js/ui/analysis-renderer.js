@@ -165,27 +165,20 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
     let range = dateRanges.get(container);
     if (!range) {
       const labels = [...container.children].filter((child) =>
-        child.matches(
-          ".analysis-date:not([data-exiting]), .analysis-day:not([data-exiting])",
-        ),
+        child.matches(".analysis-date:not([data-exiting])"),
       );
       if (labels.length < 2) return null;
       const first = labels[0],
         last = labels.at(-1),
-        ordinal = (label) =>
-          label.matches(".analysis-day")
-            ? Number(label.dataset.date.slice(8)) - 1
-            : Number(label.dataset.key.slice(5)),
-        position = (label) =>
-          label.matches(".analysis-day")
-            ? parseFloat(label.style.left)
-            : Number(label.getAttribute("x"));
+        ordinal = (label) => Number(label.dataset.key.slice(5)),
+        position = (label) => Number(label.getAttribute("x")),
+        step =
+          (position(last) - position(first)) / (ordinal(last) - ordinal(first));
       range = {
         first: ordinal(first),
         start: position(first),
-        step:
-          (position(last) - position(first)) / (ordinal(last) - ordinal(first)),
-        width: parseFloat(first.style.width),
+        step,
+        width: step,
       };
       dateRanges.set(container, range);
     }
@@ -211,19 +204,22 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
         delay,
       );
     } else {
-      for (const [property, value] of [
-        ["left", position.position],
+      for (const [attribute, value] of [
+        ["x", position.position - position.width / 2],
         ["width", position.width],
       ]) {
-        const current = parseFloat(element.style[property]),
-          from = entering ? value : current,
-          to = entering ? current : value;
-        queue((p) => {
-          element.style[property] = from + (to - from) * p + "%";
-        }, delay);
+        const current = element.getAttribute(attribute);
+        interpolateAttribute(
+          element,
+          attribute,
+          entering ? String(value) : current,
+          entering ? current : String(value),
+          delay,
+        );
       }
     }
   }
+
   function interpolateAttribute(element, name, before, after, delay) {
     const pattern = /-?\d*\.?\d+(?:e[-+]?\d+)?/gi;
     const from = String(before).match(pattern)?.map(Number),
@@ -294,14 +290,51 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
       ? delay + Math.max(0, Number(element.dataset.date.slice(8)) - 1) * 6
       : delay;
   }
+  const legendStyles = ["width", "margin-inline-start", "transform", "opacity"];
+  function clearLegendStyles(element) {
+    legendStyles.forEach((name) => element.style.removeProperty(name));
+  }
+  function revealFutureLegend(element, entering) {
+    const currentWidth = element.getBoundingClientRect().width,
+      savedWidth = element.style.width,
+      gap =
+        parseFloat(window.getComputedStyle(element.parentElement).columnGap) ||
+        0,
+      fromWidth = entering ? 0 : currentWidth,
+      fromMargin = entering
+        ? -gap
+        : parseFloat(element.style.marginInlineStart) || 0,
+      fromOpacity = entering
+        ? 0
+        : Number(window.getComputedStyle(element).opacity),
+      fromX = entering
+        ? 18
+        : new window.DOMMatrix(window.getComputedStyle(element).transform).m41;
+    element.style.removeProperty("width");
+    const width = element.getBoundingClientRect().width;
+    element.style.width = savedWidth;
+    // Grow the occupied space as well as the mark so adjacent legends move with it.
+    queue(
+      (p) => {
+        element.style.width = fromWidth + (width - fromWidth) * p + "px";
+        element.style.marginInlineStart = fromMargin * (1 - p) + "px";
+        element.style.transform = `translateX(${fromX * (1 - p)}px)`;
+        element.style.opacity = String(fromOpacity + (1 - fromOpacity) * p);
+      },
+      0,
+      220,
+    );
+    cleanups.push((finish) => {
+      if (finish) clearLegendStyles(element);
+    });
+  }
   function syncNode(
     element,
     target,
     delay = 100,
     inheritedStyleChange = false,
   ) {
-    if (element.matches?.(".analysis-plot, .analysis-streak-dates"))
-      datePosition(element, 0);
+    if (element.matches?.(".analysis-plot")) datePosition(element, 0);
     const rangeChanged =
       element.matches?.(".analysis-range") && !element.isEqualNode(target);
     delay = rangeDelay(element, delay);
@@ -398,9 +431,12 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
         element.append(incoming, outgoing);
         // One row carries numerator, SVG divider and denominator. Only the
         // incoming row owns layout; the old placeholder cannot widen it.
+        // Match numeric metrics: values enter from above when replacing a dash,
+        // and the dash enters from below when the values are cleared.
+        const direction = before === "—" ? -1 : 1;
         queue((p) => {
-          incoming.style.transform = `translateY(${(1 - p) * 100}%)`;
-          outgoing.style.transform = `translateY(${-p * 100}%)`;
+          incoming.style.transform = `translateY(${direction * (1 - p) * 100}%)`;
+          outgoing.style.transform = `translateY(${-direction * p * 100}%)`;
         }, 0);
         cleanups.push(() => element.replaceChildren(...incoming.childNodes));
         return;
@@ -450,9 +486,9 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
           )
         ? ["fill", "stroke"]
         : element.matches?.(".analysis-marker-shape")
-          ? ["opacity", "--analysis-marker-scale"]
+          ? ["opacity"]
           : element.matches?.(".analysis-day")
-            ? ["background-color", "opacity"]
+            ? ["opacity"]
             : element.matches?.(".analysis-grid line")
               ? ["opacity"]
               : [];
@@ -502,18 +538,7 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
           attribute.value,
           delay,
         );
-      else if (
-        attribute.name === "style" &&
-        element.matches(".analysis-day, .analysis-longest-band")
-      ) {
-        for (const property of ["left", "width"]) {
-          const a = parseFloat(element.style[property]),
-            b = parseFloat(target.style[property]);
-          queue((p) => {
-            element.style[property] = a + (b - a) * p + "%";
-          }, delay);
-        }
-      } else element.setAttribute(attribute.name, attribute.value);
+      else element.setAttribute(attribute.name, attribute.value);
     }
     const saved = properties.map((property) =>
       element.style.getPropertyValue(property),
@@ -551,6 +576,17 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
         old.delete(key);
         if (element.children[index] !== existing)
           element.insertBefore(existing, element.children[index] || null);
+        if (
+          element.id === "analysisTimelineLegend" &&
+          child.dataset.state === "future" &&
+          existing.style.width
+        ) {
+          if (animateUpdate) {
+            revealFutureLegend(existing, false);
+            return;
+          }
+          clearLegendStyles(existing);
+        }
         syncNode(existing, child, delay, styleChanged || rangeChanged);
       } else {
         const added = child.cloneNode(true);
@@ -599,6 +635,13 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
           if (numeric.matches(".analysis-metric-value"))
             syncNode(numeric, numeric.cloneNode(true), delay);
         if (animateUpdate) {
+          if (
+            element.id === "analysisTimelineLegend" &&
+            child.dataset.state === "future"
+          ) {
+            revealFutureLegend(added, true);
+            return;
+          }
           const opacity = child.hasAttribute("opacity")
             ? Number(child.getAttribute("opacity"))
             : child.matches(".analysis-rest-band")
@@ -630,6 +673,29 @@ WorkTimeApp.ui.createAnalysisRenderer = function ({
       }
     });
     for (const removed of old.values()) {
+      if (
+        animateUpdate &&
+        element.id === "analysisTimelineLegend" &&
+        removed.dataset.state === "future"
+      ) {
+        const width = removed.getBoundingClientRect().width,
+          opacity = Number(window.getComputedStyle(removed).opacity),
+          gap = parseFloat(window.getComputedStyle(element).columnGap) || 0;
+        removed.dataset.exiting = "true";
+        removed.setAttribute("aria-hidden", "true");
+        queue(
+          (p) => {
+            removed.style.opacity = String(opacity * (1 - p));
+            removed.style.transform = `translateX(${p * 18}px)`;
+            removed.style.width = width * (1 - p) + "px";
+            removed.style.marginInlineStart = -gap * p + "px";
+          },
+          0,
+          220,
+        );
+        cleanups.push(() => removed.remove());
+        continue;
+      }
       if (
         !animateUpdate ||
         (element.namespaceURI !== "http://www.w3.org/2000/svg" &&

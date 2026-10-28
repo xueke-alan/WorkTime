@@ -22,6 +22,9 @@ async function verify() {
   page.on("dialog", (dialog) => (accept ? dialog.accept() : dialog.dismiss()));
   await page.route(/^https?:/, (route) => route.abort());
   try {
+    // The cross-day fixture includes Oct 27 and the following click selects Oct 28.
+    // Keep "today" stable rather than changing the expected list at midnight.
+    await page.clock.setFixedTime(new Date("2026-10-27T04:00:00Z"));
     await page.goto(
       pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
     );

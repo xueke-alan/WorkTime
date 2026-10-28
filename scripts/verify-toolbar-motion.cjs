@@ -348,6 +348,11 @@ async function verify() {
     );
     await click("analysisToggle");
     await settle();
+    assert.equal(
+      await page.locator("#agendaViewToggle").isVisible(),
+      true,
+      "Leaving analysis restores the agenda toolbar it was opened from",
+    );
     await click("agendaMode");
     await page.evaluate(() => {
       Object.defineProperty(document, "hidden", {
@@ -366,6 +371,9 @@ async function verify() {
     await page.evaluate(() => {
       Element.prototype.animate = undefined;
     });
+    await click("agendaMode");
+    await settle();
+    assert.equal(await page.locator("#agendaViewToggle").isVisible(), true);
     await click("agendaMode");
     await settle();
     assert.equal(await page.locator("#batchToggle").isVisible(), true);

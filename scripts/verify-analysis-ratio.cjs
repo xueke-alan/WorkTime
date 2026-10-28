@@ -73,8 +73,8 @@ async function verify() {
                 incoming?.children.length === 3 &&
                 Boolean(incoming.querySelector("svg")) &&
                 outgoing?.textContent.includes("—") &&
-                offset(incoming) > 1 &&
-                offset(outgoing) < -1 &&
+                offset(incoming) < -1 &&
+                offset(outgoing) > 1 &&
                 getComputedStyle(outgoing).display !== "none" &&
                 [...incoming.querySelectorAll(".summary-number-track")].every(
                   (track) => track.getAnimations().length === 0,

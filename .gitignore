@@ -153,8 +153,11 @@ Thumbs.db
 !/scripts/verify-agenda-completion.cjs
 
 !/scripts/verify-calendar-navigation.cjs
+!/scripts/verify-agenda-today.cjs
 
 !/scripts/verify-popover.cjs
 
 !/rescue.html
 !/scripts/verify-rescue.cjs
+!/scripts/verify-analysis-summary.cjs
+!/scripts/verify-analysis-persistence.cjs

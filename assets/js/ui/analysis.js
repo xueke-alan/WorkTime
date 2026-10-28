@@ -20,7 +20,7 @@ WorkTimeApp.ui.createAnalysis = function ({
       month: "numeric",
       day: "numeric",
     });
-  const { clock, chart, timeline, timelineLegend } =
+  const { clock, chart, timelineLegend } =
     WorkTimeApp.ui.createAnalysisGraphics({
       escape: esc,
       window,
@@ -72,8 +72,10 @@ WorkTimeApp.ui.createAnalysis = function ({
     return (
       '<div class="analysis-metric" data-key="' +
       label +
-      '"><span>' +
+      '"><span title="' +
       esc(t(label)) +
+      '">' +
+      esc(t("compact." + label)) +
       '</span><strong><span class="analysis-metric-next">' +
       (extended ? esc(t("nextDay")) : "") +
       "</span>" +
@@ -124,7 +126,7 @@ WorkTimeApp.ui.createAnalysis = function ({
     if (next === selectedDate && $("analysisHover").childElementCount) return;
     const appearing = Boolean(day && $("analysisHover").hidden);
     selectedDate = next;
-    for (const group of plot.querySelectorAll(".analysis-range"))
+    for (const group of plot.querySelectorAll(".analysis-range, .analysis-day"))
       group.classList.toggle("is-selected", group.dataset.date === next);
     $("analysisHover").hidden = !day;
     $("analysisHover").innerHTML = day
@@ -154,7 +156,7 @@ WorkTimeApp.ui.createAnalysis = function ({
   }
   // Event delegation survives resizing and language changes without new listeners.
   const groupFrom = (target) => {
-    const group = target?.closest?.(".analysis-range");
+    const group = target?.closest?.(".analysis-range, .analysis-day");
     return group?.hasAttribute("data-exiting") ? null : group;
   };
   events.listen(
@@ -197,7 +199,11 @@ WorkTimeApp.ui.createAnalysis = function ({
     const group = groupFrom(event.target);
     if (!group) return;
     const groups = [
-        ...plot.querySelectorAll(".analysis-range:not([data-exiting])"),
+        ...plot.querySelectorAll(
+          group.matches(".analysis-day")
+            ? ".analysis-day:not([data-exiting])"
+            : ".analysis-range:not([data-exiting])",
+        ),
       ],
       index = groups.indexOf(group);
     const next = {
@@ -224,7 +230,11 @@ WorkTimeApp.ui.createAnalysis = function ({
       height = desktop ? Math.round(bounds.height) : 420,
       size = width + ":" + height;
     if (width < 1 || height < 1 || size === lastSize) return;
-    const focused = groupFrom(window.document.activeElement)?.dataset.date;
+    const focusedGroup = groupFrom(window.document.activeElement),
+      focused = focusedGroup?.dataset.date,
+      focusKind = focusedGroup?.matches(".analysis-day")
+        ? ".analysis-day"
+        : ".analysis-range";
     lastSize = size;
     syncMarkup(plot, chart(currentData, width, height));
     const previous = selectedDate;
@@ -232,7 +242,7 @@ WorkTimeApp.ui.createAnalysis = function ({
     selectDate(previous);
     if (focused) {
       const nextFocus = plot.querySelector(
-        '[data-date="' + focused + '"]:not([data-exiting])',
+        focusKind + '[data-date="' + focused + '"]:not([data-exiting])',
       );
       (nextFocus || $("analysisChart")).focus({ preventScroll: true });
     }
@@ -271,6 +281,12 @@ WorkTimeApp.ui.createAnalysis = function ({
           view.today,
           view.analysisIncludeManual,
           { workdaysOnly: true },
+        ),
+        comparison: WorkTimeApp.domain.statistics.monthlyAnalysisComparison(
+          state,
+          view.month,
+          view.today,
+          view.analysisIncludeManual,
         ),
       };
     const language = WorkTimeApp.i18n.language,
@@ -316,39 +332,163 @@ WorkTimeApp.ui.createAnalysis = function ({
         extreme ? date(extreme.dates[0]) : "—",
         extreme?.dates,
       );
+    const duration = (minutes) => WorkTimeApp.i18n.duration(minutes);
+    const percent = (count) =>
+      metrics.count
+        ? WorkTimeApp.i18n.number(count / metrics.count, {
+            style: "percent",
+            maximumFractionDigits: 0,
+          })
+        : "—";
+    const group = (key, contents, description = "") =>
+      '<section class="analysis-metric-group analysis-metric-group-' +
+      key +
+      '" data-key="group-' +
+      key +
+      '"' +
+      (description
+        ? ' title="' +
+          esc(description) +
+          '" aria-description="' +
+          esc(description) +
+          '"'
+        : "") +
+      "><h3>" +
+      esc(t("group" + key)) +
+      "</h3>" +
+      contents +
+      "</section>";
+    const change = (value, unit, positive, negative) => {
+      if (value === null) return "—";
+      const rounded =
+        unit === "minutes" ? Math.round(value) : Math.round(value * 100) / 100;
+      if (!rounded) return t("unchanged");
+      return t(rounded > 0 ? positive : negative, {
+        value:
+          unit === "hours"
+            ? duration(Math.abs(rounded))
+            : WorkTimeApp.i18n.number(Math.abs(rounded), {
+                maximumFractionDigits: 2,
+              }),
+      });
+    };
+    const comparison = data.comparison;
+    const period = (start, end, count) =>
+      t("comparisonPeriod", {
+        start: WorkTimeApp.i18n.date(start, {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+        }),
+        end: WorkTimeApp.i18n.date(end, {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+        }),
+        count: number(count),
+      });
+    const restDays = data.days.filter((day) => !day.work);
+    const maximum = metrics.maximumOvertime;
     const metricsMarkup =
-      '<div class="analysis-metric-group">' +
-      extremeMetric("earliest", earliest) +
-      extremeMetric("latestStart", metrics.latestStart) +
-      metric("averageStart", clock(metrics.averageStart), "") +
-      '</div><div class="analysis-metric-group">' +
-      extremeMetric("earliestEnd", metrics.earliestEnd) +
-      extremeMetric("latest", latest) +
-      metric("averageEnd", clock(metrics.averageEnd), "") +
-      '</div><div class="analysis-metric-group analysis-metric-group-overtime">' +
-      metric(
-        "overtimeDays",
-        metrics.count
-          ? number(metrics.overtimeDays) + " / " + number(metrics.count)
-          : "—",
-        metrics.count
-          ? t("ratio", {
-              value: WorkTimeApp.i18n.number(
-                metrics.overtimeDays / metrics.count,
-                {
-                  style: "percent",
-                  maximumFractionDigits: 0,
-                },
-              ),
-            })
-          : "—",
+      group(
+        "Arrival",
+        extremeMetric("earliest", earliest) +
+          extremeMetric("latestStart", metrics.latestStart) +
+          metric("averageStart", clock(metrics.averageStart), ""),
       ) +
-      metric(
-        "longest",
-        metrics.count ? number(metrics.longest.count) : "—",
-        range,
+      group(
+        "Departure",
+        extremeMetric("earliestEnd", metrics.earliestEnd) +
+          extremeMetric("latest", latest) +
+          metric("averageEnd", clock(metrics.averageEnd), ""),
       ) +
-      "</div>";
+      group(
+        "Late",
+        metrics.lateCounts
+          .map(({ threshold, count }) =>
+            metric(
+              "late" + threshold,
+              metrics.count ? number(count) : "—",
+              percent(count),
+            ),
+          )
+          .join(""),
+      ) +
+      group(
+        "Overtime",
+        metric(
+          "overtimeDays",
+          metrics.count
+            ? number(metrics.overtimeDays) + " / " + number(metrics.count)
+            : "—",
+          percent(metrics.overtimeDays),
+        ) +
+          metric(
+            "longest",
+            metrics.count ? number(metrics.longest.count) : "—",
+            range,
+          ) +
+          metric(
+            "totalOvertime",
+            duration(metrics.count ? metrics.overtimeMinutes : null),
+            "",
+          ) +
+          metric("averageOvertime", duration(metrics.averageOvertime), "") +
+          metric(
+            "maximumOvertime",
+            duration(maximum?.minutes),
+            maximum?.minutes > 0 ? date(maximum.dates[0]) : "",
+            maximum?.minutes > 0 ? maximum.dates : [],
+          ) +
+          metric(
+            "restOvertimeTotal",
+            duration(
+              restDays.length
+                ? restDays.reduce((sum, day) => sum + day.overtime, 0)
+                : null,
+            ),
+            "",
+          ),
+      ) +
+      group(
+        "Comparison",
+        metric(
+          "endChange",
+          change(comparison.averageEndChange, "minutes", "later", "earlier"),
+          "",
+        ) +
+          metric(
+            "ratioChange",
+            change(
+              comparison.overtimeRatioChange,
+              "points",
+              "morePoints",
+              "fewerPoints",
+            ),
+            "",
+          ) +
+          metric(
+            "totalChange",
+            change(
+              comparison.overtimeMinutesChange,
+              "hours",
+              "moreHours",
+              "fewerHours",
+            ),
+            "",
+          ),
+        period(
+          comparison.currentStart,
+          comparison.currentEnd,
+          comparison.currentCount,
+        ) +
+          "\n" +
+          period(
+            comparison.previousStart,
+            comparison.previousEnd,
+            comparison.previousCount,
+          ),
+      );
     syncMarkup($("analysisMetrics"), metricsMarkup, 0);
     $("analysisDetails").hidden = false;
     currentData = data;
@@ -356,8 +496,7 @@ WorkTimeApp.ui.createAnalysis = function ({
     selectedDate = null;
     $("analysisHover").replaceChildren();
     $("analysisHover").hidden = true;
-    syncMarkup($("analysisTimelineLegend"), timelineLegend(), 220);
-    syncMarkup($("analysisStreak"), timeline(data), 220);
+    syncMarkup($("analysisTimelineLegend"), timelineLegend(data), 220);
     drawChart();
     if (sameMonth) {
       selectedDate = null;

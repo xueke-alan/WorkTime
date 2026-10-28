@@ -6,6 +6,70 @@ const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 
 async function assertTimelineMarkers(page) {
+  const alignment = await page.evaluate(() => {
+    const svg = document.querySelector(".analysis-plot"),
+      dates = [...svg.querySelectorAll(":scope > .analysis-date")],
+      days = [...svg.querySelectorAll(":scope > .analysis-day")],
+      band = svg.querySelector(".analysis-longest-band");
+    return {
+      count: dates.length,
+      cells: days.length,
+      aligned: days.every((day, index) => {
+        const center =
+            Number(day.getAttribute("x")) +
+            Number(day.getAttribute("width")) / 2,
+          dateX = Number(dates[index].getAttribute("x")),
+          point = svg.querySelector(
+            '.analysis-range[data-date="' +
+              day.dataset.date +
+              '"] [data-lane="start"]',
+          );
+        return (
+          Math.abs(center - dateX) < 0.01 &&
+          (!point || Math.abs(center - Number(point.getAttribute("cx"))) < 0.01)
+        );
+      }),
+      bandAligned:
+        !days.some((day) => day.classList.contains("is-longest")) ||
+        (() => {
+          const longest = days.filter((day) =>
+            day.classList.contains("is-longest"),
+          );
+          return (
+            Math.abs(
+              Number(band.getAttribute("x")) -
+                Number(longest[0].getAttribute("x")),
+            ) < 0.01 &&
+            Math.abs(
+              Number(band.getAttribute("width")) -
+                longest.length * Number(longest[0].getAttribute("width")),
+            ) < 0.01
+          );
+        })(),
+    };
+  });
+  assert.equal(alignment.count, alignment.cells);
+  assert.equal(
+    await page
+      .locator(
+        '#analysisTimelineLegend > [data-state="future"]:not([data-exiting])',
+      )
+      .count(),
+    (await page
+      .locator('.analysis-day[data-state="future"]:not([data-exiting])')
+      .count())
+      ? 1
+      : 0,
+    "Future legend appears only when the date axis contains future dates",
+  );
+  assert.ok(
+    alignment.aligned,
+    "Date labels, states and records share one x coordinate",
+  );
+  assert.ok(
+    alignment.bandAligned,
+    "Longest streak spans its date cells exactly",
+  );
   const invalid = await page.locator(".analysis-day").evaluateAll((days) =>
     days.flatMap((day) => {
       const visible = [...day.querySelectorAll(".analysis-marker-shape")]
@@ -507,15 +571,19 @@ async function verifyComponentMotion(browser, url, input) {
         .querySelector('.analysis-point[data-lane="start"]')
         .getAttribute("cy"),
     ),
-    width: parseFloat(document.querySelector(".analysis-day").style.width),
+    width: parseFloat(
+      document.querySelector(".analysis-day").getAttribute("width"),
+    ),
     bandWidth: parseFloat(
-      document.querySelector(".analysis-longest-band").style.width,
+      document.querySelector(".analysis-longest-band").getAttribute("width"),
     ),
     lastDateX: Number(
       document.querySelector('[data-key="date-30"]').getAttribute("x"),
     ),
     lastDayLeft: parseFloat(
-      document.querySelector('.analysis-day[data-date$="-31"]').style.left,
+      document
+        .querySelector('.analysis-day[data-date$="-31"]')
+        .getAttribute("x"),
     ),
   }));
   await page.evaluate(() => document.getElementById("prevMonth").click());
@@ -608,7 +676,7 @@ async function verifyComponentMotion(browser, url, input) {
   );
   assert.equal(
     await page.evaluate(() =>
-      parseFloat(document.querySelector(".analysis-day").style.width),
+      parseFloat(document.querySelector(".analysis-day").getAttribute("width")),
     ),
     initial.width,
   );
@@ -621,7 +689,9 @@ async function verifyComponentMotion(browser, url, input) {
         .querySelector('.analysis-point[data-lane="start"]')
         .getAttribute("cy"),
     ),
-    width: parseFloat(document.querySelector(".analysis-day").style.width),
+    width: parseFloat(
+      document.querySelector(".analysis-day").getAttribute("width"),
+    ),
   }));
   assert.notEqual(middle.x, initial.x, "Chart starts after the numeric layer");
   assert.equal(
@@ -687,7 +757,11 @@ async function verifyComponentMotion(browser, url, input) {
       ),
       "Each day's two endpoints and connector fade as one unit",
     );
-  assert.equal(middle.width, initial.width, "Timeline waits for its own layer");
+  assert.notEqual(
+    middle.width,
+    initial.width,
+    "State cells move with the shared date axis",
+  );
   await page.clock.runFor(130);
   const exitingDates = await page.evaluate(() => {
     const date = document.querySelector(
@@ -699,7 +773,7 @@ async function verifyComponentMotion(browser, url, input) {
     return {
       x: Number(date.getAttribute("x")),
       dateOpacity: Number(date.style.opacity),
-      left: parseFloat(day.style.left),
+      left: Number(day.getAttribute("x")),
       dayOpacity: Number(day.style.opacity),
     };
   });
@@ -738,12 +812,12 @@ async function verifyComponentMotion(browser, url, input) {
   const movingBand = await page
     .locator(".analysis-longest-band")
     .evaluate((element) => ({
-      width: parseFloat(element.style.width),
+      width: Number(element.getAttribute("width")),
       opacity: Number(getComputedStyle(element).opacity),
     }));
   assert.ok(
-    movingBand.width > Math.min(initial.bandWidth, 10) &&
-      movingBand.width < Math.max(initial.bandWidth, 10),
+    movingBand.width > Math.min(initial.bandWidth, (initial.width * 31) / 10) &&
+      movingBand.width < Math.max(initial.bandWidth, (initial.width * 31) / 10),
     "Longest streak width interpolates toward three days in September",
   );
   assert.equal(
@@ -768,8 +842,10 @@ async function verifyComponentMotion(browser, url, input) {
       .locator('.analysis-marker-shape[data-state="missing"]')
       .evaluateAll((markers) =>
         markers.every((marker) => {
-          const style = getComputedStyle(marker);
-          return style.width === style.height;
+          return (
+            marker.tagName === "circle" &&
+            Number(marker.getAttribute("r")) === 3.5
+          );
         }),
       ),
     true,
@@ -786,7 +862,7 @@ async function verifyComponentMotion(browser, url, input) {
   );
   assert.notEqual(
     await page.evaluate(() =>
-      parseFloat(document.querySelector(".analysis-day").style.width),
+      parseFloat(document.querySelector(".analysis-day").getAttribute("width")),
     ),
     initial.width,
   );
@@ -796,10 +872,11 @@ async function verifyComponentMotion(browser, url, input) {
     const node = document.querySelector('[data-key="date-0"]'),
       before = node.getAttribute("x"),
       band = document.querySelector(".analysis-longest-band"),
-      bandBefore = band.style.cssText;
+      bandBefore = band.getAttribute("width");
     document.getElementById("nextMonth").click();
     return (
-      before === node.getAttribute("x") && bandBefore === band.style.cssText
+      before === node.getAttribute("x") &&
+      bandBefore === band.getAttribute("width")
     );
   });
   assert.equal(continuous, true);
@@ -810,11 +887,13 @@ async function verifyComponentMotion(browser, url, input) {
   );
   assert.equal(await page.locator("[data-exiting]").count(), 0);
   assert.equal(await page.locator(".analysis-date").count(), 31);
-  assert.equal(
-    await page
-      .locator(".analysis-longest-band")
-      .evaluate((element) => parseFloat(element.style.width)),
-    initial.bandWidth,
+  assert.ok(
+    Math.abs(
+      (await page
+        .locator(".analysis-longest-band")
+        .evaluate((element) => Number(element.getAttribute("width")))) -
+        initial.bandWidth,
+    ) < 0.001,
     "Interrupted streak animation reaches the new target width",
   );
   for (const [button, incomingEmpty] of [
@@ -957,19 +1036,24 @@ async function verifyComponentMotion(browser, url, input) {
   });
   await page.clock.runFor(50);
   assert.equal(await page.locator(".analysis-date").count(), 28);
+  await assertTimelineMarkers(page);
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.evaluate(() => document.getElementById("prevMonth").click());
   const incomingStart = await page.evaluate(() => ({
     x: Number(document.querySelector('[data-key="date-30"]').getAttribute("x")),
     left: parseFloat(
-      document.querySelector('.analysis-day[data-date$="-31"]').style.left,
+      document
+        .querySelector('.analysis-day[data-date$="-31"]')
+        .getAttribute("x"),
     ),
   }));
   await page.clock.runFor(330);
   const incomingMiddle = await page.evaluate(() => ({
     x: Number(document.querySelector('[data-key="date-30"]').getAttribute("x")),
     left: parseFloat(
-      document.querySelector('.analysis-day[data-date$="-31"]').style.left,
+      document
+        .querySelector('.analysis-day[data-date$="-31"]')
+        .getAttribute("x"),
     ),
     opacity: Number(
       document.querySelector('[data-key="date-30"]').style.opacity,
@@ -992,6 +1076,7 @@ async function verifyComponentMotion(browser, url, input) {
   });
   await page.clock.runFor(50);
   assert.equal(await page.locator(".analysis-date").count(), 29);
+  await assertTimelineMarkers(page);
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.evaluate(() => document.getElementById("nextMonth").click());
   await page.clock.runFor(180);
@@ -1089,18 +1174,158 @@ async function verifyComponentMotion(browser, url, input) {
   await context.close();
 }
 
-async function assertFullscreen(page, label) {
-  await page.waitForFunction(() => {
-    const plot = document.querySelector("#analysisPlot"),
-      svg = plot.querySelector("svg");
-    if (!svg) return false;
-    const rect = plot.getBoundingClientRect(),
-      box = svg.viewBox.baseVal;
-    return (
-      Math.abs(box.width - rect.width) <= 1 &&
-      Math.abs(box.height - rect.height) <= 1
-    );
+async function verifyFutureLegend(browser, url, state) {
+  const context = await browser.newContext({
+    reducedMotion: "reduce",
+    viewport: { width: 1920, height: 1080 },
   });
+  await context.route(/^https?:/, (route) => route.abort());
+  await context.addInitScript(
+    (state) => localStorage.setItem("worktime-local-v1", JSON.stringify(state)),
+    state,
+  );
+  const page = await context.newPage();
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  try {
+    await page.clock.install({ time: new Date("2026-10-21T04:00:00Z") });
+    await page.goto(url);
+    await page.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+    await page.locator("#analysisToggle").click();
+    await page.clock.runFor(700);
+    await page.clock.pauseAt(new Date("2026-10-21T04:01:00Z"));
+    const future = page.locator(
+      '#analysisTimelineLegend > [data-state="future"]',
+    );
+    assert.equal(await future.count(), 1, "Current month has future dates");
+    await page.locator(".analysis-day").first().focus();
+    await page.keyboard.press("ArrowRight");
+    assert.equal(
+      await page.evaluate(() => document.activeElement.dataset.date),
+      "2026-10-02",
+    );
+    await page.keyboard.press("End");
+    assert.equal(
+      await page.evaluate(() => document.activeElement.dataset.date),
+      "2026-10-31",
+    );
+    assert.match(
+      await page.locator(".analysis-day").last().getAttribute("aria-label"),
+      /未来/,
+    );
+    await page.keyboard.press("Home");
+    assert.equal(
+      await page.evaluate(() => document.activeElement.dataset.date),
+      "2026-10-01",
+    );
+    await page.keyboard.press("Escape");
+    assert.equal(
+      await page.evaluate(() => document.activeElement.id),
+      "analysisChart",
+    );
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.evaluate(() => document.getElementById("prevMonth").click());
+    await page.clock.runFor(100);
+    const outgoing = await future.evaluate((el) => ({
+      opacity: Number(el.style.opacity),
+      x: new DOMMatrix(getComputedStyle(el).transform).m41,
+      exiting: el.dataset.exiting,
+    }));
+    assert.equal(outgoing.exiting, "true");
+    assert.ok(outgoing.opacity > 0 && outgoing.opacity < 1);
+    assert.ok(outgoing.x > 0, "Absent future legend slides to the right");
+    await page.clock.runFor(700);
+    assert.equal(await future.count(), 0, "Past month omits the future legend");
+    assert.equal(
+      await page.locator("#analysisTimelineLegend > span").count(),
+      4,
+    );
+    const leftLegend = page.locator(
+      '#analysisTimelineLegend > [data-state="workedOvertime"]',
+    );
+    const beforeReturn = await leftLegend.evaluate(
+      (el) => el.getBoundingClientRect().left,
+    );
+    await page.evaluate(() => document.getElementById("nextMonth").click());
+    const returnStart = await leftLegend.evaluate(
+      (el) => el.getBoundingClientRect().left,
+    );
+    assert.ok(
+      Math.abs(returnStart - beforeReturn) < 0.1,
+      "Returning future legend does not instantly move its neighbors",
+    );
+    await page.clock.runFor(100);
+    const returnMiddle = await leftLegend.evaluate(
+      (el) => el.getBoundingClientRect().left,
+    );
+    const incoming = await future.evaluate((el) => ({
+      opacity: Number(el.style.opacity),
+      width: el.getBoundingClientRect().width,
+    }));
+    assert.ok(
+      incoming.opacity > 0 && incoming.opacity < 1,
+      "Future legend fades in while its space expands",
+    );
+    await page.clock.runFor(600);
+    const returnEnd = await leftLegend.evaluate(
+      (el) => el.getBoundingClientRect().left,
+    );
+    assert.ok(
+      returnMiddle < returnStart && returnMiddle > returnEnd,
+      "Left legends move progressively throughout the return",
+    );
+    assert.ok(
+      Math.abs(returnEnd - returnStart) > incoming.width,
+      "Returning legend and gap reserve their full space",
+    );
+    assert.equal(await future.count(), 1);
+    // Interrupt a disappearing legend with a month that needs it again.
+    await page.evaluate(() => document.getElementById("prevMonth").click());
+    await page.clock.runFor(80);
+    await page.evaluate(() => document.getElementById("nextMonth").click());
+    await page.clock.runFor(700);
+    assert.equal(await future.count(), 1);
+    assert.equal(await future.getAttribute("style"), "");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.evaluate(() => document.getElementById("prevMonth").click());
+    assert.equal(await future.count(), 0, "Reduced motion hides immediately");
+    await page.evaluate(() => {
+      document.getElementById("nextMonth").click();
+      document.getElementById("nextMonth").click();
+    });
+    assert.equal(await future.count(), 1, "A future month shows its legend");
+    assert.deepEqual(errors, []);
+  } finally {
+    await context.close();
+  }
+}
+
+async function assertFullscreen(page, label) {
+  await page
+    .waitForFunction(() => {
+      const plot = document.querySelector("#analysisPlot"),
+        svg = plot.querySelector("svg");
+      if (!svg) return false;
+      const rect = plot.getBoundingClientRect(),
+        box = svg.viewBox.baseVal;
+      return (
+        Math.abs(box.width - rect.width) <= 1 &&
+        Math.abs(box.height - rect.height) <= 1
+      );
+    })
+    .catch(async (error) => {
+      console.error(
+        label,
+        await page.locator("#analysisPlot").evaluate((el) => ({
+          rect: el.getBoundingClientRect().toJSON(),
+          viewBox: el.querySelector("svg")?.getAttribute("viewBox"),
+          html: el.innerHTML.slice(0, 150),
+        })),
+      );
+      throw error;
+    });
   const issues = await page.evaluate(() => {
     const issues = [],
       root = document.documentElement;
@@ -1113,8 +1338,7 @@ async function assertFullscreen(page, label) {
       "#analysisPage",
       "#analysisChart",
       "#analysisPlot",
-      ".analysis-streak-dates",
-      ".analysis-streak",
+      "#analysisTimelineLegend",
     ]) {
       const el = document.querySelector(selector),
         box = el.getBoundingClientRect();
@@ -1139,8 +1363,7 @@ async function assertFullscreen(page, label) {
     for (const selector of [
       "#analysisMetrics",
       "#analysisHover",
-      ".analysis-streak-heading",
-      "#analysisStreak",
+      "#analysisTimelineLegend",
     ]) {
       const element = document.querySelector(selector);
       if (!element.getClientRects().length) continue;
@@ -1148,13 +1371,6 @@ async function assertFullscreen(page, label) {
       if (box.top < page.top - 1 || box.bottom > page.bottom + 1)
         issues.push(selector + " is clipped");
     }
-    const distribution = document.querySelector(".analysis-streak"),
-      distributionStyle = getComputedStyle(distribution);
-    if (
-      distributionStyle.overflowX !== "clip" ||
-      distributionStyle.overflowY !== "clip"
-    )
-      issues.push("distribution can show transient scrollbars");
     const svg = document.querySelector(".analysis-plot");
     for (const label of svg.querySelectorAll(
       ".analysis-grid text, .analysis-date, .analysis-lane-title, .analysis-lane-median, .analysis-late-label",
@@ -1168,7 +1384,18 @@ async function assertFullscreen(page, label) {
         box.x + box.width > svg.viewBox.baseVal.width + 1 ||
         box.y + box.height > svg.viewBox.baseVal.height + 1
       )
-        issues.push("chart label clipped: " + label.textContent);
+        issues.push(
+          "chart label clipped: " +
+            label.textContent +
+            " " +
+            JSON.stringify({
+              x: box.x,
+              y: box.y,
+              width: box.width,
+              height: box.height,
+              viewBox: svg.getAttribute("viewBox"),
+            }),
+        );
     }
     return issues;
   });
@@ -1295,7 +1522,7 @@ async function verify() {
     assert.equal(await page.locator(".analysis-lane").count(), 2);
     assert.equal(await page.locator(".analysis-day").count(), 31);
     await assertTimelineMarkers(page);
-    assert.equal(await page.locator(".analysis-metric").count(), 8);
+    assert.equal(await page.locator(".analysis-metric").count(), 18);
     for (const [width, height] of [
       [1920, 1080],
       [2560, 1440],
@@ -1699,7 +1926,7 @@ async function verify() {
         return (
           observed &&
           manual &&
-          getComputedStyle(marker).backgroundColor === legend &&
+          getComputedStyle(marker).fill === legend &&
           getComputedStyle(timelineLegend).backgroundColor === legend &&
           legend !==
             getComputedStyle(document.querySelector(".analysis-legend-dot"))
@@ -1786,13 +2013,13 @@ async function verify() {
     assert.equal(await view.locator(".analysis-point.is-late").count(), 1);
     assert.equal(await view.locator(".analysis-day").count(), 31);
     assert.equal(await view.locator(".analysis-day.is-longest").count(), 6);
-    assert.equal(await view.locator(".analysis-metric").count(), 8);
+    assert.equal(await view.locator(".analysis-metric").count(), 18);
     assert.equal(await view.locator("#analysisHover").isVisible(), false);
     assert.equal(await view.locator("#analysisHover").textContent(), "");
     const structure = await view.evaluate(() => {
       const headings = [
         ...document.querySelectorAll(
-          "#analysisHeading, .analysis-chart-heading h2, .analysis-streak-heading h2",
+          "#analysisHeading, .analysis-chart-heading h2",
         ),
       ].map((element) => {
         const style = getComputedStyle(element);
@@ -1804,21 +2031,20 @@ async function verify() {
       });
       return {
         headings,
-        legendInHeading: !!document.querySelector(
-          ".analysis-streak-heading #analysisTimelineLegend",
-        ),
-        distributionHeight: document
-          .querySelector(".analysis-distribution-body")
-          .getBoundingClientRect().height,
+        legendBelowChart:
+          document
+            .querySelector("#analysisTimelineLegend")
+            .getBoundingClientRect().top >=
+          document.querySelector("#analysisChart").getBoundingClientRect()
+            .bottom,
         gutter: Number(
           document.querySelector(".analysis-grid line").getAttribute("x1"),
         ),
       };
     });
-    assert.equal(structure.headings.length, 3);
+    assert.equal(structure.headings.length, 2);
     assert.deepEqual(structure.headings[1], structure.headings[0]);
-    assert.deepEqual(structure.headings[2], structure.headings[0]);
-    assert.equal(structure.legendInHeading, true);
+    assert.equal(structure.legendBelowChart, true);
     const opticalOffsets = await view
       .locator(".analysis-metric-ratio")
       .evaluate((ratio) => {
@@ -1853,7 +2079,14 @@ async function verify() {
       opticalOffsets.every((offset) => Math.abs(offset) <= 1),
       "Ratio divider matches digit ink centers: " + opticalOffsets.join(", "),
     );
-    assert.ok(structure.distributionHeight >= 65);
+    assert.equal(
+      await view
+        .locator(
+          "#analysisStreak, .analysis-streak-heading, .analysis-distribution-body",
+        )
+        .count(),
+      0,
+    );
     assert.equal(
       await view
         .locator(".analysis-streak-heading #analysisStreakSummary")
@@ -1903,7 +2136,7 @@ async function verify() {
       return view.evaluate(() => ({
         blocks: [
           ...document.querySelectorAll(
-            ".analysis-heading, .analysis-metric, .analysis-chart-heading, #analysisPlot, .analysis-streak-heading, .analysis-distribution-body",
+            ".analysis-heading, .analysis-metric, .analysis-chart-heading, #analysisPlot, #analysisTimelineLegend",
           ),
         ].map((element) => {
           const { x, y, width, height } = element.getBoundingClientRect();
@@ -1911,9 +2144,6 @@ async function verify() {
             (value) => Math.round(value * 10) / 10,
           );
         }),
-        gutter: document
-          .querySelector(".analysis-grid line")
-          .getAttribute("x1"),
       }));
     };
     const populatedLayout = await layoutSnapshot();
@@ -1947,6 +2177,7 @@ async function verify() {
     assert.equal(await view.locator(".analysis-lane").count(), 2);
     assert.equal(await view.locator(".analysis-range").count(), 0);
     assert.equal(await view.locator(".analysis-date").count(), 30);
+    await assertTimelineMarkers(view);
     assert.equal(
       await view.locator(".analysis-ratio-divider").isVisible(),
       false,
@@ -1958,7 +2189,7 @@ async function verify() {
     assert.deepEqual(
       await layoutSnapshot(),
       populatedLayout,
-      "October records with tied dates and next-day clocks keep the same layout as empty November",
+      "October records with tied dates and next-day clocks keep the same card and plot bounds as empty November",
     );
     await view.locator("#todayButton").click();
     assert.equal(await view.locator(".analysis-range").count(), 11);
@@ -2053,25 +2284,7 @@ async function verify() {
     ]) {
       await view.setViewportSize({ width, height });
       await assertFullscreen(view, width + "×" + height);
-      const alignment = await view.evaluate(() => {
-        const heading = document
-            .querySelector(".analysis-streak-heading")
-            .getBoundingClientRect(),
-          markers = [
-            ...document.querySelectorAll(".analysis-day .analysis-marker"),
-          ],
-          first = markers[0].getBoundingClientRect(),
-          last = markers.at(-1).getBoundingClientRect();
-        return {
-          left: Math.abs(heading.left - first.left),
-          right: Math.abs(heading.right - last.right),
-        };
-      });
-      assert.ok(
-        alignment.left < 1 && alignment.right < 1,
-        "Visible distribution marker edges share both boundaries with the section heading at " +
-          width,
-      );
+      await assertTimelineMarkers(view);
       await view.screenshot({
         path: "test-results/analysis/fullscreen-" + height + ".png",
         fullPage: true,
@@ -2095,6 +2308,38 @@ async function verify() {
         "Page overflow at " + width,
       );
       assert.equal(await view.locator("#analysisToggle").isVisible(), true);
+      if (width <= 850) {
+        const scrolling = await view
+          .locator("#analysisPlot")
+          .evaluate((plot) => {
+            const date = plot.querySelector(".analysis-date"),
+              marker = plot.querySelector(
+                ".analysis-day .analysis-marker-shape[data-active='true']",
+              ),
+              before = [
+                date.getBoundingClientRect().x,
+                marker.getBoundingClientRect().x,
+              ];
+            plot.scrollLeft = 80;
+            const after = [
+                date.getBoundingClientRect().x,
+                marker.getBoundingClientRect().x,
+              ],
+              offset = plot.scrollLeft;
+            plot.scrollLeft = 0;
+            return {
+              offset,
+              moved: before.map((x, index) => x - after[index]),
+            };
+          });
+        assert.ok(scrolling.offset > 0, "Narrow chart scrolls horizontally");
+        assert.ok(
+          scrolling.moved.every(
+            (offset) => Math.abs(offset - scrolling.offset) < 0.01,
+          ),
+          "Dates and markers scroll together",
+        );
+      }
       await view.screenshot({
         path: "test-results/analysis/width-" + width + ".png",
         fullPage: true,
@@ -2134,10 +2379,19 @@ async function verify() {
     await view.locator("#analysisToggle").click();
     assert.equal(await view.locator("#analysisPage").isVisible(), true);
     assert.equal(await view.locator(".analysis-range").count(), 11);
+    assert.equal(
+      await view.evaluate(
+        () =>
+          JSON.parse(localStorage.getItem("worktime.calendarView"))?.analysis,
+      ),
+      true,
+      "Analysis opened from year view is persisted; page errors: " +
+        JSON.stringify(errors),
+    );
     await view.reload();
     await waitReady();
-    assert.equal(await view.locator("#analysisPage").isVisible(), false);
-    await view.locator("#analysisToggle").click();
+    await view.locator("#analysisPage").waitFor({ state: "visible" });
+    assert.equal(await view.locator("#analysisPage").isVisible(), true);
     assert.equal(await view.locator("#analysisManual").isChecked(), false);
     await view.locator("#analysisManual").check();
     await view.locator("#dayStart").fill("08:00");
@@ -2212,6 +2466,7 @@ async function verify() {
           (language) => WorkTimeApp.i18n.setLanguage(language),
           language,
         );
+        await assertTimelineMarkers(full);
         await assertFullscreen(
           full,
           "31 days, " + width + "×" + height + ", " + language,
@@ -2224,6 +2479,7 @@ async function verify() {
       );
       await full.locator(".analysis-metric details summary").first().click();
     }
+    await verifyFutureLegend(browser, url, results.state);
     await verifyFutureManual(browser, url, results.state);
     await verifyViewMotion(browser, url, results.state);
     await verifyComponentMotion(browser, url, results.state);
