@@ -120,6 +120,7 @@ async function verify() {
         .filter({ visible: true });
     const chip = (title) =>
       page.locator("#calendar .agenda-chip:visible").filter({ hasText: title });
+    let lastDrag = null;
     async function begin(title, anchor, segment = 0) {
       const source = chip(title).nth(segment);
       await source.waitFor({ state: "visible" });
@@ -131,26 +132,64 @@ async function verify() {
         Math.min(card.x + card.width / 2, rect.x + rect.width - 3),
       );
       const y = rect.y + 7;
+      lastDrag = {
+        y,
+        timed: await source.evaluate((node) =>
+          node.classList.contains("timetable-event"),
+        ),
+      };
       await page.mouse.move(x, y);
       await page.mouse.down();
       return { x, y };
     }
     async function hover(date) {
       const rect = await dateCard(date).boundingBox();
-      await page.mouse.move(rect.x + rect.width / 2, rect.y + 15, {
+      const single =
+        (await page
+          .locator("#agendaViewToggle")
+          .getAttribute("data-agenda-view")) === "1";
+      const header = single
+        ? await dateCard(date).locator(".daytop").boundingBox()
+        : null;
+      const y = single
+        ? lastDrag?.timed
+          ? lastDrag.y
+          : header.y + header.height + 10
+        : rect.y + 15;
+      await page.mouse.move(rect.x + rect.width / 2, y, {
         steps: 12,
       });
     }
     async function drag(title, anchor, target, segment = 0) {
+      await page.waitForFunction(
+        () =>
+          !document
+            .querySelector("#calendar")
+            .getAnimations({ subtree: true })
+            .some(
+              (animation) =>
+                animation.pending || animation.playState === "running",
+            ),
+      );
       await rememberUnrelated(title);
       await begin(title, anchor, segment);
       await hover(target);
-      assert.equal(await page.locator(".agenda-drag-preview").count(), 1);
-      assert.equal(await page.locator(".agenda-drop-target").count(), 1);
+      const single =
+        (await page
+          .locator("#agendaViewToggle")
+          .getAttribute("data-agenda-view")) === "1";
+      assert.equal(
+        await page
+          .locator(single ? ".timetable-preview" : ".agenda-drag-preview")
+          .count(),
+        1,
+      );
+      if (!single)
+        assert.equal(await page.locator(".agenda-drop-target").count(), 1);
       await page.mouse.up();
       await page.waitForFunction(
         () =>
-          !document.querySelector(".agenda-drag-preview") &&
+          !document.querySelector(".agenda-drag-preview, .timetable-preview") &&
           !document.querySelector("#agendaFields").disabled,
       );
       await verifyUnrelated();

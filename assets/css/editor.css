@@ -2211,13 +2211,9 @@ body .editor #dayForm #dayLeaveToggle[aria-pressed="true"][aria-expanded="true"]
   background: transparent;
 }
 body .editor #dayForm #dayLeaveToggle > .ui-icon {
-  position: absolute;
-  left: var(--button-icon-inset);
+  position: static;
   opacity: 1;
   transform: none;
-}
-body .editor #dayForm #dayLeaveToggle[aria-expanded="false"] > .ui-icon {
-  position: static;
 }
 body .editor #dayForm #dayLeaveLabel {
   grid-column: 2;
@@ -2245,6 +2241,14 @@ body .editor #dayForm .leave-inline {
   background: transparent;
   box-shadow: none;
   contain: none;
+  visibility: visible;
+  transition: visibility 0s;
+}
+body .editor #dayForm .leave-inline.hidden {
+  display: block !important;
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 240ms;
 }
 body .editor #dayForm .leave-inline-content {
   display: grid;
@@ -2255,6 +2259,7 @@ body .editor #dayForm .leave-inline-content {
   align-items: center;
 }
 body .editor #dayForm .leave-input-wrap {
+  position: relative;
   display: flex;
   align-items: center;
   justify-self: start;
@@ -2269,13 +2274,33 @@ body .editor #dayForm .leave-input-wrap {
   background: transparent;
 }
 body .editor #dayForm .leave-inline #dayLeave {
+  position: absolute;
+  inset-inline: 0;
+  width: 100%;
+  box-sizing: border-box;
   height: calc(var(--control-height) - 2px) !important;
-  padding-inline: 2rem 0.285714rem;
+  padding-inline: 1.5rem;
+  text-align: center;
   font-family: var(--font-numeric);
   font-size: 1rem;
   font-weight: 600;
+  opacity: 0;
+  transform: translateX(var(--leave-value-offset, 0.6rem));
+  transition: opacity 180ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-body .editor #dayForm .leave-inline-unit { padding-inline: 0.285714rem 0.714286rem; }
+body .editor #dayForm .leave-inline-unit {
+  position: absolute;
+  right: 10px;
+  padding: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(var(--leave-unit-offset, -0.6rem));
+  transition: opacity 180ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+body .editor #dayForm .is-leave-open :is(#dayLeave, .leave-inline-unit) {
+  opacity: 1;
+  transform: translateX(0);
+}
 body .editor #dayForm .leave-inline :is(#dayLeaveFull, #dayLeaveDone) {
   width: 100%;
   min-width: 0;

@@ -383,6 +383,7 @@ WorkTimeApp.services.bootstrap.run(
       render,
       open,
       closeSettings: sidebarPanels.closeSettings,
+      closeImport: sidebarPanels.closeImport,
       finishSidebarNavigation: sidebarPanels.finishNavigationMotion,
       toast,
       previewDay,
@@ -413,6 +414,19 @@ WorkTimeApp.services.bootstrap.run(
       persistence,
       exportArchive: () =>
         stateOwner.export(WorkTimeApp.services.preferences.page.state),
+      backupSource: {
+        snapshot: () => ({
+          ...stateOwner.state,
+          preferences: {
+            ...stateOwner.state.preferences,
+            ...WorkTimeApp.services.preferences.page.state,
+          },
+        }),
+        subscribe: (listener) => stateOwner.subscribe(listener),
+        export: (state) => persistence.export(state),
+        exportChanges: (state, changes) =>
+          persistence.exportChanges(state, changes),
+      },
       hydrateImports: () => stateOwner.hydrateImports(),
       importIndex,
       clipboard: WorkTimeApp.services.clipboard.create(

@@ -346,6 +346,10 @@ WorkTimeApp.ui.createCalendar = function (options) {
     $("analysisToggle").setAttribute("data-i18n-aria-label", analysisLabel);
     $("calendar").classList.toggle("hidden", !!analysisMode);
     $("analysisPage").hidden = !analysisMode;
+    $("analysisSidebar").hidden = !analysisMode;
+    document
+      .querySelector(".workspace > .editor")
+      .classList.toggle("is-analysis-mode", !!analysisMode);
     if (analysisMode) {
       document.querySelector("#panelContent>.weekdays").classList.add("hidden");
       document

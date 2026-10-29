@@ -53,8 +53,8 @@ WorkTimeApp.games = (() => {
       }
     },
     load,
-    prepareArchive: () =>
-      Promise.all([...definitions.keys()].map((id) => load(id, true))),
+    prepareArchive: (ids = [...definitions.keys()]) =>
+      Promise.all(ids.map((id) => load(id, true))),
     register(entry) {
       if (
         !entry ||

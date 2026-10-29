@@ -298,6 +298,17 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       }
     }
   }
+  function closeImport() {
+    if (disposed || !stack.length) return;
+    const removed = stack.splice(0);
+    for (const entry of removed) {
+      const pane = panes.get(entry.id);
+      WorkTimeApp.ui.motion?.stop(pane);
+      if (pane.open) pane.close();
+    }
+    render();
+    finishNavigationMotion();
+  }
   function closed(event) {
     const index = stack.findIndex((entry) => entry.id === event.target.id);
     if (index < 0 || disposed) return;
@@ -387,6 +398,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
   document.addEventListener("worktime:languagechange", refreshLanguage);
   return {
     open,
+    closeImport,
     dispose,
     closeSettings: closeSettingsPanel,
     finishNavigationMotion,

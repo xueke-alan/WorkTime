@@ -104,7 +104,7 @@ async function verify() {
         await page.evaluate(() =>
           JSON.parse(localStorage.getItem("worktime.calendarView")),
         ),
-        { mode, weeks, analysis: true },
+        { mode, weeks, analysis: true, workdaysOnly: false },
       );
       await page.locator("#analysisManual").check();
       await page.locator("#nextMonth").click();

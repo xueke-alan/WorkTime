@@ -43,7 +43,7 @@ async function verify() {
           () => !document.querySelector("#agendaFields").disabled,
         );
       }
-      await page.locator("#agendaViewToggle").click();
+      // Month ribbons retain span-based sorting; packed multiweek rows retain creation order.
       await page.waitForTimeout(1000);
       const short = page.locator(".agenda-week-lane .agenda-chip").filter({
         has: page.locator(".agenda-chip-title-text", { hasText: "Short" }),
@@ -223,10 +223,13 @@ async function verify() {
         );
         assert.ok(
           frames.every((frame) => !frame.overlap || frame.front),
-          "Crossing strips have a single opaque foreground card",
+          "Crossing strips have a single opaque foreground card: " +
+            JSON.stringify(
+              frames.filter((frame) => frame.overlap && !frame.front),
+            ),
         );
         const movement = frames.slice(changed);
-        assert.ok(movement[0].shortTop - movement.at(-1).shortTop > 40);
+        assert.ok(frames[0].shortTop - movement.at(-1).shortTop > 40);
         for (let i = 1; i < movement.length; i++)
           assert.ok(
             movement[i].shortTop <= movement[i - 1].shortTop + 0.5,

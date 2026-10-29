@@ -115,6 +115,19 @@ WorkTimeApp.ui.createDayController = function (options) {
         actions.closeLeavePanel();
     });
     events.listen($("dayLeave"), "keydown", (event) => {
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        event.preventDefault();
+        const input = $("dayLeave"),
+          value = Number(input.value) || 0,
+          delta = event.key === "ArrowUp" ? 0.5 : -0.5;
+        input.value = String(
+          Math.min(
+            Number(input.max) || 24,
+            Math.max(0, Math.round((value + delta) * 100) / 100),
+          ),
+        );
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
       if (event.key === "Enter") {
         event.preventDefault();
         $("dayLeaveDone").click();

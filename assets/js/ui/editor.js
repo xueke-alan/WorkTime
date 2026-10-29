@@ -299,7 +299,7 @@ WorkTimeApp.ui.createEditor = function (options) {
         [
           "expectedHours",
           totals.expectedMinutes / 60,
-          { decimals: 0, suffix: " h" },
+          { decimals: 2, suffix: " h" },
         ],
         [
           "workedHours",
@@ -327,6 +327,32 @@ WorkTimeApp.ui.createEditor = function (options) {
     const panel = $("dayLeavePanel"),
       toggle = $("dayLeaveToggle"),
       row = $("dayLeaveArea").closest(".day-action-row");
+    // Match the collapsed text positions before moving into the editing layout.
+    const label = $("dayLeaveLabel"),
+      text = label.firstChild,
+      match = label.textContent.match(/([\d.]+) h$/),
+      slot = toggle.getBoundingClientRect();
+    if (text && match && slot.width) {
+      const range = document.createRange(),
+        start = match.index;
+      range.setStart(text, start);
+      range.setEnd(text, start + match[1].length);
+      const value = range.getBoundingClientRect();
+      row.style.setProperty(
+        "--leave-value-offset",
+        value.left + value.width / 2 - slot.left - slot.width / 2 + "px",
+      );
+      range.setStart(text, label.textContent.length - 1);
+      range.setEnd(text, label.textContent.length);
+      const unit = range.getBoundingClientRect();
+      row.style.setProperty(
+        "--leave-unit-offset",
+        unit.right - slot.right + 10 + "px",
+      );
+    } else {
+      row.style.setProperty("--leave-value-offset", "0.6rem");
+      row.style.setProperty("--leave-unit-offset", "-0.6rem");
+    }
     panel.classList.toggle("hidden", !open);
     panel.inert = !open;
     row.classList.toggle("is-leave-editing", open);
@@ -371,7 +397,7 @@ WorkTimeApp.ui.createEditor = function (options) {
       hasLeave
         ? fullDay
           ? WorkTimeApp.i18n.t("copy.8912376175")
-          : WorkTimeApp.i18n.t("copy.326f400f75") + hours + "h"
+          : WorkTimeApp.i18n.t("copy.326f400f75") + hours + " h"
         : WorkTimeApp.i18n.t("copy.7697b2ac1b"),
     );
     $("dayLeaveToggle").disabled = !canLeave;

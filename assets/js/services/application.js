@@ -58,6 +58,10 @@ const WorkTimeServiceApplication = (() => {
       pending = 0,
       exclusive = false;
     let dirtyChanges = {};
+    const listeners = new Set();
+    function publish(changes, reset = false) {
+      for (const listener of listeners) listener(changes, reset);
+    }
     function collect(before, after, hints) {
       const changes = { ...hints };
       for (const key of [
@@ -136,6 +140,7 @@ const WorkTimeServiceApplication = (() => {
         state = freeze(candidate);
         revision++;
         dirty = true;
+        publish(patch, restore);
       }
       if (!atomic) dirtyChanges = combine(dirtyChanges, patch);
       const generation = revision;
@@ -157,6 +162,7 @@ const WorkTimeServiceApplication = (() => {
           if (saved.persisted && atomic) {
             state = freeze(candidate);
             revision++;
+            publish(patch, restore);
           }
           if (saved.persisted && (atomic || generation === revision)) {
             dirty = false;
@@ -181,6 +187,10 @@ const WorkTimeServiceApplication = (() => {
         });
     }
     const service = {
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
       get state() {
         return state;
       },
@@ -512,6 +522,7 @@ const WorkTimeServiceApplication = (() => {
         revision++;
         dirty = false;
         dirtyChanges = {};
+        publish({}, true);
         saveFailed = false;
         loadCorrupt = false;
       },

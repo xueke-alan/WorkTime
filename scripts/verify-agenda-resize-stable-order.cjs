@@ -56,7 +56,6 @@ const setRange = require("./lib/agenda-test-range.cjs");
         });
       await page.waitForTimeout(600);
       const original = await chips().first().boundingBox();
-      const weekOne = '.agenda-week-lane[data-dates^="2026-10-19"]';
       const weekTwo = '.agenda-week-lane[data-dates^="2026-10-26"]';
       const peers = await page
         .locator(".agenda-week-lane .agenda-chip")
@@ -133,12 +132,10 @@ const setRange = require("./lib/agenda-test-range.cjs");
       );
       await page.waitForTimeout(320);
       const final = await chips().first().boundingBox();
-      const lane = await page.locator(weekOne).boundingBox();
       assert.ok(
-        Math.abs(final.y - lane.y) < 0.2,
-        "Date sorting happens only after release",
+        Math.abs(final.y - original.y) < 0.2,
+        "Packed source rows retain creation order after release",
       );
-      assert.ok(final.y < original.y - 30);
       assert.equal(
         await chips().last().getAttribute("data-agenda-segment-end"),
         "2026-10-28",

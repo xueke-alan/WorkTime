@@ -10,7 +10,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     todayGlow = null,
     todayGlowAnimation = null,
     todayGlowFrame = null,
-    analysisTransition = null,
+    pageTransition = null,
     monthAnimations = [],
     monthTransition = null,
     unlistenMotion,
@@ -27,51 +27,53 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     todayGlow = null;
   }
 
-  function commitAnalysisTransition(transition) {
+  function commitPageTransition(transition) {
     if (transition.committed) return;
     transition.committed = true;
-    if (model.yearMode) {
-      model.month = model.returnMonth;
-      model.yearMode = false;
-    }
-    model.analysisMode = transition.target;
-    transition.beforeRender?.();
+    transition.update();
     actions.render();
     transition.afterRender?.();
+    // Page transitions own the entire content surface; suppress nested reveals.
+    for (const element of $("panelContent").querySelectorAll("*"))
+      WorkTimeApp.ui.motion?.stop(element);
   }
 
-  function stopAnalysisTransition(settle = true) {
+  function stopPageTransition(settle = true) {
     stopMonthTransition();
-    const transition = analysisTransition;
+    const transition = pageTransition;
     if (!transition) return;
-    analysisTransition = null;
+    pageTransition = null;
     for (const animation of transition.animations) animation.cancel();
     try {
-      if (settle) commitAnalysisTransition(transition);
+      if (settle) commitPageTransition(transition);
     } finally {
       for (const [element, inert] of transition.elements) element.inert = inert;
+      if (settle) transition.onComplete?.();
     }
   }
 
-  async function transitionAnalysis(
-    target,
-    beforeRender = null,
-    afterRender = null,
-  ) {
-    if (resettingBatch || model.batchMode || analysisTransition) return;
+  async function transitionPage({
+    direction,
+    update,
+    afterRender,
+    onComplete,
+  }) {
+    if (resettingBatch || model.batchMode || pageTransition) return;
+    actions.closeImport();
     stopMonthTransition();
     stopTodayAttention();
     const transition = {
-      target,
-      beforeRender,
+      direction,
+      update,
       afterRender,
+      onComplete,
       committed: false,
       animations: [],
       elements: new Map(),
     };
-    analysisTransition = transition;
+    pageTransition = transition;
     const play = (entering) => {
-      const distance = transition.target ? -24 : 24,
+      const distance = -24 * transition.direction,
         offset = entering ? -distance : distance,
         shifted = {
           opacity: 0,
@@ -82,14 +84,25 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         elements = [
           content,
           ...document.querySelectorAll(".calendar-footer > *"),
+          ...[
+            ...document.querySelectorAll(
+              "#dayForm, #analysisSidebar > .analysis-sidebar-section, #agendaDayDetails, #agendaEditor .agenda-editor-body",
+            ),
+          ].filter(
+            (element) =>
+              element.getClientRects().length &&
+              getComputedStyle(element).display !== "none",
+          ),
         ];
       transition.animations = elements.map((element) => {
         if (!transition.elements.has(element))
           transition.elements.set(element, element.inert);
         element.inert = true;
         WorkTimeApp.ui.motion?.stop(element);
-        const frames =
-          element === content
+        const sidebar = element.closest(".editor");
+        const frames = sidebar
+          ? [{ opacity: 0, transform: `translateY(${offset / 3}px)` }, resting]
+          : element === content
             ? [shifted, resting]
             : [{ opacity: 0 }, { opacity: 1 }];
         return animationCompat.animate(
@@ -110,16 +123,30 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     };
     try {
       if (reducedMotion.matches || document.hidden) {
-        commitAnalysisTransition(transition);
+        commitPageTransition(transition);
         return;
       }
       await play(false);
-      if (analysisTransition !== transition) return;
-      commitAnalysisTransition(transition);
+      if (pageTransition !== transition) return;
+      commitPageTransition(transition);
       await play(true);
     } finally {
-      if (analysisTransition === transition) stopAnalysisTransition();
+      if (pageTransition === transition) stopPageTransition();
     }
+  }
+  function transitionAnalysis(target, beforeRender = null, afterRender = null) {
+    return transitionPage({
+      direction: target ? 1 : -1,
+      update() {
+        if (model.yearMode) {
+          model.month = model.returnMonth;
+          model.yearMode = false;
+        }
+        model.analysisMode = target;
+        beforeRender?.();
+      },
+      afterRender,
+    });
   }
   function toggleAnalysis() {
     return transitionAnalysis(!model.analysisMode);
@@ -220,13 +247,24 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     for (const animation of monthAnimations) animation.cancel();
     monthAnimations = [];
     if (!transition) return;
-    const { element, viewport, style } = transition;
+    const { element, viewport, style, suffixes } = transition;
+    for (const suffix of suffixes) {
+      suffix.parentElement?.classList.remove("calendar-month-suffix-host");
+      suffix.remove();
+    }
     viewport.replaceWith(element);
     if (style === null) element.removeAttribute("style");
     else element.setAttribute("style", style);
+    transition.onComplete?.();
   }
 
-  function animateMonth(direction, update = () => {}) {
+  function animateMonth(
+    direction,
+    update = () => {},
+    onComplete = () => {},
+    { axis = "y" } = {},
+  ) {
+    actions.closeImport();
     stopMonthTransition();
     const element = $("calendar");
     const enabled =
@@ -238,24 +276,39 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     let copy, previousBounds;
     const scrolls = [];
     const previousDays = new Map();
+    const attendance = !element.closest(".agenda-mode");
+    const daySelector = attendance ? ":scope > .day" : ".day[data-agenda-week]";
+    function numberPosition(card, bounds) {
+      const label =
+        card.querySelector(".daynum-text") || card.querySelector(".daynum");
+      if (!label?.firstChild) return null;
+      const range = document.createRange();
+      range.selectNodeContents(label.firstChild);
+      const rect = range.getBoundingClientRect();
+      return { left: rect.left - bounds.left, top: rect.top - bounds.top };
+    }
     if (enabled) {
       WorkTimeApp.ui.motion?.stop(element);
       previousBounds = element.getBoundingClientRect();
-      if (element.classList.contains("agenda-week-view"))
-        for (const card of element.querySelectorAll(".day[data-agenda-week]")) {
-          const rect = card.getBoundingClientRect();
-          previousDays.set(card.dataset.date || card.dataset.previewDate, {
-            top: rect.top - previousBounds.top,
-            bottom: rect.bottom - previousBounds.top,
-          });
-        }
+      for (const card of element.querySelectorAll(daySelector)) {
+        const rect = card.getBoundingClientRect();
+        if (!rect.height) continue;
+        previousDays.set(card.dataset.date || card.dataset.previewDate, {
+          top: rect.top - previousBounds.top,
+          bottom: rect.bottom - previousBounds.top,
+          opacity: attendance ? getComputedStyle(card).opacity : null,
+          monthSuffix: card.querySelector(".daynum small")?.textContent || "",
+          number: attendance ? numberPosition(card, rect) : null,
+        });
+      }
       copy = element.cloneNode(true);
       if (element.scrollTop || element.scrollLeft)
         scrolls.push([copy, element.scrollTop, element.scrollLeft]);
       copy.removeAttribute("id");
       for (const node of copy.querySelectorAll("[id]"))
         node.removeAttribute("id");
-      const selector = ".agenda-card-items, .agenda-week-lane";
+      const selector =
+        ".agenda-card-items, .agenda-week-lane, .timetable-scroll";
       const sources = element.querySelectorAll(selector);
       const copies = copy.querySelectorAll(selector);
       sources.forEach((source, index) => {
@@ -282,32 +335,59 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     update();
     // Rendering may have triggered selection/content reveals. The whole calendar
     // is the only moving surface during date navigation.
-    if (!enabled || !copy) return;
+    if (!enabled || !copy) {
+      onComplete();
+      return;
+    }
     WorkTimeApp.ui.motion?.stop(element);
     for (const child of element.querySelectorAll("*"))
       WorkTimeApp.ui.motion?.stop(child);
+    if (attendance)
+      WorkTimeApp.ui.alignment?.refresh([
+        ...element.querySelectorAll(".daytop"),
+      ]);
     const bounds = element.getBoundingClientRect();
-    if (!bounds.height || !previousBounds.height) return;
-    // Shared dates must stay on one continuous calendar track. A three-week
-    // window advancing seven days travels one row, rather than three rows.
-    const nextDays = [...element.querySelectorAll(".day[data-agenda-week]")];
+    if (!bounds.height || !previousBounds.height) {
+      onComplete();
+      return;
+    }
+    // Shared weeks are drawn once on a continuous track, both at month
+    // boundaries and when a multiweek agenda advances by one week.
+    const nextDays = [...element.querySelectorAll(daySelector)].filter(
+      (card) => card.getBoundingClientRect().height > 0,
+    );
     const sharedOffsets = nextDays.flatMap((card) => {
       const previous = previousDays.get(
         card.dataset.date || card.dataset.previewDate,
       );
+      // Month grids can have different row heights (four, five or six weeks).
+      // Join the top edge when moving forward and the bottom edge on return.
+      const edge = attendance && direction < 0 ? "bottom" : "top";
       return previous
-        ? [previous.top - (card.getBoundingClientRect().top - bounds.top)]
+        ? [previous[edge] - (card.getBoundingClientRect()[edge] - bounds.top)]
         : [];
     });
+    const horizontal = axis === "x";
+    const translate = (value) =>
+      horizontal ? `translateX(${value}px)` : `translateY(${value}px)`;
     let offset =
-      direction * (direction > 0 ? previousBounds.height : bounds.height);
+      direction *
+      (horizontal
+        ? direction > 0
+          ? previousBounds.width
+          : bounds.width
+        : direction > 0
+          ? previousBounds.height
+          : bounds.height);
     const sharedOffset = sharedOffsets[0];
     const partial =
-      element.classList.contains("agenda-week-view") &&
-      previousDays.size === nextDays.length &&
-      Math.abs(previousBounds.height - bounds.height) < 1 &&
+      !horizontal &&
+      (attendance ||
+        (element.classList.contains("agenda-week-view") &&
+          previousDays.size === nextDays.length &&
+          Math.abs(previousBounds.height - bounds.height) < 1)) &&
       Math.sign(sharedOffset) === direction &&
-      Math.abs(sharedOffset) < bounds.height &&
+      Math.abs(sharedOffset) < Math.max(bounds.height, previousBounds.height) &&
       sharedOffsets.every((value) => Math.abs(value - sharedOffset) < 1);
     if (partial) offset = sharedOffset;
     const viewport = document.createElement("div");
@@ -352,37 +432,94 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       node.scrollTop = top;
       node.scrollLeft = left;
     }
-    const transition = { element, viewport, style };
+    const suffixes = [];
+    const transition = { element, viewport, style, suffixes, onComplete };
     monthTransition = transition;
     const pageTravel =
-      !partial &&
-      (!element.classList.contains("agenda-week-view") || nextDays.length > 7);
+      !element.classList.contains("agenda-week-view") ||
+      (!partial &&
+        (nextDays.length > 7 ||
+          element.classList.contains("agenda-dual-card-view")));
     const timing = {
-      duration: !pageTravel
-        ? calendarMotion.navigationDuration
-        : calendarMotion.pageNavigationDuration,
-      easing: !pageTravel
-        ? calendarMotion.easing
-        : calendarMotion.pageNavigationEasing,
+      duration:
+        horizontal || !pageTravel
+          ? calendarMotion.navigationDuration
+          : calendarMotion.pageNavigationDuration,
+      easing:
+        horizontal || !pageTravel
+          ? calendarMotion.easing
+          : calendarMotion.pageNavigationEasing,
       fill: "both",
     };
+    const details = [];
+    if (attendance && partial) {
+      for (const card of nextDays) {
+        const previous = previousDays.get(
+          card.dataset.date || card.dataset.previewDate,
+        );
+        if (!previous) continue;
+        const opacity = getComputedStyle(card).opacity;
+        if (previous.opacity !== opacity)
+          details.push({
+            element: card,
+            frames: [{ opacity: previous.opacity }, { opacity }],
+            options: timing,
+          });
+        const suffix = card.querySelector(".daynum small");
+        const host = card.querySelector(".daynum");
+        if (!!suffix !== !!previous.monthSuffix && previous.number) {
+          const position = numberPosition(card, card.getBoundingClientRect());
+          if (position) {
+            const x = previous.number.left - position.left;
+            const y = previous.number.top - position.top;
+            if (Math.abs(x) > 0.1 || Math.abs(y) > 0.1)
+              details.push({
+                element: host,
+                frames: [
+                  { transform: `translate(${x}px, ${y}px)` },
+                  { transform: "translate(0px, 0px)" },
+                ],
+                options: timing,
+              });
+          }
+        }
+        if (suffix && !previous.monthSuffix)
+          details.push({
+            element: suffix,
+            frames: [{ opacity: 0 }, { opacity: 1 }],
+            options: timing,
+          });
+        else if (!suffix && previous.monthSuffix) {
+          const outgoing = document.createElement("small");
+          outgoing.className = "calendar-month-suffix-outgoing";
+          outgoing.textContent = previous.monthSuffix;
+          outgoing.setAttribute("aria-hidden", "true");
+          host.classList.add("calendar-month-suffix-host");
+          host.append(outgoing);
+          suffixes.push(outgoing);
+          details.push({
+            element: outgoing,
+            frames: [{ opacity: 1 }, { opacity: 0 }],
+            options: timing,
+          });
+        }
+      }
+    }
     monthAnimations = WorkTimeApp.ui.motion.animateCalendar([
       {
         element: copy,
         frames: [
-          { transform: "translateY(0px)" },
-          { transform: `translateY(${-offset}px)` },
+          { transform: translate(0) },
+          { transform: translate(-offset) },
         ],
         options: timing,
       },
       {
         element,
-        frames: [
-          { transform: `translateY(${offset}px)` },
-          { transform: "translateY(0px)" },
-        ],
+        frames: [{ transform: translate(offset) }, { transform: translate(0) }],
         options: timing,
       },
+      ...details,
     ]);
     Promise.all(monthAnimations.map((animation) => animation.finished)).then(
       () => {
@@ -416,8 +553,8 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     model.selected = visible ? selected : fallback;
   }
 
-  function navigateMonth(v) {
-    stopAnalysisTransition();
+  function navigateMonth(v, selectToday = false) {
+    stopPageTransition();
     if (resettingBatch || model.batchMode) return;
     stopTodayAttention();
     model.yearMode = false;
@@ -431,6 +568,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
           ? model.today
           : model.month + "-01",
       );
+      if (direction && !selectToday) model.calendarSelected = null;
       model.batchDays.clear();
       model.batchAnchor = null;
       actions.render();
@@ -550,6 +688,16 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   function bind() {
     if (bound) return;
     bound = true;
+    events.listen(
+      document.querySelector(".panel-head"),
+      "click",
+      (event) => {
+        if (!pageTransition) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      },
+      true,
+    );
     for (const type of ["click", "keydown"])
       events.listen(
         document,
@@ -569,15 +717,15 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         });
     unlistenMotion = animationCompat.listen(reducedMotion, () => {
       stopTodayAttention();
-      if (reducedMotion.matches) stopAnalysisTransition();
+      if (reducedMotion.matches) stopPageTransition();
     });
     events.listen(document, "visibilitychange", () => {
       if (document.hidden) {
         stopTodayAttention();
-        stopAnalysisTransition();
+        stopPageTransition();
       }
     });
-    events.listen(window, "resize", stopMonthTransition);
+    events.listen(window, "resize", () => stopPageTransition());
     events.listen($("calendar"), "click", stopTodayAttention, true);
     events.handler($("calendar"), "onclick", async (e) => {
       if (resettingBatch) return;
@@ -643,43 +791,49 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       }
     });
     events.handler($("monthTitle"), "onclick", () => {
-      stopAnalysisTransition();
       if (resettingBatch || model.batchMode || model.analysisMode) return;
-      stopTodayAttention();
-      if (model.yearMode) {
-        model.yearMode = false;
-        model.month = model.returnMonth;
-      } else {
-        model.yearMode = true;
-        model.viewYear = Number(model.month.slice(0, 4));
-        model.returnMonth = model.month;
-        model.batchMode = false;
-        model.batchDays.clear();
-        model.batchAnchor = null;
-      }
-      actions.render();
+      return transitionPage({
+        direction: model.yearMode ? -1 : 1,
+        update() {
+          if (model.yearMode) {
+            model.yearMode = false;
+            model.month = model.returnMonth;
+          } else {
+            model.yearMode = true;
+            model.viewYear = Number(model.month.slice(0, 4));
+            model.returnMonth = model.month;
+            model.batchMode = false;
+            model.batchDays.clear();
+            model.batchAnchor = null;
+          }
+        },
+      });
     });
     events.listen($("calendar"), "click", (e) => {
       const button = e.target.closest("[data-year-date]");
       if (!button || model.batchMode) return;
       const month = button.dataset.yearDate.slice(0, 7);
-      const direction =
-        month === model.month ? 0 : month > model.month ? 1 : -1;
-      animateMonth(direction, () => {
-        model.yearMode = false;
-        model.month = month;
-        model.selected = model.calendarSelected = button.dataset.yearDate;
-        actions.render();
+      return transitionPage({
+        direction: -1,
+        update() {
+          model.yearMode = false;
+          model.month = month;
+          model.selected = model.calendarSelected = button.dataset.yearDate;
+        },
+        afterRender() {
+          if ($("settingsDialog").open) actions.refreshSettings();
+        },
+        onComplete() {
+          $("calendar")
+            .querySelector(
+              "[data-date=" + JSON.stringify(model.selected) + "] .day-select",
+            )
+            ?.focus({ preventScroll: true });
+        },
       });
-      if ($("settingsDialog").open) actions.refreshSettings();
-      $("calendar")
-        .querySelector(
-          "[data-date=" + JSON.stringify(model.selected) + "] .day-select",
-        )
-        ?.focus({ preventScroll: true });
     });
     events.handler($("prevMonth"), "onclick", () => {
-      stopAnalysisTransition();
+      stopPageTransition();
       if (model.batchMode) return;
       stopTodayAttention();
       if (model.yearMode) {
@@ -696,7 +850,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       navigateMonth(C.dateKey(d).slice(0, 7));
     });
     events.handler($("nextMonth"), "onclick", () => {
-      stopAnalysisTransition();
+      stopPageTransition();
       if (model.batchMode) return;
       stopTodayAttention();
       if (model.yearMode) {
@@ -714,9 +868,23 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
     events.handler($("todayButton"), "onclick", () => {
       if (model.batchMode) return;
+      if (model.yearMode)
+        return transitionPage({
+          direction: -1,
+          update() {
+            model.today = clock.today();
+            model.selected = model.calendarSelected = model.today;
+            model.month = model.today.slice(0, 7);
+            model.yearMode = false;
+          },
+          afterRender() {
+            if ($("settingsDialog").open) actions.refreshSettings();
+          },
+          onComplete: highlightToday,
+        });
       model.today = clock.today();
       model.selected = model.calendarSelected = model.today;
-      navigateMonth(model.today.slice(0, 7));
+      navigateMonth(model.today.slice(0, 7), true);
       if (!model.analysisMode) highlightToday();
     });
     events.handler($("analysisToggle"), "onclick", toggleAnalysis);
@@ -725,7 +893,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       actions.renderCalendar(true);
     });
     events.handler($("batchToggle"), "onclick", () => {
-      stopAnalysisTransition();
+      stopPageTransition();
       if (resettingBatch || model.analysisMode) return;
       stopTodayAttention();
       if ($("settingsDialog").open) actions.closeSettings();
@@ -832,7 +1000,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   }
 
   function dispose() {
-    stopAnalysisTransition(false);
+    stopPageTransition(false);
     stopTodayAttention();
     unlistenMotion?.();
     unlistenMotion = null;
@@ -846,11 +1014,12 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     updateBatchNextToggle,
     refreshBatchPreview,
     transitionAnalysis,
+    transitionPage,
     animateCalendarNavigation: animateMonth,
     retainCalendarSelection,
     highlightToday,
     finishCalendarNavigation() {
-      stopAnalysisTransition();
+      stopPageTransition();
       stopMonthTransition();
       stopTodayAttention();
     },

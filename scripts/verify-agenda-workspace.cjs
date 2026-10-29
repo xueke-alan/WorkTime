@@ -33,6 +33,42 @@ async function verify() {
         document.documentElement.dataset.appState === "ready" &&
         !document.documentElement.classList.contains("app-loading"),
     );
+    for (const motion of ["reduce", "no-preference"]) {
+      await page.emulateMedia({ reducedMotion: motion });
+      for (const target of [
+        "agendaMode",
+        "analysisToggle",
+        "monthTitle",
+        "nextMonth",
+        "prevMonth",
+        "todayButton",
+      ]) {
+        await page.locator("#importOpen").click();
+        await page.locator("#pasteText").fill("OA draft");
+        await page.locator("#" + target).click();
+        assert.equal(
+          await page.locator("#importDialog").isVisible(),
+          false,
+          `${target} closes OA (${motion})`,
+        );
+        assert.equal(
+          await page
+            .locator(".summary-sidebar")
+            .evaluate((sidebar) => sidebar.classList.contains("is-oa-open")),
+          false,
+          `${target} exits OA before rendering the destination (${motion})`,
+        );
+        if (["agendaMode", "analysisToggle", "monthTitle"].includes(target)) {
+          if (motion === "no-preference") await page.waitForTimeout(700);
+          await page.locator("#" + target).click();
+          if (motion === "no-preference") await page.waitForTimeout(700);
+        }
+        await page.locator("#importOpen").click();
+        assert.equal(await page.locator("#pasteText").inputValue(), "");
+        await page.locator("#importOpen").click();
+      }
+    }
+    await page.emulateMedia({ reducedMotion: "reduce" });
     for (const width of [1000, 1280, 1480, 1920]) {
       await page.setViewportSize({ width, height: 1000 });
       const before = await page.locator(".summary-sidebar").boundingBox();
@@ -171,7 +207,17 @@ async function verify() {
     const scrollBefore = await page
       .locator("#agendaList")
       .evaluate((node) => node.scrollTop);
-    await page.locator("#agendaList .agenda-item-copy").nth(2).click();
+    // Preserve the fixture's scroll position; Playwright's click may first scroll
+    // this item into view, changing the baseline before the application runs.
+    await page
+      .locator("#agendaList .agenda-item-copy")
+      .filter({ hasText: "跨天安排" })
+      .evaluate((node) => node.click());
+    assert.equal(
+      await page.locator("#calendar > .day.selected").getAttribute("data-date"),
+      "2026-10-27",
+      "Editing a spanning item preserves the date whose list was opened",
+    );
     await page.locator("#agendaCancel").click();
     assert.equal(
       await page.locator("#agendaList").evaluate((node) => node.scrollTop),

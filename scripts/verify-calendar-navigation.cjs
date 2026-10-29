@@ -31,7 +31,8 @@ async function verify() {
           for (const element of document.querySelectorAll(
             "#calendar, .calendar-navigation-copy",
           ))
-            for (const animation of element.getAnimations()) animation.finish();
+            for (const animation of element.getAnimations({ subtree: true }))
+              animation.finish();
           await new Promise(requestAnimationFrame);
         });
         assert.equal(
@@ -49,11 +50,21 @@ async function verify() {
           "",
           "Release compositing hints after navigation",
         );
+        const dates = await page
+          .locator("#calendar > .day")
+          .evaluateAll((cards) =>
+            cards.map((card) => card.dataset.date || card.dataset.previewDate),
+          );
+        assert.equal(
+          new Set(dates).size,
+          dates.length,
+          "Settled dates are unique",
+        );
       };
       let captured = false;
       const slide = async (id, sign, expected = true) => {
         const sample = await page.evaluate(
-          ({ id }) => {
+          ({ id, sign }) => {
             window.scrollTo({ top: 0, behavior: "instant" });
             const weekdays = document.querySelector("#panelContent>.weekdays");
             const before = weekdays.getBoundingClientRect().top;
@@ -64,15 +75,25 @@ async function verify() {
               previousSelected &&
               (previousSelected.dataset.date ||
                 previousSelected.dataset.previewDate);
+            const attendance = !document.querySelector(
+              ".workspace.agenda-mode",
+            );
+            const daySelector = attendance
+              ? ":scope > .day"
+              : ".day[data-agenda-week]";
             const oldDays = new Map(
               [
-                ...document.querySelectorAll(
-                  "#calendar .day[data-agenda-week]",
-                ),
-              ].map((card) => [
-                card.dataset.date || card.dataset.previewDate,
-                card.getBoundingClientRect().top,
-              ]),
+                ...document
+                  .getElementById("calendar")
+                  .querySelectorAll(daySelector),
+              ]
+                .filter((card) => card.getBoundingClientRect().height > 0)
+                .map((card) => [
+                  card.dataset.date || card.dataset.previewDate,
+                  card.getBoundingClientRect()[
+                    attendance && sign < 0 ? "bottom" : "top"
+                  ],
+                ]),
             );
             const oldBounds = document
               .getElementById("calendar")
@@ -92,25 +113,111 @@ async function verify() {
             );
             const rects = pair.map((element) => {
               const rect = element.getBoundingClientRect();
-              return { top: rect.top, bottom: rect.bottom };
+              return {
+                top: rect.top,
+                bottom: rect.bottom,
+                left: rect.left,
+                right: rect.right,
+              };
             });
-            const shared = [
-              ...live.querySelectorAll(".day[data-agenda-week]"),
-            ].filter((card) =>
-              oldDays.has(card.dataset.date || card.dataset.previewDate),
+            const shared = [...live.querySelectorAll(daySelector)].filter(
+              (card) =>
+                oldDays.has(card.dataset.date || card.dataset.previewDate),
             );
             const sharedMotion = shared.map((card) => ({
               previous: oldDays.get(
                 card.dataset.date || card.dataset.previewDate,
               ),
-              current: card.getBoundingClientRect().top,
+              current:
+                card.getBoundingClientRect()[
+                  attendance && sign < 0 ? "bottom" : "top"
+                ],
               resting:
-                card.getBoundingClientRect().top -
-                new DOMMatrix(getComputedStyle(live).transform).m42,
+                card.getBoundingClientRect()[
+                  attendance && sign < 0 ? "bottom" : "top"
+                ] - new DOMMatrix(getComputedStyle(live).transform).m42,
             }));
-            const oldCards = [
-              ...copy.querySelectorAll(".day[data-agenda-week]"),
-            ];
+            const detailMotions = attendance
+              ? shared.map((card) => {
+                  const sample = (element) =>
+                    element
+                      ?.getAnimations()
+                      .filter((animation) => {
+                        const frames = animation.effect.getKeyframes();
+                        return (
+                          frames.length === 2 &&
+                          frames.every(
+                            (frame) => frame.opacity !== undefined,
+                          ) &&
+                          frames[0].opacity !== frames[1].opacity
+                        );
+                      })
+                      .map((animation) => {
+                        animation.pause();
+                        animation.currentTime =
+                          animation.effect.getTiming().duration / 2;
+                        const frames = animation.effect.getKeyframes();
+                        return {
+                          from: Number(frames[0].opacity),
+                          to: Number(frames[1].opacity),
+                          current: Number(getComputedStyle(element).opacity),
+                        };
+                      }) || [];
+                  return {
+                    card: sample(card),
+                    suffix: sample(card.querySelector(".daynum small")),
+                    position: card
+                      .querySelector(".daynum")
+                      .getAnimations()
+                      .filter((animation) =>
+                        animation.effect
+                          .getKeyframes()
+                          .some((frame) =>
+                            frame.transform?.startsWith("translate("),
+                          ),
+                      )
+                      .map((animation) => {
+                        animation.pause();
+                        animation.currentTime =
+                          animation.effect.getTiming().duration / 2;
+                        const frames = animation.effect.getKeyframes();
+                        return {
+                          from: frames[0].transform,
+                          to: frames[1].transform,
+                          current: getComputedStyle(
+                            card.querySelector(".daynum"),
+                          ).transform,
+                        };
+                      }),
+                  };
+                })
+              : [];
+            const oldCards = [...copy.querySelectorAll(daySelector)];
+            const clip = copy.style.clipPath.match(/-?[\d.]+/g)?.map(Number);
+            const copyBounds = copy.getBoundingClientRect();
+            const repeatedSharedDates =
+              attendance && clip
+                ? oldCards.filter((card) => {
+                    const date = card.dataset.date || card.dataset.previewDate;
+                    if (
+                      !shared.some(
+                        (next) =>
+                          (next.dataset.date || next.dataset.previewDate) ===
+                          date,
+                      )
+                    )
+                      return false;
+                    const rect = card.getBoundingClientRect();
+                    return (
+                      Math.min(
+                        rect.bottom,
+                        copyBounds.bottom - (clip[2] || 0),
+                      ) -
+                        Math.max(rect.top, copyBounds.top + clip[0]) >
+                      1
+                    );
+                  }).length
+                : 0;
             const rowStride =
               oldCards.length > 7
                 ? oldCards[7].getBoundingClientRect().top -
@@ -124,6 +231,9 @@ async function verify() {
               rects,
               timing: live.getAnimations()[0].effect.getTiming(),
               weekView: live.classList.contains("agenda-week-view"),
+              horizontal: live.classList.contains("agenda-dual-card-view"),
+              attendance,
+              repeatedSharedDates,
               previousSelection,
               visibleDates: [...live.querySelectorAll(":scope>.day")]
                 .filter((card) => getComputedStyle(card).display !== "none")
@@ -132,6 +242,7 @@ async function verify() {
                 .filter((card) => getComputedStyle(card).display !== "none")
                 .map((card) => card.dataset.date || card.dataset.previewDate),
               sharedMotion,
+              detailMotions,
               rowStride,
               oldHeight: oldBounds.height,
               clipped: copy.style.clipPath,
@@ -149,7 +260,7 @@ async function verify() {
               ),
             };
           },
-          { id },
+          { id, sign },
         );
         if (!expected) {
           assert.equal(sample, null);
@@ -161,20 +272,25 @@ async function verify() {
             sample.selectedDates,
             id === "todayButton"
               ? ["2026-10-20"]
-              : sample.visibleDates.includes(sample.previousSelection)
+              : !sample.attendance &&
+                  sample.visibleDates.includes(sample.previousSelection)
                 ? [sample.previousSelection]
                 : [],
-            "Returning to today selects today; other navigation retains only a still-visible selection",
+            "Attendance month navigation clears selection; today selects today and agenda retains visible dates",
           );
         }
-        if (!sample.weekView) {
+        if (
+          !sample.horizontal &&
+          (!sample.weekView ||
+            (sample.rows === 1 && !sample.sharedMotion.length))
+        ) {
           assert.equal(
             sample.timing.duration,
             520,
             "Full month/year travel has enough time to remain readable",
           );
           assert.equal(sample.timing.easing, "cubic-bezier(0.4, 0, 0.2, 1)");
-        } else if (sample.sharedMotion.length || sample.rows === 1)
+        } else if (sample.horizontal || sample.sharedMotion.length)
           assert.equal(
             sample.timing.duration,
             320,
@@ -193,7 +309,10 @@ async function verify() {
           assert.equal(frames.length, 1);
           assert.ok(
             frames[0].every((frame) =>
-              /^translateY\(-?[\d.]+px\)$/.test(frame.transform),
+              (sample.horizontal
+                ? /^translateX\(-?[\d.]+px\)$/
+                : /^translateY\(-?[\d.]+px\)$/
+              ).test(frame.transform),
             ),
           );
           assert.ok(frames[0].every((frame) => frame.opacity === undefined));
@@ -201,26 +320,66 @@ async function verify() {
         const firstOffset =
           sample.frames[1][0][0].transform.match(/-?[\d.]+/)[0];
         assert.equal(Math.sign(Number(firstOffset)), sign);
-        const seam =
-          sign > 0
+        const seam = sample.horizontal
+          ? sign > 0
+            ? sample.rects[0].right - sample.rects[1].left
+            : sample.rects[1].right - sample.rects[0].left
+          : sign > 0
             ? sample.rects[0].bottom - sample.rects[1].top
             : sample.rects[1].bottom - sample.rects[0].top;
         if (sample.sharedMotion.length && sample.rows > 1) {
           const movedRows = (sample.rows * 7 - sample.sharedMotion.length) / 7;
-          assert.ok(
-            Math.abs(
-              Math.abs(Number(firstOffset)) - sample.rowStride * movedRows,
-            ) < 1,
-            "Overlapping date ranges move by the actual number of weeks",
-          );
-          assert.ok(
-            Math.abs(Number(firstOffset)) < sample.oldHeight,
-            "One-week navigation does not move the full multiweek view",
-          );
+          if (sample.weekView)
+            assert.ok(
+              Math.abs(
+                Math.abs(Number(firstOffset)) - sample.rowStride * movedRows,
+              ) < 1,
+              "Overlapping date ranges move by the actual number of weeks",
+            );
+          if (sample.weekView)
+            assert.ok(
+              Math.abs(Number(firstOffset)) < sample.oldHeight,
+              "One-week navigation does not move the full multiweek view",
+            );
           assert.ok(
             sample.clipped.startsWith("inset("),
             "Only departing old rows remain visible",
           );
+          assert.equal(
+            sample.repeatedSharedDates,
+            0,
+            "Shared month rows are painted once",
+          );
+          for (const detail of sample.detailMotions) {
+            assert.equal(
+              detail.card.length,
+              1,
+              "Shared cards fade between month states",
+            );
+            assert.equal(
+              detail.suffix.length,
+              1,
+              "Month suffixes fade in or out",
+            );
+            for (const motion of [...detail.card, ...detail.suffix])
+              assert.ok(
+                motion.current > Math.min(motion.from, motion.to) &&
+                  motion.current < Math.max(motion.from, motion.to),
+                "Opacity has an intermediate animated value",
+              );
+          }
+          if (sample.detailMotions.length)
+            assert.ok(
+              sample.detailMotions.some((detail) =>
+                detail.position.some(
+                  (motion) =>
+                    motion.from !== motion.to &&
+                    motion.current !== "none" &&
+                    motion.current !== "matrix(1, 0, 0, 1, 0, 0)",
+                ),
+              ),
+              "Date numbers move smoothly when month suffixes change their layout",
+            );
           for (const shared of sample.sharedMotion) {
             assert.ok(
               Math.abs(shared.previous - shared.resting - Number(firstOffset)) <
@@ -247,12 +406,7 @@ async function verify() {
         .locator('#calendar [data-date="2026-10-31"] .day-select')
         .click();
       await slide("nextMonth", 1);
-      assert.equal(
-        await page
-          .locator('#calendar [data-preview-date="2026-10-31"].selected')
-          .count(),
-        1,
-      );
+      assert.equal(await page.locator("#calendar>.day.selected").count(), 0);
       await slide("nextMonth", 1);
       assert.equal(await page.locator("#calendar>.day.selected").count(), 0);
       await slide("prevMonth", -1);
@@ -269,10 +423,15 @@ async function verify() {
       await slide("prevMonth", -1);
       await slide("todayButton", 0, false);
       await page.locator("#monthTitle").click();
-      await page.waitForTimeout(400);
+      await page.waitForFunction(
+        () => !document.getElementById("panelContent").inert,
+      );
       await slide("nextMonth", 1);
       await slide("prevMonth", -1);
-      await slide('[data-year-date="2026-02-01"]', -1);
+      await page.locator('[data-year-date="2026-02-01"]').click();
+      await page.waitForFunction(
+        () => !document.getElementById("panelContent").inert,
+      );
       await slide("nextMonth", 1);
       await slide("todayButton", 1);
       for (let i = 0; i < 3; i++) await slide("nextMonth", 1);

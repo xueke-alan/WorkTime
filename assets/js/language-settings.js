@@ -68,8 +68,17 @@
     const notice = document.createElement("p");
     notice.className = "theme-save-notice";
     notice.setAttribute("role", "status");
+    const help = document.createElement("p");
+    help.className = "help";
+    help.id = config.id + "Help";
+    help.setAttribute("role", "status");
+    if (config.help) trigger.setAttribute("aria-describedby", help.id);
     function synchronize() {
       label.textContent = i18n.t(config.label);
+      if (config.help) {
+        help.textContent = config.help();
+        help.hidden = !help.textContent;
+      }
       config.options().forEach((option, index) => {
         select.options[index].textContent = option.name;
       });
@@ -172,16 +181,23 @@
           result.persisted || result.pending ? "" : i18n.t(config.failed);
     });
     document.addEventListener("worktime:languagechange", synchronize);
+    const stopClock = config.help
+      ? WorkTimeApp.services.clock
+          .create({ dateKey: WorkTimeApp.domain.time.businessDate })
+          .watch({ document, onChange: synchronize })
+      : () => {};
     window.addEventListener(
       "pagehide",
       () => {
         languageRevision++;
         unsubscribe();
+        stopClock();
         document.removeEventListener("worktime:languagechange", synchronize);
       },
       { once: true },
     );
     field.append(label, select, trigger, list, notice);
+    if (config.help) field.append(help);
     host.append(field);
     synchronize();
   }
@@ -194,6 +210,46 @@
     const divider = document.createElement("hr");
     divider.className = "settings-content-divider";
     host.before(row, divider);
+    const backupRow = document.createElement("div");
+    backupRow.className = "auto-backup-settings";
+    host.before(backupRow);
+    backupRow.append(host);
+    function backupStatus() {
+      const saved = preferences.state.lastBackupAt;
+      if (!saved) return "";
+      const date = new Date(saved);
+      if (!Number.isFinite(date.getTime())) return "";
+      const shifted = new Date(date.getTime() + 8 * 3600000);
+      const day = WorkTimeApp.domain.time.businessDate(date);
+      const time = {
+        year: shifted.getUTCFullYear(),
+        month: shifted.getUTCMonth() + 1,
+        day: shifted.getUTCDate(),
+        hour: String(shifted.getUTCHours()).padStart(2, "0"),
+        minute: String(shifted.getUTCMinutes()).padStart(2, "0"),
+      };
+      return i18n.t(
+        day === WorkTimeApp.domain.time.businessDate(new Date())
+          ? "autoBackup.savedToday"
+          : "autoBackup.savedDate",
+        time,
+      );
+    }
+    mountPicker(backupRow, {
+      id: "autoBackup",
+      selectId: "autoBackupDays",
+      label: "autoBackup.label",
+      preference: "autoBackupDays",
+      failed: "autoBackup.saveFailed",
+      help: backupStatus,
+      options: () =>
+        [0, 1, 3, 7].map((days) => ({
+          id: String(days),
+          name: i18n.t("autoBackup.option" + days),
+        })),
+      read: () => String(preferences.state.autoBackupDays ?? 0),
+      save: (value) => preferences.saveAutoBackupDays(Number(value)),
+    });
     mountPicker(row, {
       id: "weather",
       selectId: "weatherDays",

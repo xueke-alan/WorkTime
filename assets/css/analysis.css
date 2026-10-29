@@ -1,4 +1,44 @@
 /* Routine analysis: quiet summaries, linked clock-time tracks, monthly rhythm. */
+.analysis-sidebar[hidden] { display: none !important; }
+body .editor.is-analysis-mode #dayEditor { display: none !important; }
+.analysis-sidebar {
+  margin: calc(-1 * var(--editor-gutter)) calc(-1 * var(--editor-gutter)) 0;
+  color: var(--ink);
+}
+.analysis-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  height: var(--column-header-height, 68px);
+  min-height: var(--column-header-height, 68px);
+  padding: 0 var(--editor-gutter);
+  background: var(--column-header-background);
+  border-bottom: 1px solid var(--line);
+}
+.analysis-sidebar-header > p,
+.analysis-sidebar-header > h2 { margin: 0; font: inherit; letter-spacing: inherit; color: inherit; white-space: nowrap; }
+.analysis-sidebar-section { margin-inline: var(--editor-gutter); padding: 12px 0; border-bottom: 1px solid var(--line); }
+.analysis-sidebar-section:last-child { border-bottom: 0; padding-bottom: 14px; }
+.analysis-sidebar-section > h3 { font-size: 14px; line-height: 1.5; margin-bottom: 8px; font-weight: 650; }
+.analysis-observation { font-size: 16px; line-height: 1.65; margin-bottom: 8px; white-space: pre-line; text-wrap: pretty; }
+.analysis-sidebar-muted { color: var(--muted); font-size: 12px; line-height: 1.65; }
+.analysis-focus-dates { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+.analysis-focus-dates > button { padding: 5px 10px; font-size: 12px; min-height: 30px; }
+.analysis-focus-dates > button[aria-pressed="true"] { background: var(--theme-surface-subtle); color: var(--accent); border-color: var(--accent); }
+.analysis-focus-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; }
+.analysis-focus-heading > span { color: var(--muted); font-size: 11px; }
+.analysis-focus-times { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 10px 0; font-size: clamp(20px, 2.1vw, 27px); font-variant-numeric: tabular-nums; }
+.analysis-focus-times > strong { position: relative; font-weight: 600; }
+.analysis-focus-times > strong > small { position: absolute; inset-inline-end: 0; top: -12px; color: var(--muted); font-size: 11px; line-height: 12px; font-weight: 400; white-space: nowrap; }
+.analysis-focus-times > span { font-size: 16px; color: var(--muted); }
+.analysis-focus-times > strong { overflow-wrap: anywhere; }
+.analysis-sidebar-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 13px; line-height: 1.6; margin-top: 6px; }
+.analysis-sidebar-row > span { color: var(--muted); }
+.analysis-sidebar-row > strong { font-weight: 500; font-variant-numeric: tabular-nums; text-align: end; }
+.analysis-focus-source, .analysis-sidebar-scope > p { margin-top: 10px; }
+.analysis-focus-detail { font-size: 13px; line-height: 1.6; }
 .analysis-page[hidden],
 .analysis-page [hidden] {
   display: none !important;

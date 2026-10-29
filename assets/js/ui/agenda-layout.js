@@ -18,6 +18,11 @@ WorkTimeApp.ui.createAgendaLayout = function ({
     signature = "",
     disposed = false;
   const scrolls = new Map();
+  let packedLayouts = new WeakMap();
+  // Text follows explicit date selection, independently of the editor's date.
+  let textDate = null;
+  let textInitialized = false;
+  let animateText = false;
   let rowSignatures = new WeakMap();
   let layoutSignatures = new WeakMap();
   const contentSignatures = new WeakMap();
@@ -33,6 +38,15 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       (card) => getComputedStyle(card).display !== "none",
     );
     const result = [];
+    if (getState().weeks) {
+      const groups = new Map();
+      for (const card of cards) {
+        const key = card.dataset.agendaRow || "1";
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(card);
+      }
+      return [...groups.values()];
+    }
     for (let index = 0; index < cards.length; index += 7)
       result.push(cards.slice(index, index + 7));
     return result.filter((row) => row.length === 7);
@@ -58,13 +72,22 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       title,
       rightTextEdge,
       titleLeft,
+      contentInset,
+      textInsets,
     } of measurements) {
       const { button } = segment;
       heights[segment.lane] = Math.max(
         heights[segment.lane] || 0,
         bounds.height,
       );
-      if (segment.end === segment.start) continue;
+      if (segment.end === segment.start) {
+        button.dataset.agendaTextDate = dates[segment.start];
+        button.style.removeProperty("--agenda-text-offset");
+        button.style.removeProperty("--agenda-text-width");
+        for (const { node } of textInsets)
+          node.style.removeProperty("--agenda-text-offset");
+        continue;
+      }
       const scaleX = bounds.width / parseFloat(chipWidth);
       const border = parseFloat(borderWidth);
       // Each ordinary overflow container paints only inside one date. The
@@ -129,15 +152,29 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         }
       }
       for (const slice of slices.slice(sliceIndex)) slice.remove();
-      // Date selection changes seam clearance, never the text position.
-      // Keep each weekly segment anchored to its first visible date.
-      const targetColumn = segment.start;
+      const selectedColumn = dates.indexOf(textDate);
+      const targetColumn =
+        selectedColumn >= segment.start && selectedColumn <= segment.end
+          ? selectedColumn
+          : segment.start;
+      const gridOffset =
+        metrics[targetColumn].left - metrics[segment.start].left;
+      const moved = targetColumn !== segment.start;
+      // Continuation arrows stay at the ribbon endpoints. Their reserved space
+      // must not follow the text into an ordinary date in the middle.
+      for (const { node, inset } of textInsets) {
+        const offset = gridOffset - (moved ? inset - contentInset : 0);
+        node.style.setProperty("--agenda-text-offset", offset + "px");
+      }
       button.dataset.agendaTextDate = dates[targetColumn];
+      button.style.removeProperty("--agenda-text-offset");
       if (title && titleLeft !== undefined) {
         const target = metrics[targetColumn];
+        const inset = (titleLeft - bounds.left) / scaleX;
+        const offset = gridOffset - (moved ? inset - contentInset : 0);
         const available = Math.min(
-          target.right - target.left - (titleLeft - bounds.left) / scaleX,
-          (rightTextEdge - titleLeft) / scaleX,
+          target.right - target.left - (moved ? contentInset : inset),
+          (rightTextEdge - titleLeft) / scaleX - offset,
         );
         title.style.maxWidth = Math.max(0, available) + "px";
         button.style.setProperty(
@@ -149,9 +186,64 @@ WorkTimeApp.ui.createAgendaLayout = function ({
     }
     return heights;
   }
+  function measurePlacement(segment) {
+    const { button } = segment;
+    const bounds = button.getBoundingClientRect();
+    const style = getComputedStyle(button);
+    const title = button.querySelector(".agenda-chip-title-text");
+    const textShift = title
+      ? parseFloat(getComputedStyle(title).translate) || 0
+      : 0;
+    return {
+      segment,
+      bounds,
+      width: style.width,
+      padding: style.padding,
+      radius: style.borderRadius,
+      borderWidth: style.borderLeftWidth,
+      title,
+      contentInset:
+        parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft),
+      textInsets: [
+        ...button.querySelectorAll(
+          ".agenda-chip-title-text, :scope > .agenda-chip-time, :scope > .agenda-chip-note",
+        ),
+      ].map((node) => ({
+        node,
+        inset:
+          ((node.getBoundingClientRect().left - bounds.left) *
+            parseFloat(style.width)) /
+            bounds.width -
+          (parseFloat(getComputedStyle(node).translate) || 0),
+      })),
+      rightTextEdge: Math.min(
+        Infinity,
+        ...[
+          ...button.querySelectorAll(
+            ":scope > .agenda-chip-title > .agenda-chip-status, :scope > .agenda-chip-title > .agenda-chip-continuation:last-child",
+          ),
+        ].map(
+          (icon) =>
+            icon.getBoundingClientRect().left -
+            ((parseFloat(getComputedStyle(icon.parentElement).columnGap) || 0) *
+              bounds.width) /
+              parseFloat(style.width),
+        ),
+      ),
+      titleLeft: title
+        ? title.getBoundingClientRect().left -
+          (textShift * bounds.width) / parseFloat(style.width)
+        : undefined,
+    };
+  }
   function render({ animate = true } = {}) {
     if (disposed) return;
     const state = getState();
+    if (!state.active) textInitialized = false;
+    else if (!textInitialized) {
+      textDate = state.selectedDate || null;
+      textInitialized = true;
+    }
     // Single-day month cards retain their existing compact content animation.
     const enabled =
       state.active &&
@@ -195,7 +287,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         };
       });
       const first = cards[0],
-        last = cards[6];
+        last = cards[cards.length - 1];
       const left =
         first.offsetLeft +
         first.clientLeft +
@@ -258,7 +350,9 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         watched.add(node);
       }
     const nextSignature = JSON.stringify([
+      textDate,
       state.weeks,
+      state.maxLanes,
       state.items,
       geometry.map(({ dates, left, top, width, height, edges }) => [
         dates,
@@ -287,11 +381,22 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       const key = dates.join(",");
       const row = previousRows.get(key) || document.createElement("div");
       previousRows.delete(key);
+      const layoutKind = state.weeks >= 2 ? "packed" : "lanes";
+      if (row.dataset.agendaLayout !== layoutKind) {
+        row.dataset.agendaLayout = layoutKind;
+        selectionLayouts.delete(row);
+        layoutSignatures.delete(row);
+        contentSignatures.delete(row);
+        rowSignatures.delete(row);
+        packedLayouts.delete(row);
+      }
       const rowItems = state.items.filter((item) =>
-        rules.overlaps(item, dates[0], dates[6]),
+        dates.some((date) => rules.overlaps(item, date, date)),
       );
       const rowSignature = JSON.stringify([
+        textDate,
         state.weeks,
+        state.maxLanes,
         left,
         top,
         width,
@@ -302,6 +407,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       ]);
       const contentSignature = JSON.stringify([
         state.weeks,
+        state.maxLanes,
         rowItems.map(
           ({
             status: _status,
@@ -326,11 +432,20 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       if (row.parentElement !== layer) layer.append(row);
       if (rowSignatures.get(row) === rowSignature) continue;
       rowSignatures.set(row, rowSignature);
-      // Selection changes only date seam clearance.
+      row.classList.toggle(
+        "agenda-text-shifting",
+        animateText && !state.switching,
+      );
+      if (state.weeks >= 2) {
+        renderPackedRow(row, group, rowItems, animate);
+        continue;
+      }
+      // Date selection changes seam clearance and the text anchor.
       // Reuse measured geometry and existing paint nodes instead of rebuilding
       // templates and refreshing every text alignment on the animation's first frame.
       const selectionKey = JSON.stringify([
         state.weeks,
+        state.maxLanes,
         dates,
         left,
         top,
@@ -384,13 +499,14 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       layoutSignatures.set(row, layoutSignature);
       contentSignatures.set(row, contentSignature);
       row.className =
-        "agenda-week-lane" + (state.weeks ? " is-scrollable" : "");
+        "agenda-week-lane" +
+        (state.weeks && !state.maxLanes ? " is-scrollable" : "");
       row.dataset.dates = dates.join(",");
       row.setAttribute(
         "aria-label",
         WorkTimeApp.i18n.date(dates[0]) +
           " — " +
-          WorkTimeApp.i18n.date(dates[6]),
+          WorkTimeApp.i18n.date(dates[dates.length - 1]),
       );
       if (state.weeks) row.tabIndex = 0;
       Object.assign(row.style, {
@@ -407,15 +523,27 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       // nor a transient vertical scrollbar may resize its percentage positions.
       content.style.width = width + "px";
       if (content.parentElement !== row) row.append(content);
-      const previousButtons = new Map(
-        [...content.children].map((button) => [
-          button.dataset.agendaEdit,
-          button,
-        ]),
-      );
+      const previousButtons = new Map();
+      for (const button of [...content.children]) {
+        const id = button.dataset.agendaEdit;
+        if (!id || previousButtons.has(id)) {
+          button.remove();
+          continue;
+        }
+        previousButtons.set(id, button);
+        // Packed runs can split one event and set a measured height. Restore
+        // natural sizing before measuring the month and single-week lanes.
+        button.style.removeProperty("height");
+        button.style.removeProperty("visibility");
+        delete button.dataset.packedKey;
+      }
       for (const more of row.querySelectorAll(":scope > .agenda-more"))
         more.remove();
-      const segments = rules.segments(state.items, dates);
+      const segments = rules.segments(rowItems, dates).map((segment) => ({
+        ...segment,
+        continuesBefore: segment.item.date < dates[segment.start],
+        continuesAfter: rules.lastDate(segment.item) > dates[segment.end],
+      }));
       const heights = [];
       const placements = segments.map((segment, index) => {
         const template = document.createElement("template");
@@ -509,43 +637,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       WorkTimeApp.ui.alignment?.refresh([content]);
       // Batch geometry reads before adding decorative pieces.
       // A dense week must not force layout separately for each painted slice.
-      const measurements = placements.map((segment) => {
-        const { button } = segment;
-        const bounds = button.getBoundingClientRect();
-        const style = getComputedStyle(button);
-        const title = button.querySelector(".agenda-chip-title-text");
-        const textShift = title
-          ? parseFloat(getComputedStyle(title).translate) || 0
-          : 0;
-        return {
-          segment,
-          bounds,
-          width: style.width,
-          padding: style.padding,
-          radius: style.borderRadius,
-          borderWidth: style.borderLeftWidth,
-          title,
-          rightTextEdge: Math.min(
-            Infinity,
-            ...[
-              ...button.querySelectorAll(
-                ":scope > .agenda-chip-title > .agenda-chip-status, :scope > .agenda-chip-title > .agenda-chip-continuation:last-child",
-              ),
-            ].map(
-              (icon) =>
-                icon.getBoundingClientRect().left -
-                ((parseFloat(getComputedStyle(icon.parentElement).columnGap) ||
-                  0) *
-                  bounds.width) /
-                  parseFloat(style.width),
-            ),
-          ),
-          titleLeft: title
-            ? title.getBoundingClientRect().left -
-              (textShift * bounds.width) / parseFloat(style.width)
-            : undefined,
-        };
-      });
+      const measurements = placements.map(measurePlacement);
       heights.push(...paintDatePieces(measurements, metrics, edges, dates));
       selectionLayouts.set(row, { key: selectionKey, measurements });
       const positions = [];
@@ -554,7 +646,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         positions.push(total);
         total += laneHeight + 3;
       }
-      let limit = heights.length;
+      let limit = Math.min(heights.length, state.maxLanes ?? Infinity);
       if (!state.weeks && total > height) {
         limit = 0;
         while (
@@ -567,9 +659,10 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         placement.button.style.top = positions[placement.lane] + "px";
         placement.button.hidden = placement.lane >= limit;
       }
-      content.style.height = (state.weeks ? total : height) + "px";
-      if (!state.weeks)
-        for (let column = 0; column < 7; column++) {
+      content.style.height =
+        (state.weeks && !state.maxLanes ? total : height) + "px";
+      if (!state.weeks || state.maxLanes)
+        for (let column = 0; column < dates.length; column++) {
           const count = placements.filter(
             (placement) =>
               placement.lane >= limit &&
@@ -604,10 +697,297 @@ WorkTimeApp.ui.createAgendaLayout = function ({
             WorkTimeApp.ui.motion?.play(button, "motion-card-content");
     }
     for (const row of previousRows.values()) row.remove();
+    animateText = false;
     if (focused)
       [...layer.querySelectorAll("[data-agenda-edit]")]
         .find((button) => button.dataset.agendaEdit === focused)
         ?.focus({ preventScroll: true });
+  }
+  function renderPackedRow(
+    row,
+    { dates, metrics, edges, left, top, width, height },
+    items,
+    animate,
+  ) {
+    row.classList.add("agenda-week-lane", "agenda-packed-row");
+    row.classList.remove("is-scrollable");
+    row.dataset.dates = dates.join(",");
+    row.tabIndex = 0;
+    Object.assign(row.style, {
+      left: left + "px",
+      top: top + "px",
+      width: width + "px",
+      height: height + "px",
+    });
+    const key = JSON.stringify([
+      dates,
+      items.map(
+        ({
+          status: _status,
+          completed: _completed,
+          updatedAt: _updatedAt,
+          ...item
+        }) => item,
+      ),
+      left,
+      top,
+      width,
+      height,
+      WorkTimeApp.i18n.locale,
+    ]);
+    const cached = packedLayouts.get(row);
+    if (cached?.key === key) {
+      const byId = new Map(items.map((item) => [item.id, item]));
+      for (const button of row.querySelectorAll(".agenda-chip")) {
+        const item = byId.get(button.dataset.agendaEdit);
+        if (!item) continue;
+        const html = chip(item);
+        if (chipSignatures.get(button) === html) continue;
+        const template = document.createElement("template");
+        template.innerHTML = html;
+        const candidate = template.content.firstElementChild;
+        for (const name of ["continues-before", "continues-after"])
+          candidate.classList.toggle(name, button.classList.contains(name));
+        if (!button.querySelector(".agenda-resize-handle"))
+          candidate.querySelector(".agenda-resize-handle")?.remove();
+        if (updateCompletion(button, candidate))
+          chipSignatures.set(button, html);
+      }
+      paintDatePieces(cached.measurements, metrics, edges, dates);
+      return;
+    }
+    // Measurement temporarily changes continuation endpoints and sliced faces.
+    // Those states must not start border/shadow transitions on retained chips.
+    row.classList.add("agenda-measuring");
+    let content = row.querySelector(".agenda-lane-content");
+    if (!content) {
+      content = document.createElement("div");
+      content.className = "agenda-lane-content";
+      row.append(content);
+    }
+    content.style.width = width + "px";
+    content.style.height = height + "px";
+    for (const more of row.querySelectorAll(":scope > .agenda-more"))
+      more.remove();
+    const previous = new Map(
+      [...content.children].map((node) => [node.dataset.packedKey, node]),
+    );
+    const previousIds = new Set(
+      [...content.children].map((node) => node.dataset.agendaEdit),
+    );
+    const slots = dates.flatMap((date, column) =>
+      rules.forDate(items, date).map((item) => {
+        const template = document.createElement("template");
+        const html = chip(item);
+        template.innerHTML = html;
+        let button = previous.get(item.id + ":" + date);
+        const wantedHandle = template.content.firstElementChild.querySelector(
+          ".agenda-resize-handle",
+        );
+        if (button) {
+          // Continuation edges belong to the compacted run, not to the item
+          // markup used for a status/selection-only reuse check.
+          button.classList.remove("continues-before", "continues-after");
+          const currentHandle = button.querySelector(".agenda-resize-handle");
+          if (wantedHandle && !currentHandle)
+            button.append(wantedHandle.cloneNode(true));
+          else if (!wantedHandle && currentHandle) currentHandle.remove();
+        }
+        if (
+          !button ||
+          (chipSignatures.get(button) !== html &&
+            !updateCompletion(button, template.content.firstElementChild))
+        )
+          button = template.content.firstElementChild;
+        chipSignatures.set(button, html);
+        if (!button.querySelector(".agenda-resize-handle")) {
+          const handle = template.content.firstElementChild.querySelector(
+            ".agenda-resize-handle",
+          );
+          if (handle) button.append(handle.cloneNode(true));
+        }
+        button.dataset.packedKey = item.id + ":" + date;
+        button.classList.remove(
+          "agenda-sliced",
+          "continues-before",
+          "continues-after",
+        );
+        for (const node of button.querySelectorAll(
+          ":scope > .agenda-slice, .agenda-chip-continuation",
+        ))
+          node.remove();
+        decoratePacked(button, item, column, column, dates);
+        for (const node of button.querySelectorAll(
+          ".agenda-chip-title-text, :scope > .agenda-chip-time, :scope > .agenda-chip-note",
+        )) {
+          node.style.removeProperty("--agenda-text-offset");
+          node.style.removeProperty("max-width");
+        }
+        button.style.removeProperty("--agenda-text-width");
+        button.hidden = false;
+        Object.assign(button.style, {
+          left: metrics[column].left - left + "px",
+          top: "0px",
+          width: metrics[column].right - metrics[column].left + "px",
+          height: "auto",
+          visibility: "hidden",
+        });
+        content.append(button);
+        return {
+          item,
+          button,
+          start: column,
+          end: column,
+          lane: 0,
+          top: 0,
+          height: 0,
+        };
+      }),
+    );
+    const used = new Set(slots.map((s) => s.button));
+    for (const node of [...content.children])
+      if (!used.has(node)) node.remove();
+    WorkTimeApp.ui.alignment?.refresh([content]);
+    for (const slot of slots)
+      slot.height = slot.button.getBoundingClientRect().height;
+    // A cross-date event is one ribbon. Lay out its entire span together;
+    // independently compacting each date changes its row when another event
+    // ends, or when a narrow endpoint wraps a note to a different height.
+    const ribbons = new Map();
+    for (const slot of slots) {
+      if (!ribbons.has(slot.item.id)) ribbons.set(slot.item.id, []);
+      ribbons.get(slot.item.id).push(slot);
+    }
+    const creationOrder = new Map(items.map((item, index) => [item.id, index]));
+    const ordered = [...ribbons.values()].sort(
+      ([a], [b]) =>
+        Number(b.item.allDay) - Number(a.item.allDay) ||
+        a.item.start.localeCompare(b.item.start) ||
+        a.item.createdAt.localeCompare(b.item.createdAt) ||
+        creationOrder.get(a.item.id) - creationOrder.get(b.item.id),
+    );
+    const bottoms = Array(dates.length).fill(0);
+    for (const ribbon of ordered) {
+      const y = Math.max(...ribbon.map((slot) => bottoms[slot.start]));
+      const ribbonHeight = Math.max(...ribbon.map((slot) => slot.height));
+      for (const slot of ribbon) {
+        slot.top = y;
+        slot.height = ribbonHeight;
+        bottoms[slot.start] = y + ribbonHeight + 3;
+      }
+    }
+    const limits = bottoms.map((bottom) =>
+      bottom - 3 > height ? height - 19 : height,
+    );
+    const overflow = new Map();
+    for (const ribbon of ordered) {
+      const hidden = ribbon.some(
+        (slot) => slot.top + slot.height > limits[slot.start],
+      );
+      for (const slot of ribbon) {
+        slot.button.hidden = hidden;
+        if (hidden)
+          overflow.set(slot.start, (overflow.get(slot.start) || 0) + 1);
+      }
+    }
+    const groups = [];
+    for (const slot of slots
+      .filter((s) => !s.button.hidden)
+      .sort(
+        (a, b) => a.item.id.localeCompare(b.item.id) || a.start - b.start,
+      )) {
+      const last = groups[groups.length - 1];
+      if (
+        last &&
+        last.item.id === slot.item.id &&
+        last.end + 1 === slot.start &&
+        Math.abs(last.top - slot.top) < 0.5 &&
+        Math.abs(last.height - slot.height) < 0.5
+      ) {
+        last.end = slot.end;
+        slot.button.remove();
+      } else groups.push({ ...slot });
+    }
+    for (const group of groups) {
+      const { button, item, start, end } = group;
+      group.continuesBefore = item.date < dates[start];
+      group.continuesAfter = rules.lastDate(item) > dates[end];
+      button.dataset.agendaSegmentStart = dates[start];
+      button.dataset.agendaSegmentEnd = dates[end];
+      decoratePacked(button, item, start, end, dates);
+      if (group.continuesAfter)
+        button.querySelector(".agenda-resize-handle")?.remove();
+      Object.assign(button.style, {
+        left: metrics[start].left - left + "px",
+        top: group.top + "px",
+        width: metrics[end].right - metrics[start].left + "px",
+        height: group.height + "px",
+        visibility: "",
+      });
+    }
+    for (const slot of slots.filter((s) => s.button.hidden))
+      slot.button.style.visibility = "";
+    const measurements = groups.map(measurePlacement);
+    paintDatePieces(measurements, metrics, edges, dates);
+    // Resolve the final ribbon styles with transitions still disabled, then
+    // restore ordinary selection/hover feedback before the next painted frame.
+    void content.offsetHeight;
+    row.classList.remove("agenda-measuring");
+    packedLayouts.set(row, { key, measurements });
+    const state = getState();
+    if (
+      cached &&
+      animate &&
+      !state.transitioning &&
+      !state.switching &&
+      !state.moving &&
+      !state.completing
+    )
+      for (const { button, item } of groups)
+        if (!previousIds.has(item.id))
+          WorkTimeApp.ui.motion?.play(button, "motion-card-content");
+    for (const [column, count] of overflow) {
+      if (!count) continue;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "agenda-more";
+      button.dataset.agendaDate = dates[column];
+      button.textContent = WorkTimeApp.i18n.number(count) + "+";
+      button.setAttribute("aria-label", moreLabel(count));
+      Object.assign(button.style, {
+        left: metrics[column].left - left + "px",
+        bottom: "0px",
+        width: metrics[column].right - metrics[column].left + "px",
+      });
+      row.append(button);
+    }
+    row.scrollTop = 0;
+  }
+  function decoratePacked(button, item, start, end, dates) {
+    const before = item.date < dates[start],
+      after = rules.lastDate(item) > dates[end];
+    button.classList.toggle("continues-before", before);
+    button.classList.toggle("continues-after", after);
+    for (const icon of button.querySelectorAll(".agenda-chip-continuation"))
+      icon.remove();
+    const title = button.querySelector(".agenda-chip-title");
+    for (const [show, direction] of [
+      [before, "left"],
+      [after, "right"],
+    ]) {
+      if (!show) continue;
+      const icon = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+      );
+      icon.classList.add("agenda-chip-continuation");
+      icon.setAttribute("aria-hidden", "true");
+      const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      use.setAttribute("href", "#ms-chevron-" + direction);
+      icon.append(use);
+      if (direction === "left") title.prepend(icon);
+      else title.append(icon);
+    }
   }
   function schedule() {
     if (frame !== null || disposed) return;
@@ -624,6 +1004,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
     rowSignatures = new WeakMap();
     layoutSignatures = new WeakMap();
     selectionLayouts = new WeakMap();
+    packedLayouts = new WeakMap();
     signature = "";
     schedule();
   };
@@ -646,22 +1027,30 @@ WorkTimeApp.ui.createAgendaLayout = function ({
           Math.max(
             0,
             Math.min(
-              6,
-              Math.floor(((event.clientX - rect.left) / rect.width) * 7),
+              dates.length - 1,
+              Math.floor(
+                ((event.clientX - rect.left) / rect.width) * dates.length,
+              ),
             ),
           )
         ];
-      if (button?.dataset.agendaEdit)
-        edit(
-          button.dataset.agendaEdit,
-          event.detail ? chosen : button.dataset.agendaSegmentStart,
-        );
+      if (button?.dataset.agendaEdit) edit(button.dataset.agendaEdit, true);
       else if (button?.dataset.agendaDate) select(button.dataset.agendaDate);
       else if (!button) select(chosen);
     },
     { signal: scope.signal },
   );
   return {
+    selectTextDate(date) {
+      animateText = textInitialized && textDate !== date;
+      textDate = date;
+      textInitialized = true;
+    },
+    settleText() {
+      animateText = false;
+      for (const row of layer.children)
+        row.classList.remove("agenda-text-shifting");
+    },
     render,
     capture,
     stop,
@@ -762,6 +1151,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
           for (const note of row.querySelectorAll(
             ".agenda-chip > .agenda-chip-note",
           )) {
+            if (!note.getClientRects().length) continue;
             const button = note.closest(".agenda-chip");
             const height = button.getBoundingClientRect().height;
             const compact =

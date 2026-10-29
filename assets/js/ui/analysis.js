@@ -12,7 +12,10 @@ WorkTimeApp.ui.createAnalysis = function ({
     plot = $("analysisPlot");
   let currentData = null,
     lastSize = "",
-    selectedDate = null;
+    selectedDate = null,
+    pinnedDate = null,
+    linkedDate = null,
+    sidebarSignature = "";
   const number = (value) => WorkTimeApp.i18n.number(value);
   const date = (value) =>
     WorkTimeApp.i18n.date(value, {
@@ -121,12 +124,15 @@ WorkTimeApp.ui.createAnalysis = function ({
       ) + "px";
   }
   function selectDate(value) {
-    const day = currentData?.chartDays.find((item) => item.date === value);
+    const day = currentData?.chartDays.find(
+      (item) => item.date === (value || linkedDate),
+    );
     const next = day?.date || null;
     if (next === selectedDate && $("analysisHover").childElementCount) return;
     const appearing = Boolean(day && $("analysisHover").hidden);
     selectedDate = next;
-    for (const group of plot.querySelectorAll(".analysis-range, .analysis-day"))
+    renderSidebar(next);
+    for (const group of plot.querySelectorAll(".analysis-range"))
       group.classList.toggle("is-selected", group.dataset.date === next);
     $("analysisHover").hidden = !day;
     $("analysisHover").innerHTML = day
@@ -154,6 +160,201 @@ WorkTimeApp.ui.createAnalysis = function ({
     positionTooltip();
     if (appearing || !day) feedback($("analysisHover"), appearing);
   }
+  function suggestedDays() {
+    if (!currentData) return [];
+    const days = currentData.days;
+    const latest = days.reduce(
+      (best, day) => (!best || day.end > best.end ? day : best),
+      null,
+    );
+    const earliest = days.reduce(
+      (best, day) => (!best || day.end < best.end ? day : best),
+      null,
+    );
+    const rest = days.find((day) => !day.work);
+    return [
+      ...new Map(
+        [latest, earliest, rest, ...days.toReversed()]
+          .filter(Boolean)
+          .map((day) => [day.date, day]),
+      ).values(),
+    ].slice(0, 3);
+  }
+  function pinDate(value) {
+    if (!currentData?.chartDays.some((day) => day.date === value)) return;
+    pinnedDate = value;
+    renderSidebar(value);
+  }
+  const minuteLabel = (value) =>
+    t("sidebarMinutes", { value: number(Math.round(value)) });
+  function renderSidebar(previewDate = null) {
+    if (!currentData) return;
+    const metrics = currentData.workdayMetrics,
+      days = currentData.days,
+      focus = currentData.chartDays.find(
+        (day) => day.date === (previewDate || pinnedDate),
+      ),
+      signature = JSON.stringify([
+        lastSignature,
+        WorkTimeApp.i18n.language,
+        focus?.date,
+        pinnedDate,
+      ]);
+    if (signature === sidebarSignature) return;
+    sidebarSignature = signature;
+    $("analysisFocusDetail").setAttribute(
+      "aria-live",
+      previewDate && previewDate !== pinnedDate ? "off" : "polite",
+    );
+    const row = (label, value) =>
+      '<div class="analysis-sidebar-row"><span>' +
+      esc(t(label)) +
+      "</span><strong>" +
+      esc(value) +
+      "</strong></div>";
+    $("analysisSidebarMonth").textContent = WorkTimeApp.i18n.date(
+      currentData.first,
+      { year: "numeric", month: "long", day: undefined },
+    );
+    const span = (value) =>
+      value < 60 ? minuteLabel(value) : WorkTimeApp.i18n.duration(value);
+    $("analysisObservation").textContent =
+      metrics.count > 1
+        ? t("sidebarSpread", {
+            start: span(metrics.latestStart.minutes - metrics.earliest.minutes),
+            end: span(metrics.latest.minutes - metrics.earliestEnd.minutes),
+          })
+        : t(metrics.count ? "sidebarOneRecord" : "sidebarNoWorkdays");
+    const late = metrics.days.filter((day) => day.end > 1200);
+    const buckets = [0, 0, 0];
+    for (const day of late)
+      buckets[Math.min(2, Math.floor((Number(day.date.slice(8)) - 1) / 10))]++;
+    const concentrated =
+      late.length >= 2 && Math.max(...buckets) / late.length >= 0.6;
+    $("analysisObservationContext").textContent = metrics.count
+      ? concentrated
+        ? t("sidebarLateCluster", {
+            period: t("sidebarPeriod" + buckets.indexOf(Math.max(...buckets))),
+          })
+        : t("sidebarLateCount", { count: number(late.length) })
+      : t("sidebarRecordsHint");
+    const choices = suggestedDays()
+      .map(
+        (day) =>
+          '<button class="ui-button" type="button" data-analysis-focus="' +
+          esc(day.date) +
+          '" aria-pressed="' +
+          String(day.date === pinnedDate) +
+          '">' +
+          esc(date(day.date)) +
+          "</button>",
+      )
+      .join("");
+    if ($("analysisFocusDates").dataset.markup !== choices) {
+      const focused = window.document.activeElement?.dataset?.analysisFocus;
+      $("analysisFocusDates").innerHTML = choices;
+      $("analysisFocusDates").dataset.markup = choices;
+      if (focused)
+        $("analysisFocusDates")
+          .querySelector('[data-analysis-focus="' + focused + '"]')
+          ?.focus({ preventScroll: true });
+    }
+    if (focus) {
+      const future = focus.date > currentData.asOf;
+      const difference =
+        metrics.averageEnd === null || future
+          ? null
+          : Math.round(focus.end - metrics.averageEnd);
+      const delta =
+        difference === null
+          ? "—"
+          : difference === 0
+            ? t("unchanged")
+            : t(difference > 0 ? "later" : "earlier", {
+                value: number(Math.abs(difference)),
+              });
+      const source = t(
+        future ? "sidebarPlanned" : focus.manual ? "manualRecord" : "observed",
+      );
+      const focusTime = (minutes) =>
+        minutes >= 1440
+          ? "<small>" +
+            esc(t("nextDay")) +
+            "</small>" +
+            esc(clock(minutes % 1440))
+          : esc(clock(minutes));
+      const markup =
+        '<div class="analysis-focus-heading"><strong>' +
+        esc(date(focus.date) + " · " + WorkTimeApp.i18n.weekday(focus.date)) +
+        "</strong><span>" +
+        esc(t(focus.work ? "sidebarWorkday" : "restOvertime")) +
+        "</span></div>" +
+        '<div class="analysis-focus-times"><strong>' +
+        focusTime(focus.start) +
+        '</strong><span aria-hidden="true">→</span><strong>' +
+        focusTime(focus.end) +
+        "</strong></div>" +
+        row("sidebarEffective", WorkTimeApp.i18n.duration(focus.minutes)) +
+        row("sidebarDepartureDelta", delta) +
+        '<p class="analysis-sidebar-muted analysis-focus-source">' +
+        esc(
+          source +
+            " · " +
+            t(future ? "sidebarExcluded" : "sidebarBreaksDeducted"),
+        ) +
+        "</p>";
+      if ($("analysisFocusDetail").dataset.markup !== markup) {
+        $("analysisFocusDetail").innerHTML = markup;
+        $("analysisFocusDetail").dataset.markup = markup;
+      }
+    } else {
+      $("analysisFocusDetail").textContent = t("sidebarNoFocus");
+      delete $("analysisFocusDetail").dataset.markup;
+    }
+    $("analysisSidebarScope").innerHTML =
+      row("sidebarValidDays", t("days", { count: number(days.length) })) +
+      '<div class="analysis-sidebar-row"><span>' +
+      esc(t("sidebarWorkday") + " / " + t("sidebarRestDays")) +
+      "</span><strong>" +
+      esc(
+        number(metrics.count) +
+          " / " +
+          number(days.filter((day) => !day.work).length),
+      ) +
+      "</strong></div>" +
+      row(
+        "manualRecord",
+        t(currentData.includeManual ? "sidebarIncluded" : "sidebarNotIncluded"),
+      ) +
+      '<p class="analysis-sidebar-muted">' +
+      esc(
+        t("sidebarComparisonRange", {
+          current:
+            date(currentData.comparison.currentStart) +
+            "–" +
+            date(currentData.comparison.currentEnd),
+          previous:
+            date(currentData.comparison.previousStart) +
+            "–" +
+            date(currentData.comparison.previousEnd),
+        }),
+      ) +
+      "</p>";
+  }
+  events.listen($("analysisFocusDates"), "click", (event) => {
+    const button = event.target.closest("[data-analysis-focus]");
+    if (button) {
+      linkedDate = button.dataset.analysisFocus;
+      pinDate(linkedDate);
+      selectDate(linkedDate);
+    }
+  });
+  events.listen($("analysisFocusDates"), "keydown", (event) => {
+    if (event.key === "Escape") {
+      linkedDate = null;
+      selectDate(null);
+    }
+  });
   // Event delegation survives resizing and language changes without new listeners.
   const groupFrom = (target) => {
     const group = target?.closest?.(".analysis-range, .analysis-day");
@@ -192,7 +393,9 @@ WorkTimeApp.ui.createAnalysis = function ({
     if (!group) return;
     // Pointer clicks must not create a focus selection that survives hover.
     event.preventDefault();
+    linkedDate = null;
     groupFrom(window.document.activeElement)?.blur();
+    pinDate(group.dataset.date);
     selectDate(event.pointerType === "touch" ? null : group.dataset.date);
   });
   events.listen(plot, "keydown", (event) => {
@@ -212,12 +415,18 @@ WorkTimeApp.ui.createAnalysis = function ({
       Home: 0,
       End: groups.length - 1,
     }[event.key];
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      pinDate(group.dataset.date);
+    }
     if (next !== undefined) {
       event.preventDefault();
       groups[next].focus();
     }
     if (event.key === "Escape") {
       event.preventDefault();
+      linkedDate = null;
+      selectDate(null);
       $("analysisChart").focus({ preventScroll: true });
     }
   });
@@ -492,6 +701,12 @@ WorkTimeApp.ui.createAnalysis = function ({
     syncMarkup($("analysisMetrics"), metricsMarkup, 0);
     $("analysisDetails").hidden = false;
     currentData = data;
+    if (!sameMonth || !data.chartDays.some((day) => day.date === linkedDate))
+      linkedDate = null;
+    if (!sameMonth || !data.chartDays.some((day) => day.date === pinnedDate))
+      pinnedDate = suggestedDays()[0]?.date || null;
+    sidebarSignature = "";
+    renderSidebar();
     lastSize = "";
     selectedDate = null;
     $("analysisHover").replaceChildren();

@@ -197,7 +197,12 @@ const setScheduleRange = require("./lib/agenda-test-range.cjs");
               (await peer.boundingBox()).height +
               3),
         ) < 0.2,
-        "New weeks append the preview directly after existing rows without gaps",
+        "New weeks append the preview directly after existing rows without gaps: " +
+          JSON.stringify({
+            reducedMotion,
+            active,
+            peer: await peer.boundingBox(),
+          }),
       );
       assert.ok(
         Math.abs((await peer.boundingBox()).y - beforePeer) < 0.2,

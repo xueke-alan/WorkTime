@@ -294,6 +294,18 @@ async function verify() {
         await selectedStrip.click({ position: { x: 12, y: 8 } });
         const selectedGeometry = await selectedStrip.evaluate((node) => ({
           box: node.getBoundingClientRect().toJSON(),
+          dateBorders: [
+            ...document.querySelectorAll("#calendar > .day"),
+          ].flatMap((card) => {
+            const box = card.getBoundingClientRect();
+            const scale = box.width / parseFloat(getComputedStyle(card).width);
+            const border =
+              parseFloat(getComputedStyle(card).borderLeftWidth) * scale;
+            return [
+              [box.left, box.left + border],
+              [box.right - border, box.right],
+            ];
+          }),
           selected: node.classList.contains("is-selected"),
           title: getComputedStyle(
             node.querySelector(":scope > .agenda-chip-title"),
@@ -319,6 +331,14 @@ async function verify() {
             x < Math.floor((box.right - 6 * zoom) * scale);
             x++
           ) {
+            if (
+              selectedGeometry.dateBorders.some(
+                ([left, right]) =>
+                  x / scale >= left - 1 / scale &&
+                  x / scale <= right + 1 / scale,
+              )
+            )
+              continue;
             const actual = selectedPixel(x, y * scale);
             assert.ok(
               actual.every(

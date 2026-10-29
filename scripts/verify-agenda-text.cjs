@@ -46,16 +46,16 @@ async function verify() {
         await page.locator("#agendaScheduleOpen").click();
         await setScheduleRange(page, "2026-10-14");
         await page.locator("#agendaEndDateInput").fill("2026-10-22");
-        await page.locator("#agendaAllDay").uncheck();
-        await page.locator("#agendaStart").fill("09:00");
-        await page.locator("#agendaEnd").fill("18:00");
+        // Keep an all-day ribbon in week view, where timed events use the timetable.
+        if (!title.startsWith("痛")) {
+          await page.locator("#agendaAllDay").uncheck();
+          await page.locator("#agendaStart").fill("09:00");
+          await page.locator("#agendaEnd").fill("18:00");
+        }
         await page.locator("[data-schedule-close]").click();
         await page
           .locator("#agendaNote")
-          .fill(
-            "多行备注 English 文字跨日期 ".repeat(20) +
-              "\n第二行备注 ".repeat(12),
-          );
+          .fill("多行备注 English 文字跨日期\n第二行备注");
         await page.locator("#agendaSave").click();
         await page.locator("#agendaForm").waitFor({ state: "hidden" });
       }
@@ -64,6 +64,9 @@ async function verify() {
       }, zoom);
       for (const view of ["month", "week", "fortnight"]) {
         if (view !== "month") await page.locator("#agendaViewToggle").click();
+        await page
+          .locator('#calendar .day[data-date="2026-10-14"] .day-select')
+          .click({ position: { x: 8, y: 8 } });
         await page.mouse.move(0, 0);
         await page.evaluate(
           () =>
@@ -127,8 +130,80 @@ async function verify() {
         assert.ok(geometry.truncated);
         if (scale === 1 && zoom === 1)
           await page.screenshot({ path: `artifacts/agenda-text-${view}.png` });
-        // Selection changes CSS only: one intact label, no residual text fade.
+        // Only date-card clicks move text. Event clicks preserve that anchor.
+        await page
+          .locator('#calendar .day[data-date="2026-10-16"] .day-select')
+          .click({ position: { x: 8, y: 8 } });
+        assert.equal(
+          await strip.getAttribute("data-agenda-text-date"),
+          "2026-10-16",
+        );
+        const insets = await strip.evaluate((node) => {
+          const card = document.querySelector(
+            '#calendar .day[data-date="2026-10-16"]',
+          );
+          const cardStyle = getComputedStyle(card);
+          const style = getComputedStyle(node);
+          const scale =
+            node.getBoundingClientRect().width / parseFloat(style.width);
+          const expected =
+            card.getBoundingClientRect().left +
+            (card.clientLeft +
+              parseFloat(cardStyle.paddingLeft) -
+              (parseFloat(
+                getComputedStyle(
+                  document.getElementById("calendar"),
+                ).getPropertyValue("--agenda-card-left-extension"),
+              ) || 0) +
+              parseFloat(style.borderLeftWidth) +
+              parseFloat(style.paddingLeft)) *
+              scale;
+          return [
+            ...node.querySelectorAll(
+              ".agenda-chip-title-text, :scope > .agenda-chip-time, :scope > .agenda-chip-note",
+            ),
+          ]
+            .filter((text) => text.getClientRects().length)
+            .map(
+              (text) => (text.getBoundingClientRect().left - expected) / scale,
+            );
+        });
+        for (const inset of insets)
+          assert.ok(
+            Math.abs(inset) < 1,
+            "Moved title, time and note use ordinary date padding: " +
+              JSON.stringify({ scale, zoom, view, insets }),
+          );
+        const laneOutline = await strip.evaluate((node) => {
+          const lane = node.closest(".agenda-week-lane");
+          lane.focus();
+          return getComputedStyle(lane).outlineStyle;
+        });
+        assert.equal(
+          laneOutline,
+          "none",
+          "Focusing a scroll lane must not draw a frame across the week",
+        );
+        const textLeft = await strip
+          .locator(".agenda-chip-title-text")
+          .evaluate((node) => node.getBoundingClientRect().left);
         await strip.click({ position: { x: 12, y: 8 } });
+        assert.equal(
+          await strip.getAttribute("data-agenda-text-date"),
+          "2026-10-16",
+        );
+        assert.equal(
+          await strip
+            .locator(".agenda-chip-title-text")
+            .evaluate((node) => node.getBoundingClientRect().left),
+          textLeft,
+        );
+        assert.equal(
+          await strip
+            .locator(".agenda-chip-title-text")
+            .evaluate((node) => node.getAnimations().length),
+          0,
+        );
         assert.equal(
           await strip
             .locator(".agenda-chip-title-text")

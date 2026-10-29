@@ -107,9 +107,25 @@ async function verify() {
     await page.locator("#agendaSave").click();
     await page.locator("#agendaForm").waitFor({ state: "hidden" });
     await settle();
+    await page.reload();
+    await page.waitForFunction(
+      () =>
+        document.documentElement.dataset.appState === "ready" &&
+        !document.documentElement.classList.contains("app-loading"),
+    );
+    await settle();
     const ribbon = page.locator(
       '.agenda-chip[data-agenda-segment-start="2026-10-26"]',
     );
+    assert.equal(
+      await ribbon.getAttribute("data-agenda-text-date"),
+      today,
+      "Reload initializes ribbon text at the selected current date",
+    );
+    await page
+      .locator('#calendar > .day[data-date="2026-10-26"] .day-select')
+      .click({ position: { x: 8, y: 8 } });
+    await settle();
     const textPosition = () =>
       ribbon.locator(".agenda-chip-title-text").evaluate((title) => {
         const button = title.closest(".agenda-chip");
@@ -129,9 +145,23 @@ async function verify() {
         .locator(".agenda-slice")
         .first()
         .elementHandle();
-      await page
-        .locator('#calendar > .day[data-date="' + selected + '"] .day-select')
-        .click();
+      const samples = await page.evaluate(async (selected) => {
+        const title = document.querySelector(
+          '.agenda-chip[data-agenda-segment-start="2026-10-26"] .agenda-chip-title-text',
+        );
+        const positions = [title.getBoundingClientRect().left];
+        document
+          .querySelector(
+            '#calendar > .day[data-date="' + selected + '"] .day-select',
+          )
+          .click();
+        const start = performance.now();
+        do {
+          await new Promise(requestAnimationFrame);
+          positions.push(title.getBoundingClientRect().left);
+        } while (performance.now() - start < 450);
+        return positions;
+      }, selected);
       await settle();
       assert.equal(
         await retained.evaluate((slice) => slice.isConnected),
@@ -139,9 +169,23 @@ async function verify() {
         "Date selection reuses painted ribbon slices",
       );
       await retained.dispose();
+      assert.equal(
+        await ribbon.getAttribute("data-agenda-text-date"),
+        selected,
+      );
+      const position = await textPosition();
       assert.ok(
-        Math.abs((await textPosition()) - originalPosition) < 1,
-        "Selecting a date keeps ribbon text fixed",
+        selected === "2026-10-26"
+          ? Math.abs(position - originalPosition) < 1
+          : position > originalPosition + 10,
+      );
+      assert.ok(
+        samples.some(
+          (value) =>
+            value > Math.min(samples[0], samples.at(-1)) + 1 &&
+            value < Math.max(samples[0], samples.at(-1)) - 1,
+        ),
+        "Date clicks animate through intermediate text positions",
       );
       const box = await ribbon.boundingBox();
       await ribbon.click({
@@ -150,20 +194,20 @@ async function verify() {
       await page.locator("#agendaForm").waitFor({ state: "visible" });
       await settle();
       assert.ok(
-        Math.abs((await textPosition()) - originalPosition) < 1,
-        "Opening the editor from the ribbon end keeps text fixed",
+        Math.abs((await textPosition()) - position) < 1,
+        "Opening the editor from the ribbon end keeps the chosen text anchor",
       );
       await page.locator("#agendaTitle").fill("跨日日程高亮检查 " + selected);
       await page.locator("#agendaSave").click();
       await page.locator("#agendaForm").waitFor({ state: "hidden" });
       await settle();
       assert.ok(
-        Math.abs((await textPosition()) - originalPosition) < 1,
-        "Saving edited text keeps the segment start anchor",
+        Math.abs((await textPosition()) - position) < 1,
+        "Saving edited text keeps the chosen text anchor",
       );
       assert.equal(
         await ribbon.getAttribute("data-agenda-text-date"),
-        "2026-10-26",
+        selected,
       );
     }
     await returnToday();

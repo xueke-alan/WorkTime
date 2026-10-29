@@ -39,7 +39,16 @@ async function verify() {
           page.waitForFunction(
             () =>
               !document.querySelector(".agenda-week-leaving") &&
-              !document.querySelector("#calendar").hasAttribute("style"),
+              !document
+                .querySelector("#calendar")
+                .getAnimations({ subtree: true })
+                .some(
+                  (animation) =>
+                    animation.effect?.target?.matches(
+                      "#calendar,.day,.timetable-bottom-card",
+                    ) &&
+                    (animation.pending || animation.playState === "running"),
+                ),
           );
         for (const entering of [true, false]) {
           const result = await page.evaluate(() => {

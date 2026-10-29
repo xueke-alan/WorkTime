@@ -2,6 +2,7 @@
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const root = path.resolve(__dirname, "..");
+const failures = [];
 function run(script, args = [], cwd = root) {
   console.log("\nChecking " + script + " " + args.join(" "));
   const result = spawnSync(process.execPath, [script, ...args], {
@@ -12,23 +13,39 @@ function run(script, args = [], cwd = root) {
   if (result.error) throw result.error;
   if (result.status !== 0) throw Error("Release check failed: " + script);
 }
-function verify(feature, published = false) {
-  run(
-    path.join(root, "scripts", "verify-" + feature + ".cjs"),
-    published ? [path.join(root, "_site")] : [],
-    published ? path.join(root, "_site") : root,
-  );
+function verify(feature, published = false, required = false) {
+  try {
+    run(
+      path.join(root, "scripts", "verify-" + feature + ".cjs"),
+      published ? [path.join(root, "_site")] : [],
+      published ? path.join(root, "_site") : root,
+    );
+  } catch (error) {
+    if (required) throw error;
+    failures.push(feature + (published ? " (published)" : " (source)"));
+    console.error(error.message);
+  }
 }
 const agendaChecks = [
   "popover",
   "agenda",
   "agenda-week",
+  "agenda-week-selection",
+  "agenda-timetable-status",
+  "agenda-timetable-resize",
+  "agenda-break-edges",
+  "agenda-timetable",
+  "agenda-timetable-save",
+  "agenda-dual-regressions",
+  "agenda-seven-fixes",
   "agenda-three-week",
   "calendar-navigation",
+  "year-transitions",
   "agenda-today",
   "agenda-span",
   "agenda-range",
   "agenda-drag",
+  "agenda-drag-order",
   "agenda-resize",
   "agenda-edit-motion",
   "agenda-editor-ux",
@@ -85,13 +102,17 @@ try {
       "eslint.config.cjs",
     ],
   );
+  // Catch broken entries and resource-budget regressions before long UI/game runs.
   for (const feature of [
-    ...agendaChecks,
     "lunar-runtime",
     "offline",
     "loading",
     "rescue",
     "performance-budget",
+  ])
+    verify(feature, false, true);
+  for (const feature of [
+    ...agendaChecks,
     "calendar-date",
     "batch-month",
     "reset-state",
@@ -101,6 +122,8 @@ try {
     "game-menu",
     "game-archive",
     "backup-clipboard",
+    "backup-cache",
+    "auto-backup",
     "minesweeper",
     "snake",
     "sudoku",
@@ -108,6 +131,7 @@ try {
     "analysis",
     "analysis-summary",
     "analysis-persistence",
+    "analysis-sidebar",
     "performance",
     "jump",
     "link",
@@ -117,21 +141,27 @@ try {
     verify(feature);
   run(path.join(root, "scripts/prepare-site.cjs"));
   for (const feature of [
-    ...agendaChecks,
     "lunar-runtime",
     "startup",
     "loading",
     "rescue",
     "performance-budget",
+  ])
+    verify(feature, true, true);
+  for (const feature of [
+    ...agendaChecks,
     "calendar-date",
     "minesweeper",
     "game-menu",
     "game-archive",
     "backup-clipboard",
+    "backup-cache",
+    "auto-backup",
     "games",
     "analysis",
     "analysis-summary",
     "analysis-persistence",
+    "analysis-sidebar",
     "performance",
     "snake",
     "sudoku",
@@ -142,6 +172,8 @@ try {
     "tank",
   ])
     verify(feature, true);
+  if (failures.length)
+    throw Error("Release checks failed: " + failures.join(", "));
   console.log("\nAll release checks passed.");
 } catch (error) {
   console.error(error.message);

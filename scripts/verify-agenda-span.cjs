@@ -190,12 +190,14 @@ async function verify() {
     const setView = async (view) => {
       for (
         let index = 0;
-        index < 3 &&
+        index < 4 &&
         (await page
           .locator("#agendaViewToggle")
           .evaluate(
             (node) =>
-              ["month", "week", "fortnight"][Number(node.dataset.agendaView)],
+              ["month", "week", "fortnight", "threeweek"][
+                Number(node.dataset.agendaView)
+              ],
           )) !== view;
         index++
       )
@@ -320,17 +322,18 @@ async function verify() {
         "",
         "第一行\n第二行\n第三行\n第四行",
       );
-    const scroll = await page
-      .locator(".agenda-week-lane.is-scrollable")
-      .first()
-      .evaluate((node) => {
-        node.scrollTop = node.scrollHeight;
-        return {
-          scroll: node.scrollTop,
-          overflow: node.scrollHeight > node.clientHeight,
-        };
-      });
-    assert.ok(scroll.overflow && scroll.scroll > 0);
+    const overflow = page.locator(
+      '.agenda-packed-row .agenda-more[data-agenda-date="2026-10-31"]',
+    );
+    await overflow.click();
+    assert.equal(
+      await page
+        .locator("#agendaList .agenda-item")
+        .filter({ hasText: "较长日程" })
+        .count(),
+      6,
+      "Packed overflow opens the date details without losing hidden events",
+    );
     await setView("month");
     assert.ok(
       (await page.locator(".agenda-week-layers .agenda-more").count()) > 0,
@@ -477,7 +480,7 @@ async function verify() {
     );
     assert.deepEqual(errors, []);
     console.log(
-      "Cross-day validation, v1 migration, continuous lanes, midnight exclusion, editing, completion, deduplication, scroll, overflow, languages, backup and reload verified.",
+      "Cross-day validation, v1 migration, continuous lanes, midnight exclusion, editing, completion, deduplication, packed overflow, languages, backup and reload verified.",
     );
   } finally {
     await browser.close();

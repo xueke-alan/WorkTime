@@ -26,15 +26,15 @@ const setRange = require("./lib/agenda-test-range.cjs");
         () => document.documentElement.dataset.appState === "ready",
       );
       await page.locator("#agendaMode").click();
-      async function create(title) {
+      async function create(
+        title,
+        start = "2026-10-19",
+        end = mode === "compact" ? start : "2026-10-20",
+      ) {
         await page.locator("#agendaNew").click();
         await page.locator("#agendaTitle").fill(title);
         await page.locator("#agendaScheduleOpen").click();
-        await setRange(
-          page,
-          "2026-10-19",
-          mode === "compact" ? "2026-10-19" : "2026-10-20",
-        );
+        await setRange(page, start, end);
         await page.locator("[data-schedule-close]").click();
         await page.locator("#agendaSave").click();
         await page.locator("#agendaForm").waitFor({ state: "hidden" });
@@ -112,7 +112,8 @@ const setRange = require("./lib/agenda-test-range.cjs");
       await page.evaluate(() => {
         window.motionRecords = [];
       });
-      await create("New only");
+      if (mode === "compact") await create("New only");
+      else await create("New only", "2026-10-21", "2026-10-22");
       await page.waitForTimeout(350);
       const added = await page.evaluate(() => {
         const chip = [
@@ -126,7 +127,8 @@ const setRange = require("./lib/agenda-test-range.cjs");
       });
       assert.ok(
         added.records.length > 0,
-        "Adding a new card retains entrance feedback",
+        "Adding a new card retains entrance feedback: " +
+          JSON.stringify({ mode, added }),
       );
       assert.ok(
         added.records.every((record) => record.id === added.id),

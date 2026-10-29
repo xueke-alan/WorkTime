@@ -18,7 +18,13 @@ const WorkTimeDomainState = (() => {
       overtimeRequirements: [60, 90, 90, 120, 120],
       oaUrl: "https://hr.huawei.com/apps/servicetimeflow/#/myServicetime",
       personal: { employmentDate: "", workCity: "" },
-      preferences: { pageTheme: "green", language: "auto" },
+      preferences: {
+        pageTheme: "green",
+        language: "auto",
+        autoBackupDays: 0,
+        lastAutoBackupDate: null,
+        lastBackupAt: null,
+      },
       settings: {
         configured: true,
         workStart: DEFAULT_START,

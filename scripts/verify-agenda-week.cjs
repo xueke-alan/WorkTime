@@ -105,7 +105,9 @@ async function verify() {
               ),
             ),
       );
-    while (!(await page.locator('[data-date="2026-11-01"]').count())) {
+    while (
+      !(await page.locator('#calendar > [data-date="2026-11-01"]').count())
+    ) {
       const month = await page
         .locator("#calendar [data-date]")
         .first()
@@ -228,12 +230,12 @@ async function verify() {
       await page.evaluate(
         () =>
           document
-            .querySelector("#calendar .day.selected")
+            .querySelector("#calendar .timetable-bottom-card")
             .getBoundingClientRect().height >
           window.monthCardHeight * 3,
       ),
       true,
-      "Selected week fills the calendar height",
+      "The lower time cards fill the calendar height",
     );
     assert.equal(
       await page
@@ -386,16 +388,11 @@ async function verify() {
       await page.locator("#calendar .agenda-chip script").count(),
       0,
     );
-    const noteMotion = await page.evaluate(() => window.noteAnimations);
-    const grow = noteMotion.find((item) => !item.note);
-    const fade = noteMotion.find((item) => item.note);
-    assert.ok(
-      parseFloat(grow.frames[0].height) < parseFloat(grow.frames[1].height),
+    assert.equal(
+      (await page.evaluate(() => window.noteAnimations)).length,
+      0,
+      "Single-week entry moves the shared page instead of growing individual event strips",
     );
-    assert.equal(fade.options.delay || 0, grow.options.delay || 0);
-    assert.equal(fade.options.duration, grow.options.duration);
-    assert.equal(fade.frames[0].opacity, 0);
-    assert.equal(fade.frames[1].opacity, 1);
     const opening = await page.evaluate(() => window.weekAnimations);
     assert.equal(
       await page
@@ -412,28 +409,15 @@ async function verify() {
       ),
       "Week suffix animates on appearance",
     );
-    const expanding = opening.filter((item) => item.frames[0].height);
-    assert.equal(expanding.length, 7);
-    assert.ok(
-      expanding.every(
-        (item) =>
-          parseFloat(item.frames[0].height) < parseFloat(item.frames[1].height),
-      ),
+    assert.equal(
+      opening.filter((item) => item.frames[0].height).length,
+      7,
+      "The anchor week resizes its seven retained date surfaces",
     );
-    const leaving = opening.filter((item) =>
-      opening.some(
-        (fade) => fade.date === item.date && fade.frames[1].opacity === 0,
-      ),
-    );
-    assert.ok(
-      leaving.some((item) => /translateY\(-/.test(item.frames[1].transform)),
-      "Rows above the week move upward",
-    );
-    assert.ok(
-      leaving.some((item) =>
-        /translateY\([\d.]/.test(item.frames[1].transform),
-      ),
-      "Rows below the week move downward",
+    assert.equal(
+      await page.locator(".calendar-navigation-viewport").count(),
+      0,
+      "Month-to-week morph does not introduce a duplicate whole-page copy",
     );
     await settled();
     const titleGeometry = await page.evaluate(() => {
@@ -486,11 +470,11 @@ async function verify() {
         (item) =>
           !item.snapshot &&
           item.options.duration === 320 &&
-          /^translateY\([\d.]+px\)$/.test(item.frames[0].transform) &&
-          item.frames[1].transform === "translateY(0px)" &&
+          /^translateX\([\d.]+px\)$/.test(item.frames[0].transform) &&
+          item.frames[1].transform === "translateX(0px)" &&
           item.frames.every((frame) => frame.opacity === undefined),
       ),
-      "Week navigation uses the shared opaque vertical slide",
+      "Single-week navigation uses the shared opaque horizontal slide",
     );
     assert.equal(await page.locator(".agenda-week-snapshot").count(), 0);
     assert.ok(
@@ -531,7 +515,7 @@ async function verify() {
         ),
     );
     await page
-      .locator("#calendar .agenda-week-layers .agenda-chip-note")
+      .locator("#calendar .agenda-week-layers .agenda-chip-title-text")
       .click();
     assert.equal(await page.locator("#agendaTitle").inputValue(), "居中展开");
     assert.equal(await page.locator("#agendaNote").inputValue(), noteText);
@@ -813,7 +797,15 @@ async function verify() {
           item.frames[0].transform,
       ),
     );
-    assert.equal(incoming.length, 7);
+    assert.equal(
+      incoming.length,
+      0,
+      "Single-to-fortnight transition resizes rows without translating individual dates",
+    );
+    assert.equal(
+      await page.locator(".calendar-navigation-viewport").count(),
+      0,
+    );
     assert.ok(
       incoming.every((item) =>
         /translateY\([\d.]/.test(item.frames[0].transform),

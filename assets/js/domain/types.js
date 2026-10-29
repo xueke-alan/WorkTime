@@ -6,7 +6,7 @@
  * @typedef {{start:number,end:number}} WorkBreak
  * @typedef {{configured:boolean,workStart:string,workEnd:string,standardMinutes:number,breaks:WorkBreak[]}} WorkSettings
  * @typedef {{employmentDate:string,workCity:string}} WorkPersonal
- * @typedef {{pageTheme:'green'|'blue'|'purple'|'orange'|'rose'|'slate'|'cyan'|'mint'|'olive'|'gold'|'red'|'brown',forecastMode?:'hourly'|'daily',language?:'auto'|'zh-CN'|'zh-TW'|'zh-HK'|'en'|'ko'|'ja',weatherDays?:0|3|5|7}} WorkPreferences
+ * @typedef {{pageTheme:'green'|'blue'|'purple'|'orange'|'rose'|'slate'|'cyan'|'mint'|'olive'|'gold'|'red'|'brown',forecastMode?:'hourly'|'daily',language?:'auto'|'zh-CN'|'zh-TW'|'zh-HK'|'en'|'ko'|'ja',weatherDays?:0|3|5|7,autoBackupDays?:0|1|3|7,lastAutoBackupDate?:string|null,lastBackupAt?:string|null}} WorkPreferences
  * @typedef {{id:string,order?:number,data:Object}} ArchiveRecord
  * @typedef {{id:string,version:number,records:ArchiveRecord[]}} ArchiveModule
  * @typedef {{format:'worktime-archive',formatVersion:1,archive:{id:string,createdAt:string},modules:ArchiveModule[],exportedAt?:string}} WorkArchive

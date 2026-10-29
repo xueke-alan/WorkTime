@@ -120,6 +120,10 @@ Thumbs.db
 
 !/scripts/verify-agenda.cjs
 !/scripts/verify-agenda-week.cjs
+!/scripts/verify-agenda-timetable.cjs
+!/scripts/verify-agenda-timetable-save.cjs
+!/scripts/verify-agenda-dual-regressions.cjs
+!/scripts/verify-agenda-seven-fixes.cjs
 !/scripts/verify-agenda-three-week.cjs
 !/scripts/verify-agenda-span.cjs
 !/scripts/verify-agenda-drag.cjs
@@ -142,6 +146,10 @@ Thumbs.db
 !/scripts/verify-agenda-text.cjs
 !/scripts/verify-agenda-status.cjs
 !/scripts/verify-agenda-selection.cjs
+!/scripts/verify-agenda-week-selection.cjs
+!/scripts/verify-agenda-timetable-status.cjs
+!/scripts/verify-agenda-timetable-resize.cjs
+!/scripts/verify-agenda-break-edges.cjs
 !/scripts/verify-agenda-position.cjs
 !/scripts/verify-analysis-ratio.cjs
 !/scripts/verify-lunar-runtime.cjs
@@ -153,6 +161,7 @@ Thumbs.db
 !/scripts/verify-agenda-completion.cjs
 
 !/scripts/verify-calendar-navigation.cjs
+!/scripts/verify-year-transitions.cjs
 !/scripts/verify-agenda-today.cjs
 
 !/scripts/verify-popover.cjs
@@ -161,3 +170,8 @@ Thumbs.db
 !/scripts/verify-rescue.cjs
 !/scripts/verify-analysis-summary.cjs
 !/scripts/verify-analysis-persistence.cjs
+!/scripts/verify-analysis-sidebar.cjs
+!/scripts/verify-auto-backup.cjs
+
+!/scripts/verify-backup-cache.cjs
+!/scripts/verify-agenda-drag-order.cjs

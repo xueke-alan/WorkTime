@@ -14,7 +14,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
     downloads,
     preferences,
     persistence,
-    exportArchive,
+    backupSource,
   } = options;
   let restoreData = null;
   let restoreGames = null;
@@ -25,20 +25,28 @@ WorkTimeApp.ui.createBackupController = function (options) {
   let copyResetTimer = null,
     holdAction = null;
   const BACKUP_MAX_BYTES = WorkTimeApp.services.backup.MAX_BYTES;
-  const compressBackupText = WorkTimeApp.services.backup.encodeCompact;
   const FULL_FORMAT = "worktime-full-backup";
-  async function exportFullArchive() {
+  let cache = null,
+    backupBusy = false;
+  const subscriptions = [];
+  async function exportBackup() {
     await actions.prepareAgendaArchive();
     await WorkTimeApp.games.prepareArchive();
-    return {
-      format: FULL_FORMAT,
-      version: 1,
-      work: await exportArchive(),
-      games: WorkTimeApp.services.gameArchive.exportArchive({
-        allowEmpty: true,
-        includeDefaults: true,
-      }),
-    };
+    return cache.capture();
+  }
+  function beginBackup() {
+    if (backupBusy || disposed) return false;
+    backupBusy = true;
+    $("backup").disabled = true;
+    $("backup").setAttribute("aria-busy", "true");
+    actions.toast(WorkTimeApp.i18n.t("backup.preparing"), "countdown");
+    return true;
+  }
+  function endBackup(lifetime) {
+    if (lifetime !== generation) return;
+    backupBusy = false;
+    $("backup").disabled = false;
+    $("backup").removeAttribute("aria-busy");
   }
   const readBackupText = (text) =>
     WorkTimeApp.services.backup.decode(text, async (value) => {
@@ -82,35 +90,77 @@ WorkTimeApp.ui.createBackupController = function (options) {
     actions.toast(WorkTimeApp.i18n.t("copy.8e990e61b4"), "countdown");
   }
   async function backup() {
+    if (!beginBackup()) return false;
     const lifetime = generation;
     try {
-      const text = await compressBackupText(
-        JSON.stringify(await exportFullArchive()),
-      );
-      if (disposed || lifetime !== generation) return;
+      const text = await exportBackup();
+      if (disposed || lifetime !== generation) return false;
       download(
         WorkTimeApp.i18n.t("copy.35c89c4491") + model.today + ".txt",
         text,
         "text/plain;charset=utf-8",
       );
       actions.toast(WorkTimeApp.i18n.t("copy.5091362c8b"), "countdown");
+      if (
+        !model.loadIssue &&
+        !model.storageFailed &&
+        persistence.canWrite &&
+        persistence.readSucceeded
+      ) {
+        const saved = await WorkTimeApp.services.preferences.page.saveBackupAt(
+          new Date().toISOString(),
+        );
+        if (!disposed && !saved.persisted)
+          actions.toast(WorkTimeApp.i18n.t("autoBackup.timeFailed"), "error");
+      }
+      return true;
     } catch (error) {
       actions.toast(
         WorkTimeApp.i18n.t("copy.d09d00bfdf") +
           WorkTimeApp.i18n.message(error.message),
         "error",
       );
+      return false;
+    } finally {
+      endBackup(lifetime);
     }
   }
-  let backupCopying = false;
+  let autoBackupChecked = false;
+  async function checkAutoBackup() {
+    if (autoBackupChecked || disposed) return;
+    autoBackupChecked = true;
+    const pagePreferences = WorkTimeApp.services.preferences.page;
+    const lastDate = pagePreferences.state.lastAutoBackupDate;
+    const today = WorkTimeApp.domain.time.businessDate(new Date());
+    if (
+      model.loadIssue ||
+      model.storageFailed ||
+      !persistence.canWrite ||
+      !persistence.readSucceeded ||
+      pagePreferences.dirty ||
+      !WorkTimeApp.domain.preferences.autoBackupDue(
+        pagePreferences.state,
+        today,
+      )
+    )
+      return;
+    if (!(await backup()) || disposed) return;
+    // Respect a setting change or restore that happened while preparing the file.
+    if (
+      !pagePreferences.state.autoBackupDays ||
+      pagePreferences.state.lastAutoBackupDate !== lastDate
+    )
+      return;
+    const result = await pagePreferences.saveAutoBackupDate(today);
+    if (!disposed && !result.persisted)
+      actions.toast(WorkTimeApp.i18n.t("autoBackup.dateFailed"), "error");
+  }
   async function copyBackup() {
     const lifetime = generation;
     const button = $("backup");
-    if (backupCopying) return;
-    backupCopying = true;
+    if (!beginBackup()) return;
     try {
-      const raw = JSON.stringify(await exportFullArchive());
-      const text = await compressBackupText(raw);
+      const text = await exportBackup();
       if (disposed || lifetime !== generation) return;
       await clipboard.writeText(text);
       if (disposed || lifetime !== generation) return;
@@ -133,7 +183,7 @@ WorkTimeApp.ui.createBackupController = function (options) {
         "error",
       );
     } finally {
-      if (lifetime === generation) backupCopying = false;
+      endBackup(lifetime);
     }
   }
   function previewRestore(data, source, games = null) {
@@ -225,6 +275,30 @@ WorkTimeApp.ui.createBackupController = function (options) {
     disposed = false;
     generation++;
     updateRecovery();
+    cache = WorkTimeApp.services.backupCache.create({ source: backupSource });
+    subscriptions.push(
+      backupSource.subscribe((changes, reset) =>
+        cache.invalidate(changes, reset),
+      ),
+    );
+    subscriptions.push(
+      WorkTimeApp.services.preferences.page.subscribe(() =>
+        cache.invalidate({ preferences: true }),
+      ),
+    );
+    events.listen(window, "worktime:gamesaved", () => cache.invalidate());
+    events.listen(window, "worktime:gamearchive", () => cache.invalidate());
+    events.listen(window, "storage", (event) => {
+      if (
+        event.key === null ||
+        Object.values(WorkTimeApp.services.gameArchive.keys).includes(event.key)
+      )
+        cache.invalidate();
+    });
+    events.listen(document, "worktime:ready", () => {
+      void cache.warm();
+      void checkAutoBackup();
+    });
     events.handler($("recoveryOpen"), "onclick", async () => {
       try {
         const rows = await persistence.snapshots();
@@ -410,7 +484,11 @@ WorkTimeApp.ui.createBackupController = function (options) {
   }
   function dispose() {
     generation++;
-    backupCopying = false;
+    backupBusy = false;
+    cache?.dispose();
+    subscriptions.splice(0).forEach((unsubscribe) => unsubscribe());
+    $("backup").disabled = false;
+    $("backup").removeAttribute("aria-busy");
     $("restore").disabled = false;
     events.dispose();
     bound = false;
@@ -423,5 +501,5 @@ WorkTimeApp.ui.createBackupController = function (options) {
   }
   const hasDraft = () =>
     restoreData !== null || pendingTheme !== null || $("initializeDialog").open;
-  return { bind, dispose, hasDraft, updateRecovery };
+  return { bind, dispose, hasDraft, updateRecovery, checkAutoBackup };
 };

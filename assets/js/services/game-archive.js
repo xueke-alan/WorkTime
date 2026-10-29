@@ -517,7 +517,7 @@ WorkTimeApp.services.gameArchive = (() => {
       improved: !same(achievement(local), achievement(out)),
     };
   }
-  function create(getStorage, notify = () => {}) {
+  function create(getStorage, notify = () => {}, notifySaved = () => {}) {
     let recovering = false;
     function rawRead() {
       const storage = getStorage();
@@ -740,6 +740,7 @@ WorkTimeApp.services.gameArchive = (() => {
           }
           if (!Object.values(keys).includes(key)) fail("wrongType");
           storage.setItem(key, text);
+          notifySaved(Object.keys(keys).find((id) => keys[id] === key));
         },
       };
     }
@@ -758,6 +759,10 @@ WorkTimeApp.services.gameArchive = (() => {
   const owner = create(
     () => window.localStorage,
     () => window.dispatchEvent(new Event("worktime:gamearchive")),
+    (id) =>
+      window.dispatchEvent(
+        new CustomEvent("worktime:gamesaved", { detail: id }),
+      ),
   );
   const exclusive = (run) =>
     window.navigator.locks

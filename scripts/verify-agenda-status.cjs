@@ -103,7 +103,7 @@ const { chromium } = require("playwright");
             }),
         );
         assert.ok(
-          metrics.length >= (view === "month" ? 1 : 4),
+          metrics.length >= (view === "month" ? 1 : view === "week" ? 3 : 4),
           `${width} ${scale} ${zoom} ${view}`,
         );
         assert.ok(metrics.every((metric) => metric.icons === 0));

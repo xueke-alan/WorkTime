@@ -46,7 +46,7 @@ const { chromium } = require("playwright");
     await page.waitForFunction(() => !!window.testBackupText);
     assert.ok(
       await page.evaluate(() =>
-        /^WORKTIME:(GZIP|DEFLATE):1:/.test(window.testBackupText),
+        /^WORKTIME:(GZIP|DEFLATE|CHUNKS):1:/.test(window.testBackupText),
       ),
     );
     const original = await page.evaluate(async () => {

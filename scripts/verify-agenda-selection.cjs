@@ -65,8 +65,14 @@ const { chromium } = require("playwright");
         const strip = page
           .locator('.agenda-week-lane[data-dates^="2026-10-12"] .agenda-chip')
           .first();
-        await strip.click({ position: { x: 10, y: 8 } });
+        const stripBox = await strip.boundingBox();
+        await strip.click({ position: { x: stripBox.width * 0.8, y: 8 } });
         await page.locator("#agendaForm").waitFor({ state: "visible" });
+        assert.equal(
+          await page.locator("#agendaDate").textContent(),
+          "20261014周三",
+          "Opening a spanning event uses its start date for the sidebar heading",
+        );
         const flashes = await page.evaluate(async () => {
           const flashes = [];
           const start = performance.now();
@@ -121,6 +127,17 @@ const { chromium } = require("playwright");
           "Pressing a selected strip must not darken its matching stroke",
         );
         await page.mouse.up();
+        await page.locator("#agendaCancel").click();
+        await page
+          .locator('#calendar .day[data-date="2026-10-16"] .day-select')
+          .click({ position: { x: 8, y: 8 } });
+        await strip.focus();
+        await strip.press("Enter");
+        assert.equal(
+          await page.locator("#agendaDate").textContent(),
+          "20261014周三",
+          "Keyboard activation also uses the event start date",
+        );
         await page.locator("#agendaCancel").click();
       }
       await page.close();

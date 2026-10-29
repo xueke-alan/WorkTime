@@ -8,6 +8,13 @@
   "revision": "737e3324305806514d7909874fa1818ae1808232",
   "icons": [
     {
+      "id": "ms-right-panel-close",
+      "name": "right_panel_close",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/right_panel_close/materialsymbolsrounded/right_panel_close_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "7adee99a2a588635f970ccbf4e838b234cf9e1a3d7a6dc2d43191bcf434a97e9"
+    },
+    {
       "id": "ms-content-paste-go",
       "name": "content_paste_go",
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/content_paste_go/materialsymbolsrounded/content_paste_go_24px.svg",

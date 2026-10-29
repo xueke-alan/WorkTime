@@ -42,6 +42,10 @@ body .editor .editor-day-header .editor-date {
   align-items: center;
   height: var(--control-height);
   gap: 0;
+}
+body .editor .editor-day-header .editor-date,
+body .editor .analysis-sidebar-header {
+  font-family: var(--font-ui);
   line-height: 1;
   color: var(--text);
   font-size: var(--text-title);
@@ -763,11 +767,22 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
   pointer-events: none;
   cursor: default;
 }
-.day.adjacent .daynum small {
+.day.adjacent .daynum small,
+.daynum .calendar-month-suffix-outgoing {
   margin-left: 4px;
   font-size: 10px;
   font-weight: 500;
   color: var(--muted);
+}
+.calendar-month-suffix-host {
+  position: relative;
+}
+.calendar-month-suffix-outgoing {
+  position: absolute;
+  left: 100%;
+  bottom: 0;
+  white-space: nowrap;
+  pointer-events: none;
 }
 .day[data-holiday="元旦"] {
   --holiday-base: #f0f7fc;
@@ -1234,7 +1249,8 @@ body .calendar .daystatus:not(:empty) {
 }
 @media (max-width: 699px) {
   .calendar-today,
-  body .editor .editor-day-header .editor-date {
+  body .editor .editor-day-header .editor-date,
+  body .editor .analysis-sidebar-header {
     font-size: 1.285714rem;
   }
   body .month-controls .month-title {

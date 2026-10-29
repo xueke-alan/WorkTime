@@ -153,6 +153,22 @@ WorkTimeApp.services.preferences = (() => {
         return dirty;
       },
       saveTheme,
+      saveAutoBackupDays(days) {
+        if (![0, 1, 3, 7].includes(days))
+          throw Error("Invalid automatic backup interval");
+        return savePreference({
+          autoBackupDays: days,
+          ...(!state.autoBackupDays || !days
+            ? { lastAutoBackupDate: null }
+            : {}),
+        });
+      },
+      saveAutoBackupDate(date) {
+        return savePreference({ lastAutoBackupDate: date });
+      },
+      saveBackupAt(date) {
+        return savePreference({ lastBackupAt: date });
+      },
       saveWeatherDays(days) {
         if (![0, 3, 5, 7].includes(days))
           throw Error("Invalid weather display range");

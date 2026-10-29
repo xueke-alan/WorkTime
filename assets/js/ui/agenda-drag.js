@@ -41,6 +41,27 @@ WorkTimeApp.ui.createAgendaDrag = function ({
       (node) => getComputedStyle(node).display !== "none",
     );
   const dateOf = (card) => card.dataset.date || card.dataset.previewDate;
+  const segmentsFor = (items, dates) =>
+    rules.segments(
+      items.filter((item) =>
+        dates.some((date) => rules.overlaps(item, date, date)),
+      ),
+      dates,
+    );
+  const visibleRows = (visible) => {
+    if (calendar.classList.contains("agenda-week-view")) {
+      const groups = new Map();
+      for (const card of visible) {
+        const key = card.dataset.agendaRow || "1";
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(card);
+      }
+      return [...groups.values()];
+    }
+    return Array.from({ length: Math.ceil(visible.length / 7) }, (_, index) =>
+      visible.slice(index * 7, index * 7 + 7),
+    );
+  };
   const at = (x, y) =>
     cards().find((card) => {
       const rect = card.getBoundingClientRect();
@@ -237,8 +258,7 @@ WorkTimeApp.ui.createAgendaDrag = function ({
       current.leftOffsets = new Map();
       current.rightOffsets = new Map();
       current.scrolls = new Map();
-      for (let index = 0; index < visible.length; index += 7) {
-        const row = visible.slice(index, index + 7);
+      for (const row of visibleRows(visible)) {
         const dates = row.map(dateOf);
         const scroller = [
           ...calendar.querySelectorAll(".agenda-week-lane"),
@@ -499,7 +519,7 @@ WorkTimeApp.ui.createAgendaDrag = function ({
           ]
         : []),
     ];
-    for (let column = 0; column < 7; column++) {
+    for (let column = 0; column < group.dates.length; column++) {
       const count = entries.filter(
         (entry) =>
           (group.covered ? entry.lane >= limit : entry.hidden) &&
@@ -582,13 +602,10 @@ WorkTimeApp.ui.createAgendaDrag = function ({
         lane,
       ]),
     );
-    for (let index = 0; index < visible.length; index += 7) {
-      const row = visible.slice(index, index + 7),
-        dates = row.map(dateOf);
-      if (dates.length !== 7) continue;
+    for (const row of visibleRows(visible)) {
+      const dates = row.map(dateOf);
       const lane = lanes.get(dates[0]);
-      const entries = rules.segments(items, dates);
-      const source = entries.find((entry) => entry.item.id === current.item.id);
+      const entries = segmentsFor(items, dates);
       const nodes = lane
         ? [...lane.querySelectorAll(".agenda-chip")]
         : row.flatMap((card) =>
@@ -596,6 +613,29 @@ WorkTimeApp.ui.createAgendaDrag = function ({
               (node) => !node.hidden,
             ),
           );
+      if (lane?.dataset.agendaLayout === "packed") {
+        // Packed ribbons use creation order and measured heights, unlike the
+        // date/span order of domain segments. Start previews from the rows
+        // actually painted so moving one item cannot swap unrelated ribbons.
+        const tops = [
+          ...new Set(
+            nodes
+              .filter((node) => !node.hidden)
+              .map((node) => parseFloat(node.style.top) || 0),
+          ),
+        ].sort((a, b) => a - b);
+        const painted = new Map(
+          nodes
+            .filter((node) => !node.hidden)
+            .map((node) => [
+              node.dataset.agendaEdit,
+              tops.indexOf(parseFloat(node.style.top) || 0),
+            ]),
+        );
+        for (const entry of entries)
+          entry.lane = painted.get(entry.item.id) ?? tops.length + entry.lane;
+      }
+      const source = entries.find((entry) => entry.item.id === current.item.id);
       const remaining = entries.filter(
         (entry) => entry.item.id !== current.item.id,
       );
@@ -609,7 +649,7 @@ WorkTimeApp.ui.createAgendaDrag = function ({
         ),
         source,
         remaining,
-        covered: rules.overlaps(candidate, dates[0], dates[6]),
+        covered: dates.some((date) => rules.overlaps(candidate, date, date)),
       });
     }
     const results = new Map();
@@ -620,7 +660,7 @@ WorkTimeApp.ui.createAgendaDrag = function ({
       // append after existing rows; candidate-date sorting belongs to release.
       // Each week still measures its own heights, so empty weeks start at zero.
       const week = group.dates[0];
-      const slot =
+      let slot =
         current.previewSlots.get(week) ??
         group.source?.lane ??
         group.remaining.reduce(
@@ -674,6 +714,75 @@ WorkTimeApp.ui.createAgendaDrag = function ({
       for (let index = 0; index < prefixHeights.length; index++) {
         positions[index] = total;
         total += (prefixHeights[index] || fallback) + 3;
+      }
+      if (group.covered && group.lane?.dataset.agendaLayout === "packed") {
+        // A packed date has its own vertical stack. Equal tops in adjacent
+        // dates do not imply a shared row height: preserve each painted top
+        // and only push ribbons that actually collide with the candidate.
+        const rectangles = group.remaining
+          .map((entry) => {
+            const node = group.nodesById.get(entry.item.id);
+            const hidden = node
+              ? (current.previewPeers.get(node)?.hidden ?? node.hidden)
+              : true;
+            return {
+              ...entry,
+              top:
+                node && !hidden
+                  ? parseFloat(node.style.top) || 0
+                  : positions[group.positions.get(entry.item.id)] || total,
+              height: node?.getBoundingClientRect().height || fallback,
+            };
+          })
+          .sort((a, b) => a.top - b.top || a.lane - b.lane);
+        current.previewPackedTops ||= new Map();
+        const sourceNode = group.nodesById.get(current.item.id);
+        const candidateTop =
+          current.previewPackedTops.get(week) ??
+          (sourceNode
+            ? parseFloat(sourceNode.style.top) || 0
+            : rectangles.reduce(
+                (bottom, rect) => Math.max(bottom, rect.top + rect.height + 3),
+                0,
+              ));
+        current.previewPackedTops.set(week, candidateTop);
+        const candidateRect = {
+          item: candidate,
+          start: Math.max(
+            0,
+            group.dates.findIndex((date) => date >= candidate.date),
+          ),
+          end: group.dates.findLastIndex(
+            (date) => date <= rules.lastDate(candidate),
+          ),
+          top: candidateTop,
+          height: current.origin.height,
+        };
+        const placed = [candidateRect];
+        for (const rect of rectangles) {
+          let collision;
+          while (
+            (collision = placed.find(
+              (other) =>
+                rect.start <= other.end &&
+                rect.end >= other.start &&
+                rect.top < other.top + other.height + 2.5 &&
+                rect.top + rect.height + 2.5 > other.top,
+            ))
+          )
+            rect.top = collision.top + collision.height + 3;
+          placed.push(rect);
+        }
+        placed.sort((a, b) => a.top - b.top);
+        positions.length = prefixHeights.length = 0;
+        total = 0;
+        placed.forEach((rect, index) => {
+          positions[index] = rect.top;
+          prefixHeights[index] = rect.height;
+          total = Math.max(total, rect.top + rect.height + 3);
+          if (rect === candidateRect) slot = index;
+          else group.positions.set(rect.item.id, index);
+        });
       }
       const rowTop = group.row[0].getBoundingClientRect().top;
       const scroll = group.lane?.scrollTop || 0;
@@ -779,8 +888,7 @@ WorkTimeApp.ui.createAgendaDrag = function ({
     const rowTops = candidate
       ? arrangePreviewRows(current, visible, candidate, startTime)
       : new Map();
-    for (let index = 0; index < visible.length; index += 7) {
-      const row = visible.slice(index, index + 7);
+    for (const row of visibleRows(visible)) {
       const dates = row.map(dateOf);
       if (
         !candidate ||
@@ -1055,19 +1163,16 @@ WorkTimeApp.ui.createAgendaDrag = function ({
       item.id === current.item.id ? current.candidate : item,
     );
     const visible = cards();
-    for (let index = 0; index < visible.length; index += 7) {
-      const dates = visible.slice(index, index + 7).map(dateOf);
-      if (dates.length !== 7) continue;
+    for (const row of visibleRows(visible)) {
+      const dates = row.map(dateOf);
       const previous = new Map(
-        rules.segments(items, dates).map(({ item, lane }) => [item.id, lane]),
+        segmentsFor(items, dates).map(({ item, lane }) => [item.id, lane]),
       );
       if (
-        rules
-          .segments(next, dates)
-          .some(
-            ({ item, lane }) =>
-              previous.has(item.id) && previous.get(item.id) !== lane,
-          )
+        segmentsFor(next, dates).some(
+          ({ item, lane }) =>
+            previous.has(item.id) && previous.get(item.id) !== lane,
+        )
       )
         return true;
     }
@@ -1285,7 +1390,7 @@ WorkTimeApp.ui.createAgendaDrag = function ({
       const resizing = !!event.target.closest('[data-agenda-resize="end"]');
       if (
         resizing &&
-        ((!item.allDay && !item.end) ||
+        ((!item.allDay && (!item.end || rules.lastDate(item) <= item.date)) ||
           source.classList.contains("continues-after"))
       )
         return;

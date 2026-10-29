@@ -50,7 +50,11 @@ const range = require("./lib/agenda-test-range.cjs");
             await page.evaluate(
               () => new Promise((resolve) => requestAnimationFrame(resolve)),
             );
-            if (!(await page.locator(".agenda-resize-segment").count()))
+            if (
+              !(await page
+                .locator(".agenda-resize-segment,.timetable-preview")
+                .count())
+            )
               throw Error(
                 JSON.stringify({
                   width,
@@ -68,14 +72,17 @@ const range = require("./lib/agenda-test-range.cjs");
               );
             frames.push(
               await page
-                .locator(".agenda-resize-segment")
+                .locator(".agenda-resize-segment,.timetable-preview")
                 .first()
                 .boundingBox(),
             );
           }
           await page.mouse.up();
           await page.waitForFunction(
-            () => !document.querySelector(".agenda-drag-preview"),
+            () =>
+              !document.querySelector(
+                ".agenda-drag-preview,.timetable-preview,.timetable-hint",
+              ),
           );
           findings.push({
             width,
@@ -101,7 +108,14 @@ const range = require("./lib/agenda-test-range.cjs");
           (c) => Math.abs(c.width) < 0.04 && Math.abs(c.left) < 0.04,
         ),
       ),
-      "A one-day left drag must not change the original strip width before or after release",
+      "A one-day left drag must not change the original strip width before or after release: " +
+        JSON.stringify(
+          findings.filter((f) =>
+            f.changes.some(
+              (c) => Math.abs(c.width) >= 0.04 || Math.abs(c.left) >= 0.04,
+            ),
+          ),
+        ),
     );
   } finally {
     await browser.close();

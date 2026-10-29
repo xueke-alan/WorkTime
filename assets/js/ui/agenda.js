@@ -35,6 +35,7 @@ WorkTimeApp.ui.createAgenda = function ({
     disposed = false,
     busy = false,
     editingId = null,
+    pendingCreateId = null,
     baseline = "",
     renderedDateHeader = "",
     weekView = 0,
@@ -45,6 +46,7 @@ WorkTimeApp.ui.createAgenda = function ({
     weekLabelExit = null,
     weekLabelReveal = null;
   const viewStorageKey = "worktime.calendarView";
+  let workdaysOnly = false;
   let lastSavedView = null;
   try {
     const raw = window.localStorage.getItem(viewStorageKey);
@@ -56,6 +58,7 @@ WorkTimeApp.ui.createAgenda = function ({
     ) {
       active = saved.mode === "agenda";
       weekView = saved.weeks;
+      workdaysOnly = saved.workdaysOnly === true;
       model.analysisMode = saved.analysis === true;
       if (model.analysisMode) {
         analysisReturnAgenda = active;
@@ -73,6 +76,7 @@ WorkTimeApp.ui.createAgenda = function ({
             : "attendance",
         weeks: weekView,
         analysis: model.analysisMode,
+        workdaysOnly,
       });
       if (saved === lastSavedView) return;
       window.localStorage.setItem(viewStorageKey, saved);
@@ -133,6 +137,38 @@ WorkTimeApp.ui.createAgenda = function ({
   let toolbarClone = null;
   let viewIconAnimation = null;
   const calendar = $("calendar");
+  const dateEdges = WorkTimeApp.ui.createAgendaEdges({
+    calendar,
+    enabled: () => active || !!weekTransition || !!weekNavigation,
+  });
+  const weekdays = calendar.previousElementSibling;
+  const weekdayLabels = [...weekdays.children];
+  const workdaySwitch = (() => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.id = "agendaWorkdaysOnly";
+    button.className = "agenda-workday-switch";
+    button.innerHTML =
+      '<svg class="ui-icon" aria-hidden="true"><use href="#ms-right-panel-close"/></svg>';
+    button.setAttribute("role", "switch");
+    button.setAttribute("aria-controls", "calendar");
+    weekdays.append(button);
+    button.addEventListener(
+      "click",
+      () => {
+        if (!active || !weekView || busy) return;
+        const layout = canAnimate() ? captureWeekendColumns() : null;
+        finishTransitions();
+        actions.finishCalendarNavigation();
+        timetable.cancel();
+        workdaysOnly = !workdaysOnly;
+        actions.render();
+        if (layout) animateWeekendColumns(layout);
+      },
+      { signal: scope.signal },
+    );
+    return button;
+  })();
   let agendaDrag = null;
   model.agendaViewWeeks = active ? weekView : 0;
   model.agendaViewAnchor = model.selected;
@@ -181,8 +217,11 @@ WorkTimeApp.ui.createAgenda = function ({
       stopModesMotion();
     }
     agendaDrag?.cancel();
+    timetable?.cancel();
+    timetable?.setContentHidden(false);
     stopIncoming();
     agendaLayout?.stop();
+    agendaLayout?.settleText();
     finishWeekLabelExit();
     weekLabelReveal?.cancel();
     weekLabelReveal = null;
@@ -212,6 +251,7 @@ WorkTimeApp.ui.createAgenda = function ({
       : date.slice(0, 7);
     finishTransitions();
     actions.finishCalendarNavigation();
+    const navigation = {};
     actions.animateCalendarNavigation(
       start === previous ? 0 : start > previous ? 1 : -1,
       () => {
@@ -222,9 +262,15 @@ WorkTimeApp.ui.createAgenda = function ({
           switchingMode = false;
         }
         motion?.stop(calendar.querySelector(".selected"));
+        weekNavigation = navigation;
       },
+      () => {
+        if (weekNavigation !== navigation) return;
+        weekNavigation = null;
+        timetable.setContentHidden(false);
+      },
+      { axis: weekView === 1 ? "x" : "y" },
     );
-    weekNavigation = true;
   }
   function captureContent(card, selector = contentSelector) {
     stopOutgoing(card);
@@ -302,15 +348,15 @@ WorkTimeApp.ui.createAgenda = function ({
     for (const animation of incoming.values()) animation.cancel();
     incoming.clear();
   }
-  function revealIncoming(element, delay = 0) {
+  function revealIncoming(element, delay = 0, slide = true) {
     if (!element || !canAnimate()) return;
     incoming.get(element)?.cancel();
     motion?.stop(element);
     const animation = animationCompat.animate(
       element,
       [
-        { opacity: 0, transform: "translateX(-6px)" },
-        { opacity: 1, transform: "none" },
+        { opacity: 0, ...(slide ? { transform: "translateX(-6px)" } : {}) },
+        { opacity: 1, ...(slide ? { transform: "none" } : {}) },
       ],
       {
         duration: calendarMotion.contentDuration,
@@ -332,6 +378,24 @@ WorkTimeApp.ui.createAgenda = function ({
         element.textContent.trim() &&
         window.getComputedStyle(element).display !== "none",
     );
+  }
+  function revealAgendaCards(delay = 120, slide = true) {
+    if (!active || !canAnimate()) return;
+    for (const host of calendar.querySelectorAll(
+      ".agenda-card-items, :scope > .agenda-week-layers:not(.agenda-content-outgoing)",
+    ))
+      if (host.querySelector(".agenda-chip"))
+        revealIncoming(host, delay, slide);
+  }
+  function revealAgendaPage() {
+    revealSidebars();
+    revealAgendaCards();
+    revealTimeContent();
+  }
+  function revealTimeContent() {
+    timetable.setContentHidden(false);
+    for (const content of calendar.querySelectorAll(".timetable-scroll"))
+      revealIncoming(content, 0, false);
   }
   function revealContent(
     card,
@@ -466,6 +530,25 @@ WorkTimeApp.ui.createAgenda = function ({
       const date = new Date(start);
       date.setDate(date.getDate() + index);
       return WorkTimeApp.domain.time.dateKey(date);
+    });
+  }
+  function visibleWeekDates(weeks = 1) {
+    return weekDates(weeks).filter((date) => {
+      if (!workdaysOnly) return true;
+      const day = model.state.days[date] || {};
+      if (
+        WorkTimeApp.domain.calendar.calendarInfo(date, day).work ||
+        day.plannedOvertime
+      )
+        return true;
+      const schedule = WorkTimeApp.domain.schedule.scheduleForDate(
+        model.state,
+        date,
+      );
+      return (
+        WorkTimeApp.domain.records.calculate(date, day, schedule, true)
+          .minutes > 0
+      );
     });
   }
   function finishWeekLabelExit() {
@@ -617,12 +700,73 @@ WorkTimeApp.ui.createAgenda = function ({
   }
   function applyWeekLayout() {
     const enabled = active && weekView;
-    const dates = new Set(enabled ? weekDates() : []);
+    const dates = new Set(enabled ? visibleWeekDates(weekView) : []);
+    const single = !!enabled;
+    const allViewDates = weekDates(weekView || 1);
+    const weekdayIndices = new Set(
+      allViewDates.flatMap((date, index) =>
+        dates.has(date) ? [index % 7] : [],
+      ),
+    );
+    const columns = single ? weekdayIndices.size : 7;
+    calendar.toggleAttribute(
+      "data-agenda-filtered",
+      !!enabled && workdaysOnly && weekView > 1,
+    );
+    calendar.style.setProperty(
+      "--agenda-columns",
+      String(Math.max(1, columns)),
+    );
+    weekdays.style.setProperty(
+      "--agenda-columns",
+      String(Math.max(1, columns)),
+    );
+    weekdays.classList.toggle("agenda-single-weekdays", single);
+    calendar.style.setProperty(
+      "--agenda-column-gap",
+      getComputedStyle(calendar).columnGap,
+    );
+    weekdayLabels.forEach((label, index) => {
+      label.hidden = single && !weekdayIndices.has(index);
+      label.classList.toggle(
+        "is-last-visible-weekday",
+        single && index === Math.max(...weekdayIndices),
+      );
+    });
+    workdaySwitch.hidden = !single;
+    workdaySwitch.setAttribute("aria-label", t("workdaysOnly"));
+    workdaySwitch.title = t("workdaysOnly");
+    workdaySwitch.setAttribute("aria-checked", String(workdaysOnly));
     calendar.classList.toggle("agenda-week-view", !!enabled);
     if (enabled) calendar.dataset.agendaRows = String(weekView);
     else delete calendar.dataset.agendaRows;
     for (const card of dayCards()) {
       const visible = dates.has(cardDate(card));
+      const position = allViewDates.indexOf(cardDate(card));
+      if (enabled && position >= 0) {
+        const row = Math.floor(position / 7);
+        const rowDates = allViewDates
+          .slice(row * 7, row * 7 + 7)
+          .filter((date) => dates.has(date));
+        card.dataset.agendaRow = String(row + 1);
+        card.style.setProperty("--agenda-row", String(row + 1));
+        card.style.setProperty(
+          "--agenda-row-count",
+          String(Math.max(1, rowDates.length)),
+        );
+        card.style.setProperty(
+          "--agenda-row-column",
+          String(Math.max(0, rowDates.indexOf(cardDate(card)))),
+        );
+      } else {
+        delete card.dataset.agendaRow;
+        for (const key of [
+          "--agenda-row",
+          "--agenda-row-count",
+          "--agenda-row-column",
+        ])
+          card.style.removeProperty(key);
+      }
       const selectable = active && (!weekView || visible);
       card.toggleAttribute("data-agenda-week", visible);
       let button = card.querySelector(".agenda-week-select");
@@ -673,8 +817,278 @@ WorkTimeApp.ui.createAgenda = function ({
       element.classList.remove("agenda-week-leaving");
     }
     for (const [element, inert] of transition.inert) element.inert = inert;
+    for (const element of transition.exits || []) element.remove();
+    timetable.setContentHidden(false);
+    agendaLayout.settleText();
+    timetable.render();
     fitMonthCards();
     agendaLayout.render();
+    dateEdges.refresh();
+  }
+  function captureWeekendColumns() {
+    const lanes = [
+      ...calendar.querySelectorAll(
+        ":scope > .agenda-week-layers > .agenda-week-lane",
+      ),
+    ];
+    return {
+      headers: weekdayLabels
+        .map((node, index) => ({
+          node,
+          date: weekDates(1)[index],
+          rect: node.getBoundingClientRect(),
+          clone: node.cloneNode(true),
+        }))
+        .filter((part) => part.rect.width > 0),
+      chips: captureWeekLayout().chipBefore,
+      columns: dayCards()
+        .filter((card) => card.hasAttribute("data-agenda-week"))
+        .map((card) => {
+          const date = cardDate(card);
+          const bottom = [
+            ...calendar.querySelectorAll(".timetable-bottom-card"),
+          ].find((node) => node.dataset.timetableDate === date);
+          const upper = card.getBoundingClientRect(),
+            lower = bottom?.getBoundingClientRect() || upper;
+          const snapshot = document.createElement("div");
+          snapshot.className = "agenda-weekend-exit agenda-timetable";
+          const copy = (node, rect) => {
+            const clone = node.cloneNode(true);
+            const style = getComputedStyle(node);
+            Object.assign(clone.style, {
+              position: "absolute",
+              left: rect.left - upper.left + "px",
+              top: rect.top - upper.top + "px",
+              width: rect.width + "px",
+              height: rect.height + "px",
+              margin: "0",
+              display: style.display,
+              background: style.background,
+              borderColor: style.borderColor,
+              boxShadow: style.boxShadow,
+            });
+            snapshot.append(clone);
+          };
+          copy(card, upper);
+          if (bottom) copy(bottom, lower);
+          for (const lane of lanes) copy(lane, lane.getBoundingClientRect());
+          for (const node of snapshot.querySelectorAll(
+            "[id], [data-agenda-edit]",
+          )) {
+            node.removeAttribute("id");
+            node.removeAttribute("data-agenda-edit");
+          }
+          snapshot.inert = true;
+          snapshot.setAttribute("aria-hidden", "true");
+          return { date, upper, lower, snapshot };
+        }),
+    };
+  }
+  function animateWeekendColumns(layout) {
+    // Settle ink alignment before capturing destinations. Deferred alignment
+    // otherwise moves newly rebuilt timed-event text after the first frame.
+    WorkTimeApp.ui.alignment?.refresh([calendar, weekdays]);
+    const transition = {
+      animations: [],
+      styles: new Map(),
+      inert: new Map(),
+      exits: [],
+    };
+    const timing = {
+      duration: calendarMotion.contentDuration + 60,
+      easing: calendarMotion.easing,
+      fill: "both",
+    };
+    const bounds = calendar.getBoundingClientRect();
+    const plans = [];
+    const surfaces = [
+      ...calendar.querySelectorAll(
+        ":scope > .day[data-agenda-week], .timetable-bottom-card",
+      ),
+    ];
+    const dates = new Set(
+      surfaces.map((node) => node.dataset.timetableDate || cardDate(node)),
+    );
+    const gap = parseFloat(getComputedStyle(calendar).columnGap) || 7;
+    const fullDates = weekDates(weekView);
+    const rowOf = (date) => Math.floor(fullDates.indexOf(date) / 7);
+    const rowGeometry = (date) => {
+      const row = rowOf(date);
+      const targets = surfaces.filter(
+        (node) =>
+          node.classList.contains("day") && rowOf(cardDate(node)) === row,
+      );
+      const previous = layout.columns.filter(
+        (column) => rowOf(column.date) === row,
+      );
+      const targetWidth =
+        targets[0]?.getBoundingClientRect().width ||
+        previous[0]?.upper.width ||
+        100;
+      return {
+        row,
+        targetWidth,
+        oldWidth: previous[0]?.upper.width || targetWidth,
+        startLeft: targets[0]?.getBoundingClientRect().left || bounds.left + 12,
+        dates: targets.map(cardDate),
+      };
+    };
+    const motions = new Map();
+    for (const node of surfaces) {
+      const date = node.dataset.timetableDate || cardDate(node);
+      const { oldWidth, startLeft, dates: rowDates } = rowGeometry(date);
+      const old = layout.columns.find((column) => column.date === date);
+      const rect = node.getBoundingClientRect();
+      const previous =
+        old && (node.classList.contains("day") ? old.upper : old.lower);
+      plans.push({
+        element: node,
+        frames: [
+          previous
+            ? {
+                transform: `translate(${previous.left - rect.left}px, ${previous.top - rect.top}px)`,
+                width: previous.width + "px",
+                height: previous.height + "px",
+              }
+            : {
+                opacity: 0,
+                transform: `translateX(${Math.max(30, rowDates.indexOf(date) * (oldWidth + gap) + startLeft - rect.left)}px)`,
+                width: oldWidth + "px",
+                height: rect.height + "px",
+              },
+          {
+            transform: "none",
+            opacity: 1,
+            width: rect.width + "px",
+            height: rect.height + "px",
+          },
+        ],
+        options: timing,
+      });
+      if (node.classList.contains("day"))
+        motions.set(date, {
+          dx: previous
+            ? previous.left - rect.left
+            : Math.max(
+                30,
+                rowDates.indexOf(date) * (oldWidth + gap) +
+                  startLeft -
+                  rect.left,
+              ),
+          width: previous?.width || oldWidth,
+          finalWidth: rect.width,
+        });
+    }
+    const departing = new Map();
+    for (const old of layout.columns.filter(
+      (column) => !dates.has(column.date),
+    )) {
+      const ghost = old.snapshot;
+      const {
+        row,
+        targetWidth,
+        startLeft,
+        dates: rowDates,
+      } = rowGeometry(old.date);
+      const index = departing.get(row) || 0;
+      departing.set(row, index + 1);
+      const dx = Math.max(
+        30,
+        startLeft +
+          (rowDates.length + index) * (targetWidth + gap) -
+          old.upper.left,
+      );
+      const scale = targetWidth / old.upper.width;
+      Object.assign(ghost.style, {
+        left: old.upper.left - bounds.left + "px",
+        top: old.upper.top - bounds.top + "px",
+        width: old.upper.width + "px",
+        height: old.lower.bottom - old.upper.top + "px",
+        opacity: "0",
+        transformOrigin: "left top",
+      });
+      calendar.append(ghost);
+      transition.exits.push(ghost);
+      plans.push({
+        element: ghost,
+        frames: [
+          { opacity: 1, transform: "translateX(0)" },
+          {
+            opacity: 0,
+            transform: `translateX(${dx}px) scaleX(${scale})`,
+          },
+        ],
+        options: timing,
+      });
+      motions.set(old.date, {
+        dx,
+        width: old.upper.width,
+        finalWidth: targetWidth,
+        leaving: true,
+      });
+    }
+    const headerBounds = weekdays.getBoundingClientRect();
+    for (const [index, node] of weekdayLabels.entries()) {
+      const date = weekDates(1)[index],
+        old = layout.headers.find((part) => part.date === date),
+        movement =
+          motions.get(date) ||
+          [...motions].find(
+            ([day]) => fullDates.indexOf(day) % 7 === index,
+          )?.[1];
+      if (!movement) continue;
+      if (!node.hidden) {
+        const rect = node.getBoundingClientRect();
+        plans.push({
+          element: node,
+          frames: [
+            {
+              translate: `${old ? old.rect.left - rect.left : movement.dx}px ${old ? old.rect.top - rect.top : 0}px`,
+              opacity: old ? 1 : 0,
+              width: (old?.rect.width || movement.width) + "px",
+            },
+            { translate: "0px 0px", opacity: 1, width: rect.width + "px" },
+          ],
+          options: timing,
+        });
+      } else if (old) {
+        const ghost = old.clone;
+        ghost.removeAttribute("data-i18n-text");
+        ghost.className = "agenda-weekday-exit";
+        ghost.setAttribute("aria-hidden", "true");
+        Object.assign(ghost.style, {
+          position: "absolute",
+          pointerEvents: "none",
+          left: old.rect.left - headerBounds.left + "px",
+          top: old.rect.top - headerBounds.top + "px",
+          width: old.rect.width + "px",
+          opacity: "0",
+        });
+        weekdays.append(ghost);
+        transition.exits.push(ghost);
+        plans.push({
+          element: ghost,
+          frames: [
+            { opacity: 1, translate: "0px 0px", width: old.rect.width + "px" },
+            {
+              opacity: 0,
+              translate: `${movement.dx}px 0px`,
+              width:
+                (old.rect.width * movement.finalWidth) / movement.width + "px",
+            },
+          ],
+          options: timing,
+        });
+      }
+    }
+    plans.push(...weekendChipPlans(layout.chips, timing, transition));
+    weekTransition = transition;
+    transition.animations = motion.animateCalendar(plans);
+    Promise.all(
+      transition.animations.map((animation) => animation.finished),
+    ).then(() => {
+      if (weekTransition === transition) finishWeekTransition();
+    });
   }
   function captureWeekLayout() {
     const laneBefore = agendaLayout.capture();
@@ -699,7 +1113,96 @@ WorkTimeApp.ui.createAgenda = function ({
         ]),
     );
     const previousDates = new Set(weekDates());
-    return { laneBefore, expandNotes, chipHeights, before, previousDates };
+    let expandedWeek = null;
+    if (active && weekView && workdaysOnly && before.size < weekView * 7) {
+      const bounds = calendar.getBoundingClientRect(),
+        style = getComputedStyle(calendar);
+      const padding = parseFloat(style.paddingLeft),
+        gap = parseFloat(style.columnGap) || 7;
+      const width =
+        (calendar.clientWidth -
+          padding -
+          parseFloat(style.paddingRight) -
+          gap * 6) /
+        7;
+      const fullDates = weekDates(weekView);
+      const rowHeight =
+        (calendar.clientHeight -
+          parseFloat(style.paddingBottom) -
+          (weekView - 1) * gap) /
+        weekView;
+      expandedWeek = new Map(
+        fullDates.map((date, index) => {
+          const row = Math.floor(index / 7);
+          const first = fullDates
+            .slice(row * 7, row * 7 + 7)
+            .map((day) => before.get(day)?.rect)
+            .find(Boolean);
+          return [
+            date,
+            {
+              left:
+                bounds.left +
+                calendar.clientLeft +
+                padding +
+                (index % 7) * (width + gap),
+              top: first?.top ?? bounds.top + row * (rowHeight + gap),
+              width,
+              height: first?.height ?? (weekView === 1 ? 160 : rowHeight),
+            },
+          ];
+        }),
+      );
+    }
+    const dualBefore = [
+      ...calendar.querySelectorAll(".timetable-bottom-card"),
+    ].map((node) => node.getBoundingClientRect());
+    const chipBefore = [
+      ...calendar.querySelectorAll(".agenda-chip[data-agenda-edit]"),
+    ]
+      .filter((node) => !node.hidden && node.getClientRects().length)
+      .map((node) => ({
+        id: node.dataset.agendaEdit,
+        date:
+          node.dataset.agendaSegmentStart ||
+          node.dataset.timetableDate ||
+          cardDate(node.closest(".day")),
+        end:
+          node.dataset.agendaSegmentEnd ||
+          node.dataset.timetableDate ||
+          cardDate(node.closest(".day")),
+        rect: node.getBoundingClientRect(),
+        parentRect: node.parentElement.getBoundingClientRect(),
+        parts: [
+          ...node.querySelectorAll(
+            ".agenda-chip-title-text, .agenda-chip-time, .agenda-chip-note, .agenda-chip-status, .agenda-chip-continuation",
+          ),
+        ]
+          .filter(
+            (part) =>
+              part.getClientRects().length &&
+              !part.classList.contains("agenda-arrow-exit"),
+          )
+          .map((part) => ({
+            key: part.classList.contains("agenda-chip-continuation")
+              ? "arrow:" + part.querySelector("use")?.getAttribute("href")
+              : part.classList[0],
+            rect: part.getBoundingClientRect(),
+            clone: part.cloneNode(true),
+          })),
+        exit: active && weekView === 2 ? node.cloneNode(true) : null,
+      }));
+    return {
+      laneBefore,
+      expandNotes,
+      chipHeights,
+      before,
+      previousDates,
+      expandedWeek,
+      dualBefore,
+      chipBefore,
+      fromWeeks: active ? weekView : 0,
+    };
   }
   function switchWeek(enabled) {
     if (busy || enabled === weekView || !active) return;
@@ -708,6 +1211,7 @@ WorkTimeApp.ui.createAgenda = function ({
     finishTransitions();
     actions.finishCalendarNavigation();
     weekView = enabled;
+    if (enabled === 1) timetable.setContentHidden(true);
     model.agendaViewWeeks = enabled;
     model.agendaViewAnchor = model.selected;
     model.month = model.selected.slice(0, 7);
@@ -719,7 +1223,275 @@ WorkTimeApp.ui.createAgenda = function ({
       switchingMode = false;
       preparingWeekLayout = false;
     }
-    animateWeekLayout(layout);
+    if (layout.fromWeeks === 1 && enabled === 2 && layout.before.size)
+      animateDualToFortnight(layout);
+    else animateWeekLayout(layout);
+  }
+  function animateDualToFortnight(layout) {
+    timetable.setContentHidden(false);
+    if (!canAnimate()) {
+      agendaLayout.render({ animate: false });
+      return;
+    }
+    const transition = { animations: [], styles: new Map(), inert: new Map() };
+    const save = (node) =>
+      transition.styles.set(node, node.getAttribute("style"));
+    save(calendar);
+    agendaLayout.render({ animate: false });
+    const rows = [
+      ...calendar.querySelectorAll(
+        ":scope > .agenda-week-layers > .agenda-week-lane",
+      ),
+    ];
+    const cards = dayCards().filter((c) => c.hasAttribute("data-agenda-week"));
+    const first = cards[0],
+      second = cards.find((card) => card.dataset.agendaRow === "2");
+    if (
+      !first ||
+      !second ||
+      !layout.before.has(cardDate(first)) ||
+      !layout.dualBefore.length
+    ) {
+      animateWeekLayout(layout);
+      return;
+    }
+    const oldFirst = layout.before.get(cardDate(first)).rect;
+    const oldSecond = layout.dualBefore[0];
+    const target = first.getBoundingClientRect();
+    const timing = {
+      duration: calendarMotion.duration,
+      easing: calendarMotion.easing,
+      fill: "both",
+    };
+    const plans = [
+      {
+        element: calendar,
+        frames: [
+          { gridTemplateRows: `${oldFirst.height}px minmax(0, 1fr)` },
+          { gridTemplateRows: `${target.height}px minmax(0, 1fr)` },
+        ],
+        options: timing,
+      },
+    ];
+    const rowOffsets = new Map();
+    for (let index = 0; index < rows.length; index++) {
+      const row = rows[index],
+        card = index === 0 ? first : second;
+      const rect = row.getBoundingClientRect(),
+        cardRect = card.getBoundingClientRect();
+      const source = index === 0 ? oldFirst : oldSecond;
+      const delta = source.top - cardRect.top;
+      save(row);
+      row.style.overflow = "visible";
+      rowOffsets.set(row, delta);
+      plans.push({
+        element: row,
+        frames: [
+          {
+            top: parseFloat(row.style.top) + delta + "px",
+            height:
+              Math.max(0, rect.height + source.height - cardRect.height) + "px",
+          },
+          { top: row.style.top, height: row.style.height },
+        ],
+        options: timing,
+      });
+    }
+    plans.push(...chipMorphPlans(layout.chipBefore, rowOffsets, timing));
+    for (const card of cards.filter((card) => card.dataset.agendaRow === "2"))
+      plans.push({
+        element: card.querySelector(".daytop"),
+        frames: [{ opacity: 0 }, { opacity: 1 }],
+        options: timing,
+      });
+    weekTransition = transition;
+    transition.animations = motion.animateCalendar(plans);
+    Promise.all(
+      transition.animations.map((animation) => animation.finished),
+    ).then(() => {
+      if (weekTransition === transition) finishWeekTransition();
+    });
+  }
+  function weekendChipPlans(before, timing, transition) {
+    const plans = [];
+    for (const node of calendar.querySelectorAll(
+      ".agenda-week-lane .agenda-chip[data-agenda-edit]:not([hidden]), .timetable-column .timetable-event[data-agenda-edit]",
+    )) {
+      const date =
+        node.dataset.agendaSegmentStart || node.dataset.timetableDate;
+      const endDate = node.dataset.agendaSegmentEnd || date;
+      const old = before.find(
+        (item) =>
+          item.id === node.dataset.agendaEdit &&
+          item.date <= endDate &&
+          item.end >= date,
+      );
+      const rect = node.getBoundingClientRect();
+      if (!old) {
+        if (!node.classList.contains("timetable-event"))
+          plans.push({
+            element: node,
+            frames: [{ opacity: 0 }, { opacity: 1 }],
+            options: timing,
+          });
+        continue;
+      }
+      const dx = old.rect.left - rect.left,
+        dy = old.rect.top - rect.top;
+      if (node.classList.contains("timetable-event")) {
+        const style = getComputedStyle(node);
+        plans.push({
+          element: node,
+          frames: [
+            {
+              left: old.rect.left - old.parentRect.left + "px",
+              top: old.rect.top - old.parentRect.top + "px",
+              width: old.rect.width + "px",
+              height: old.rect.height + "px",
+            },
+            {
+              left: style.left,
+              top: style.top,
+              width: style.width,
+              height: style.height,
+            },
+          ],
+          options: timing,
+        });
+      } else
+        plans.push({
+          element: node,
+          frames: [
+            {
+              transform: `translate(${dx}px, ${dy}px)`,
+              width: old.rect.width + "px",
+              height: old.rect.height + "px",
+            },
+            {
+              transform: "none",
+              width: rect.width + "px",
+              height: rect.height + "px",
+            },
+          ],
+          options: timing,
+        });
+      const previous = new Map(
+        (old.parts || []).map((part) => [part.key, part]),
+      );
+      for (const part of node.querySelectorAll(
+        ".agenda-chip-title-text, .agenda-chip-time, .agenda-chip-note, .agenda-chip-status, .agenda-chip-continuation",
+      )) {
+        if (!part.getClientRects().length) continue;
+        const key = part.classList.contains("agenda-chip-continuation")
+          ? "arrow:" + part.querySelector("use")?.getAttribute("href")
+          : part.classList[0];
+        const source = previous.get(key),
+          target = part.getBoundingClientRect(),
+          style = getComputedStyle(part);
+        const translate =
+          style.translate === "none"
+            ? [0, 0]
+            : style.translate.split(" ").map((value) => parseFloat(value) || 0);
+        if (source) {
+          previous.delete(key);
+          const clip = style.maxWidth.endsWith("px");
+          plans.push({
+            element: part,
+            frames: [
+              {
+                translate: `${translate[0] + source.rect.left - target.left - dx}px ${(translate[1] || 0) + source.rect.top - target.top - dy}px`,
+                ...(clip ? { maxWidth: source.rect.width + "px" } : {}),
+              },
+              {
+                translate: style.translate,
+                ...(clip ? { maxWidth: style.maxWidth } : {}),
+              },
+            ],
+            options: timing,
+          });
+        } else if (key.startsWith("arrow:"))
+          plans.push({
+            element: part,
+            frames: [
+              { opacity: 0, translate: "8px 0px" },
+              { opacity: 1, translate: "0px 0px" },
+            ],
+            options: timing,
+          });
+      }
+      for (const [key, source] of previous) {
+        if (!key.startsWith("arrow:")) continue;
+        const ghost = source.clone;
+        ghost.classList.add("agenda-arrow-exit");
+        ghost.setAttribute("aria-hidden", "true");
+        Object.assign(ghost.style, {
+          position: "absolute",
+          left: source.rect.left - old.rect.left + "px",
+          top: source.rect.top - old.rect.top + "px",
+          width: source.rect.width + "px",
+          height: source.rect.height + "px",
+          opacity: "0",
+          pointerEvents: "none",
+        });
+        node.append(ghost);
+        transition.exits.push(ghost);
+        plans.push({
+          element: ghost,
+          frames: [
+            { opacity: 1, translate: "0px 0px" },
+            { opacity: 0, translate: "8px 0px" },
+          ],
+          options: timing,
+        });
+      }
+    }
+    return plans;
+  }
+  function chipMorphPlans(before, rowOffsets, timing) {
+    const plans = [];
+    for (const node of calendar.querySelectorAll(
+      ".agenda-week-lane .agenda-chip:not([hidden])",
+    )) {
+      const candidates = before.filter(
+        (item) =>
+          item.id === node.dataset.agendaEdit &&
+          item.date <= node.dataset.agendaSegmentStart &&
+          item.end >= node.dataset.agendaSegmentStart,
+      );
+      const old =
+        candidates.find(
+          (item) => item.date === node.dataset.agendaSegmentStart,
+        ) || candidates[0];
+      if (!old) {
+        plans.push({
+          element: node,
+          frames: [{ opacity: 0 }, { opacity: 1 }],
+          options: timing,
+        });
+        continue;
+      }
+      const rect = node.getBoundingClientRect(),
+        row = node.closest(".agenda-week-lane");
+      const dx = old.rect.left - rect.left;
+      const dy = old.rect.top - rect.top - (rowOffsets.get(row) || 0);
+      plans.push({
+        element: node,
+        frames: [
+          {
+            transform: `translate(${dx}px, ${dy}px)`,
+            height: old.rect.height + "px",
+            width: old.rect.width + "px",
+          },
+          {
+            transform: "none",
+            height: rect.height + "px",
+            width: rect.width + "px",
+          },
+        ],
+        options: timing,
+      });
+    }
+    return plans;
   }
   function animateWeekLayout({
     laneBefore,
@@ -727,8 +1499,12 @@ WorkTimeApp.ui.createAgenda = function ({
     chipHeights,
     before,
     previousDates,
+    chipBefore,
+    fromWeeks,
+    expandedWeek,
   }) {
     if (!canAnimate()) {
+      timetable.setContentHidden(false);
       agendaLayout.render();
       fitMonthCards();
       return;
@@ -773,6 +1549,56 @@ WorkTimeApp.ui.createAgenda = function ({
     const distance = bounds.height;
     const dates = weekDates();
     const plans = [];
+    const consumedDates = new Set();
+    if (enabled === 1) {
+      const lowers = [...calendar.querySelectorAll(".timetable-bottom-card")];
+      const firstWeek = visibleWeekDates();
+      for (let index = 0; index < lowers.length; index++) {
+        const math = WorkTimeApp.ui.agendaTimelineMath;
+        const nextDate = math.date(math.day(firstWeek[index]) + 7);
+        const sourceDay = before.get(nextDate);
+        if (sourceDay) consumedDates.add(nextDate);
+        const anchor = before.get(firstWeek[index]);
+        const rect = lowers[index].getBoundingClientRect();
+        const source =
+          sourceDay?.rect ||
+          (anchor
+            ? { ...anchor.rect.toJSON(), top: anchor.rect.bottom + 7 }
+            : { ...rect.toJSON(), top: rect.top + distance });
+        plans.push({
+          element: lowers[index],
+          frames: [
+            {
+              transform: `translate(${source.left - rect.left}px, ${source.top - rect.top}px)`,
+              height: source.height + "px",
+              width: source.width + "px",
+            },
+            {
+              transform: "none",
+              height: rect.height + "px",
+              width: rect.width + "px",
+            },
+          ],
+          options: {
+            duration: calendarMotion.duration,
+            easing: calendarMotion.easing,
+            fill: "both",
+          },
+        });
+      }
+      timetable.setContentHidden(false);
+      for (const content of calendar.querySelectorAll(".timetable-scroll"))
+        plans.push({
+          element: content,
+          frames: [{ opacity: 0 }, { opacity: 1 }],
+          options: {
+            duration: calendarMotion.duration * 0.75,
+            delay: calendarMotion.duration * 0.25,
+            easing: calendarMotion.easing,
+            fill: "both",
+          },
+        });
+    }
     const dayMotions = new Map();
     const animateDay = (card, frames, options) => {
       dayMotions.set(cardDate(card), { frames, options });
@@ -781,7 +1607,10 @@ WorkTimeApp.ui.createAgenda = function ({
         // leave the clipped viewport, while retaining their movement timing.
         plans.push({
           element: card,
-          frames: frames.map(({ opacity }) => ({ opacity })),
+          frames: frames.map(({ opacity, offset }) => ({
+            opacity,
+            ...(offset === undefined ? {} : { offset }),
+          })),
           options: { ...options, easing: "ease-out" },
         });
         frames = frames.map(({ opacity: _opacity, ...frame }) => frame);
@@ -795,7 +1624,47 @@ WorkTimeApp.ui.createAgenda = function ({
         (!enabled && previousDates.has(date));
       saveStyle(card);
       motion?.stop(card);
-      if (inWeek && previous && visible) {
+      if (!enabled && expandedWeek?.has(date) && visible) {
+        const expanded = expandedWeek.get(date);
+        const start = previous?.rect || {
+          ...expanded,
+          left: expanded.left + Math.max(30, expanded.width * 0.6),
+        };
+        // The restored seven-column position already advances toward the
+        // attendance card, so restoration and the page morph overlap in time.
+        const middle = Object.fromEntries(
+          ["left", "top", "width", "height"].map((key) => [
+            key,
+            expanded[key] + (next[key] - expanded[key]) * 0.22,
+          ]),
+        );
+        const paint = (rect, offset, alpha) => ({
+          offset,
+          opacity: alpha,
+          transform: `translate(${rect.left - next.left}px, ${rect.top - next.top}px)`,
+          width: rect.width + "px",
+          height: rect.height + "px",
+        });
+        card.style.zIndex = "2";
+        animateDay(
+          card,
+          [
+            paint(start, 0, previous ? Number(previous.opacity) : 0),
+            paint(
+              previous ? expanded : { ...expanded, left: expanded.left + 8 },
+              0.6,
+              1,
+            ),
+            paint(middle, 0.74, 1),
+            paint(next, 1, opacity),
+          ],
+          {
+            duration: calendarMotion.duration + 160,
+            easing: calendarMotion.easing,
+            fill: "both",
+          },
+        );
+      } else if (inWeek && previous && visible) {
         card.style.zIndex = "2";
         animateDay(
           card,
@@ -817,7 +1686,7 @@ WorkTimeApp.ui.createAgenda = function ({
             fill: "both",
           },
         );
-      } else if (enabled && previous) {
+      } else if (enabled && previous && !consumedDates.has(date)) {
         card.classList.add("agenda-week-leaving");
         transition.inert.set(card, card.inert);
         card.inert = true;
@@ -893,6 +1762,86 @@ WorkTimeApp.ui.createAgenda = function ({
           },
           { element: note, frames: [{ opacity: 0 }, { opacity: 1 }], options },
         );
+      }
+    }
+    if (fromWeeks === 2 && enabled === 3) {
+      const visible = [
+        ...calendar.querySelectorAll(
+          ".agenda-packed-row .agenda-chip:not([hidden])",
+        ),
+      ];
+      const hidden = chipBefore.filter(
+        (old) =>
+          !visible.some(
+            (node) =>
+              node.dataset.agendaEdit === old.id &&
+              node.dataset.agendaSegmentStart <= old.end &&
+              node.dataset.agendaSegmentEnd >= old.date,
+          ),
+      );
+      if (hidden.length) {
+        const exits = document.createElement("div");
+        exits.className = "agenda-week-lane agenda-overflow-exits";
+        exits.inert = true;
+        exits.setAttribute("aria-hidden", "true");
+        Object.assign(exits.style, {
+          inset: "0",
+          width: "100%",
+          height: "100%",
+          zIndex: "3",
+        });
+        calendar.append(exits);
+        transition.exits = [exits];
+        for (const old of hidden) {
+          const ghost = old.exit;
+          if (!ghost) continue;
+          ghost.classList.add("agenda-overflow-exit");
+          ghost.removeAttribute("data-agenda-edit");
+          ghost.removeAttribute("aria-current");
+          ghost.tabIndex = -1;
+          Object.assign(ghost.style, {
+            left: old.rect.left - bounds.left - borderLeft + "px",
+            top: old.rect.top - bounds.top - borderTop + scrollTop + "px",
+            width: old.rect.width + "px",
+            height: old.rect.height + "px",
+            pointerEvents: "none",
+            transition: "none",
+            // The compatibility wrapper releases fill effects when each track
+            // ends. Keep the base invisible after the short fade, while the
+            // longer row movement continues until transition cleanup.
+            opacity: "0",
+          });
+          exits.append(ghost);
+          // Follow the owning row while fading outside its shrinking clip. The
+          // real hidden event remains untouched for overflow counts and input.
+          const owner = cards.find(({ date }) => date === old.date);
+          const previous = before.get(old.date);
+          const delta =
+            owner?.rect && previous ? owner.rect.top - previous.rect.top : 0;
+          plans.push(
+            {
+              element: ghost,
+              frames: [{ opacity: 1 }, { opacity: 0 }],
+              options: {
+                duration: calendarMotion.contentLeaveDuration,
+                easing: "ease-out",
+                fill: "both",
+              },
+            },
+            {
+              element: ghost,
+              frames: [
+                { transform: "translateY(0)" },
+                { transform: `translateY(${delta}px)` },
+              ],
+              options: {
+                duration: calendarMotion.duration,
+                easing: calendarMotion.easing,
+                fill: "both",
+              },
+            },
+          );
+        }
       }
     }
     transition.animations = motion.animateCalendar(plans);
@@ -1460,14 +2409,21 @@ WorkTimeApp.ui.createAgenda = function ({
   }
   function chipMarkup(item) {
     const selected = formOpen && editingId === item.id;
-    return `<button type="button" class="agenda-chip${item.status === "completed" ? " is-complete" : ""}${selected ? " is-selected" : ""}" aria-current="${selected}" data-agenda-edit="${esc(item.id)}" data-status="${item.status}" title="${esc((item.allDay ? item.title : labelTime(item) + " · " + item.title) + " · " + statusLabel(item.status))}">${weekView && !item.allDay ? `<span class="agenda-chip-time">${esc(labelTime(item, true))}</span>` : ""}<span class="agenda-chip-title"><span class="agenda-chip-title-text">${esc(item.title)}</span><span class="agenda-chip-status" data-status="${item.status}" role="img" aria-label="${esc(statusLabel(item.status))}"></span></span>${weekView && item.note.trim() ? `<span class="agenda-chip-note">${esc(item.note)}</span>` : ""}${item.allDay || item.end ? `<span class="agenda-resize-handle" data-agenda-resize="end" aria-hidden="true" title="${esc(t("resizeEnd"))}"></span>` : ""}</button>`;
+    return `<button type="button" class="agenda-chip${item.status === "completed" ? " is-complete" : ""}${selected ? " is-selected" : ""}" aria-current="${selected}" data-agenda-edit="${esc(item.id)}" data-status="${item.status}" title="${esc((item.allDay ? item.title : labelTime(item) + " · " + item.title) + " · " + statusLabel(item.status))}"><span class="agenda-chip-title"><span class="agenda-chip-title-text">${esc(item.title)}</span><span class="agenda-chip-status" data-status="${item.status}" role="img" aria-label="${esc(statusLabel(item.status))}"></span></span>${weekView && !item.allDay ? `<span class="agenda-chip-time">${esc(labelTime(item, true))}</span>` : ""}${weekView && item.note.trim() ? `<span class="agenda-chip-note">${esc(item.note)}</span>` : ""}${item.allDay || (item.end && rules.lastDate(item) > item.date) ? `<span class="agenda-resize-handle" data-agenda-resize="end" aria-hidden="true" title="${esc(t("resizeEnd"))}"></span>` : ""}</button>`;
   }
   const agendaLayout = WorkTimeApp.ui.createAgendaLayout({
     calendar,
     getState: () => ({
       active,
+      selectedDate:
+        model.calendarSelected === undefined
+          ? model.selected
+          : model.calendarSelected,
       weeks: weekView,
-      items: model.state.agenda || [],
+      maxLanes: weekView === 1 ? 3 : null,
+      items: (model.state.agenda || []).filter(
+        (item) => weekView !== 1 || item.allDay,
+      ),
       transitioning: !!weekTransition,
       busy,
       switching: switchingMode,
@@ -1484,7 +2440,7 @@ WorkTimeApp.ui.createAgenda = function ({
   agendaDrag = WorkTimeApp.ui.createAgendaDrag({
     calendar,
     getState: () => ({
-      active,
+      active: active && weekView !== 1,
       busy,
       readOnly: model.loadIssue === "unsupported",
       transitioning: !!weekTransition,
@@ -1509,7 +2465,11 @@ WorkTimeApp.ui.createAgenda = function ({
       movingAgenda = true;
       try {
         const candidate = { ...item, updatedAt: new Date().toISOString() };
-        if (!(await perform(() => application.saveAgenda(candidate))))
+        if (
+          !(await perform(() => application.saveAgenda(candidate), {
+            deferRender: true,
+          }))
+        )
           return false;
         model.selected = model.calendarSelected = target;
         openForm();
@@ -1525,6 +2485,84 @@ WorkTimeApp.ui.createAgenda = function ({
       } finally {
         movingAgenda = false;
       }
+    },
+  });
+  const timetable = WorkTimeApp.ui.createAgendaTimetable({
+    calendar,
+    getState: () => ({
+      active,
+      weeks: weekView,
+      items: model.state.agenda || [],
+      schedules: visibleWeekDates().map((date) =>
+        WorkTimeApp.domain.schedule.scheduleForDate(model.state, date),
+      ),
+      selectedId: formOpen ? editingId : null,
+      // null explicitly clears the highlight after navigation; the working
+      // date remains valid for the editor without selecting its time card.
+      selectedDate:
+        model.calendarSelected === undefined
+          ? model.selected
+          : model.calendarSelected,
+      busy,
+      readOnly: model.loadIssue === "unsupported",
+      transitioning: !!weekTransition || !!weekNavigation,
+      draft: formOpen && hasDraft(),
+      newItem:
+        formOpen &&
+        !editingId &&
+        !(
+          pendingCreateId &&
+          (model.state.agenda || []).some((item) => item.id === pendingCreateId)
+        )
+          ? values()
+          : null,
+    }),
+    chip: chipMarkup,
+    edit,
+    select,
+    focusDraft() {
+      openForm();
+      $("agendaTitle").focus({ preventScroll: true });
+    },
+    create(fields) {
+      if (busy || model.loadIssue === "unsupported") return;
+      if (hasDraft() && !window.confirm(t("discard"))) return;
+      model.selected = model.calendarSelected = fields.date;
+      openForm();
+      reset();
+      schedule.setValue(fields);
+      baseline = JSON.stringify(values());
+      actions.render();
+      $("agendaTitle").focus({ preventScroll: true });
+    },
+    async save(item, date) {
+      const draft =
+        formOpen && editingId === item.id && hasDraft() ? values() : null;
+      const candidate = { ...item, updatedAt: new Date().toISOString() };
+      if (
+        !(await perform(() => application.saveAgenda(candidate), {
+          deferRender: true,
+        }))
+      )
+        return false;
+      model.selected = model.calendarSelected = date;
+      // Timetable gestures select a date without going through select(). Keep
+      // the all-day ribbon text anchored to that same date after either edge
+      // is resized or a timed item is moved into another column.
+      agendaLayout.selectTextDate(date);
+      if (editingId === candidate.id) {
+        reset(candidate);
+        if (draft) {
+          $("agendaTitle").value = draft.title;
+          $("agendaNote").value = draft.note;
+          $("agendaItemStatus").value = draft.status;
+        }
+      }
+      actions.render();
+      return true;
+    },
+    notify(text) {
+      $("agendaStatus").textContent = text;
     },
   });
   function updateBrand(agendaMode) {
@@ -1926,6 +2964,7 @@ WorkTimeApp.ui.createAgenda = function ({
       $("todayButton").setAttribute("data-i18n-" + attribute, todayKey);
     }
     applyWeekLayout();
+    timetable.render();
     updateWeekLabel();
     controls.hidden = !active;
     for (const node of controls.querySelectorAll("[data-agenda-text]"))
@@ -1956,6 +2995,7 @@ WorkTimeApp.ui.createAgenda = function ({
     $("agendaBack").disabled = busy;
     if (!active) {
       agendaLayout.render();
+      timetable.render();
       return;
     }
     for (const node of pane.querySelectorAll("[data-agenda-text]"))
@@ -2159,6 +3199,8 @@ WorkTimeApp.ui.createAgenda = function ({
     );
     times();
     agendaDrag?.refresh();
+    timetable.render();
+    dateEdges.refresh();
   }
   function select(
     date,
@@ -2167,8 +3209,10 @@ WorkTimeApp.ui.createAgenda = function ({
     retainSelection = false,
   ) {
     if (!keepEditor && !leaveForm()) return;
+    if (!keepEditor) agendaLayout.selectTextDate(date);
     if (!keepEditor && date !== model.selected) listScroll = 0;
     agendaDrag?.cancel();
+    timetable.cancel();
     finishWeekNavigation();
     const inRange =
       active &&
@@ -2190,14 +3234,16 @@ WorkTimeApp.ui.createAgenda = function ({
     if (!hasDraft() && !keepEditor) reset();
     actions.render();
   }
-  function edit(id, date = null) {
+  function edit(id, keepView = false) {
     const item = (model.state.agenda || []).find((entry) => entry.id === id);
     if (!item || busy) return;
     if (hasDraft() && !window.confirm(t("discard"))) return;
     openForm();
     reset(item);
-    if (date || rules.overlaps(item, model.selected, model.selected)) {
-      if (date) model.selected = model.calendarSelected = date;
+    if (keepView || rules.overlaps(item, model.selected, model.selected)) {
+      // A list item may span the selected date. Keep that day's list and its
+      // scroll position while editing; timetable clicks explicitly choose a date.
+      if (keepView) model.selected = model.calendarSelected = item.date;
       actions.render();
     } else select(item.date, true);
     // Editing an event already highlights its strip. The calendar's temporary
@@ -2212,12 +3258,14 @@ WorkTimeApp.ui.createAgenda = function ({
       pane.scrollIntoView({ block: "start", behavior });
     $("agendaTitle").focus({ preventScroll: true });
   }
-  async function perform(operation) {
+  async function perform(operation, { deferRender = false } = {}) {
     if (busy) return false;
     $("agendaError").textContent = "";
     $("agendaStatus").textContent = "";
     busy = true;
-    render();
+    // Drag saves keep their existing surfaces painted until the caller has
+    // reconciled the selected date and editor. Busy still guards all actions.
+    if (!deferRender) render();
     try {
       const result = await operation();
       if (disposed) return false;
@@ -2229,7 +3277,7 @@ WorkTimeApp.ui.createAgenda = function ({
       return false;
     } finally {
       busy = false;
-      if (!disposed) actions.render();
+      if (!disposed && !deferRender) actions.render();
     }
   }
   async function click(event) {
@@ -2309,6 +3357,7 @@ WorkTimeApp.ui.createAgenda = function ({
     listen($("agendaMemoRetry"), "click", () => void saveMemo());
     listen($("agendaMode"), "click", () => {
       if (model.batchMode || busy || !leaveForm()) return;
+      actions.closeImport();
       const weekLayout =
         weekView && !model.yearMode && !model.analysisMode
           ? captureWeekLayout()
@@ -2318,12 +3367,28 @@ WorkTimeApp.ui.createAgenda = function ({
       finishWeekTransition();
       stopSidebarMotion();
       actions.finishCalendarNavigation();
+      if (model.yearMode) {
+        finishTransitions();
+        actions.transitionPage({
+          direction: -1,
+          update() {
+            setActive(true);
+            model.yearMode = model.analysisMode = false;
+            model.month = model.selected.slice(0, 7);
+          },
+          afterRender() {
+            stopSidebarMotion();
+            revealAgendaCards();
+          },
+        });
+        return;
+      }
       if (model.analysisMode) {
         finishTransitions();
         actions.transitionAnalysis(
           false,
           () => setActive(true),
-          revealSidebars,
+          revealAgendaPage,
         );
         return;
       }
@@ -2379,7 +3444,7 @@ WorkTimeApp.ui.createAgenda = function ({
           actions.transitionAnalysis(
             false,
             () => setActive(true),
-            revealSidebars,
+            revealAgendaPage,
           );
           return;
         }
@@ -2556,6 +3621,7 @@ WorkTimeApp.ui.createAgenda = function ({
       $("agendaError").textContent = "";
       $("agendaStatus").textContent = "";
       times();
+      timetable.render();
     });
     listen($("agendaForm"), "submit", async (event) => {
       event.preventDefault();
@@ -2586,7 +3652,10 @@ WorkTimeApp.ui.createAgenda = function ({
         Object.entries(fields).every(
           ([key, value]) => key === "status" || old[key] === value,
         );
-      if (await perform(() => application.saveAgenda(candidate))) {
+      pendingCreateId = old ? null : candidate.id;
+      const saved = await perform(() => application.saveAgenda(candidate));
+      pendingCreateId = null;
+      if (saved) {
         reset();
         formOpen = false;
         if (rules.overlaps(candidate, model.selected, model.selected)) {
@@ -2621,6 +3690,8 @@ WorkTimeApp.ui.createAgenda = function ({
       disposed = true;
       agendaDrag.dispose();
       agendaLayout.dispose();
+      dateEdges.dispose();
+      timetable.dispose();
       schedule.dispose();
       statusPopover.destroy();
       updateBrand(false);
@@ -2670,6 +3741,11 @@ WorkTimeApp.ui.createAgenda = function ({
       $("monthTitle").classList.remove("has-week-label");
       $("monthTitle").style.removeProperty("--week-label-width");
       calendar.classList.remove("agenda-week-view");
+      calendar.style.removeProperty("--agenda-columns");
+      weekdays.style.removeProperty("--agenda-columns");
+      weekdays.classList.remove("agenda-single-weekdays");
+      for (const label of weekdayLabels) label.hidden = false;
+      workdaySwitch.remove();
       delete calendar.dataset.agendaRows;
       model.agendaViewWeeks = 0;
       for (const card of dayCards()) {

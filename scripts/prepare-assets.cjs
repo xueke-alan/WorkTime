@@ -7,6 +7,7 @@ const acorn = require("acorn");
 const assert = require("node:assert/strict");
 const { minify_sync: minify } = require("terser");
 const CleanCSS = require("clean-css");
+const postcss = require("postcss");
 const root = path.resolve(__dirname, "..");
 function prepareAssets({ check = false } = {}) {
   function write(relative, source) {
@@ -45,8 +46,17 @@ function prepareAssets({ check = false } = {}) {
       "date-picker",
       "agenda-schedule",
       "agenda-layout",
+      "agenda-edges",
       "agenda-drag",
+      "agenda-timeline-math",
+      "agenda-timetable",
       "agenda",
+      "analysis",
+      "analysis-renderer",
+      "editor",
+      "../services/backup-cache",
+      "../controllers/backup",
+      "../controllers/navigation",
     ]
       .map((name) =>
         fs.readFileSync(path.join(root, "assets/js/ui", name + ".js"), "utf8"),
@@ -80,12 +90,20 @@ function prepareAssets({ check = false } = {}) {
     "motion",
     "i18n",
   ];
-  const css = new CleanCSS({ level: 0, rebase: false }).minify(
+  const cssSource = postcss.parse(
     styles
       .map((name) =>
         fs.readFileSync(path.join(root, "assets/css", name + ".css"), "utf8"),
       )
       .join("\n"),
+  );
+  // Explanatory comments stay in editable sources, without consuming the
+  // offline entry's byte budget. Preserve license comments and declaration order.
+  cssSource.walkComments((comment) => {
+    if (!comment.text.startsWith("!")) comment.remove();
+  });
+  const css = new CleanCSS({ level: 0, rebase: false }).minify(
+    cssSource.toString(),
   );
   if (css.errors.length) throw Error(css.errors.join("\n"));
   write(

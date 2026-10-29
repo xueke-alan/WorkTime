@@ -141,7 +141,12 @@ async function verify() {
     }
     async function hover(date) {
       const rect = await card(date).boundingBox();
-      await page.mouse.move(rect.x + rect.width / 2, rect.y + 15, {
+      const y = (await page.locator(".agenda-timetable").count())
+        ? await card(date)
+            .locator(".daytop")
+            .evaluate((node) => node.getBoundingClientRect().bottom + 15)
+        : rect.y + 15;
+      await page.mouse.move(rect.x + rect.width / 2, y, {
         steps: 12,
       });
     }
@@ -149,8 +154,9 @@ async function verify() {
       await page.mouse.up();
       await page.waitForFunction(
         () =>
-          !document.querySelector(".agenda-drag-preview") &&
-          !document.querySelector("#agendaFields").disabled,
+          !document.querySelector(
+            ".agenda-drag-preview,.timetable-preview,.timetable-hint",
+          ) && !document.querySelector("#agendaFields").disabled,
       );
     }
     async function resize(title, date) {
@@ -170,7 +176,11 @@ async function verify() {
       }, title);
       await begin(title);
       await hover(date);
-      assert.ok((await page.locator(".agenda-resize-segment").count()) > 0);
+      assert.ok(
+        (await page
+          .locator(".agenda-resize-segment,.timetable-preview")
+          .count()) > 0,
+      );
       await finish();
       assert.ok(
         await page.evaluate(() =>
@@ -319,22 +329,28 @@ async function verify() {
     await create("未设结束时间", "2026-10-20", "", "09:00");
     assert.equal(await handle("未设结束时间").count(), 0);
     await create("定时长度", "2026-10-20", "", "09:00", "10:00");
-    await resize("定时长度", "2026-10-23");
+    assert.equal(
+      await handle("定时长度").count(),
+      0,
+      "Single-day timed events use time handles in the timetable, not cross-date handles",
+    );
+    await create("跨日定时长度", "2026-10-20", "2026-10-21", "09:00", "10:00");
+    await resize("跨日定时长度", "2026-10-23");
     assert.equal(await page.locator("#agendaStart").inputValue(), "09:00");
     assert.equal(await page.locator("#agendaEnd").inputValue(), "10:00");
     // These accumulated fixtures exceed the compact month's visible lane limit.
     // Keep the real endpoint visible while testing midnight and failed writes.
     await page.setViewportSize({ width: 1470, height: 1600 });
-    await create("午夜长度", "2026-10-20", "2026-10-21", "22:00", "00:00");
+    await create("午夜长度", "2026-10-20", "2026-10-22", "22:00", "00:00");
     await resize("午夜长度", "2026-10-22");
     assert.equal(
       await page.locator("#agendaEndDateInput").inputValue(),
       "2026-10-23",
     );
-    await resize("午夜长度", "2026-10-20");
+    await resize("午夜长度", "2026-10-21");
     assert.equal(
       await page.locator("#agendaEndDateInput").inputValue(),
-      "2026-10-21",
+      "2026-10-22",
     );
     await page.evaluate(() => {
       window.resizeStore = IDBTransaction.prototype.objectStore;
@@ -348,7 +364,7 @@ async function verify() {
     assert.ok(await page.locator("#agendaError").textContent());
     assert.equal(
       await page.locator("#agendaEndDateInput").inputValue(),
-      "2026-10-21",
+      "2026-10-22",
     );
     await page.evaluate(() => {
       IDBTransaction.prototype.objectStore = window.resizeStore;

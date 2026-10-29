@@ -10,6 +10,14 @@ body #pageSettingsPane .language-trigger .button-label { overflow: hidden; text-
   margin-bottom: 0;
 }
 .language-settings select { position: absolute; width: 1px; opacity: 0; pointer-events: none; }
+.auto-backup-settings { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 0.428571rem; min-width: 0; position: relative; }
+body .editor .auto-backup-settings > .field { display: contents; }
+.auto-backup-settings > .field > label { grid-column: 1 / -1; grid-row: 1; }
+.auto-backup-settings .language-trigger { grid-column: 1; grid-row: 2; }
+body .editor .auto-backup-settings > .settings-archive-actions { display: block; grid-column: 2; grid-row: 2; }
+body .editor .auto-backup-settings > .settings-archive-actions > button { height: 100%; }
+.auto-backup-settings .help { grid-column: 1 / -1; grid-row: 3; margin: 0; white-space: normal; overflow-wrap: anywhere; }
+.auto-backup-settings .theme-save-notice { grid-column: 1 / -1; grid-row: 4; margin: 0; }
 body #pageSettingsPane .language-trigger {
   width: 100%;
   min-width: 0;

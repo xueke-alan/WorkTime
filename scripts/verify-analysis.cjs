@@ -461,6 +461,10 @@ async function verifyViewMotion(browser, url, state) {
   await page.locator("#analysisToggle").click();
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.locator("#monthTitle").click();
+  await page.waitForFunction(
+    () => !document.getElementById("panelContent").inert,
+  );
+  await finish();
   await page.locator("#analysisToggle").click();
   await phase(180, -24);
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -2394,9 +2398,11 @@ async function verify() {
     assert.equal(await view.locator("#analysisPage").isVisible(), true);
     assert.equal(await view.locator("#analysisManual").isChecked(), false);
     await view.locator("#analysisManual").check();
+    await view.locator("#analysisToggle").click();
     await view.locator("#dayStart").fill("08:00");
     await view.locator("#dayEnd").fill("22:00");
     await view.locator("#dayEnd").blur();
+    await view.locator("#analysisToggle").click();
     await view.waitForFunction(
       () => document.querySelectorAll(".analysis-range").length === 12,
     );

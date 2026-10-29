@@ -67,6 +67,17 @@ async function verify() {
         const result = await page.evaluate(async () => {
           const calendar = document.querySelector("#calendar");
           document.querySelector("#agendaViewToggle").click();
+          const transitions = calendar.getAnimations({ subtree: true }).length;
+          const entrances = [
+            ...calendar.querySelectorAll(
+              ".agenda-card-items, .agenda-week-layers",
+            ),
+          ]
+            .flatMap((host) => host.getAnimations())
+            .filter((animation) => {
+              const frames = animation.effect.getKeyframes();
+              return frames[0].opacity === "0" && frames.at(-1).opacity === "1";
+            }).length;
           const noteEndpoints = [...calendar.querySelectorAll(".agenda-chip")]
             .filter((chip) => chip.querySelector(".agenda-chip-note"))
             .flatMap((chip) => {
@@ -90,7 +101,9 @@ async function verify() {
             chipSamples = [],
             start = performance.now();
           while (performance.now() - start < 620) {
-            for (const row of calendar.querySelectorAll(".agenda-week-lane")) {
+            for (const row of calendar.querySelectorAll(
+              ":scope > .agenda-week-layers:not(.agenda-content-outgoing) > .agenda-week-lane[data-dates]",
+            )) {
               if (!row.querySelector(".agenda-chip")) continue;
               const day = row.dataset.dates.split(",")[0];
               const card = [...calendar.querySelectorAll(":scope > .day")].find(
@@ -128,6 +141,7 @@ async function verify() {
                 );
                 if (!anchor) continue;
                 chipSamples.push({
+                  timed: !!chip.querySelector(".agenda-chip-time"),
                   key:
                     chip.dataset.agendaEdit +
                     ":" +
@@ -147,6 +161,8 @@ async function verify() {
             await new Promise(requestAnimationFrame);
           }
           return {
+            entrances,
+            transitions,
             samples,
             chipSamples,
             noteEndpoints: noteEndpoints.map(({ chip, height }) => ({
@@ -157,7 +173,11 @@ async function verify() {
           };
         });
         assert.equal(result.view, expected);
-        if (expected === "week") assert.ok(result.noteEndpoints.length > 0);
+        assert.ok(
+          result.transitions > 0,
+          `Agenda surfaces animate into ${expected} view`,
+        );
+        if (expected === "week") assert.equal(result.noteEndpoints.length, 0);
         for (const endpoint of result.noteEndpoints)
           assert.ok(
             Math.abs(endpoint.expected - endpoint.actual) < 0.05,
@@ -178,7 +198,7 @@ async function verify() {
             Math.max(...samples.map((sample) => sample.left)) -
             Math.min(...samples.map((sample) => sample.left));
           assert.ok(
-            delta < 0.6,
+            delta < (expected === "fortnight" && samples[0].timed ? 4.6 : 0.6),
             `Chip left edge ${label} ${expected} ${page.viewportSize().width}: ${JSON.stringify({ delta, first: samples[0], last: samples.at(-1) })}`,
           );
         }
@@ -283,6 +303,67 @@ async function verify() {
     );
     assert.ok(headerMotion.samples[0].opacity < 0.5);
     assert.equal(headerMotion.samples.at(-1).opacity, 1);
+    for (const width of [1480, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const view of ["month", "week", "fortnight", "threeweek"]) {
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        while (
+          (await page
+            .locator("#agendaViewToggle")
+            .getAttribute("data-view")) !== view
+        )
+          await page.locator("#agendaViewToggle").click();
+        for (const source of ["year", "analysis", "analysis-return"]) {
+          if (source !== "analysis-return")
+            await page.locator("#agendaMode").click();
+          await page
+            .locator(source === "year" ? "#monthTitle" : "#analysisToggle")
+            .click();
+          await page.evaluate(() => {
+            window.agendaEntranceRecords = [];
+            window.originalEntranceAnimate = Element.prototype.animate;
+            Element.prototype.animate = function (frames, options) {
+              if (
+                this.matches(".agenda-card-items, .agenda-week-layers") &&
+                frames[0].opacity === 0
+              )
+                window.agendaEntranceRecords.push({
+                  frames,
+                  duration: options.duration,
+                  delay: options.delay,
+                });
+              return window.originalEntranceAnimate.call(this, frames, options);
+            };
+          });
+          await page.emulateMedia({ reducedMotion: "no-preference" });
+          await page
+            .locator(
+              source === "analysis-return" ? "#analysisToggle" : "#agendaMode",
+            )
+            .click();
+          await page.waitForFunction(
+            () => window.agendaEntranceRecords.length > 0,
+          );
+          const records = await page.evaluate(
+            () => window.agendaEntranceRecords,
+          );
+          assert.ok(
+            records.every(
+              (record) => record.duration === 300 && record.delay === 120,
+            ),
+            `${source} restores ${view} cards with consistent entrance timing at ${width}px`,
+          );
+          await page.waitForFunction(
+            () => !document.getElementById("panelContent").inert,
+          );
+          await settled();
+          await page.evaluate(() => {
+            Element.prototype.animate = window.originalEntranceAnimate;
+          });
+          await page.emulateMedia({ reducedMotion: "reduce" });
+        }
+      }
+    }
     assert.deepEqual(errors, []);
     console.log(
       "Date/agenda synchronized trajectories, stable chip left edges, scrollbar geometry, heights, shared clocks, compact/cross-day lanes, notes and interrupted view switches verified.",

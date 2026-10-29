@@ -782,6 +782,20 @@ WorkTimeApp.services.indexedStorage = (() => {
           A.encode(hydrated, { exportedAt: new Date().toISOString() }),
         );
       },
+      async exportChanges(state, changes) {
+        await queue;
+        if (changes.imports?.length) {
+          const selected = new Set(changes.imports);
+          const subset = {
+            ...state,
+            imports: state.imports.filter((log) => selected.has(log.id)),
+          };
+          state = await this.hydrateImports(subset);
+          if (state.imports.some((log) => log._lazy))
+            throw Error("导入历史无法读取，请下载原存档。");
+        }
+        return patchModules(state, changes);
+      },
       async hydrateImports(state) {
         await queue;
         if (!state.imports.some((log) => log._lazy)) return state;
