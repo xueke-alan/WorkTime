@@ -1,4 +1,5 @@
 "use strict";
+const { clickSettingsControl } = require("./settings-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -131,7 +132,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
       await page.goto(url);
       await ready(page);
       assert.equal(downloads.length, 0, "default off");
-      await page.locator("#pageSettingsOpen").click();
+      await clickSettingsControl(page, "#pageSettingsOpen");
       await page.locator("#autoBackupTrigger").click();
       await page.locator('#autoBackupOptions [data-value="3"]').click();
       await settled(page);
@@ -190,7 +191,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
         "2026-10-28T04:00:00.000Z",
       );
       if (!(await page.locator("#autoBackupTrigger").isVisible()))
-        await page.locator("#pageSettingsOpen").click();
+        await clickSettingsControl(page, "#pageSettingsOpen");
       assert.equal(
         await page.locator("#autoBackupHelp").textContent(),
         "今日12h00m已备份",

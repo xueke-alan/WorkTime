@@ -1,4 +1,5 @@
 "use strict";
+const { clickSettingsControl } = require("./settings-test-helpers.cjs");
 // Browser regression audit: node scripts/verify-desktop-i18n.cjs
 const fs = require("node:fs");
 const path = require("node:path");
@@ -138,13 +139,13 @@ const { chromium } = require("playwright");
       await inspect("day");
       for (const [button, scene] of [
         ["#dayLeaveToggle", "leave"],
-        ["#personalSettingsOpen", "personal"],
+        ["#settingsPersonalTab", "personal"],
         ["#pageSettingsOpen", "page-settings"],
-        ["#settingsOpen", "work-settings"],
+        ["#settingsWorkTab", "work-settings"],
         ["#importOpen", "import"],
         ["#batchToggle", "batch"],
       ]) {
-        await page.locator(button).click();
+        await clickSettingsControl(page, button);
         await inspect(scene);
       }
       await page
@@ -156,20 +157,20 @@ const { chromium } = require("playwright");
       await page.locator("#batchCancel").click();
       await page.locator("#importOpen").click();
       for (const button of ["#addTimeTemplate", "#dayImportTemplates"]) {
-        await page.locator(button).click();
+        await clickSettingsControl(page, button);
         await inspect(button.slice(1));
         await page.locator("dialog:modal [data-close]").first().click();
       }
-      await page.locator("#pageSettingsOpen").click();
+      await clickSettingsControl(page, "#pageSettingsOpen");
       await page.locator("#recoveryOpen").click();
       await inspect("recovery");
       await page.locator("dialog:modal [data-close]").first().click();
       await page.locator("#personalSettingsCancel").click();
-      await page.locator("#settingsOpen").click();
+      await clickSettingsControl(page, "#settingsWorkTab");
       await page.locator("#scheduleApplyOpen").click();
       await inspect("schedule-range");
       await page.locator("dialog:modal [data-close]").first().click();
-      await page.locator("#workSettingsCancel").click();
+      await page.locator("#personalSettingsCancel").click();
       await page.locator("#monthTitle").click();
       await inspect("year");
       await page.locator("#monthTitle").click();
@@ -182,7 +183,7 @@ const { chromium } = require("playwright");
           await page.locator(id).click();
           await inspect(id.slice(1));
         }
-      await page.locator("#pageSettingsOpen").click();
+      await clickSettingsControl(page, "#pageSettingsOpen");
       for (const id of ["#weatherTrigger", "#languageTrigger"]) {
         await page.locator(id).click();
         await inspect(id.slice(1));

@@ -1,4 +1,5 @@
 "use strict";
+const { clickSettingsControl } = require("./settings-test-helpers.cjs");
 const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
@@ -287,7 +288,7 @@ async function verify() {
       "辅助面板保留草稿",
     );
     await page.locator("#agendaCancel").click();
-    await page.locator("#pageSettingsOpen").click();
+    await clickSettingsControl(page, "#pageSettingsOpen");
     assert.equal(await page.locator("#pageSettingsPane").isVisible(), true);
     await page.locator("#personalSettingsCancel").click();
     assert.equal(await page.locator("#agendaList").isVisible(), true);

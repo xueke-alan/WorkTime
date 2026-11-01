@@ -213,34 +213,55 @@ async function verify() {
     await returnToday();
     await settle();
     const checkGlow = async () => {
+      const lower = page.locator(
+        '.timetable-bottom-card[data-timetable-date="2026-10-27"]',
+      );
       assert.equal(await page.locator(".calendar-today-glow").count(), 1);
       assert.equal(
-        await page.locator(".calendar-today-glow").evaluate((glow) => {
-          const card = document.querySelector(
-              '#calendar > .day[data-date="2026-10-27"]',
-            ),
-            layers = document.querySelector(".agenda-week-layers"),
-            box = glow.getBoundingClientRect(),
-            target = card.getBoundingClientRect(),
-            viewport = glow
-              .closest(".panel-content-viewport")
-              .getBoundingClientRect(),
-            style = getComputedStyle(glow);
-          return (
-            glow.parentElement.id === "panelContent" &&
-            !glow.closest(".calendar-navigation-viewport, #calendar") &&
-            style.pointerEvents === "none" &&
-            Number(style.zIndex) > Number(getComputedStyle(layers).zIndex) &&
-            Math.abs(box.top - target.top) < 1 &&
-            Math.abs(box.left - target.left) < 1 &&
-            Math.abs(box.width - target.width) < 1 &&
-            Math.abs(box.height - target.height) < 1 &&
-            box.top - viewport.top > 16
-          );
-        }),
+        await page.locator(".calendar-today-glow").evaluateAll((glows) =>
+          glows.every((glow, index) => {
+            const card = document.querySelector(
+                index === 0
+                  ? '#calendar > .day[data-date="2026-10-27"]'
+                  : '.timetable-bottom-card[data-timetable-date="2026-10-27"]',
+              ),
+              layers = document.querySelector(".agenda-week-layers"),
+              box = glow.getBoundingClientRect(),
+              target = card.getBoundingClientRect(),
+              viewport = glow
+                .closest(".panel-content-viewport")
+                .getBoundingClientRect(),
+              style = getComputedStyle(glow);
+            return (
+              glow.parentElement.id === "panelContent" &&
+              !glow.closest(".calendar-navigation-viewport, #calendar") &&
+              style.pointerEvents === "none" &&
+              Number(style.zIndex) > Number(getComputedStyle(layers).zIndex) &&
+              Math.abs(box.top - target.top) < 1 &&
+              Math.abs(box.left - target.left) < 1 &&
+              Math.abs(box.width - target.width) < 1 &&
+              Math.abs(box.height - target.height) < 1 &&
+              box.top - viewport.top > 16
+            );
+          }),
+        ),
         true,
         "The glow follows the card above event lanes, outside both calendar clipping surfaces",
       );
+      if (await lower.count()) {
+        assert.equal(
+          await lower.evaluate(
+            (card) =>
+              card
+                .getAnimations()
+                .filter(
+                  (animation) => animation.effect.getTiming().duration === 800,
+                ).length,
+          ),
+          0,
+          "The time region shares the date surface and has no separate glow",
+        );
+      }
     };
     for (const reducedMotion of ["no-preference", "reduce"]) {
       await page.emulateMedia({ reducedMotion });

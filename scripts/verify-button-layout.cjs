@@ -1,4 +1,5 @@
 "use strict";
+const { clickSettingsControl } = require("./settings-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -71,7 +72,10 @@ async function verify() {
               checked.push(id);
               const style = getComputedStyle(host);
               const box = host.getBoundingClientRect();
-              if (id === "recoveryOpen") {
+              if (
+                id === "recoveryOpen" &&
+                !host.closest(".auto-backup-settings")
+              ) {
                 const row = host.parentElement;
                 const gap = parseFloat(getComputedStyle(row).columnGap);
                 const expected = (row.getBoundingClientRect().width - gap) / 2;
@@ -168,11 +172,11 @@ async function verify() {
         await audit("batch-disabled");
         await page.locator("#batchCancel").click();
         for (const [open, close] of [
-          ["#settingsOpen", "#workSettingsCancel"],
-          ["#personalSettingsOpen", "#profileSettingsCancel"],
+          ["#settingsWorkTab", "#personalSettingsCancel"],
+          ["#settingsPersonalTab", "#personalSettingsCancel"],
           ["#pageSettingsOpen", "#personalSettingsCancel"],
         ]) {
-          await page.locator(open).click();
+          await clickSettingsControl(page, open);
           await audit(open);
           if (
             language === "zh-CN" &&
@@ -215,8 +219,6 @@ async function verify() {
         "dayLeaveFull",
         "dayLeaveDone",
         "recoveryOpen",
-        "workSettingsCancel",
-        "profileSettingsCancel",
         "personalSettingsCancel",
       ])
         assert.ok(checked.has(id), language + ": missing coverage for " + id);

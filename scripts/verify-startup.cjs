@@ -432,9 +432,9 @@ async function verifyCalendar(page) {
   );
   await page.locator("#pageSettingsOpen").click();
   await page.evaluate(() => {
-    document.querySelector("#settingsOpen").click();
-    document.querySelector("#settingsOpen").click();
-    document.querySelector("#settingsOpen").click();
+    document.querySelector("#pageSettingsOpen").click();
+    document.querySelector("#pageSettingsOpen").click();
+    document.querySelector("#pageSettingsOpen").click();
   });
   assert.equal(
     await page
@@ -442,11 +442,11 @@ async function verifyCalendar(page) {
       .evaluate((element) => element.getAnimations().length),
     0,
   );
-  await page.locator("#settingsOpen").click();
+  await page.locator("#pageSettingsOpen").click();
   await page.waitForFunction(
     () =>
-      document.querySelector("#settingsOpen use").getAttribute("href") ===
-      "#ms-nest-clock-farsight-analog",
+      document.querySelector("#pageSettingsOpen use").getAttribute("href") ===
+      "#ms-settings",
   );
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.waitForFunction(

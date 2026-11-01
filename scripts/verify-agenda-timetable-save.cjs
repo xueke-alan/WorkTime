@@ -131,15 +131,18 @@ const setScheduleRange = require("./lib/agenda-test-range.cjs");
             const s = getComputedStyle(n),
               t = getComputedStyle(top);
             return (
-              s.borderColor === t.borderColor &&
-              s.boxShadow === t.boxShadow &&
+              s.backgroundColor === "rgba(0, 0, 0, 0)" &&
+              s.borderTopWidth === "0px" &&
+              s.boxShadow === "none" &&
+              n.classList.contains("is-selected") ===
+                top.classList.contains("selected") &&
               (n.dataset.timetableDate === selected ||
-                s.borderColor !== selectedStyle.borderColor)
+                t.borderColor !== selectedStyle.borderColor)
             );
           },
         );
       }),
-      "Lower cards derive stable selection from the same date as their upper cards",
+      "Transparent time overlays share date selection while the full date surface owns the outline",
     );
     await sameEvent().click();
     await page.locator("#agendaTitle").fill("尚未保存的标题");

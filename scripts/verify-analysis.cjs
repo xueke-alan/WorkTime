@@ -1,4 +1,5 @@
 "use strict";
+const { clickSettingsControl } = require("./settings-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -1542,7 +1543,7 @@ async function verify() {
       .locator(".workspace > section.panel")
       .screenshot({ path: "test-results/analysis/empty-preview.png" });
     // Saving a schedule must redraw even when no attendance records change.
-    await page.locator("#settingsOpen").click();
+    await clickSettingsControl(page, "#settingsWorkTab");
     for (const [start, end, minutes] of [
       ["08:10", "18:20", [490, 550, 1100, 1280]],
       ["09:05", "22:10", [545, 605, 1330, 1510]],
@@ -1576,7 +1577,7 @@ async function verify() {
         "Reference lines and labels follow the saved schedule, including next-day times",
       );
     }
-    await page.locator("#settingsOpen").click();
+    await clickSettingsControl(page, "#settingsWorkTab");
     const results = await page.evaluate(() => {
       const D = WorkTimeApp.domain,
         state = D.state.defaultState(),

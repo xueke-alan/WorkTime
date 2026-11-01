@@ -29,6 +29,8 @@ WorkTimeApp.ui.createAgendaEdges = function ({ calendar, enabled }) {
     // small scale error even when the calendar has no scale transform.
     const sx = bounds.width / parseFloat(calendarStyle.width) || 1;
     const sy = bounds.height / parseFloat(calendarStyle.height) || 1;
+    const originX = calendar.clientLeft - calendar.scrollLeft;
+    const originY = calendar.clientTop - calendar.scrollTop;
     const styles = new Map();
     const styleFor = (node) => {
       if (!styles.has(node)) styles.set(node, getComputedStyle(node));
@@ -36,7 +38,7 @@ WorkTimeApp.ui.createAgendaEdges = function ({ calendar, enabled }) {
     };
     const sources = [
       ...calendar.querySelectorAll(
-        ":scope > .day, .agenda-timetable > .timetable-bottom-card, .agenda-weekend-exit > .day",
+        ":scope > .day, .agenda-weekend-exit > .day",
       ),
     ];
     const wanted = new Set();
@@ -65,6 +67,15 @@ WorkTimeApp.ui.createAgendaEdges = function ({ calendar, enabled }) {
         },
       ];
     });
+    // A calendar-wide fade/translation carries the edge layer with its cards;
+    // only independently moving descendants need another geometry sample.
+    const moving = calendar
+      .getAnimations({ subtree: true })
+      .some(
+        (animation) =>
+          styles.has(animation.effect?.target) &&
+          (animation.pending || animation.playState === "running"),
+      );
     for (const [source, edge] of edges) {
       if (!wanted.has(source)) {
         edge.remove();
@@ -87,16 +98,8 @@ WorkTimeApp.ui.createAgendaEdges = function ({ calendar, enabled }) {
       edge.dataset.kind = source.classList.contains("day") ? "day" : "timed";
       edge.dataset.ghost = String(!!source.closest(".agenda-weekend-exit"));
       Object.assign(edge.style, {
-        left:
-          (rect.left - bounds.left) / sx -
-          calendar.clientLeft +
-          calendar.scrollLeft +
-          "px",
-        top:
-          (rect.top - bounds.top) / sy -
-          calendar.clientTop +
-          calendar.scrollTop +
-          "px",
+        left: (rect.left - bounds.left) / sx - originX + "px",
+        top: (rect.top - bounds.top) / sy - originY + "px",
         width: rect.width / sx + "px",
         height: rect.height / sy + "px",
         opacity: String(opacity),
@@ -105,17 +108,7 @@ WorkTimeApp.ui.createAgendaEdges = function ({ calendar, enabled }) {
         boxShadow: shadow,
       });
     }
-    if (
-      calendar
-        .getAnimations({ subtree: true })
-        .some(
-          (animation) =>
-            (animation.effect?.target === calendar ||
-              styles.has(animation.effect?.target)) &&
-            (animation.pending || animation.playState === "running"),
-        )
-    )
-      request();
+    if (moving) request();
   }
   const observer = new MutationObserver((records) => {
     if (

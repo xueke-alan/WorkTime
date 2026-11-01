@@ -21,6 +21,7 @@ async function verify() {
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("dialog", (dialog) => dialog.accept());
     await page.route(/^https?:/, (route) => route.abort());
+    await page.clock.setFixedTime(new Date("2026-10-29T04:00:00Z"));
     const ready = () =>
       page.waitForFunction(
         () =>
@@ -323,7 +324,7 @@ async function verify() {
         "第一行\n第二行\n第三行\n第四行",
       );
     const overflow = page.locator(
-      '.agenda-packed-row .agenda-more[data-agenda-date="2026-10-31"]',
+      '.agenda-day-more[data-agenda-date="2026-10-31"]',
     );
     await overflow.click();
     assert.equal(
@@ -335,9 +336,7 @@ async function verify() {
       "Packed overflow opens the date details without losing hidden events",
     );
     await setView("month");
-    assert.ok(
-      (await page.locator(".agenda-week-layers .agenda-more").count()) > 0,
-    );
+    assert.ok((await page.locator(".agenda-day-more").count()) > 0);
     await setView("fortnight");
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.evaluate(() => {

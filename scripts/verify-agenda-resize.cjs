@@ -21,6 +21,7 @@ async function verify() {
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("dialog", (dialog) => dialog.accept());
     await page.route(/^https?:/, (route) => route.abort());
+    await page.clock.setFixedTime(new Date("2026-10-29T04:00:00Z"));
     await page.goto(pathToFileURL(path.join(root, "index.html")).href);
     await page.waitForFunction(
       () =>
@@ -230,17 +231,20 @@ async function verify() {
     const firstX = targetBounds.x + targetBounds.width * 0.3;
     const secondX = targetBounds.x + targetBounds.width * 0.7;
     await page.mouse.move(firstX, targetBounds.y + 15, { steps: 10 });
+    await page.evaluate(() => new Promise(requestAnimationFrame));
     const firstPreview = await page
       .locator(".agenda-resize-segment")
       .last()
       .boundingBox();
     assert.ok(
       Math.abs(firstPreview.x + firstPreview.width - (firstX - grabOffset)) < 1,
+      JSON.stringify({ firstPreview, firstX, grabOffset }),
     );
     await page.evaluate(() => {
       window.smoothPreview = document.querySelector(".agenda-resize-segment");
     });
     await page.mouse.move(secondX, targetBounds.y + 15, { steps: 10 });
+    await page.evaluate(() => new Promise(requestAnimationFrame));
     const secondPreview = await page
       .locator(".agenda-resize-segment")
       .last()
@@ -452,7 +456,7 @@ async function verify() {
     );
     await page.evaluate(() => {
       const button = document.querySelector("#agendaViewToggle");
-      for (let i = 0; i < 3 && button.dataset.view !== "week"; i++)
+      for (let i = 0; i < 4 && button.dataset.agendaView !== "1"; i++)
         button.click();
     });
     await chips("跨周长度").last().click();

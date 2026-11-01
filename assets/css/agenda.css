@@ -59,7 +59,9 @@ body .agenda-mode .editor .agenda-drawer-grip:focus-visible { outline: 2px solid
   body .agenda-mode .editor .agenda-drawer-grip::before,
   body .agenda-mode .editor .agenda-drawer-grip::after { transition: none; }
 }
-body .agenda-mode .editor:is(.is-settings-open, .is-page-settings-open) > .date-info-area { display: none; }
+/* Settings keep the multifunction area docked below the form, like attendance. */
+body .agenda-mode .editor:is(.is-settings-open, .is-page-settings-open) > .date-info-area { display: flex; position: static; inset: auto; z-index: auto; flex: 0 0 var(--date-info-height); height: var(--date-info-height); min-height: var(--date-info-min-height); max-height: none; border-radius: 0; box-shadow: none; pointer-events: auto; }
+body .agenda-mode .editor:is(.is-settings-open, .is-page-settings-open) .agenda-drawer-grip { display: none; }
 body .agenda-mode .editor > .notification-tabs { flex: none; z-index: 13; }
 body .agenda-mode .editor.agenda-auxiliary-open > .notification-tabs { background: var(--theme-surface-paper, #f6faf7); }
 body .agenda-mode .editor > .notification-tabs .notification-tab { margin-top: 0; }
@@ -136,22 +138,26 @@ body .agenda-mode .editor.agenda-auxiliary-closing > .date-info-area { pointer-e
 .agenda-packed-row.agenda-measuring .agenda-chip { transition: none; }
 .agenda-week-lane .agenda-chip[hidden] { display: none; }
 .agenda-week-lane > .agenda-more { position: absolute; pointer-events: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agenda-day-more { position: absolute; pointer-events: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 6; }
 .agenda-chip.continues-before { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-style: solid; }
 .agenda-chip.continues-after { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right-width: 0; }
 /* Dashed ends distinguish cross-week continuations from real endpoints. */
-.agenda-chip.continues-before::before,
-.agenda-chip.continues-after::after {
+.agenda-chip::before,
+.agenda-chip::after {
   content: "";
   position: absolute;
   z-index: 3;
   top: 0;
   bottom: 0;
   width: 1px;
+  opacity: 0;
   background: repeating-linear-gradient(to bottom, var(--agenda-chip-edge) 0 3px, transparent 3px 6px);
   pointer-events: none;
 }
-.agenda-chip.continues-before::before { left: -2px; }
-.agenda-chip.continues-after::after { right: 0; }
+.agenda-chip::before { left: -2px; }
+.agenda-chip::after { right: 0; }
+.agenda-chip.continues-before::before,
+.agenda-chip.continues-after::after { opacity: 1; }
 .agenda-chip.is-selected.continues-before::before,
 .agenda-chip.is-selected.continues-after::after { width: 2px; }
 .agenda-chip .agenda-chip-title {
@@ -341,20 +347,21 @@ body.agenda-is-dragging:not(.agenda-is-resizing) * {
 #calendar .day.agenda-drop-range {
   background: color-mix(in srgb, var(--accent) 10%, white);
 }
-/* Event selection and resizing leave date surfaces neutral under the pointer. */
+/* Ribbon selection and resizing leave date surfaces neutral under the pointer.
+   Timed events retain their matching date highlight in the upper card row. */
 body.agenda-is-resizing .agenda-mode #calendar > .day,
-body .agenda-mode #calendar:has(.agenda-chip.is-selected) > .day:not(.agenda-drop-target, .agenda-drop-range) {
+body .agenda-mode #calendar:has(.agenda-chip.is-selected:not(.timetable-event)) > .day:not(.agenda-drop-target, .agenda-drop-range) {
   background: #fff;
   border-color: var(--theme-border-soft, #e6ede8);
   box-shadow: none;
   outline: 0;
 }
 body.agenda-is-resizing .agenda-mode #calendar > .day:has(.dayhours),
-body .agenda-mode #calendar:has(.agenda-chip.is-selected) > .day:has(.dayhours):not(.agenda-drop-target, .agenda-drop-range) {
+body .agenda-mode #calendar:has(.agenda-chip.is-selected:not(.timetable-event)) > .day:has(.dayhours):not(.agenda-drop-target, .agenda-drop-range) {
   background: #fcfefd;
 }
 body.agenda-is-resizing .agenda-mode #calendar > .day:is([data-holiday], .weekend, .full-leave),
-body .agenda-mode #calendar:has(.agenda-chip.is-selected) > .day:is([data-holiday], .weekend, .full-leave):not(.agenda-drop-target, .agenda-drop-range) {
+body .agenda-mode #calendar:has(.agenda-chip.is-selected:not(.timetable-event)) > .day:is([data-holiday], .weekend, .full-leave):not(.agenda-drop-target, .agenda-drop-range) {
   background: var(--day-surface);
 }
 /* Drag targets retain feedback independently of event selection. */
@@ -1295,6 +1302,7 @@ body .calendar.agenda-week-view[data-agenda-filtered] > .day[data-agenda-week] {
   left: calc(var(--agenda-row-column) * (100% + var(--agenda-column-gap, 7px)) / var(--agenda-row-count));
 }
 .weekdays.agenda-single-weekdays { position: relative; align-items: center; padding-top: 12px; padding-bottom: 7px; min-height: 41px; }
+.weekdays:has(> .agenda-workday-switch) { position: relative; }
 .weekdays.agenda-single-weekdays > span { line-height: 22px; }
 .weekdays > span[hidden], .weekdays > .agenda-workday-switch[hidden] { display: none; }
 .weekdays .agenda-workday-switch {
@@ -1371,8 +1379,12 @@ body .workspace .calendar.agenda-week-view[data-agenda-rows="2"] {
 body .workspace .calendar.agenda-week-view[data-agenda-rows="3"] {
   grid-template-rows: repeat(3, minmax(0, 1fr));
 }
-/* Each date keeps its original upper card, with a separate time card below. */
+/* One date surface owns both regions; the timetable is an unpainted inset. */
 body .calendar.agenda-dual-card-view > .day[data-agenda-week] {
+  height: 100%;
+}
+body .calendar.agenda-dual-card-view > .day > .day-select {
+  bottom: auto;
   height: var(--agenda-all-card-height, 160px);
 }
 .agenda-timetable {
@@ -1388,17 +1400,32 @@ body .calendar.agenda-dual-card-view > .day[data-agenda-week] {
 .agenda-dual-card-view .agenda-week-lane .agenda-chip-note { display: none; }
 .agenda-dual-card-view > .day .daytop { height: 28px; min-height: 28px; flex: none; }
 .agenda-dual-card-view > .day .daykind { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* This overlay owns time gestures only. Date cards paint the complete surface. */
 .timetable-bottom-card {
   position: absolute;
-  border: 1px solid var(--theme-border-soft, #e6ede8);
+  border: 0;
   overflow: hidden;
   pointer-events: auto;
-  background: var(--theme-surface-paper, #fcfefd);
+  background: transparent;
 }
-.timetable-bottom-card.is-rest { background: var(--theme-surface-soft, #f6f8f6); }
-.timetable-bottom-card.has-day-surface { background: var(--day-surface); border-color: var(--day-edge, var(--theme-border-soft, #e6ede8)); }
-.timetable-bottom-card.is-selected { background: var(--theme-surface-subtle, #edf7f1); border-color: var(--theme-edge, #439e7f); box-shadow: inset 0 0 0 1px var(--theme-edge, #439e7f); }
-.timetable-bottom-card.has-day-surface.is-selected { background: var(--day-surface); }
+.timetable-divider {
+  position: absolute;
+  height: 2px;
+  background: var(--line);
+  pointer-events: none;
+  z-index: 1;
+  transform-origin: left center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .timetable-divider {
+    animation: timetable-divider-reveal 520ms var(--motion-ease);
+  }
+}
+.timetable-divider.is-content-hidden { visibility: hidden; animation: none; }
+@keyframes timetable-divider-reveal {
+  from { opacity: 0; transform: scaleX(0); }
+  to { opacity: 1; transform: scaleX(1); }
+}
 .timetable-scroll { height: 100%; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
 .timetable-scroll:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
 .timetable-grid { position: relative; width: 100%; min-height: 360px; touch-action: none; }
@@ -1422,10 +1449,17 @@ body .agenda-timetable .timetable-event {
   overflow: hidden;
   z-index: 2;
   touch-action: none;
+  container: timetable-event / size;
 }
 .agenda-timetable .agenda-chip-time { flex: none; font-size: 10px; line-height: 13px; }
-.agenda-timetable .agenda-chip-title { flex: none; min-width: 0; margin-right: 0; }
+.agenda-timetable .agenda-chip-title { flex: none; min-width: 0; margin-right: 0; padding-right: min(var(--agenda-status-space, 22px), 100%); }
 .agenda-timetable .agenda-chip-note { overflow: hidden; white-space: pre-wrap; font-size: 10px; }
+/* Reserve the title, the full time line and room for its ink alignment.
+   Size queries also follow animated heights without a delayed observer pass.
+   Visibility preserves text metrics when crossing the threshold repeatedly. */
+@container timetable-event (height < calc(1.4em + 15px)) {
+  .timetable-event:not(.is-point) > :is(.agenda-chip-time, .agenda-chip-note) { visibility: hidden; }
+}
 .agenda-timetable .timetable-event:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; z-index: 5; overflow: visible; min-height: 24px; }
 body .agenda-timetable .is-point { padding-block: 0; border-block-width: 0; border-left-width: 3px; flex-direction: row; align-items: center; gap: 4px; }
 .timetable-resize { position: absolute; left: 0; right: 0; height: min(8px, 35%); z-index: 3; cursor: ns-resize; touch-action: none; }
@@ -1438,8 +1472,10 @@ body.agenda-timetable-resizing, body.agenda-timetable-resizing * { cursor: ns-re
 .agenda-timetable .timetable-preview { pointer-events: none; opacity: .8; outline: 2px solid var(--accent); z-index: 6; }
 .agenda-timetable .timetable-draft { outline: 1px dashed var(--accent); outline-offset: -1px; }
 .agenda-timetable .timetable-event { transition: left 140ms ease, width 140ms ease; }
+.agenda-timetable .timetable-event.timetable-preview { transition: top 140ms ease, height 140ms ease, left 140ms ease, width 140ms ease; }
+.agenda-timetable .timetable-event.is-moving-preview { transition: top 90ms ease-out, left 90ms ease-out, height 140ms ease, width 140ms ease; }
 .agenda-timetable:is(.is-axis-morphing, .is-settling) .timetable-event { transition: none; }
-@media (prefers-reduced-motion: reduce) { .agenda-timetable .timetable-event { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .agenda-timetable .timetable-event, .agenda-timetable .timetable-event.timetable-preview, .agenda-timetable .timetable-event.is-moving-preview { transition: none; } }
 .agenda-timetable.is-dragging { user-select: none; }
 .timetable-hint { position: fixed; z-index: 10000; max-width: 280px; pointer-events: none; border: 1px solid var(--accent); border-radius: 6px; padding: 6px 9px; font-size: 12px; color: var(--ink); background: var(--paper); box-shadow: var(--shadow); }
 /* Agenda month/week/fortnight views temporarily hide both weather layers. */
@@ -1657,19 +1693,22 @@ body .agenda-mode .panel-head .calendar-toolbar-actions {
 .agenda-chip > .agenda-slice { position: absolute; top: 0; bottom: 0; display: block; overflow: hidden; pointer-events: none; }
 .agenda-chip .agenda-chip-face { position: absolute; top: 0; height: 100%; display: block; box-sizing: border-box; text-overflow: clip; white-space: normal; overflow: visible; background: color-mix(in srgb, var(--agenda-chip-tone) var(--agenda-chip-fill), white); box-shadow: var(--agenda-chip-outline); border-left: 2px solid var(--agenda-chip-edge); }
 .agenda-chip.continues-before .agenda-chip-face { border-left-color: transparent; }
-.agenda-sliced.continues-before::before,
-.agenda-sliced.continues-after::after { content: none; }
-.agenda-chip.continues-before .agenda-chip-face::before,
-.agenda-chip.continues-after .agenda-chip-face::after {
+.agenda-chip.agenda-sliced::before,
+.agenda-chip.agenda-sliced::after { opacity: 0; }
+.agenda-chip .agenda-chip-face::before,
+.agenda-chip .agenda-chip-face::after {
   content: "";
+  opacity: 0;
   position: absolute;
   top: 0;
   bottom: 0;
   background: repeating-linear-gradient(to bottom, var(--agenda-chip-edge) 0 3px, transparent 3px 6px);
   pointer-events: none;
 }
-.agenda-chip.continues-before .agenda-chip-face::before { left: -2px; width: 1px; }
-.agenda-chip.continues-after .agenda-chip-face::after { right: 0; width: 1px; }
+.agenda-chip .agenda-chip-face::before { left: -2px; width: 1px; }
+.agenda-chip .agenda-chip-face::after { right: 0; width: 1px; }
+.agenda-chip.continues-before .agenda-chip-face::before,
+.agenda-chip.continues-after .agenda-chip-face::after { opacity: 1; }
 .agenda-chip.is-selected.continues-before .agenda-chip-face::before,
 .agenda-chip.is-selected.continues-after .agenda-chip-face::after { width: 2px; }
 
@@ -1679,9 +1718,30 @@ body .agenda-mode .panel-head .calendar-toolbar-actions {
   box-shadow: var(--agenda-chip-outline);
   border-left-color: var(--agenda-chip-left-edge, var(--agenda-chip-edge));
 }
-.agenda-chip.agenda-sliced:is(.is-selected, .agenda-reorder-moving, .agenda-preview-peer) > .agenda-slice { display: none; }
+.agenda-chip.agenda-sliced:is(.is-selected, .agenda-reorder-moving, .agenda-preview-peer) > .agenda-slice { opacity: 0; }
 .agenda-sliced:is(.is-selected, .agenda-reorder-moving, .agenda-preview-peer).continues-before::before,
-.agenda-sliced:is(.is-selected, .agenda-reorder-moving, .agenda-preview-peer).continues-after::after { content: ""; }
+.agenda-sliced:is(.is-selected, .agenda-reorder-moving, .agenda-preview-peer).continues-after::after { opacity: 1; }
+
+/* Continuation dashes crossfade with the closed edge instead of switching paint. */
+@media (prefers-reduced-motion: no-preference) {
+  .agenda-week-lane .agenda-chip,
+  .agenda-chip .agenda-chip-face {
+    transition: background-color 220ms ease-out, box-shadow 220ms ease-out,
+      border-left-color 220ms ease-out, border-radius 220ms ease-out;
+  }
+  .agenda-chip::before, .agenda-chip::after,
+  .agenda-chip .agenda-chip-face::before, .agenda-chip .agenda-chip-face::after {
+    transition: opacity 220ms ease-out, width 220ms ease-out;
+  }
+  .agenda-chip > .agenda-slice { transition: opacity 220ms ease-out; }
+  .agenda-measuring .agenda-chip,
+  .agenda-measuring .agenda-chip-face,
+  .agenda-measuring .agenda-slice,
+  .agenda-measuring .agenda-chip::before, .agenda-measuring .agenda-chip::after,
+  .agenda-measuring .agenda-chip-face::before, .agenda-measuring .agenda-chip-face::after {
+    transition: none;
+  }
+}
 
 /* Move only text into the explicitly selected date; ribbon controls stay put. */
 .agenda-week-lane .agenda-chip .agenda-chip-title-text,

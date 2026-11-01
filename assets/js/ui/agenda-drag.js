@@ -456,6 +456,9 @@ WorkTimeApp.ui.createAgendaDrag = function ({
     if (!state) {
       state = {
         original: [
+          ...group.row.flatMap((card) => [
+            ...card.querySelectorAll(":scope > .agenda-day-more"),
+          ]),
           ...group.lane.querySelectorAll(
             ":scope > .agenda-more:not(.agenda-preview-more)",
           ),

@@ -5,6 +5,18 @@
   }
 }
 
+/* Selection thickness is an inset shadow; keep it in the transition list even
+   when shared palette rules replace the calendar's component transitions. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.app-loading) body #calendar > .day,
+  html:not(.app-loading) body .year-month .year-day {
+    transition:
+      background-color 180ms ease-out,
+      border-color 240ms var(--motion-ease),
+      box-shadow 240ms var(--motion-ease);
+  }
+}
+
 /* Residual shared-file rules restored to their component owner. */
 body .sidebar-actions > #importOpen {
   position: relative;

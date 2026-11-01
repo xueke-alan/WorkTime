@@ -312,7 +312,7 @@ async function verify() {
           ).visibility,
           slicesHidden: [
             ...node.querySelectorAll(":scope > .agenda-slice"),
-          ].every((slice) => getComputedStyle(slice).display === "none"),
+          ].every((slice) => Number(getComputedStyle(slice).opacity) === 0),
         }));
         assert.ok(selectedGeometry.selected && selectedGeometry.slicesHidden);
         assert.equal(selectedGeometry.title, "visible");

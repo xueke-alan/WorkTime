@@ -17,6 +17,9 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
   const scope = new AbortController();
   const root = document.createElement("div");
   root.className = "agenda-timetable";
+  const divider = document.createElement("div");
+  divider.className = "timetable-divider";
+  divider.setAttribute("aria-hidden", "true");
   let geometry = null,
     session = null,
     signature = "",
@@ -26,6 +29,9 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
   let contentHidden = false;
   let blockClick = false;
   let axisAnimations = [];
+  // Canonical markup excludes the alignment service's later ink offsets.
+  // Comparing live innerHTML would replace unchanged labels on every render.
+  const timedContents = new WeakMap();
   let previewFrame = null,
     previewEvent = null;
   function stopPreview() {
@@ -139,7 +145,10 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
           opacity: style.opacity,
         };
         patch(node, next);
-        if (node.innerHTML !== next.innerHTML) node.innerHTML = next.innerHTML;
+        const content = timedContents.get(next) ?? next.innerHTML;
+        if ((timedContents.get(node) ?? node.innerHTML) !== content)
+          node.innerHTML = next.innerHTML;
+        if (timedContents.has(next)) timedContents.set(node, content);
         if (retarget) {
           // Overlap columns may change without changing the time axis. Update
           // that chip's destination rather than restoring a stale fill effect.
@@ -222,7 +231,7 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
           options,
         });
       }
-      // A compressed stripe expands and fades into the ordinary rest shading.
+      // Retire stripes whose rest interval is no longer present on the axis.
       for (const [key, old] of paint) {
         if (
           !key.startsWith(column.dataset.timetableDate + ":") ||
@@ -317,19 +326,60 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
     node.setAttribute("aria-hidden", "true");
     button.append(node);
   }
-  function placeTimed(segment, parent, axis, preview = false) {
-    const button = makeChip(segment.item);
+  function placeTimed(segment, parent, axis, preview = false, existing = null) {
+    // Keep preview text alive across pointer samples. Recreating it drops the
+    // measured ink offsets until the alignment observer's next frame.
+    const source =
+      preview && !existing
+        ? [
+            ...root.querySelectorAll(
+              ".timetable-event:not(.timetable-preview)",
+            ),
+          ].find((node) => node.dataset.timetableItem === segment.item.id)
+        : null;
+    const button =
+      existing || source?.cloneNode(true) || makeChip(segment.item);
+    const moving = preview && !!session?.item && !session.edge;
+    button.classList.toggle("is-moving-preview", moving);
+    const layer = moving ? root : parent;
+    const bounds = moving ? root.getBoundingClientRect() : null;
+    const scaleX = moving ? bounds.width / root.offsetWidth || 1 : 1;
+    const scaleY = moving ? bounds.height / root.offsetHeight || 1 : 1;
+    if (source && moving) {
+      // A shared overlay keeps the motion continuous across column gutters
+      // and avoids clipping the card inside either date's scroll container.
+      const paint = source.getBoundingClientRect();
+      button.classList.add("timetable-preview");
+      Object.assign(button.style, {
+        visibility: "",
+        left: (paint.left - bounds.left) / scaleX + "px",
+        top: (paint.top - bounds.top) / scaleY + "px",
+        width: paint.width / scaleX + "px",
+        height: paint.height / scaleY + "px",
+      });
+      layer.append(button);
+      button.getBoundingClientRect();
+    }
+    if (source && !moving) {
+      // Establish the source geometry before the first pointer destination so
+      // the initial resize animates just like subsequent snapped updates.
+      button.classList.add("timetable-preview");
+      button.style.visibility = "";
+      parent.append(button);
+      button.getBoundingClientRect();
+    }
     button.dataset.timetableDate = segment.date;
     button.classList.toggle("is-point", segment.end === null);
     button.classList.toggle("continues-before", segment.continuesBefore);
     button.classList.toggle("continues-after", segment.continuesAfter);
     const timeLabel = button.querySelector(".agenda-chip-time");
-    if (timeLabel)
-      timeLabel.textContent =
-        (segment.continuesBefore ? "↳ " : "") +
-        math.clock(segment.start) +
-        (segment.end === null ? "" : "–" + math.clock(segment.end)) +
-        (segment.continuesAfter ? " ↴" : "");
+    const label =
+      (segment.continuesBefore ? "↳ " : "") +
+      math.clock(segment.start) +
+      (segment.end === null ? "" : "–" + math.clock(segment.end)) +
+      (segment.continuesAfter ? " ↴" : "");
+    const textChanged = timeLabel && timeLabel.textContent !== label;
+    if (textChanged) timeLabel.textContent = label;
     const top = axis.y(segment.start);
     button.dataset.axisKey = "event:" + segment.item.id;
     button.dataset.axisStart = String(segment.start);
@@ -342,16 +392,34 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
       left: `calc(${(100 * (segment.column || 0)) / (segment.columns || 1)}% + 2px)`,
       width: `calc(${100 / (segment.columns || 1)}% - 4px)`,
     });
-    if (segment.end !== null && !segment.item.draft) {
+    if (moving) {
+      const column = parent.getBoundingClientRect();
+      const columnWidth = column.width / scaleX;
+      Object.assign(button.style, {
+        top: (column.top - bounds.top) / scaleY + top + "px",
+        left:
+          (column.left - bounds.left) / scaleX +
+          (columnWidth * (segment.column || 0)) / (segment.columns || 1) +
+          2 +
+          "px",
+        width: columnWidth / (segment.columns || 1) - 4 + "px",
+      });
+    }
+    if (!existing && !source && segment.end !== null && !segment.item.draft) {
       if (!segment.continuesBefore) handle(button, "start");
       if (!segment.continuesAfter) handle(button, "end");
     }
     if (preview) {
       button.classList.add("timetable-preview");
+      button.style.visibility = "";
       button.removeAttribute("data-agenda-edit");
       button.tabIndex = -1;
     }
-    parent.append(button);
+    if (!preview) timedContents.set(button, button.innerHTML);
+    if (button.parentElement !== layer) layer.append(button);
+    if (preview && (!existing || textChanged))
+      WorkTimeApp.ui.alignment?.refresh([button]);
+    return button;
   }
   function displayedItems(state = getState()) {
     const fields = state.newItem;
@@ -474,12 +542,11 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
       : null;
     const previousGeometry = geometry;
     const previousPaint = captureAxisPaint();
-    calendar.append(root);
+    if (root.parentElement !== calendar) calendar.append(root);
     // Content density must never move the split when navigating weeks.
     const allHeight = 160;
     calendar.style.setProperty("--agenda-all-card-height", allHeight + "px");
-    const gap = parseFloat(getComputedStyle(calendar).columnGap) || 7;
-    const bottomTop = metrics[0].top + allHeight + gap;
+    const bottomTop = metrics[0].top + allHeight;
     const bottomHeight = Math.max(
       80,
       calendar.clientHeight -
@@ -497,8 +564,33 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
         JSON.stringify(axis.bands);
     const keepAxisMotion =
       sameDates && !changedAxis && axisAnimations.length > 0;
+    const animateAxis =
+      previousGeometry &&
+      !contentHidden &&
+      !state.transitioning &&
+      sameDates &&
+      changedAxis &&
+      !WorkTimeApp.ui.animationCompat.preference().matches;
     if (!keepAxisMotion) stopAxisMotion();
-    if (!sameDates) root.replaceChildren();
+    // Read destinations with CSS column transitions disabled. Otherwise the
+    // axis animation targets an intermediate width and snaps when released.
+    if (animateAxis) root.classList.add("is-axis-morphing");
+    if (!sameDates) {
+      // Column changes keep the shared rule connected, so filtering weekends
+      // cannot restart its entrance animation.
+      for (const child of [...root.children])
+        if (child !== divider) child.remove();
+    }
+    const first = metrics[0];
+    const last = metrics[metrics.length - 1];
+    const dividerLeft = first.left + first.card.clientLeft;
+    Object.assign(divider.style, {
+      left: dividerLeft + "px",
+      top: bottomTop + "px",
+      width: last.left + last.width - last.card.clientLeft - dividerLeft + "px",
+    });
+    divider.classList.toggle("is-content-hidden", contentHidden);
+    if (divider.parentElement !== root) root.append(divider);
     const ticks = [
       ...new Set([
         axis.start,
@@ -534,7 +626,7 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
         top: bottomTop + "px",
         width: m.width + "px",
         height: bottomHeight + "px",
-        borderRadius: m.radius,
+        borderRadius: "0",
         padding:
           padding +
           "px " +
@@ -581,14 +673,11 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
           continue;
         const line = document.createElement("div");
         line.className = "timetable-rule";
-        // Compressed breaks paint their own edges. Keep coordinate markers,
+        // Rest stripes paint their own edges. Keep coordinate markers,
         // but do not paint a second grid stroke at either boundary.
         line.classList.toggle(
           "is-break-boundary",
-          axis.bands.some(
-            (band) =>
-              band.compressed && (minute === band.start || minute === band.end),
-          ),
+          schedule.breaks.some((b) => minute === b.start || minute === b.end),
         );
         line.dataset.minute = String(minute);
         line.dataset.axisKey = "rule:" + minute;
@@ -596,14 +685,17 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
         line.style.top = axis.y(minute) + "px";
         grid.append(line);
       }
-      for (const b of axis.bands.filter((b) => b.compressed)) {
+      for (const b of schedule.breaks) {
+        const start = Math.max(axis.start, b.start),
+          end = Math.min(axis.end, b.end);
+        if (end <= start) continue;
         const rest = document.createElement("div");
         rest.className = "timetable-break";
         rest.dataset.axisKey = "break:" + b.start + ":" + b.end;
-        rest.dataset.axisStart = String(b.start);
-        rest.dataset.axisEnd = String(b.end);
-        rest.style.top = b.top + "px";
-        rest.style.height = b.height + "px";
+        rest.dataset.axisStart = String(start);
+        rest.dataset.axisEnd = String(end);
+        rest.style.top = axis.y(start) + "px";
+        rest.style.height = axis.y(end) - axis.y(start) + "px";
         rest.title =
           t("timetableBreak") +
           " " +
@@ -628,15 +720,7 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
       scrolls.push(retainedScroll);
     }
     geometry = { dates, axis, columns, scrolls, cards, metrics, allHeight };
-    if (
-      previousGeometry &&
-      !contentHidden &&
-      !state.transitioning &&
-      sameDates &&
-      changedAxis &&
-      !WorkTimeApp.ui.animationCompat.preference().matches
-    )
-      morphAxis(previousGeometry, previousPaint);
+    if (animateAxis) morphAxis(previousGeometry, previousPaint);
     else if (retargets.length) playAxisPlans(retargets, true);
     if (focusId)
       [...root.querySelectorAll("[data-agenda-edit]")]
@@ -659,7 +743,7 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
       const right = rect.right - (allDay ? surface.clientLeft : 0);
       const top = allDay ? header.bottom + 3 : Math.max(rect.top, clip.top);
       const bottom = allDay
-        ? rect.bottom - m.paddingBottom
+        ? rect.top + geometry.allHeight - m.paddingBottom
         : Math.min(rect.bottom, clip.bottom);
       if (
         event.clientX >= left &&
@@ -717,10 +801,19 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
       "agenda-timetable-resizing",
       current.edge === "start" || current.edge === "end",
     );
-    const target = hit(event, current.allDay);
+    const target = gestureTarget(event, current);
     current.candidate = null;
-    root.querySelectorAll(".timetable-preview").forEach((n) => n.remove());
-    restorePlacements();
+    const previews = new Map(
+      [...root.querySelectorAll(".timetable-preview")].map((node) => [
+        node.dataset.timetableDate,
+        node,
+      ]),
+    );
+    if (current.allDay) {
+      previews.forEach((node) => node.remove());
+      previews.clear();
+      restorePlacements();
+    }
     if (target) {
       try {
         if (current.allDay) {
@@ -760,11 +853,20 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
               Math.round((target.minute - current.origin.minute) / 15) * 15;
             let start = original.start,
               end = original.end;
-            if (current.edge === "start")
-              start = Math.min(end - 15, base + snapped);
-            else if (current.edge === "end")
-              end = Math.max(start + 15, base + snapped);
-            else {
+            if (current.edge === "start") {
+              const dayStart = math.day(current.item.date) * 1440;
+              start = Math.max(
+                dayStart,
+                Math.min(end - 15, dayStart + 1439, base + snapped),
+              );
+            } else if (current.edge === "end") {
+              const dayStart =
+                math.day(current.item.endDate || current.item.date) * 1440;
+              end = Math.min(
+                dayStart + 1439,
+                Math.max(start + 15, dayStart, base + snapped),
+              );
+            } else {
               start += delta;
               if (end !== null) end += delta;
             }
@@ -795,6 +897,9 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
       Math.max(8, Math.min(event.clientX + 12, innerWidth - 290)) + "px";
     current.hint.style.top =
       Math.max(8, Math.min(event.clientY + 18, innerHeight - 50)) + "px";
+    // Crossing the narrow gutters must not expose the source or discard the
+    // preview. A release here still cancels because candidate remains null.
+    if (!target && current.item && !current.allDay && !current.edge) return;
     if (current.candidate && !current.allDay) {
       const items = displayedItems().filter(
         (item) => item.id !== current.item?.id,
@@ -802,6 +907,11 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
       const segments = math.slice(
         [...items, current.candidate],
         geometry.dates,
+      );
+      const previewDates = new Set(
+        segments
+          .filter((segment) => segment.item === current.candidate)
+          .map((segment) => segment.date),
       );
       if (!current.placements)
         current.placements = new Map(
@@ -832,9 +942,21 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
         for (const segment of math.columns(
           segments.filter((s) => s.date === date),
         )) {
-          if (segment.item === current.candidate)
-            placeTimed(segment, geometry.columns[index], geometry.axis, true);
-          else {
+          if (segment.item === current.candidate) {
+            // Retain segments that stay on a date; recycle outgoing segments
+            // for new dates so crossing columns preserves the aligned text.
+            const previousDate = previews.has(date)
+              ? date
+              : [...previews.keys()].find((key) => !previewDates.has(key));
+            placeTimed(
+              segment,
+              geometry.columns[index],
+              geometry.axis,
+              true,
+              previews.get(previousDate),
+            );
+            previews.delete(previousDate);
+          } else {
             const node = nodes.get(segment.item.id);
             if (!node) continue;
             node.style.left = `calc(${(100 * segment.column) / segment.columns}% + 2px)`;
@@ -843,6 +965,8 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
         }
       }
     } else if (current.candidate) previewAllDay(current.candidate);
+    else restorePlacements();
+    previews.forEach((node) => node.remove());
   }
   function restorePlacements() {
     if (!session?.placements) return;
@@ -877,6 +1001,15 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
         ? getState().items.find((i) => i.id === button.dataset.agendaEdit)
         : null;
       if (!origin || !available(true)) return;
+      const timedEdge = event.target.closest("[data-timetable-resize]")?.dataset
+        .timetableResize;
+      const activated = !!(item && !allDay && timedEdge);
+      if (activated && !edit(item.id, true, origin.date, false)) {
+        blockClick = true;
+        event.stopPropagation();
+        event.preventDefault();
+        return;
+      }
       let allDayPaint = null;
       if (allDay && button) {
         const box = button.getBoundingClientRect();
@@ -898,6 +1031,7 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
         };
       }
       session = {
+        activated,
         allDayPaint,
         pointerId: event.pointerId,
         x: event.clientX,
@@ -906,8 +1040,7 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
         item,
         allDay,
         edge:
-          event.target.closest("[data-timetable-resize]")?.dataset
-            .timetableResize ||
+          timedEdge ||
           (allDay && event.target.closest("[data-agenda-resize]")
             ? "dateEnd"
             : null),
@@ -931,23 +1064,35 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
     },
     { passive: false },
   );
+  function gestureTarget(event, current) {
+    // Time handles resize vertically within their original endpoint's column.
+    // Horizontal pointer drift must not turn a same-day event into an overnight.
+    const pointer =
+      current.edge === "start" || current.edge === "end"
+        ? { clientX: current.x, clientY: event.clientY }
+        : event;
+    return hit(pointer, current.allDay);
+  }
   listen(document, "pointerup", async (event) => {
     const current = session;
     if (!current || current.pointerId !== event.pointerId || current.saving)
       return;
     stopPreview();
+    // Resolve the release coordinates even if no preview frame has run yet.
+    // Fast drags must cross the same threshold as ordinary pointer samples.
+    preview(event);
     // Returning close to the press point also counts as a click, even if an
     // earlier pointer sample briefly crossed the creation threshold.
     if (!current.item && Math.abs(event.clientY - current.y) < 10)
       current.moved = false;
-    if (current.moved) preview(event);
-    const target = hit(event, current.allDay);
+    const target = gestureTarget(event, current);
     if (!current.moved) {
       cancel();
       if (!target) return;
       blockClick = true;
-      if (current.item) edit(current.item.id, true);
-      else select(target.date);
+      if (current.item && !current.activated)
+        edit(current.item.id, true, current.allDay ? null : target.date);
+      else if (!current.item) select(target.date);
       return;
     }
     if (!current.candidate || !target || !available(!!current.item)) {
@@ -968,7 +1113,15 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
     }
     current.saving = true;
     try {
-      await save(current.candidate, target.date);
+      if (!current.allDay && !current.edge)
+        await Promise.all(
+          [...root.querySelectorAll(".is-moving-preview")].flatMap((node) =>
+            node
+              .getAnimations()
+              .map((animation) => animation.finished.catch(() => {})),
+          ),
+        );
+      if (session === current) await save(current.candidate, target.date);
     } finally {
       // Preview columns already show the drop layout. Releasing them must not
       // start a second CSS transition through the pre-drag column widths.
@@ -1002,7 +1155,11 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
         return;
       }
       if (button) {
-        edit(button.dataset.agendaEdit, true);
+        edit(
+          button.dataset.agendaEdit,
+          true,
+          allDay ? null : button.dataset.timetableDate,
+        );
         return;
       }
       if (target && allDay) select(target.date);
@@ -1048,6 +1205,7 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
     cancel,
     setContentHidden(hidden) {
       contentHidden = hidden;
+      divider.classList.toggle("is-content-hidden", hidden);
       for (const node of root.querySelectorAll(".timetable-scroll"))
         node.style.opacity = hidden ? "0" : "1";
     },

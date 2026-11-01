@@ -1,4 +1,5 @@
 "use strict";
+const { clickSettingsControl } = require("./settings-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -133,9 +134,9 @@ async function verify() {
     );
     await page.locator("#analysisManual").uncheck();
     assert.doesNotMatch(await detail.textContent(), /未来手录计划/);
-    await page.locator("#settingsOpen").click();
+    await clickSettingsControl(page, "#settingsWorkTab");
     assert.equal(await page.locator("#analysisSidebar").isVisible(), false);
-    await page.locator("#workSettingsCancel").click();
+    await page.locator("#personalSettingsCancel").click();
     assert.equal(await page.locator("#analysisSidebar").isVisible(), true);
     await page.locator("#prevMonth").click();
     assert.match(await detail.textContent(), /9\/16/);

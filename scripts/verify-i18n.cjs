@@ -1,4 +1,5 @@
 "use strict";
+const { clickSettingsControl } = require("./settings-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -240,7 +241,7 @@ async function verifyLanguageMotion(browser) {
     await ready(page);
     await page.locator("#date-tab-history").click();
     await page.locator("#date-context-almanac").click();
-    await page.locator("#pageSettingsOpen").click();
+    await clickSettingsControl(page, "#pageSettingsOpen");
     await page.waitForTimeout(750);
     await page.evaluate(() => {
       const preferences = WorkTimeApp.services.preferences.page;
@@ -282,9 +283,11 @@ async function verifyLanguageMotion(browser) {
         .click();
       await page.waitForFunction(() => !!window.finishPreferenceSave);
       assert.equal(await page.locator("html").getAttribute("lang"), language);
-      assert.deepEqual(
-        await page.locator(".theme-save-notice").allTextContents(),
-        ["", "", ""],
+      assert.equal(
+        (await page.locator(".theme-save-notice").allTextContents()).every(
+          (text) => text === "",
+        ),
+        true,
         "Language persistence must not display a theme save notice",
       );
       const before = await page.locator("#languageTrigger").boundingBox();
@@ -488,12 +491,19 @@ async function verifyNotificationLanguage(browser) {
     await page.evaluate(() =>
       document.querySelector("#backupBeforeRestore").click(),
     );
-    await page.waitForFunction(
-      () => document.querySelector("#feedbackList").childElementCount === 1,
-    );
+    await page.waitForFunction(() => {
+      const feedback = document.querySelector(
+        "#feedbackList .notification-body",
+      );
+      return (
+        document.querySelector("#feedbackList").childElementCount === 1 &&
+        feedback?.textContent === WorkTimeApp.i18n.t("copy.5091362c8b")
+      );
+    });
     const result = await page.evaluate(async () => {
       const notice = document.querySelector("#oaStaleNotice");
       const feedback = document.querySelector("#feedbackList .feedback-notice");
+      const originalCount = feedback.querySelector(".ring-count").textContent;
       const results = [];
       for (const language of ["zh-CN", "en", "zh-CN"]) {
         await WorkTimeApp.i18n.setLanguage(language);
@@ -507,6 +517,7 @@ async function verifyNotificationLanguage(browser) {
             document.querySelector("#feedbackList .feedback-notice") ===
             feedback,
           count: feedback.querySelector(".ring-count").textContent,
+          originalCount,
         });
       }
       return results;
@@ -525,7 +536,7 @@ async function verifyNotificationLanguage(browser) {
       );
       assert.equal(item.feedback, item.expectedFeedback);
       assert.equal(item.sameFeedback, true);
-      assert.equal(item.count, "3");
+      assert.equal(item.count, item.originalCount);
     }
     await page.waitForFunction(
       () => !document.querySelector("#feedbackList").childElementCount,
@@ -892,9 +903,9 @@ async function verify() {
       }
       await page.setViewportSize({ width: 1440, height: 1000 });
       if (english) {
-        await page.locator("#settingsOpen").click();
+        await clickSettingsControl(page, "#settingsWorkTab");
         await englishText(page, "work schedule");
-        await page.locator("#workSettingsCancel").click();
+        await page.locator("#personalSettingsCancel").click();
         await page.locator("#batchToggle").click();
         await englishText(page, "bulk edit");
         await page.locator("#batchToggle").click();
@@ -951,14 +962,14 @@ async function verify() {
       await page.evaluate(() => {
         document.querySelector("#dayStart").value = "09:17";
       });
-      await page.locator("#pageSettingsOpen").click();
+      await clickSettingsControl(page, "#pageSettingsOpen");
       if (english) {
-        await page.locator("#personalSettingsOpen").click();
+        await clickSettingsControl(page, "#settingsPersonalTab");
         await page.locator("#workCity").click();
         await englishText(page, "city directory");
         await page.locator("#workCityOption0").click();
         await englishText(page, "city selected");
-        await page.locator("#pageSettingsOpen").click();
+        await clickSettingsControl(page, "#pageSettingsOpen");
       }
       await page
         .locator("#languageSelect")
@@ -1024,17 +1035,17 @@ async function verify() {
         return { legacy, roundTrip };
       });
       assert.deepEqual(compatibility, { legacy: "auto", roundTrip: "en" });
-      await page.locator("#pageSettingsOpen").click();
+      await clickSettingsControl(page, "#pageSettingsOpen");
       await page
         .locator("#languageSelect")
         .selectOption(english ? "en" : "zh-CN");
-      await page.locator("#personalSettingsOpen").click();
+      await clickSettingsControl(page, "#settingsPersonalTab");
       await page.locator("#workCity").click();
       await page.locator("#workCityOption0").click();
       await page.waitForFunction(
         () => !!WorkTimeApp.services.weather.snapshot().city,
       );
-      await page.locator("#profileSettingsCancel").click();
+      await page.locator("#personalSettingsCancel").click();
       await page.locator("#date-tab-weather").click();
       await page.reload();
       await page.waitForFunction(() =>
@@ -1048,7 +1059,7 @@ async function verify() {
       );
       await ready(page);
       await page.waitForSelector(".weather-heading");
-      await page.locator("#personalSettingsOpen").click();
+      await clickSettingsControl(page, "#settingsPersonalTab");
       assert.equal(
         await page.locator("#workCity").inputValue(),
         english ? "Dongguan" : "东莞市",
@@ -1069,15 +1080,15 @@ async function verify() {
           (id) => WorkTimeApp.services.weather.snapshot().city?.id === id,
           city.id,
         );
-        await page.locator("#profileSettingsCancel").click();
-        await page.locator("#personalSettingsOpen").click();
+        await page.locator("#personalSettingsCancel").click();
+        await clickSettingsControl(page, "#settingsPersonalTab");
         assert.equal(
           await page.locator("#workCity").inputValue(),
           english ? city.english : city.name + "市",
           "Reopened city: " + city.name,
         );
       }
-      await page.locator("#pageSettingsOpen").click();
+      await clickSettingsControl(page, "#pageSettingsOpen");
       await page
         .locator("#languageSelect")
         .selectOption(english ? "zh-CN" : "en");

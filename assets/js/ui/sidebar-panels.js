@@ -41,150 +41,127 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     if (document.hidden) finishNavigationMotion();
   }
   const editor = document.querySelector(".workspace > .editor"),
-    editorViews = [editor.querySelector(".editor-content")],
-    settings = document.getElementById("settingsDialog");
-  const editorTabs = editor.querySelector(".notification-tabs");
-  const pageSettings = document.getElementById("pageSettingsPane");
+    settings = document.getElementById("settingsPane"),
+    settingsButton = document.getElementById("pageSettingsOpen"),
+    settingsCancel = document.getElementById("personalSettingsCancel"),
+    tablist = settings.querySelector(".settings-tabs"),
+    tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  let activeTab = tabs[0];
   const themeSettings = WorkTimeApp.ui.theme.mount(
-    pageSettings.querySelector(".theme-settings-host"),
+    settings.querySelector(".theme-settings-host"),
   );
-  const pagePanels = [
-    {
-      button: "pageSettingsOpen",
-      pane: "pageSettingsPane",
-      cancel: "personalSettingsCancel",
-      label: "copy.165118b1d4",
-      closeLabel: "copy.e2ae92e1ec",
-      icon: "settings",
-    },
-    {
-      button: "personalSettingsOpen",
-      pane: "personalSettingsPane",
-      cancel: "profileSettingsCancel",
-      label: "copy.c241ef1b93",
-      closeLabel: "profile.close",
-      icon: "article-person",
-      personal: true,
-    },
-  ].map((config) => ({
-    ...config,
-    button: document.getElementById(config.button),
-    pane: document.getElementById(config.pane),
-    cancel: document.getElementById(config.cancel),
-  }));
-  function updatePageButton(panel) {
-    const open = !panel.pane.hidden;
-    panel.button.classList.toggle("primary", open);
-    panel.button.setAttribute("aria-pressed", String(open));
-    panel.button.title = WorkTimeApp.i18n.t(
-      open ? panel.closeLabel : panel.label,
+  function updateSettingsButton() {
+    const open = !settings.hidden;
+    settingsButton.classList.toggle("primary", open);
+    settingsButton.setAttribute("aria-pressed", String(open));
+    settingsButton.setAttribute("aria-expanded", String(open));
+    settingsButton.title = WorkTimeApp.i18n.t(
+      open ? "copy.e2ae92e1ec" : "copy.165118b1d4",
     );
-    panel.button.setAttribute("aria-label", panel.button.title);
-    panel.button
+    settingsButton.setAttribute("aria-label", settingsButton.title);
+    settingsButton
       .querySelector("use")
-      .setAttribute("href", open ? "#ms-close" : "#ms-" + panel.icon);
+      .setAttribute("href", open ? "#ms-close" : "#ms-settings");
   }
-  function closePageSettings(focus = true) {
-    const active = pagePanels.find((panel) => !panel.pane.hidden);
-    if (!active) return;
-    WorkTimeApp.ui.motion?.stop(active.pane);
-    active.pane.hidden = true;
-    if (active.personal)
-      active.pane.dispatchEvent(new Event("personal-settings-close"));
-    editor.classList.remove("is-page-settings-open");
-    updatePageButton(active);
-    if (!disposed)
-      WorkTimeApp.ui.motion?.play(editorViews[0], "motion-sidebar-back");
-    if (focus) active.button.focus({ preventScroll: true });
+  function hidePopovers() {
+    settings.dispatchEvent(new Event("settings-tab-leave", { bubbles: true }));
+    document
+      .getElementById("personalSettingsPane")
+      .dispatchEvent(new Event("personal-settings-close"));
   }
-  function togglePageSettings(panel) {
-    if (disposed) return;
-    if (!panel.pane.hidden) {
-      closePageSettings();
-      return;
-    }
-    closeSettingsPanel();
-    if (settings.open) return;
-    closePageSettings(false);
-    leaveBatch();
-    if (panel.personal)
-      panel.pane.dispatchEvent(new Event("personal-settings-open"));
-    panel.pane.hidden = false;
-    WorkTimeApp.ui.motion?.stop(editorViews[0]);
-    editor.classList.add("is-page-settings-open");
-    updatePageButton(panel);
-    WorkTimeApp.ui.motion?.play(panel.pane, "motion-sidebar-forward");
-    WorkTimeApp.ui.alignment?.refresh([panel.pane]);
-    if (window.matchMedia("(max-width: 1150px)").matches)
-      editor.scrollIntoView({ block: "start" });
-    panel.button.focus({ preventScroll: true });
-  }
-  function leavePageSettings(event) {
-    if (
-      pagePanels.some((panel) => !panel.pane.hidden) &&
-      event.target.closest(
-        "#batchToggle, #settingsOpen, #setupButton, #restore",
-      )
-    )
-      closePageSettings(false);
-  }
-  const workSettingsCancel = document.getElementById("workSettingsCancel");
-  workSettingsCancel.addEventListener("click", closeSettingsPanel);
-  for (const panel of pagePanels) {
-    panel.toggle = () => togglePageSettings(panel);
-    panel.close = () => closePageSettings();
-    panel.button.addEventListener("click", panel.toggle);
-    panel.cancel.addEventListener("click", panel.close);
-  }
-  document.addEventListener("click", leavePageSettings, true);
-  function leaveSettingsFromTab(event) {
-    if (settings.open && event.target.closest(".notification-tab"))
-      WorkTimeApp.ui.alignment?.refresh([editor.querySelector(".editor-info")]);
-  }
-  editorTabs.addEventListener("click", leaveSettingsFromTab);
-  function updateSettingsButton(open) {
-    const button = document.getElementById("settingsOpen");
-    button.classList.toggle("primary", open);
-    button.setAttribute("aria-pressed", String(open));
-    button.setAttribute(
-      "aria-label",
-      open
-        ? WorkTimeApp.i18n.t("copy.d223bd345f")
-        : WorkTimeApp.i18n.t("copy.a09e533eed"),
-    );
-    button.title = open
-      ? WorkTimeApp.i18n.t("copy.d223bd345f")
-      : WorkTimeApp.i18n.t("copy.a09e533eed");
-    button
-      .querySelector("use")
-      .setAttribute(
-        "href",
-        open ? "#ms-close" : "#ms-nest-clock-farsight-analog",
+  function selectTab(tab, focus = false, animate = true) {
+    const direction = tabs.indexOf(tab) - tabs.indexOf(activeTab);
+    if (tab !== activeTab) {
+      hidePopovers();
+      WorkTimeApp.ui.motion?.stop(
+        document.getElementById(activeTab.getAttribute("aria-controls")),
       );
+    }
+    activeTab = tab;
+    for (const item of tabs) {
+      const selected = item === tab;
+      item.setAttribute("aria-selected", String(selected));
+      item.tabIndex = selected ? 0 : -1;
+      document.getElementById(item.getAttribute("aria-controls")).hidden =
+        !selected;
+    }
+    WorkTimeApp.ui.alignment?.refresh([settings]);
+    if (animate && direction && !settings.hidden)
+      WorkTimeApp.ui.motion?.play(
+        document.getElementById(tab.getAttribute("aria-controls")),
+        direction > 0 ? "motion-sidebar-forward" : "motion-sidebar-back",
+      );
+    if (focus) tab.focus({ preventScroll: true });
   }
-  function closeSettings() {
-    if (settings.open || !editor.classList.contains("is-settings-open")) return;
-    editor.classList.remove("is-settings-open");
-    WorkTimeApp.ui.motion?.stop(document.getElementById("settingsForm"));
-    editorViews.forEach((view) =>
-      view.classList.remove("settings-view-hidden"),
-    );
-    updateSettingsButton(false);
-    WorkTimeApp.ui.motion?.play(editorViews[0], "motion-sidebar-back");
-    document.getElementById("settingsOpen").focus({ preventScroll: true });
-  }
-  settings.addEventListener("close", closeSettings);
   function closeSettingsPanel() {
+    if (settings.hidden) return;
     if (
-      settings.open &&
       !settings.dispatchEvent(
         new Event("settings-close-request", { cancelable: true }),
       )
     )
       return;
-    if (settings.open) settings.close();
-    closeSettings();
+    hidePopovers();
+    WorkTimeApp.ui.motion?.stop(settings);
+    settings.hidden = true;
+    editor.classList.remove("is-page-settings-open", "is-settings-open");
+    settings.dispatchEvent(new Event("settings-closed"));
+    updateSettingsButton();
+    if (!disposed) {
+      const content = editor.closest(".agenda-mode")
+        ? document.getElementById("agendaEditor")
+        : editor.querySelector(".editor-content");
+      WorkTimeApp.ui.motion?.play(content, "motion-sidebar-back");
+      settingsButton.focus({ preventScroll: true });
+    }
   }
+  function openSettings(tab = activeTab) {
+    if (disposed) return;
+    const opening = settings.hidden;
+    if (opening) {
+      leaveBatch();
+      settings.dispatchEvent(new Event("settings-open"));
+      document
+        .getElementById("personalSettingsPane")
+        .dispatchEvent(new Event("personal-settings-open"));
+      settings.hidden = false;
+      settings.dispatchEvent(new Event("settings-opened"));
+      editor.classList.add("is-page-settings-open", "is-settings-open");
+      updateSettingsButton();
+      WorkTimeApp.ui.motion?.stop(editor.querySelector(".editor-content"));
+      WorkTimeApp.ui.motion?.stop(document.getElementById("agendaEditor"));
+      WorkTimeApp.ui.motion?.play(settings, "motion-sidebar-forward");
+      if (window.matchMedia("(max-width: 1150px)").matches)
+        editor.scrollIntoView({ block: "start" });
+    }
+    selectTab(tab, false, !opening);
+  }
+  function toggleSettings() {
+    if (settings.hidden) openSettings();
+    else closeSettingsPanel();
+  }
+  function tabClick(event) {
+    const tab = event.target.closest('[role="tab"]');
+    if (tabs.includes(tab)) selectTab(tab);
+  }
+  function tabKeydown(event) {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const index = tabs.indexOf(activeTab);
+    const next =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? tabs.length - 1
+          : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) %
+            tabs.length;
+    selectTab(tabs[next], true);
+  }
+  settingsButton.addEventListener("click", toggleSettings);
+  settingsCancel.addEventListener("click", closeSettingsPanel);
+  tablist.addEventListener("click", tabClick);
+  tablist.addEventListener("keydown", tabKeydown);
+  selectTab(activeTab);
   function render() {
     const active = stack.at(-1);
     sidebar.classList.toggle("is-oa-open", !!active);
@@ -238,21 +215,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
   }
   function open(id, { motionDuration } = {}) {
     if (id === "settingsDialog" && !disposed) {
-      closePageSettings(false);
-      const trigger = document.activeElement;
-      WorkTimeApp.ui.motion?.stop(editorViews[0]);
-      editor.classList.add("is-settings-open");
-      editorViews.forEach((view) => view.classList.add("settings-view-hidden"));
-      if (!settings.open) settings.show();
-      WorkTimeApp.ui.motion?.play(
-        document.getElementById("settingsForm"),
-        "motion-sidebar-forward",
-      );
-      updateSettingsButton(true);
-      WorkTimeApp.ui.alignment?.refresh([settings]);
-      if (window.matchMedia("(max-width: 1150px)").matches)
-        editor.scrollIntoView({ block: "start" });
-      trigger?.focus({ preventScroll: true });
+      openSettings(document.getElementById("settingsWorkTab"));
       return true;
     }
     if (!panes.has(id) || disposed) return false;
@@ -327,18 +290,10 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       trigger.focus({ preventScroll: true });
   }
   function keydown(event) {
+    if (event.defaultPrevented) return;
     if (
       event.key === "Escape" &&
-      pagePanels.some((panel) => !panel.pane.hidden) &&
-      !document.querySelector("dialog:modal")
-    ) {
-      event.preventDefault();
-      closePageSettings();
-      return;
-    }
-    if (
-      event.key === "Escape" &&
-      settings.open &&
+      !settings.hidden &&
       !document.querySelector("dialog:modal")
     ) {
       event.preventDefault();
@@ -359,15 +314,15 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     if (disposed) return;
     disposed = true;
     themeSettings.dispose();
-    workSettingsCancel.removeEventListener("click", closeSettingsPanel);
-    for (const panel of pagePanels) {
-      panel.button.removeEventListener("click", panel.toggle);
-      panel.cancel.removeEventListener("click", panel.close);
-    }
-    document.removeEventListener("click", leavePageSettings, true);
-    closePageSettings(false);
-    settings.removeEventListener("close", closeSettings);
-    editorTabs.removeEventListener("click", leaveSettingsFromTab);
+    settingsButton.removeEventListener("click", toggleSettings);
+    settingsCancel.removeEventListener("click", closeSettingsPanel);
+    tablist.removeEventListener("click", tabClick);
+    tablist.removeEventListener("keydown", tabKeydown);
+    WorkTimeApp.ui.motion?.stop(editor);
+    hidePopovers();
+    settings.hidden = true;
+    editor.classList.remove("is-page-settings-open", "is-settings-open");
+    updateSettingsButton();
     document.removeEventListener("keydown", keydown);
     document.removeEventListener("visibilitychange", onVisibility);
     window.removeEventListener("blur", finishNavigationMotion);
@@ -392,8 +347,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
   window.addEventListener("blur", finishNavigationMotion);
   function refreshLanguage() {
     render();
-    updateSettingsButton(settings.open);
-    pagePanels.forEach(updatePageButton);
+    updateSettingsButton();
   }
   document.addEventListener("worktime:languagechange", refreshLanguage);
   return {

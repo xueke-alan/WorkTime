@@ -12,9 +12,12 @@ async function verify() {
   try {
     const initial = await browser.newPage();
     const url = pathToFileURL(path.resolve("index.html")).href;
+    await initial.route(/^https?:/, (route) => route.abort());
     await initial.goto(url);
     await initial.waitForFunction(
-      () => document.documentElement.dataset.appState === "ready",
+      () =>
+        document.documentElement.dataset.appState === "ready" &&
+        !document.documentElement.classList.contains("app-loading"),
     );
     const state = await initial.evaluate(() =>
       WorkTimeApp.domain.state.defaultState(),
@@ -41,10 +44,17 @@ async function verify() {
     }, state);
     await page.goto(url);
     await page.waitForFunction(
-      () => document.documentElement.dataset.appState === "ready",
+      () =>
+        document.documentElement.dataset.appState === "ready" &&
+        !document.documentElement.classList.contains("app-loading"),
     );
     await page.locator("#analysisToggle").click();
     await page.clock.runFor(800);
+    // Freeze between samples: wall-clock scheduling must not finish the row
+    // transition before the explicitly requested intermediate sample.
+    await page.clock.pauseAt(
+      new Date((await page.evaluate(() => Date.now())) + 1000),
+    );
     const ratio = page.locator(".analysis-metric-ratio");
     // Sample the numerator width and divider/denominator positions from the
     // same event turn through cleanup, including rapid interrupted toggles.

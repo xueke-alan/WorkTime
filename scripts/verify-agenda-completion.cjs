@@ -102,6 +102,9 @@ async function verify() {
           for (const animation of calendar.getAnimations({ subtree: true })) {
             const target = animation.effect?.target;
             if (
+              // Continuation dashes may crossfade; the card content itself
+              // must remain mounted without another entrance animation.
+              !animation.effect?.pseudoElement &&
               target?.matches(
                 ".agenda-lane-content, .agenda-card-items, .agenda-chip, .agenda-content-outgoing",
               )

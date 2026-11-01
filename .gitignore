@@ -120,6 +120,7 @@ Thumbs.db
 
 !/scripts/verify-agenda.cjs
 !/scripts/verify-agenda-week.cjs
+!/scripts/verify-agenda-week-to-fortnight-motion.cjs
 !/scripts/verify-agenda-timetable.cjs
 !/scripts/verify-agenda-timetable-save.cjs
 !/scripts/verify-agenda-dual-regressions.cjs
@@ -151,6 +152,8 @@ Thumbs.db
 !/scripts/verify-agenda-timetable-resize.cjs
 !/scripts/verify-agenda-break-edges.cjs
 !/scripts/verify-agenda-position.cjs
+!/scripts/verify-agenda-more-motion.cjs
+!/scripts/verify-agenda-status-motion.cjs
 !/scripts/verify-analysis-ratio.cjs
 !/scripts/verify-lunar-runtime.cjs
 
@@ -175,3 +178,6 @@ Thumbs.db
 
 !/scripts/verify-backup-cache.cjs
 !/scripts/verify-agenda-drag-order.cjs
+
+!/scripts/settings-test-helpers.cjs
+!/scripts/verify-settings-tabs.cjs

@@ -3463,3 +3463,15 @@ for (const [language, label] of Object.entries({
   ko: "백업 준비 중…",
 }))
   WorkTimeApp.data.locales[language]["backup.preparing"] = label;
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["常规", "工作时间"],
+  "zh-TW": ["一般", "工作時間"],
+  "zh-HK": ["一般", "工作時間"],
+  en: ["General", "Work hours"],
+  ja: ["一般", "勤務時間"],
+  ko: ["일반", "근무 시간"],
+})) {
+  WorkTimeApp.data.locales[language]["settings.general"] = labels[0];
+  WorkTimeApp.data.locales[language]["settings.work"] = labels[1];
+}

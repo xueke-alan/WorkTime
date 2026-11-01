@@ -29,6 +29,29 @@ async function verify() {
           document.documentElement.dataset.appState === "ready" &&
           !document.documentElement.classList.contains("app-loading"),
       );
+      const tagSizes = () =>
+        page.locator("#calendar .daystatus .pill").evaluateAll((nodes) =>
+          nodes.map((node) => ({
+            date: node.closest(".day").dataset.date,
+            text: node.textContent,
+            width: node.getBoundingClientRect().width,
+            height: node.getBoundingClientRect().height,
+          })),
+        );
+      const initialTags = await tagSizes();
+      assert.ok(
+        initialTags.length > 0,
+        "Pending tags are present before the first selection",
+      );
+      await page
+        .locator('.day[data-date="2026-10-23"] .day-select')
+        .click({ force: true });
+      await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
+      assert.deepEqual(
+        await tagSizes(),
+        initialTags,
+        language + " tag dimensions stay fixed after the first day selection",
+      );
       const retainedMarkers = await page.evaluate(() => {
         const markers = [
           ...document.querySelectorAll("#calendar .date-markers"),
@@ -48,9 +71,38 @@ async function verify() {
         true,
         "Selecting dates retains their holiday and schedule markers",
       );
+      // Include a second badge and a planned-overtime badge in wrapping checks.
+      await page
+        .locator('.day[data-date="2026-10-09"] .day-select')
+        .click({ force: true });
+      await page.locator("#dayLeaveToggle").click();
+      await page.locator("#dayLeave").fill("0.5");
+      await page.locator("#dayLeaveDone").click();
+      await page
+        .locator('.day[data-date="2026-10-17"] .day-select')
+        .click({ force: true });
+      await page.locator("#plannedOvertimeToggle").click();
+      await page.locator("#todayButton").click();
+      assert.ok(
+        (await page.locator("#calendar .pill.leave").count()) > 0,
+        "Leave tag is present",
+      );
       for (const width of [1440, 1280, 390, 320]) {
         await page.setViewportSize({ width, height: 1000 });
+        await page.evaluate(() => {
+          for (const text of document.querySelectorAll("#calendar .pill-text"))
+            text.classList.remove("ui-aligned-text");
+        });
+        const unalignedTags = await tagSizes();
         await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
+        assert.deepEqual(
+          await tagSizes(),
+          unalignedTags,
+          language +
+            "/" +
+            width +
+            " alignment preserves single-line and wrapped tag sizes",
+        );
         const result = await page.evaluate(() => {
           const stamp = document.querySelector("#editorDate"),
             date = stamp

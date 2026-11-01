@@ -159,6 +159,9 @@
     document.addEventListener("pointerdown", (event) => {
       if (!field.contains(event.target)) close();
     });
+    const settingsPane = document.getElementById("settingsPane");
+    const leaveTab = () => close();
+    settingsPane.addEventListener("settings-tab-leave", leaveTab);
     window.addEventListener("resize", position);
     document.addEventListener("scroll", position, true);
     let languageRevision = 0;
@@ -189,6 +192,7 @@
     window.addEventListener(
       "pagehide",
       () => {
+        settingsPane.removeEventListener("settings-tab-leave", leaveTab);
         languageRevision++;
         unsubscribe();
         stopClock();

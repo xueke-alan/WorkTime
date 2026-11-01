@@ -21,19 +21,15 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     preferredRange = null,
     pendingLeave = null;
   function showSettings() {
-    if ($("settingsDialog").open) {
-      requestSettingsLeave(() => actions.closeSettings());
-      return;
-    }
     if (model.batchMode) {
       if (model.batchSaving) return;
       actions.leaveBatch();
     }
-    refreshSettings();
     actions.open("settingsDialog");
   }
 
   function refreshSettings() {
+    if (hasScheduleDraft()) return;
     editingDate = model.selected;
     preferredRange = null;
     loadSchedule(C.scheduleForDate(model.state, editingDate));
@@ -169,6 +165,9 @@ WorkTimeApp.ui.createSettingsController = function (options) {
           : WorkTimeApp.i18n.t("copy.7e233e4c7e")) +
         "</div></div>";
     } catch (error) {
+      // A retained draft can be applied from any settings tab. Reveal its
+      // validation feedback before returning control to the user.
+      actions.open("settingsDialog");
       WorkTimeApp.ui.fieldErrors.show($("settingsError"), {
         code: "VALIDATION",
         message: error.message,
@@ -227,9 +226,9 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     requestSettingsLeave(() => actions.closeSettings());
   }
   function guardNavigation(event) {
-    if (!$("settingsDialog").open) return;
+    if ($("settingsPane").hidden) return;
     const target = event.target.closest(
-      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #batchToggle, #restore, #pageSettingsOpen",
+      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #batchToggle, #restore, #analysisToggle",
     );
     if (!target) return;
     const keepSettings = target.matches(
@@ -292,7 +291,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     });
     rangeController.bind();
     originalDraft = rawDraft();
-    events.handler($("settingsOpen"), "onclick", showSettings);
+    events.listen($("settingsPane"), "settings-open", refreshSettings);
     events.handler($("setupButton"), "onclick", showSettings);
 
     for (let i = 0; i < 5; i++)
@@ -427,7 +426,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
       });
     });
     events.listen(
-      $("settingsDialog"),
+      $("settingsPane"),
       "settings-close-request",
       guardSettingsClose,
     );
@@ -453,7 +452,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     },
     hasDraft() {
       if (hasScheduleDraft()) return true;
-      if (!$("settingsDialog").open) return false;
+      if ($("settingsPane").hidden) return false;
       for (let i = 0; i < 5; i++) {
         const input = $("overtimeRequirement" + i);
         if (!input.validity.valid) return true;

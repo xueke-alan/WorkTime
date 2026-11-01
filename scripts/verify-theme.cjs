@@ -1,4 +1,5 @@
 "use strict";
+const { clickSettingsControl } = require("./settings-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -33,7 +34,7 @@ async function verify() {
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
-      await page.locator("#pageSettingsOpen").click();
+      await clickSettingsControl(page, "#pageSettingsOpen");
       const card = (id) =>
         page.locator(`.theme-card:has(input[value="${id}"])`);
       const assertTheme = async (id) => {
@@ -90,7 +91,7 @@ async function verify() {
         await page.locator("html").getAttribute("data-theme"),
         "orange",
       );
-      await page.locator("#pageSettingsOpen").click();
+      await clickSettingsControl(page, "#pageSettingsOpen");
       await page.emulateMedia({ reducedMotion: "reduce" });
       await card("red").click();
       await assertTheme("red");

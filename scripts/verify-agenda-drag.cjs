@@ -373,6 +373,9 @@ async function verify() {
     await begin("拖动单日", "2026-10-23");
     await hover("2026-10-24");
     await page.setViewportSize({ width: 1470, height: 1000 });
+    await page.waitForFunction(
+      () => !document.querySelector(".agenda-drag-preview"),
+    );
     await page.mouse.up();
     assert.equal(await page.locator(".agenda-drag-preview").count(), 0);
     await page.setViewportSize({ width: 1480, height: 1000 });

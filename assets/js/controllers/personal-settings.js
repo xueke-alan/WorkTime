@@ -386,7 +386,7 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
     bound = true;
     events.listen(window, "resize", positionCities);
     events.listen(document, "scroll", positionCities, true);
-    events.listen($("settingsDialog"), "close", closeCities);
+    events.listen($("settingsPane"), "settings-closed", closeCities);
     events.listen(
       $("personalSettingsPane"),
       "personal-settings-close",
@@ -473,7 +473,7 @@ WorkTimeApp.ui.createPersonalSettingsController = function ({
     closeCities();
   }
   function hasDraft() {
-    if ($("personalSettingsPane").hidden) return false;
+    if ($("settingsPane").hidden) return false;
     const personal = model.state.personal;
     const city = resolveCity(personal.workCity);
     const displayCity = city

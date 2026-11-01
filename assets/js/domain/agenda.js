@@ -120,16 +120,19 @@ WorkTimeApp.domain.agenda = (() => {
   function overlaps(item, first, last) {
     return item.date <= last && lastDate(item) >= first;
   }
-  function segments(items, dates) {
+  function segments(items, dates, stableOrder = false) {
     const lanes = [];
     return items
       .filter((item) => overlaps(item, dates[0], dates[dates.length - 1]))
-      .sort(
-        (a, b) =>
-          a.date.localeCompare(b.date) ||
-          lastDate(b).localeCompare(lastDate(a)) ||
-          a.start.localeCompare(b.start) ||
-          a.id.localeCompare(b.id),
+      .sort((a, b) =>
+        stableOrder
+          ? Number(b.allDay) - Number(a.allDay) ||
+            a.start.localeCompare(b.start) ||
+            a.createdAt.localeCompare(b.createdAt)
+          : a.date.localeCompare(b.date) ||
+            lastDate(b).localeCompare(lastDate(a)) ||
+            a.start.localeCompare(b.start) ||
+            a.id.localeCompare(b.id),
       )
       .map((item) => {
         const start = Math.max(

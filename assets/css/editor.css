@@ -2384,3 +2384,20 @@ body .editor #dayForm #plannedOvertimeToggle:disabled {
   border-color: var(--line);
   cursor: default;
 }
+
+/* One settings surface owns navigation and keeps inactive drafts mounted. */
+body .editor #settingsPane[hidden],
+body .editor #settingsPane .settings-tab-panel[hidden] { display: none !important; }
+body .editor #settingsPane { overflow: hidden; }
+body .editor #settingsPane .settings-tab-panel {
+  display: flex; flex: 1 1 0; flex-direction: column; min-width: 0; min-height: 0;
+  margin: 0; padding: 0; border: 0; background: transparent; max-width: 100%;
+}
+body .editor #settingsPane #settingsDialog { width: 100%; box-shadow: none; }
+body .editor .settings-tabs { display: flex; flex: none; gap: 0.857143rem; padding: 0 var(--editor-gutter); border-bottom: 1px solid var(--line); }
+body .editor .settings-tabs .settings-tab { appearance: none; flex: 1 1 0; min-width: 0; height: auto; padding: 0.428571rem 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; box-shadow: none; color: var(--muted); white-space: normal; overflow-wrap: anywhere; font-size: var(--text-small); font-weight: 500; cursor: pointer; }
+body .editor .settings-tabs .settings-tab:hover { color: var(--accent); background: transparent; }
+body .editor .settings-tabs .settings-tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+body .editor .settings-tabs .settings-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+
+body .workspace > .editor.is-settings-open { display: flex; flex-direction: column; }

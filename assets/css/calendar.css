@@ -1464,6 +1464,8 @@ body .calendar .daystatus .pill {
   padding: 0.25em 0.5em;
   letter-spacing: 0;
 }
+/* Ink alignment must not replace the badge's compact or wrapped line height. */
+body .calendar .daystatus .pill-text { line-height: inherit; }
 /* Narrow cells retain readable labels rather than clipping single-line pills. */
 @container calendar-panel (max-width: 849px) {
   body .calendar .day-footer:has(.daystatus:not(:empty)):has(.day-average:not(:empty)) :is(.day-average, .pill) {

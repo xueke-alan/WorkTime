@@ -1,4 +1,5 @@
 "use strict";
+const { clickSettingsControl } = require("./settings-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -392,7 +393,7 @@ async function verify() {
               }
               if (view === "preferences") {
                 await zoomPage.locator("#batchCancel").click();
-                await zoomPage.locator("#pageSettingsOpen").click();
+                await clickSettingsControl(zoomPage, "#pageSettingsOpen");
               }
               await zoomPage.evaluate(() => WorkTimeApp.ui.alignment.refresh());
               const issues = await zoomPage.evaluate(auditLayout);
@@ -455,9 +456,9 @@ async function verify() {
       await page.locator("#date-context-festivals").click();
       await page.waitForSelector(".festival-section");
       await capture("festivals");
-      await page.locator("#settingsOpen").click();
+      await clickSettingsControl(page, "#settingsWorkTab");
       await capture("schedule");
-      await page.locator("#workSettingsCancel").click();
+      await page.locator("#personalSettingsCancel").click();
       await page.locator("#addTimeTemplate").click();
       await capture("template");
       await page.locator('[data-close="timeTemplateDialog"]').first().click();
@@ -477,7 +478,7 @@ async function verify() {
       await page.locator("#sourceOpen").click();
       await page.waitForSelector("#sourceDialog[open]");
       await capture("source");
-      await page.locator("#personalSettingsOpen").click();
+      await clickSettingsControl(page, "#settingsPersonalTab");
       await capture("profile");
       const cityName = await page.evaluate(() =>
         WorkTimeApp.i18n.city(WorkTimeApp.data.weatherCities.cities[0].name),
@@ -490,11 +491,11 @@ async function verify() {
         cityName,
       );
       await page.locator("#workCityOption0").click();
-      await page.locator("#profileSettingsCancel").click();
+      await page.locator("#personalSettingsCancel").click();
       await page.evaluate(() => {
         document.querySelector("#dayStart").value = "09:17";
       });
-      await page.locator("#pageSettingsOpen").click();
+      await clickSettingsControl(page, "#pageSettingsOpen");
       await capture("preferences");
       await page.locator("#languageTrigger").click();
       await capture("language-menu");
@@ -502,7 +503,10 @@ async function verify() {
         path: path.join(output, language + "-language-menu.png"),
         fullPage: true,
       });
-      await page.locator("#languageTrigger").press("Escape");
+      // Resizing the screenshots can already close a menu that moves outside
+      // its scroll area. Escape then belongs to the settings pane itself.
+      if (await page.locator("#languageOptions").isVisible())
+        await page.locator("#languageTrigger").press("Escape");
       for (const next of ["zh-TW", "ja", "en", language])
         await page.locator("#languageSelect").selectOption(next);
       assert.equal(await page.locator("#dayStart").inputValue(), "09:17");

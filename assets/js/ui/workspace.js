@@ -90,7 +90,7 @@ WorkTimeApp.ui.createWorkspace = function ({
     reload() {
       if (disposed) return;
       leaveBatch();
-      if ($("settingsDialog").open) refreshSettings();
+      if (!$("settingsPane").hidden) refreshSettings();
       render();
       $("importDialog").dispatchEvent(new window.Event("sidebar-open"));
     },

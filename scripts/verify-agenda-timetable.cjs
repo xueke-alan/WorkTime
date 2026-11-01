@@ -198,13 +198,68 @@ async function verifyBrowser() {
             (r, i) =>
               Math.abs(r.left - bottom[i].left) < 1 &&
               Math.abs(r.width - bottom[i].width) < 1 &&
-              bottom[i].top > r.bottom + 1 &&
+              Math.abs(bottom[i].top - r.top - 160) < 1 &&
+              Math.abs(bottom[i].bottom - r.bottom) < 1 &&
+              getComputedStyle(
+                document.querySelectorAll(".timetable-bottom-card")[i],
+              ).borderTopWidth === "0px" &&
               Math.abs(r.height - top[0].height) < 1 &&
               Math.abs(bottom[i].top - bottom[0].top) < 1,
           )
         );
       }),
-      "Fourteen separate, aligned cards keep their column and row gaps",
+      "Seven complete date surfaces contain aligned time regions below a 160px all-day region",
+    );
+    assert.equal(
+      await page.evaluate(() => {
+        const calendar = document.querySelector("#calendar");
+        return (
+          [...calendar.querySelectorAll(".timetable-bottom-card")].every(
+            (region) => {
+              const style = getComputedStyle(region);
+              return (
+                style.backgroundColor === "rgba(0, 0, 0, 0)" &&
+                style.boxShadow === "none" &&
+                style.borderRadius === "0px"
+              );
+            },
+          ) &&
+          calendar.querySelectorAll('.agenda-date-edge[data-kind="timed"]')
+            .length === 0
+        );
+      }),
+      true,
+      "Time regions share their date's background, outline and selection",
+    );
+    assert.equal(
+      await page.evaluate(() => {
+        const cards = [
+          ...document.querySelectorAll("#calendar > .day[data-agenda-week]"),
+        ];
+        const lines = document.querySelectorAll(".timetable-divider");
+        if (lines.length !== 1) return false;
+        const first = cards[0].getBoundingClientRect();
+        const last = cards.at(-1).getBoundingClientRect();
+        const line = lines[0].getBoundingClientRect();
+        return (
+          Math.abs(line.left - first.left - cards[0].clientLeft) < 1 &&
+          Math.abs(line.right - last.right + cards.at(-1).clientLeft) < 1 &&
+          Math.abs(line.top - first.top - 160) < 1 &&
+          line.height === 2 &&
+          cards
+            .filter((card) => card.classList.contains("weekend"))
+            .every((card) => {
+              const style = getComputedStyle(card, "::before");
+              return (
+                style.bottom === "0px" &&
+                style.top !== "0px" &&
+                style.backgroundPositionY === "100%"
+              );
+            })
+        );
+      }),
+      true,
+      "One divider crosses every date and gutter; weekend artwork stays at the bottom",
     );
     const dates = await page
       .locator("#calendar > .day[data-agenda-week]")
@@ -478,6 +533,61 @@ async function verifyBrowser() {
     const origin = await event("精确分钟").boundingBox();
     const target = await point(3, 600);
     const hour = (await point(2, 600)).y - (await point(2, 540)).y;
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.mouse.move(origin.x + origin.width / 2, origin.y + 15);
+    await page.mouse.down();
+    const movingPreview = page.locator(".timetable-preview");
+    for (const destination of [
+      { x: origin.x + origin.width / 2, y: origin.y + 30 },
+      { x: target.x, y: origin.y + 15 + hour },
+      gap,
+      { x: origin.x + origin.width / 2, y: origin.y + 30 },
+    ]) {
+      await page.mouse.move(destination.x, destination.y);
+      await page.evaluate(() => new Promise(requestAnimationFrame));
+      await movingPreview.waitFor({ state: "visible" });
+      assert.equal(
+        await movingPreview.evaluate((node) => {
+          const first = window.__movingPreview;
+          window.__movingPreview = node;
+          return !first || first === node;
+        }),
+        true,
+        "Cross-day movement and gutters retain the same preview node",
+      );
+      assert.equal(
+        await movingPreview.evaluate((node) => {
+          const style = getComputedStyle(node);
+          const properties = style.transitionProperty.split(", ");
+          const durations = style.transitionDuration.split(", ");
+          return ["top", "left"].every((property) => {
+            const duration = parseFloat(
+              durations[properties.indexOf(property)],
+            );
+            return duration > 0 && duration <= 0.1;
+          });
+        }),
+        true,
+        "Movement uses short position transitions to stay responsive",
+      );
+      assert.equal(
+        await movingPreview.evaluate((node) =>
+          node.parentElement.classList.contains("agenda-timetable"),
+        ),
+        true,
+        "The shared overlay keeps cross-column motion clear of scroll clipping",
+      );
+      assert.equal(
+        await event("精确分钟").evaluate(
+          (node) => getComputedStyle(node).visibility,
+        ),
+        "hidden",
+        "Gutters do not flash the original card",
+      );
+    }
+    await page.keyboard.press("Escape");
+    await page.mouse.up();
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await drag(
       { x: origin.x + origin.width / 2, y: origin.y + 15 },
       { x: target.x, y: origin.y + 15 + hour },
@@ -589,6 +699,13 @@ async function verifyBrowser() {
       dates[5],
     );
     await page.locator("#agendaCancel").click();
+    if (process.argv.includes("--drag-only")) {
+      assert.deepEqual(errors, []);
+      console.log(
+        "Timetable movement, animation, gutters, resize, save and cancellation verified.",
+      );
+      return;
+    }
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.evaluate(() => {
       window.axisFrames = [];
@@ -796,7 +913,21 @@ async function verifyBrowser() {
       "Releasing animation effects never changes timeline geometry or revives faded rest stripes",
     );
     await page.emulateMedia({ reducedMotion: "reduce" });
-    assert.equal(await page.locator(".timetable-break").count(), 0);
+    assert.equal(await page.locator(".timetable-break").count(), 7);
+    assert.ok(
+      await page
+        .locator(".timetable-break")
+        .evaluateAll((nodes) =>
+          nodes.every(
+            (node) =>
+              node.getBoundingClientRect().height > 22 &&
+              getComputedStyle(node).backgroundImage.includes(
+                "repeating-linear-gradient",
+              ),
+          ),
+        ),
+      "Occupied lunch breaks expand while retaining their diagonal stripes",
+    );
     await create("跨午夜", "23:00", "01:00", dates[4], dates[5]);
     assert.equal(await event("跨午夜").count(), 2);
     assert.equal(
@@ -858,11 +989,18 @@ async function verifyBrowser() {
         const lane = calendar.querySelector(".agenda-week-lane");
         return (
           upper.every((r) => Math.abs(r.height - upper[0].height) < 1) &&
-          upper[0].height === 160 &&
+          upper[0].height > 160 &&
+          Math.abs(
+            calendar
+              .querySelector(".timetable-bottom-card")
+              .getBoundingClientRect().top -
+              upper[0].top -
+              160,
+          ) < 1 &&
           lane.querySelectorAll(".agenda-chip:not([hidden])").length === 3
         );
       }),
-      "Dense all-day cards retain a fixed 160px height and display at most three rows",
+      "Dense all-day regions retain a fixed 160px height and display at most three rows",
     );
     const more = page.locator(`.agenda-more[data-agenda-date="${date}"]`);
     assert.equal(await more.textContent(), "7+");
@@ -1002,11 +1140,11 @@ async function verifyBrowser() {
     );
     assert.equal(
       await page.locator("#calendar > .day[data-agenda-week]").count(),
-      10,
-      "Two-week view retains the working-day filter",
+      14,
+      "Two-week view always shows all seven dates per week",
     );
     await page.emulateMedia({ reducedMotion: "reduce" });
-    assert.equal(await page.locator("#agendaWorkdaysOnly:visible").count(), 1);
+    assert.equal(await page.locator("#agendaWorkdaysOnly:visible").count(), 0);
     await page.locator("#agendaViewToggle").click();
     await page.locator("#agendaViewToggle").click();
     await page.locator("#agendaViewToggle").click();
@@ -1274,7 +1412,7 @@ async function verifyBrowser() {
               const sample = () => {
                 frames++;
                 for (const source of document.querySelectorAll(
-                  "#calendar > .day[data-agenda-week], .agenda-timetable:not(.agenda-weekend-exit) > .timetable-bottom-card",
+                  "#calendar > .day[data-agenda-week]",
                 )) {
                   const date =
                     source.dataset.date ||
@@ -1421,7 +1559,14 @@ async function verifyBrowser() {
           const animate = Element.prototype.animate;
           Element.prototype.animate = function (frames, options) {
             if (this.matches(".day") && this.dataset.date)
-              window.returnFrames.push({ date: this.dataset.date, frames });
+              window.returnFrames.push({
+                date: this.dataset.date,
+                frames,
+                active:
+                  document
+                    .querySelector("#agendaMode")
+                    .getAttribute("aria-pressed") === "true",
+              });
             return animate.call(this, frames, options);
           };
         });
@@ -1437,16 +1582,34 @@ async function verifyBrowser() {
         assert.ok(
           returning.every(
             ({ frames }) =>
-              frames.length === 4 &&
-              frames[1].offset === 0.6 &&
-              frames[2].offset === 0.74 &&
+              frames.length === 2 &&
               frames[0].height === frames[1].height &&
-              frames[1].height !== frames[2].height &&
-              parseFloat(frames[0].transform.slice("translate(".length)) >
-                parseFloat(frames[1].transform.slice("translate(".length)),
+              parseFloat(frames[0].transform.match(/-?\d+(?:\.\d+)?/)[0]) > 0,
           ),
-          "Restored non-working columns almost finish sliding in before the longer attendance morph begins",
+          "Non-working columns restore through the weekday switch while their heights remain fixed",
         );
+        await view.waitForFunction(
+          () =>
+            document
+              .querySelector("#agendaMode")
+              .getAttribute("aria-pressed") === "false",
+        );
+        const pageReturn = await view.evaluate(() =>
+          window.returnFrames.filter(
+            (track) =>
+              !track.active &&
+              track.frames[0].height &&
+              ["2026-10-26", "2026-10-30"].includes(track.date),
+          ),
+        );
+        assert.equal(pageReturn.length, 2);
+        pageReturn.forEach((track) => {
+          const restored = returning
+            .find((old) => old.date === track.date)
+            .frames.at(-1);
+          assert.equal(track.frames[0].width, restored.width);
+          assert.equal(track.frames[0].height, restored.height);
+        });
         await view.waitForFunction(
           () =>
             !document
@@ -1477,13 +1640,13 @@ async function verifyBrowser() {
                 .some((a) => a.pending || a.playState === "running"),
           );
         for (const expected of [
-          [5, 6],
-          [5, 6, 4],
+          [7, 7],
+          [7, 7, 7],
         ]) {
           await view.locator("#agendaViewToggle").click();
           await settleView();
-          assert.equal(await filter.isVisible(), true);
-          assert.equal(await filter.getAttribute("aria-checked"), "true");
+          assert.equal(await filter.isVisible(), false);
+          assert.equal(await filter.getAttribute("aria-checked"), "false");
           const grouped = await view
             .locator("#calendar > .day[data-agenda-week]")
             .evaluateAll((nodes) => {
@@ -1500,7 +1663,7 @@ async function verifyBrowser() {
           assert.deepEqual(
             grouped.map((row) => row.length),
             expected,
-            "Each week filters its own rest days and retains overtime dates",
+            "Multiweek views show complete weeks regardless of the single-week filter",
           );
           const columnGap = await view
             .locator("#calendar")
@@ -1569,17 +1732,17 @@ async function verifyBrowser() {
             await settleView();
           }
         }
-        await filter.click();
+        await filter.evaluate((button) => button.click());
         await settleView();
         assert.equal(
           await view.locator("#calendar > .day[data-agenda-week]").count(),
           21,
         );
-        await filter.click();
+        await filter.evaluate((button) => button.click());
         await settleView();
         assert.equal(
           await view.locator("#calendar > .day[data-agenda-week]").count(),
-          15,
+          21,
         );
         await view.evaluate(() => {
           window.returnFrames = [];
@@ -1593,9 +1756,10 @@ async function verifyBrowser() {
         const restored = await view.evaluate(() =>
           window.returnFrames.filter((track) => track.frames.length === 4),
         );
-        assert.ok(
-          restored.some((track) => track.date === "2026-10-26"),
-          "Hidden dates return through the staged restoration animation before the month layout settles",
+        assert.equal(
+          restored.length,
+          0,
+          "Complete multiweek views need no date-restoration stage when returning to month",
         );
         await settleView();
         assert.equal(
@@ -1613,7 +1777,7 @@ async function verifyBrowser() {
     }
     assert.deepEqual(errors, []);
     console.log(
-      "Offline timetable, dual cards, hidden coordinates, overlaps, point/short/cross-day events, creation, minute-preserving move, resize, cancellation and other views verified: " +
+      "Offline timetable, unified date cards, hidden coordinates, overlaps, point/short/cross-day events, creation, minute-preserving move, resize, cancellation and other views verified: " +
         root,
     );
   } finally {

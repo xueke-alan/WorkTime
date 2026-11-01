@@ -4,12 +4,141 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
+async function verifyFirstDateSelection(browser) {
+  for (const width of [1480, 390]) {
+    const page = await browser.newPage({
+      viewport: { width, height: 1000 },
+      locale: "zh-CN",
+      reducedMotion: "reduce",
+    });
+    await page.route(/^https?:/, (route) => route.abort());
+    await page.clock.setFixedTime(new Date("2026-10-20T04:00:00Z"));
+    const ready = () =>
+      page.waitForFunction(
+        () =>
+          document.documentElement.dataset.appState === "ready" &&
+          !document.documentElement.classList.contains("app-loading"),
+      );
+    await page.goto(
+      pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
+    );
+    await ready();
+    await page.locator("#agendaMode").click();
+    await page.locator("#agendaNew").click();
+    await page.locator("#agendaTitle").fill("刷新后第一次选择日期的跨天日程");
+    await page.locator("#agendaScheduleOpen").click();
+    await setScheduleRange(page, "2026-10-19", "2026-10-25");
+    await page.locator("[data-schedule-close]").click();
+    await page.locator("#agendaSave").click();
+    await page.locator("#agendaForm").waitFor({ state: "hidden" });
+    for (const weeks of [0, 1, 2, 3]) {
+      if (weeks) await page.locator("#agendaViewToggle").click();
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.reload();
+      await ready();
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForFunction(
+        () =>
+          !document
+            .querySelector("#calendar")
+            .getAnimations({ subtree: true })
+            .some((a) => a.pending || a.playState === "running"),
+      );
+      for (const date of ["2026-10-22", "2026-10-23"]) {
+        // Let font/resize observers commit the resting layout before sampling
+        // the next gesture's initial position.
+        await page.evaluate(
+          () =>
+            new Promise((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(resolve)),
+            ),
+        );
+        const result = await page.evaluate((date) => {
+          const chip = [
+            ...document.querySelectorAll(
+              ".agenda-week-lane .agenda-chip:not([hidden])",
+            ),
+          ].find((node) => node.textContent.includes("刷新后第一次"));
+          const text = chip.querySelector(".agenda-chip-title-text");
+          const start = text.getBoundingClientRect().left;
+          document
+            .querySelector(
+              '#calendar > .day[data-date="' + date + '"] .day-select',
+            )
+            .click();
+          const current = [
+            ...document.querySelectorAll(
+              ".agenda-week-lane .agenda-chip:not([hidden])",
+            ),
+          ].find((node) => node.dataset.agendaEdit === chip.dataset.agendaEdit);
+          const title = current.querySelector(".agenda-chip-title-text");
+          const animation = title
+            .getAnimations()
+            .find((a) => a.transitionProperty === "translate");
+          if (!animation)
+            return {
+              animated: false,
+              reused: text === title,
+              className: current.closest(".agenda-week-lane").className,
+            };
+          animation.pause();
+          animation.currentTime = 0;
+          const first = title.getBoundingClientRect().left;
+          animation.currentTime = 180;
+          const middle = title.getBoundingClientRect().left;
+          animation.currentTime = 360;
+          const end = title.getBoundingClientRect().left;
+          animation.finish();
+          return {
+            animated: true,
+            reused: text === title,
+            start,
+            first,
+            middle,
+            end,
+            date: current.dataset.agendaTextDate,
+          };
+        }, date);
+        assert.equal(
+          result.animated,
+          true,
+          `Text animates on the first and subsequent clicks after reload: ${width}px, ${weeks} weeks, ${JSON.stringify(result)}`,
+        );
+        assert.equal(result.reused, true);
+        assert.ok(
+          Math.abs(result.first - result.start) < 1,
+          `${width}px, ${weeks} weeks, ${date}: ${JSON.stringify(result)}`,
+        );
+        assert.ok(result.middle > result.first && result.middle < result.end);
+        assert.equal(result.date, date);
+      }
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page
+        .locator('#calendar > .day[data-date="2026-10-21"] .day-select')
+        .click({ position: { x: 8, y: 8 } });
+      assert.equal(
+        await page
+          .locator(".agenda-week-lane .agenda-chip-title-text")
+          .evaluateAll((nodes) =>
+            nodes.some((node) =>
+              node
+                .getAnimations()
+                .some((a) => a.transitionProperty === "translate"),
+            ),
+          ),
+        false,
+      );
+    }
+    await page.close();
+  }
+}
 async function verify() {
   const browser = await chromium.launch({
     channel: process.env.WORKTIME_BROWSER_CHANNEL || "msedge",
     headless: true,
   });
   try {
+    await verifyFirstDateSelection(browser);
     for (const [scale, zoom] of [
       [1, 1],
       [1.25, 1],

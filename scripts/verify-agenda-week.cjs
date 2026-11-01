@@ -257,11 +257,19 @@ async function verify() {
     assert.equal(
       await page.locator("#calendar .agenda-week-layers .agenda-chip").count(),
       4,
-      "Week cards show every event",
+      "Week cards retain every event, including overflow",
     );
     assert.equal(
-      await page.locator("#calendar .day.selected .agenda-more").count(),
-      0,
+      await page
+        .locator("#calendar .agenda-week-layers .agenda-chip:visible")
+        .count(),
+      3,
+      "The all-day area shows three lanes",
+    );
+    assert.equal(
+      await page.locator("#calendar .day.selected .agenda-more").textContent(),
+      "1+",
+      "The date owns the count of the remaining all-day event",
     );
     // Navigate through a selectable adjacent-month day and back.
     await page.locator("#prevMonth").click();
@@ -799,8 +807,8 @@ async function verify() {
     );
     assert.equal(
       incoming.length,
-      0,
-      "Single-to-fortnight transition resizes rows without translating individual dates",
+      7,
+      "Single-to-fortnight transition moves the incoming second week independently of the unified date cards",
     );
     assert.equal(
       await page.locator(".calendar-navigation-viewport").count(),

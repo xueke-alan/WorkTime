@@ -18,6 +18,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
     signature = "",
     disposed = false;
   const scrolls = new Map();
+  const moreByRow = new WeakMap();
   let packedLayouts = new WeakMap();
   // Text follows explicit date selection, independently of the editor's date.
   let textDate = null;
@@ -59,6 +60,55 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       dates: row.dataset.dates.split(","),
       rect: row.getBoundingClientRect(),
     }));
+  }
+  function updateMore(row, entries) {
+    moreByRow.set(row, entries);
+    const dates = new Set(row.dataset.dates.split(","));
+    const previous = new Map(
+      [...calendar.querySelectorAll(".agenda-day-more")]
+        .filter((button) => dates.has(button.dataset.agendaDate))
+        .map((button) => [button.dataset.agendaDate, button]),
+    );
+    const state = getState();
+    for (const { date: day, count } of entries) {
+      const card = [...calendar.querySelectorAll(":scope > .day")].find(
+        (node) => date(node) === day,
+      );
+      if (!card) continue;
+      const style = getComputedStyle(card);
+      const retained = previous.get(day);
+      const button = retained || document.createElement("button");
+      const text = WorkTimeApp.i18n.number(count) + "+";
+      const changed = button.textContent !== text;
+      previous.delete(day);
+      button.type = "button";
+      button.classList.add("agenda-more", "agenda-day-more");
+      button.dataset.agendaDate = day;
+      if (changed) button.textContent = text;
+      button.setAttribute("aria-label", moreLabel(count));
+      Object.assign(button.style, {
+        left: style.paddingLeft,
+        right: style.paddingRight,
+        // The single-week date surface also owns the timetable below it.
+        // Overflow belongs to the fixed all-day region, not the full date.
+        top:
+          state.weeks === 1
+            ? `calc(var(--agenda-all-card-height, 160px) - ${card.clientTop + parseFloat(style.paddingBottom)}px)`
+            : "auto",
+        bottom:
+          state.weeks === 1
+            ? "auto"
+            : state.weeks
+              ? style.paddingBottom
+              : "2px",
+        transform: state.weeks === 1 ? "translateY(-100%)" : "none",
+      });
+      if (button.parentElement !== card) card.append(button);
+    }
+    for (const button of previous.values()) {
+      WorkTimeApp.ui.motion?.stop(button);
+      button.remove();
+    }
   }
   function paintDatePieces(measurements, metrics, edges, dates) {
     const heights = [];
@@ -251,12 +301,17 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         state.items.some((item) => rules.lastDate(item) > item.date));
     calendar.classList.toggle("agenda-lane-view", enabled);
     if (!enabled) {
+      for (const button of calendar.querySelectorAll(".agenda-day-more"))
+        button.remove();
       layer.remove();
       layer.replaceChildren();
       signature = "";
       return;
     }
     if (state.transitioning) return;
+    // Calendar selection can replace day contents while keeping cached ribbon
+    // geometry. Restore each date's native label even on layout shortcuts.
+    for (const row of layer.children) updateMore(row, moreByRow.get(row) || []);
     const leftExtension =
       parseFloat(
         getComputedStyle(calendar).getPropertyValue(
@@ -314,7 +369,13 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         ...cards.map(
           (card) =>
             card.offsetTop +
-            card.offsetHeight -
+            (state.weeks === 1
+              ? parseFloat(
+                  getComputedStyle(calendar).getPropertyValue(
+                    "--agenda-all-card-height",
+                  ),
+                ) || 160
+              : card.offsetHeight) -
             card.clientTop -
             // Month overflow sits close to the card edge to leave another
             // compact agenda row visible above the count.
@@ -498,9 +559,14 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       }
       layoutSignatures.set(row, layoutSignature);
       contentSignatures.set(row, contentSignature);
+      // A first selection can rebuild layout before its measurements are cached.
+      // Preserve the text-shifting class set above through that same render.
       row.className =
         "agenda-week-lane" +
-        (state.weeks && !state.maxLanes ? " is-scrollable" : "");
+        (state.weeks && !state.maxLanes ? " is-scrollable" : "") +
+        (row.classList.contains("agenda-text-shifting")
+          ? " agenda-text-shifting"
+          : "");
       row.dataset.dates = dates.join(",");
       row.setAttribute(
         "aria-label",
@@ -537,13 +603,13 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         button.style.removeProperty("visibility");
         delete button.dataset.packedKey;
       }
-      for (const more of row.querySelectorAll(":scope > .agenda-more"))
-        more.remove();
-      const segments = rules.segments(rowItems, dates).map((segment) => ({
-        ...segment,
-        continuesBefore: segment.item.date < dates[segment.start],
-        continuesAfter: rules.lastDate(segment.item) > dates[segment.end],
-      }));
+      const segments = rules
+        .segments(rowItems, dates, state.weeks === 1)
+        .map((segment) => ({
+          ...segment,
+          continuesBefore: segment.item.date < dates[segment.start],
+          continuesAfter: rules.lastDate(segment.item) > dates[segment.end],
+        }));
       const heights = [];
       const placements = segments.map((segment, index) => {
         const template = document.createElement("template");
@@ -661,6 +727,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       }
       content.style.height =
         (state.weeks && !state.maxLanes ? total : height) + "px";
+      const moreEntries = [];
       if (!state.weeks || state.maxLanes)
         for (let column = 0; column < dates.length; column++) {
           const count = placements.filter(
@@ -670,19 +737,14 @@ WorkTimeApp.ui.createAgendaLayout = function ({
               placement.end >= column,
           ).length;
           if (!count) continue;
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "agenda-more";
-          button.dataset.agendaDate = dates[column];
-          button.textContent = WorkTimeApp.i18n.number(count) + "+";
-          button.setAttribute("aria-label", moreLabel(count));
-          Object.assign(button.style, {
-            left: metrics[column].left - left + "px",
-            bottom: "0",
-            width: metrics[column].right - metrics[column].left + "px",
+          moreEntries.push({
+            date: dates[column],
+            count,
+            left: metrics[column].left - left,
+            width: metrics[column].right - metrics[column].left,
           });
-          row.append(button);
         }
+      updateMore(row, moreEntries);
       row.scrollTop = scrolls.get(dates[0]) || 0;
       if (
         animate &&
@@ -767,8 +829,6 @@ WorkTimeApp.ui.createAgendaLayout = function ({
     }
     content.style.width = width + "px";
     content.style.height = height + "px";
-    for (const more of row.querySelectorAll(":scope > .agenda-more"))
-      more.remove();
     const previous = new Map(
       [...content.children].map((node) => [node.dataset.packedKey, node]),
     );
@@ -859,9 +919,25 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       ribbons.get(slot.item.id).push(slot);
     }
     const creationOrder = new Map(items.map((item, index) => [item.id, index]));
+    // Use the single-week lanes for all-day ribbons, including reused gaps.
+    // Different note heights may change spacing, but never the vertical order
+    // of overlapping ribbons when switching between week views.
+    const allDayOrder = new Map(
+      rules
+        .segments(
+          items.filter((item) => item.allDay),
+          dates,
+          true,
+        )
+        .sort((a, b) => a.lane - b.lane)
+        .map(({ item }, index) => [item.id, index]),
+    );
     const ordered = [...ribbons.values()].sort(
       ([a], [b]) =>
         Number(b.item.allDay) - Number(a.item.allDay) ||
+        (a.item.allDay && b.item.allDay
+          ? allDayOrder.get(a.item.id) - allDayOrder.get(b.item.id)
+          : 0) ||
         a.item.start.localeCompare(b.item.start) ||
         a.item.createdAt.localeCompare(b.item.createdAt) ||
         creationOrder.get(a.item.id) - creationOrder.get(b.item.id),
@@ -925,8 +1001,15 @@ WorkTimeApp.ui.createAgendaLayout = function ({
         visibility: "",
       });
     }
-    for (const slot of slots.filter((s) => s.button.hidden))
+    for (const slot of slots.filter((s) => s.button.hidden)) {
+      // Retain the packed destination for outgoing view-transition chips even
+      // when overflow removes the real button from layout.
+      slot.button.dataset.agendaSegmentStart = dates[slot.start];
+      slot.button.dataset.agendaSegmentEnd = dates[slot.end];
+      slot.button.style.top = slot.top + "px";
+      slot.button.style.height = slot.height + "px";
       slot.button.style.visibility = "";
+    }
     const measurements = groups.map(measurePlacement);
     paintDatePieces(measurements, metrics, edges, dates);
     // Resolve the final ribbon styles with transitions still disabled, then
@@ -946,21 +1029,17 @@ WorkTimeApp.ui.createAgendaLayout = function ({
       for (const { button, item } of groups)
         if (!previousIds.has(item.id))
           WorkTimeApp.ui.motion?.play(button, "motion-card-content");
+    const moreEntries = [];
     for (const [column, count] of overflow) {
       if (!count) continue;
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "agenda-more";
-      button.dataset.agendaDate = dates[column];
-      button.textContent = WorkTimeApp.i18n.number(count) + "+";
-      button.setAttribute("aria-label", moreLabel(count));
-      Object.assign(button.style, {
-        left: metrics[column].left - left + "px",
-        bottom: "0px",
-        width: metrics[column].right - metrics[column].left + "px",
+      moreEntries.push({
+        date: dates[column],
+        count,
+        left: metrics[column].left - left,
+        width: metrics[column].right - metrics[column].left,
       });
-      row.append(button);
     }
+    updateMore(row, moreEntries);
     row.scrollTop = 0;
   }
   function decoratePacked(button, item, start, end, dates) {
@@ -1054,7 +1133,12 @@ WorkTimeApp.ui.createAgendaLayout = function ({
     render,
     capture,
     stop,
-    planAnimation(before, expandNotes = false, dayMotions = new Map()) {
+    planAnimation(
+      before,
+      expandNotes = false,
+      dayMotions = new Map(),
+      fromWeeks = 0,
+    ) {
       stop();
       const plans = [];
       const plan = (element, frames, options) => ({ element, frames, options });
@@ -1075,18 +1159,43 @@ WorkTimeApp.ui.createAgendaLayout = function ({
           .split(",")
           .map((day) => dayMotions.get(day))
           .find(Boolean);
+        const owner = [...calendar.querySelectorAll(":scope > .day")].find(
+          (card) => dayMotions.get(date(card)) === source,
+        );
+        const sourceHeight = parseFloat(source?.frames[0].height);
+        const sourceRoom =
+          owner && Number.isFinite(sourceHeight)
+            ? Math.max(
+                0,
+                sourceHeight -
+                  (rect.top - owner.getBoundingClientRect().top) -
+                  owner.clientTop,
+              )
+            : Infinity;
         let frames = source
-          ? source.frames.map((frame) => {
+          ? source.frames.map((frame, index) => {
               const value = { ...frame };
               const final = source.frames[source.frames.length - 1];
-              if (frame.height && final.height)
-                value.height =
-                  Math.max(
-                    0,
-                    rect.height +
-                      parseFloat(frame.height) -
-                      parseFloat(final.height),
-                  ) + "px";
+              if (frame.height && final.height) {
+                if (getState().weeks === 1 || fromWeeks === 1) {
+                  // The all-day viewport has its own height inside a full date
+                  // surface. A growing outer card must not stretch this region.
+                  const progress =
+                    frame.offset ?? index / (source.frames.length - 1);
+                  const start = Math.min(old?.rect.height || 0, sourceRoom);
+                  value.height =
+                    Math.max(0, start + (rect.height - start) * progress) +
+                    "px";
+                } else {
+                  value.height =
+                    Math.max(
+                      0,
+                      rect.height +
+                        parseFloat(frame.height) -
+                        parseFloat(final.height),
+                    ) + "px";
+                }
+              }
               delete value.width;
               return value;
             })
@@ -1103,10 +1212,14 @@ WorkTimeApp.ui.createAgendaLayout = function ({
           plans.push(
             plan(
               row,
-              frames.map(({ opacity }) => ({ opacity })),
+              frames.map(({ opacity, offset, easing }) => ({
+                opacity,
+                offset,
+                easing,
+              })),
               {
                 duration: source?.options.duration || timing.duration,
-                easing: "ease-out",
+                easing: source?.options.easing || "ease-out",
                 fill: "both",
               },
             ),
@@ -1129,19 +1242,23 @@ WorkTimeApp.ui.createAgendaLayout = function ({
             new DOMMatrix(
               frame.transform === "none" ? undefined : frame.transform,
             ).m41;
-          const rowStartX = x(source.frames[0]);
           for (const button of row.querySelectorAll(".agenda-chip")) {
             const owner = dayMotions.get(button.dataset.agendaSegmentStart);
             if (!owner) continue;
-            const offset = x(owner.frames[0]) - rowStartX;
-            if (Math.abs(offset) < 0.01) continue;
+            const offsets = source.frames.map(
+              (frame, index) =>
+                x(owner.frames[Math.min(index, owner.frames.length - 1)]) -
+                x(frame),
+            );
+            if (offsets.every((offset) => Math.abs(offset) < 0.01)) continue;
             plans.push(
               plan(
                 button,
-                [
-                  { transform: `translateX(${offset}px)` },
-                  { transform: "translateX(0)" },
-                ],
+                source.frames.map(({ offset, easing }, index) => ({
+                  transform: `translateX(${offsets[index]}px)`,
+                  offset,
+                  easing,
+                })),
                 source.options,
               ),
             );

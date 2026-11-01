@@ -208,14 +208,14 @@ const setRange = require("./lib/agenda-test-range.cjs");
       "2: Single-to-fortnight is a resize, not a page slide",
     );
     assert.ok(
-      morph.some((a) => a.page && a.frames[0].gridTemplateRows),
-      "2: Both row heights interpolate together",
+      morph.filter((a) => a.day && a.frames[0].height).length === 7 &&
+        morph.filter((a) => a.day && a.frames[0].opacity !== undefined)
+          .length === 7,
+      "2: Seven existing dates resize while the seven new dates fade into the second row",
     );
     assert.ok(
-      !morph.some(
-        (a) => (a.page || a.day) && a.frames.some((f) => f.transform),
-      ),
-      "2: Date cards have no independent translation animation",
+      !morph.some((a) => a.page && a.frames.some((f) => f.transform)),
+      "2: The calendar stays fixed while date surfaces move into their rows",
     );
     assert.ok(
       morph.some((a) => a.chip && a.frames[0].height),
@@ -242,7 +242,7 @@ const setRange = require("./lib/agenda-test-range.cjs");
       })
       .first()
       .click();
-    await page.waitForTimeout(200);
+    await settle();
     await page.evaluate(() => {
       window.retainedChips = [
         ...document.querySelectorAll(
@@ -422,8 +422,9 @@ const setRange = require("./lib/agenda-test-range.cjs");
             bottom: Math.max(rowRect.top, ...cards.map((r) => r.bottom)),
             limit: rowRect.bottom,
             more:
-              row.querySelector('[data-agenda-date="' + date + '"]')
-                ?.textContent || "",
+              document.querySelector(
+                '.agenda-day-more[data-agenda-date="' + date + '"]',
+              )?.textContent || "",
           };
         });
       }),
@@ -588,8 +589,8 @@ const setRange = require("./lib/agenda-test-range.cjs");
           '.day.agenda-week-leaving[data-date="2026-10-19"], .day.agenda-week-leaving[data-date="2026-10-20"], .day.agenda-week-leaving[data-date="2026-10-21"]',
         )
         .count(),
-      0,
-      "1/6: Source dates consumed by the lower row are never painted a second time",
+      3,
+      "1/6: Dates outside the selected week leave as outgoing month cards",
     );
     await settle();
     for (let i = 0; i < 4; i++) {

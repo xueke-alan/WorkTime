@@ -14,6 +14,10 @@
     contentLeaveDuration: 200,
     analysisEnterDuration: 280,
     analysisLeaveDuration: 180,
+    filteredPageDuration: 360,
+    filteredPageEasing: "cubic-bezier(0.3, 0.12, 0.24, 1)",
+    weekReturnDuration: 460,
+    weekReturnEasing: "cubic-bezier(0.32, 0, 0.22, 1)",
     easing: "cubic-bezier(0.22, 1, 0.36, 1)",
   });
   function animateCalendar(plans) {

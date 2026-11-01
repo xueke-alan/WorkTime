@@ -34,6 +34,13 @@ const setScheduleRange = require("./lib/agenda-test-range.cjs");
       page.waitForFunction(
         () =>
           !document.querySelector(".calendar-navigation-viewport") &&
+          !document
+            .querySelector("#calendar")
+            .getAnimations({ subtree: true })
+            .some(
+              (animation) =>
+                animation.pending || animation.playState === "running",
+            ) &&
           [...document.querySelectorAll(".timetable-scroll")].every(
             (n) => getComputedStyle(n).opacity === "1",
           ),
@@ -48,9 +55,11 @@ const setScheduleRange = require("./lib/agenda-test-range.cjs");
         );
     const height = () =>
       page
-        .locator("#calendar > .day[data-agenda-week]")
+        .locator("#calendar > .day[data-agenda-week] > .day-select")
         .evaluateAll((nodes) =>
-          nodes.map((n) => n.getBoundingClientRect().height),
+          nodes.map(
+            (n) => Math.round(n.getBoundingClientRect().height * 1000) / 1000,
+          ),
         );
     assert.deepEqual(await height(), Array(7).fill(160));
     await page.evaluate(() => {

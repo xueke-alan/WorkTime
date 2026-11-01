@@ -4,6 +4,128 @@ const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 
+async function verifyWorkdaySwitch(browser) {
+  for (const width of [1480, 390]) {
+    const page = await browser.newPage({
+      viewport: { width, height: 1000 },
+      reducedMotion: "no-preference",
+      locale: "zh-CN",
+    });
+    await page.route(/^https?:/, (route) => route.abort());
+    await page.goto(
+      pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
+    );
+    await page.waitForFunction(
+      () =>
+        document.documentElement.dataset.appState === "ready" &&
+        !document.documentElement.classList.contains("app-loading"),
+    );
+    await page.locator("#agendaMode").click();
+    const reveal = await page.evaluate(() => {
+      document.querySelector("#agendaViewToggle").click();
+      const button = document.querySelector("#agendaWorkdaysOnly");
+      const animation = button.getAnimations()[0];
+      if (!animation) return null;
+      animation.pause();
+      animation.currentTime = 0;
+      const start = Number(getComputedStyle(button).opacity);
+      const startOffset = new DOMMatrix(getComputedStyle(button).transform);
+      animation.currentTime = 110;
+      const middle = Number(getComputedStyle(button).opacity);
+      animation.currentTime = 220;
+      const end = Number(getComputedStyle(button).opacity);
+      animation.finish();
+      return {
+        start,
+        middle,
+        end,
+        startX: startOffset.m41,
+        startY: startOffset.m42,
+        hidden: button.hidden,
+        inert: button.inert,
+      };
+    });
+    assert.ok(
+      reveal &&
+        reveal.start === 0 &&
+        reveal.middle > 0 &&
+        reveal.middle < 1 &&
+        reveal.end === 1,
+    );
+    assert.equal(reveal.startX, -4);
+    assert.equal(reveal.startY, 0);
+    assert.equal(reveal.hidden, false);
+    assert.equal(reveal.inert, false);
+    const reversal = await page.evaluate(() => {
+      document.querySelector("#agendaViewToggle").click();
+      const button = document.querySelector("#agendaWorkdaysOnly");
+      const exit = button.getAnimations()[0];
+      exit.pause();
+      exit.currentTime = 110;
+      const middle = Number(getComputedStyle(button).opacity);
+      const exitOffset = new DOMMatrix(getComputedStyle(button).transform);
+      const inert = button.inert;
+      const hidden = button.hidden;
+      for (let index = 0; index < 3; index++)
+        document.querySelector("#agendaViewToggle").click();
+      const entrance = button.getAnimations()[0];
+      entrance.pause();
+      entrance.currentTime = 0;
+      const resumed = Number(getComputedStyle(button).opacity);
+      entrance.finish();
+      return {
+        middle,
+        inert,
+        hidden,
+        resumed,
+        exitX: exitOffset.m41,
+        exitY: exitOffset.m42,
+      };
+    });
+    assert.ok(reversal.middle > 0 && reversal.middle < 1);
+    assert.ok(reversal.exitX > 0 && reversal.exitX < 4);
+    assert.equal(reversal.exitY, 0);
+    assert.equal(
+      reversal.inert,
+      true,
+      "The departing button cannot be clicked or focused",
+    );
+    assert.equal(
+      reversal.hidden,
+      false,
+      "The button remains painted until its exit ends",
+    );
+    assert.ok(
+      Math.abs(reversal.middle - reversal.resumed) < 0.01,
+      "Rapid reversal resumes from the current opacity",
+    );
+    await page.locator("#agendaMode").click();
+    await page.waitForFunction(
+      () => document.querySelector("#agendaWorkdaysOnly").hidden,
+    );
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.locator("#agendaMode").click();
+    assert.equal(
+      await page
+        .locator("#agendaWorkdaysOnly")
+        .evaluate(
+          (button) =>
+            !button.hidden &&
+            !button.inert &&
+            button.getAnimations().length === 0,
+        ),
+      true,
+    );
+    await page.locator("#agendaMode").click();
+    assert.equal(
+      await page
+        .locator("#agendaWorkdaysOnly")
+        .evaluate((button) => button.hidden),
+      true,
+    );
+    await page.close();
+  }
+}
 async function verify() {
   const browser = await chromium.launch({
     channel: process.env.WORKTIME_BROWSER_CHANNEL || "msedge",
@@ -11,6 +133,7 @@ async function verify() {
   });
   const errors = [];
   try {
+    await verifyWorkdaySwitch(browser);
     const page = await browser.newPage({
       viewport: { width: 1480, height: 1000 },
     });
@@ -294,9 +417,16 @@ async function verify() {
     // immediately, including while its collapse is still in the delay phase.
     for (const interruption of ["motion", "resize", "visibility"]) {
       await click("batchToggle");
-      if (interruption === "motion")
+      if (interruption === "motion") {
         await page.emulateMedia({ reducedMotion: "reduce" });
-      else
+        // MatchMedia change events are delivered asynchronously by the browser.
+        await page.waitForFunction(() => {
+          const region = document.querySelector(".agenda-modes-region");
+          return (
+            region.hidden && !region.getAnimations({ subtree: true }).length
+          );
+        });
+      } else
         await page.evaluate((kind) => {
           if (kind === "resize") window.dispatchEvent(new Event("resize"));
           else {
