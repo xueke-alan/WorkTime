@@ -27,37 +27,31 @@ for (const [language, label] of Object.entries({
   WorkTimeApp.data.locales[language]["agenda.timetableBreak"] = label;
 for (const [language, labels] of Object.entries({
   "zh-CN": [
-    "今日{hour}h{minute}m已备份",
-    "{year}年{month}月{day}日{hour}h{minute}m已备份",
+    "{month}月{day}日{hour}h{minute}m已备份",
     "已发起备份下载，但备份时间未保存。",
   ],
   "zh-TW": [
-    "今日{hour}h{minute}m已備份",
-    "{year}年{month}月{day}日{hour}h{minute}m已備份",
+    "{month}月{day}日{hour}h{minute}m已備份",
     "已發起備份下載，但備份時間未儲存。",
   ],
   "zh-HK": [
-    "今日{hour}h{minute}m已備份",
-    "{year}年{month}月{day}日{hour}h{minute}m已備份",
+    "{month}月{day}日{hour}h{minute}m已備份",
     "已發起備份下載，但備份時間未儲存。",
   ],
   en: [
-    "Backed up today at {hour}h{minute}m",
-    "Backed up on {year}-{month}-{day} at {hour}h{minute}m",
+    "Backed up on {month}/{day} at {hour}h{minute}m",
     "Backup download requested, but its time was not saved.",
   ],
   ja: [
-    "本日{hour}h{minute}mにバックアップ済み",
-    "{year}年{month}月{day}日{hour}h{minute}mにバックアップ済み",
+    "{month}月{day}日{hour}h{minute}mにバックアップ済み",
     "バックアップのダウンロードを要求しましたが、時刻を保存できませんでした。",
   ],
   ko: [
-    "오늘 {hour}h{minute}m 백업 완료",
-    "{year}년 {month}월 {day}일 {hour}h{minute}m 백업 완료",
+    "{month}월 {day}일 {hour}h{minute}m 백업 완료",
     "백업 다운로드를 요청했지만 시간을 저장하지 못했습니다.",
   ],
 })) {
-  ["savedToday", "savedDate", "timeFailed"].forEach((key, index) => {
+  ["savedDate", "timeFailed"].forEach((key, index) => {
     WorkTimeApp.data.locales[language]["autoBackup." + key] = labels[index];
   });
 }
@@ -1477,16 +1471,6 @@ for (const [language, value] of Object.entries({
       WorkTimeApp.data.locales[language]["analysis." + key] = values[index];
     });
 })();
-// Compact button labels; the title retains the full management action name.
-for (const [language, label] of Object.entries({
-  "zh-CN": "备份管理",
-  "zh-TW": "備份管理",
-  "zh-HK": "備份管理",
-  en: "Backups",
-  ja: "バックアップ",
-  ko: "백업 관리",
-}))
-  WorkTimeApp.data.locales[language]["settings.backupLabel"] = label;
 
 (() => {
   const messages = {

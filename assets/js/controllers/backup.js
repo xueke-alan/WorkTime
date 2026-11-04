@@ -96,7 +96,12 @@ WorkTimeApp.ui.createBackupController = function (options) {
       const text = await exportBackup();
       if (disposed || lifetime !== generation) return false;
       download(
-        WorkTimeApp.i18n.t("copy.35c89c4491") + model.today + ".txt",
+        WorkTimeApp.i18n.t("copy.35c89c4491") +
+          new Date(Date.now() + 8 * 3600000)
+            .toISOString()
+            .slice(0, 19)
+            .replace(/[T:]/g, "-") +
+          ".txt",
         text,
         "text/plain;charset=utf-8",
       );
@@ -298,89 +303,6 @@ WorkTimeApp.ui.createBackupController = function (options) {
     events.listen(document, "worktime:ready", () => {
       void cache.warm();
       void checkAutoBackup();
-    });
-    events.handler($("recoveryOpen"), "onclick", async () => {
-      try {
-        const rows = await persistence.snapshots();
-        const list = $("snapshotList");
-        list.replaceChildren();
-        for (const row of rows) {
-          const button = document.createElement("button");
-          button.className = "ui-button";
-          button.textContent =
-            (row.type === "daily"
-              ? WorkTimeApp.i18n.t("copy.8110f0f8ff")
-              : WorkTimeApp.i18n.t("copy.9d53968411")) +
-            new Date(row.at).toLocaleString(WorkTimeApp.i18n.locale);
-          button.onclick = () => {
-            try {
-              const data = WorkTimeApp.services.archive.migrate(row.document);
-              $("recoveryDialog").close();
-              previewRestore(data, WorkTimeApp.i18n.t("copy.7f928d3f63"));
-            } catch (error) {
-              $("recoveryError").textContent =
-                WorkTimeApp.i18n.t("copy.19d1b9b4a4") +
-                WorkTimeApp.i18n.message(error.message);
-            }
-          };
-          list.append(button);
-        }
-        if (!rows.length)
-          list.textContent = WorkTimeApp.i18n.t("copy.2901f95580");
-        $("recoveryError").textContent = "";
-        actions.open("recoveryDialog");
-      } catch (error) {
-        actions.toast(
-          WorkTimeApp.i18n.t("copy.1e79e236e5") +
-            WorkTimeApp.i18n.message(error.message),
-          "error",
-        );
-      }
-    });
-    events.handler($("downloadRecovery"), "onclick", async () => {
-      try {
-        download(
-          WorkTimeApp.i18n.t("copy.3a8bf199c6") + model.today + ".json",
-          JSON.stringify(await persistence.recoveryData(), null, 2),
-          "application/json;charset=utf-8",
-        );
-      } catch (error) {
-        $("recoveryError").textContent = WorkTimeApp.i18n.message(
-          error.message,
-        );
-      }
-    });
-    events.handler($("clearSnapshots"), "onclick", () =>
-      actions.open("clearSnapshotsDialog"),
-    );
-    events.handler($("confirmClearSnapshots"), "onclick", async () => {
-      try {
-        await persistence.clearSnapshots();
-        $("clearSnapshotsDialog").close();
-        $("snapshotList").textContent = WorkTimeApp.i18n.t("copy.2901f95580");
-      } catch (error) {
-        actions.toast(
-          WorkTimeApp.i18n.t("copy.47a732ee5e") +
-            WorkTimeApp.i18n.message(error.message),
-          "error",
-        );
-      }
-    });
-    events.handler($("restoreLegacy"), "onclick", async () => {
-      try {
-        const data = await persistence.recoveryData();
-        if (!data.legacyText)
-          throw Error(WorkTimeApp.i18n.t("copy.fe1afd4a86"));
-        previewRestore(
-          WorkTimeApp.services.archive.migrate(JSON.parse(data.legacyText)),
-          WorkTimeApp.i18n.t("copy.a02ab93291"),
-        );
-        $("recoveryDialog").close();
-      } catch (error) {
-        $("recoveryError").textContent = WorkTimeApp.i18n.message(
-          error.message,
-        );
-      }
     });
     events.handler($("exportCorruptStorage"), "onclick", exportOriginal);
     events.handler($("exportBeforeInitialize"), "onclick", exportOriginal);

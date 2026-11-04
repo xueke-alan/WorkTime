@@ -466,6 +466,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
         batchMode && batchEligible ? "batch-eligible" : "",
         !info.work ? "restday" : "",
         info.weekend ? "weekend" : "",
+        restOvertime || (!info.work && day.plannedOvertime)
+          ? "rest-overtime"
+          : "",
         isFullLeave(day, k)
           ? "full-leave"
           : day.leaveMinutes

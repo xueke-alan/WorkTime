@@ -607,9 +607,7 @@ WorkTimeApp.services.bootstrap.run(
         "nextMonth",
         "todayButton",
         "backup",
-        "recoveryOpen",
         "exportCorruptStorage",
-        "downloadRecovery",
       ]);
       for (const element of document.querySelectorAll(
         "button,input,select,textarea",

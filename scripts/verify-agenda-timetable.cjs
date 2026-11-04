@@ -1293,6 +1293,25 @@ async function verifyBrowser() {
           [dates[1], dates[2], dates[3], dates[5], dates[6]],
           "Manual rest and incomplete records hide; planned, recorded, estimated overtime and makeup working dates remain",
         );
+        const plannedKind = view.locator(
+          '#calendar > .day[data-date="2026-10-28"] .daykind',
+        );
+        assert.equal(await plannedKind.textContent(), "计划加班");
+        assert.deepEqual(
+          await plannedKind.evaluate((node) => ({
+            color: getComputedStyle(node).color,
+            weight: getComputedStyle(node).fontWeight,
+          })),
+          { color: "rgb(229, 138, 43)", weight: "500" },
+          "Planned overtime uses orange text with the regular date-label weight",
+        );
+        assert.equal(
+          await view
+            .locator('#calendar > .day[data-date="2026-10-29"] .daykind')
+            .textContent(),
+          "休息日",
+          "Recorded overtime alone does not become planned overtime",
+        );
         await filter.click();
         await view.waitForFunction(
           () =>
@@ -1314,6 +1333,13 @@ async function verifyBrowser() {
             };
           }
         });
+        assert.equal(await plannedKind.textContent(), "计划加班");
+        assert.equal(
+          await plannedKind.evaluate((node) =>
+            node.classList.contains("is-planned-overtime"),
+          ),
+          true,
+        );
         await filter.click();
         const firstFrame = await view.evaluate(() => {
           const animations = document
@@ -1622,6 +1648,7 @@ async function verifyBrowser() {
           0,
           "Temporary stroke overlay is removed after returning to attendance",
         );
+        assert.equal(await plannedKind.textContent(), "休息日");
         await view.locator("#agendaMode").click();
         await view.waitForFunction(
           () =>
@@ -1646,6 +1673,7 @@ async function verifyBrowser() {
           await view.locator("#agendaViewToggle").click();
           await settleView();
           assert.equal(await filter.isVisible(), false);
+          assert.equal(await plannedKind.textContent(), "计划加班");
           assert.equal(await filter.getAttribute("aria-checked"), "false");
           const grouped = await view
             .locator("#calendar > .day[data-agenda-week]")
@@ -1769,6 +1797,7 @@ async function verifyBrowser() {
           true,
         );
         assert.equal(await view.locator(".agenda-week-lane").count(), 5);
+        assert.equal(await plannedKind.textContent(), "计划加班");
         await view.locator("#agendaViewToggle").click();
         await settleView();
         assert.equal(await view.locator(".timetable-bottom-card").count(), 5);

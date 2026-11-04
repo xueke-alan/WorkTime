@@ -46,6 +46,7 @@ WorkTimeApp.ui.createAgenda = function ({
     weekLabelExit = null,
     weekLabelReveal = null;
   const viewStorageKey = "worktime.calendarView";
+  const dayKindLabels = new WeakMap();
   let workdaysOnly = false;
   let showAllForMode = false;
   let modeSequence = null;
@@ -817,6 +818,20 @@ WorkTimeApp.ui.createAgenda = function ({
     else delete calendar.dataset.agendaRows;
     for (const card of dayCards()) {
       const visible = dates.has(cardDate(card));
+      const kind = card.querySelector(".daykind");
+      if (kind) {
+        if (!dayKindLabels.has(kind)) dayKindLabels.set(kind, kind.textContent);
+        const day = model.state.days[cardDate(card)] || {};
+        const planned =
+          active &&
+          day.plannedOvertime &&
+          !WorkTimeApp.domain.calendar.calendarInfo(cardDate(card), day).work;
+        kind.classList.toggle("is-planned-overtime", Boolean(planned));
+        const label = planned
+          ? WorkTimeApp.i18n.t("copy.3cf2307526")
+          : dayKindLabels.get(kind);
+        if (kind.textContent !== label) kind.textContent = label;
+      }
       const position = allViewDates.indexOf(cardDate(card));
       if (enabled && position >= 0) {
         const row = Math.floor(position / 7);
@@ -1934,6 +1949,8 @@ WorkTimeApp.ui.createAgenda = function ({
         });
     }
     const dayMotions = new Map();
+    const surroundingRows = [];
+    const rowGap = parseFloat(getComputedStyle(calendar).rowGap) || 0;
     const animateDay = (card, frames, options) => {
       dayMotions.set(cardDate(card), { frames, options });
       if (frames.some((frame) => frame.opacity !== undefined)) {
@@ -2052,46 +2069,8 @@ WorkTimeApp.ui.createAgenda = function ({
             fill: "both",
           },
         );
-      } else if (
-        returnAnchor &&
-        visible &&
-        !previous &&
-        date < returnAnchor.date
-      ) {
-        // Keep the reveal behind the descending week, while each restored row
-        // slides and fades into place throughout the shared return transition.
-        // Clipping alone made the earlier rows look like a static month backdrop.
-        const slide = Math.min(32, next.height * 0.2);
-        const revealClip = (bottom, offset) =>
-          `inset(0 0 ${bottom + slide * (1 - offset)}px 0)`;
-        const source = before.get(returnAnchor.date).rect;
-        const travel = returnAnchor.rect.top - source.top;
-        const clamp = (value) => Math.max(0, Math.min(1, value));
-        if (travel > 0) {
-          const start = clamp((next.top - source.top) / travel);
-          const end = clamp((next.bottom - source.top) / travel);
-          plans.push({
-            element: card,
-            frames: [
-              { offset: 0, clipPath: revealClip(next.height, 0) },
-              { offset: start, clipPath: revealClip(next.height, start) },
-              { offset: end, clipPath: revealClip(0, end) },
-              { offset: 1, clipPath: "inset(0 0 0px 0)" },
-            ],
-            options: { duration, easing, fill: "both" },
-          });
-        }
-        animateDay(
-          card,
-          [
-            {
-              opacity: 0,
-              transform: `translateY(${slide}px)`,
-            },
-            { opacity, transform: "none" },
-          ],
-          { duration, easing, fill: "both" },
-        );
+      } else if (returnAnchor && visible && !previous && !inWeek) {
+        surroundingRows.push({ card, next });
       } else if (visible && (!previous || (!enabled && !inWeek))) {
         const offset =
           (date < dates[0] ? -1 : 1) * (pageMode ? 18 : distance * 0.6);
@@ -2112,6 +2091,30 @@ WorkTimeApp.ui.createAgenda = function ({
           },
         );
       }
+    }
+    // Rows above and below belong to the same shrinking grid as the returning week.
+    // Build these tracks after the anchor tracks, without reading live geometry.
+    for (const { card, next } of surroundingRows) {
+      const index = cards.findIndex((entry) => entry.card === card);
+      const anchor = cards.find(
+        (entry, anchorIndex) =>
+          anchorIndex % 7 === index % 7 &&
+          previousDates.has(entry.date) &&
+          dayMotions.has(entry.date),
+      );
+      if (!anchor) continue;
+      const rows = (cards.indexOf(anchor) - index) / 7;
+      const owner = dayMotions.get(anchor.date);
+      animateDay(
+        card,
+        owner.frames.map((frame) => ({
+          ...frame,
+          transform:
+            `translate(${anchor.rect.left - next.left}px, ${anchor.rect.top - next.top - rows * (parseFloat(frame.height) + rowGap)}px)` +
+            (frame.transform === "none" ? "" : ` ${frame.transform}`),
+        })),
+        owner.options,
+      );
     }
     if (enabled === 1) {
       for (const surface of calendar.querySelectorAll(
@@ -2283,7 +2286,7 @@ WorkTimeApp.ui.createAgenda = function ({
     <div class="agenda-editor-body">
     <form id="agendaForm" class="agenda-form" aria-labelledby="agendaFormTitle">
       <fieldset id="agendaFields">
-        <div class="agenda-field agenda-title-field"><label for="agendaTitle" data-agenda-text="title"></label><input id="agendaTitle" maxlength="120" required autocomplete="off"></div>
+        <div class="agenda-field agenda-title-field"><label for="agendaTitle" data-agenda-text="title"></label><textarea id="agendaTitle" rows="1" maxlength="120" required autocomplete="off"></textarea></div>
         <div class="agenda-properties"><div class="agenda-field agenda-status-field"><label for="agendaItemStatus" data-agenda-text="status"></label><div class="agenda-status-input"><span class="agenda-status-dot" aria-hidden="true"></span><select id="agendaItemStatus">${statuses.map((status) => `<option value="${status}">${esc(statusLabel(status))}</option>`).join("")}</select></div></div>
         <div id="agendaSchedule" class="agenda-schedule-fields"></div>
         </div><div class="agenda-field agenda-note-field"><label for="agendaNote" data-agenda-text="note"></label><textarea id="agendaNote" rows="3" maxlength="5000"></textarea></div>
@@ -2656,6 +2659,11 @@ WorkTimeApp.ui.createAgenda = function ({
       model.loadIssue === "unsupported" ||
       !$("agendaTitle").value.trim();
     $("agendaCancel").disabled = busy;
+    const title = $("agendaTitle");
+    if (title.getClientRects().length) {
+      title.style.height = "auto";
+      title.style.height = title.scrollHeight + "px";
+    }
     const note = $("agendaNote");
     if (note.getClientRects().length) {
       note.style.height = "auto";
@@ -4056,6 +4064,7 @@ WorkTimeApp.ui.createAgenda = function ({
     listen(window, "resize", () => {
       syncOverviewHost();
       settleDrawer();
+      if (active && formOpen) times();
     });
     listen(document, "visibilitychange", () => {
       if (document.hidden) settleDrawer();
@@ -4131,7 +4140,10 @@ WorkTimeApp.ui.createAgenda = function ({
     listen(pane, "keydown", (event) => {
       if (!formOpen || busy || event.isComposing || event.defaultPrevented)
         return;
-      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      if (
+        event.key === "Enter" &&
+        (event.ctrlKey || event.metaKey || event.target.id === "agendaTitle")
+      ) {
         event.preventDefault();
         if (!$("agendaSave").disabled)
           $("agendaForm").requestSubmit($("agendaSave"));

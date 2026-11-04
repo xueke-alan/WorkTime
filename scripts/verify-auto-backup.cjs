@@ -128,7 +128,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
       page.on("pageerror", (error) => errors.push(error.message));
       page.on("download", (download) => downloads.push(download));
       await page.route(/https?:\/\/(?!127\.0\.0\.1)/, (route) => route.abort());
-      await page.clock.setFixedTime(new Date("2026-10-28T12:00:00+08:00"));
+      await page.clock.setFixedTime(new Date("2026-10-28T12:00:37+08:00"));
       await page.goto(url);
       await ready(page);
       assert.equal(downloads.length, 0, "default off");
@@ -178,6 +178,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
       await page.reload();
       await ready(page);
       const download = await first;
+      assert.match(download.suggestedFilename(), /2026-10-28-12-00-37\.txt$/);
       await page.waitForFunction(
         () =>
           WorkTimeApp.services.preferences.page.state.lastAutoBackupDate ===
@@ -188,39 +189,25 @@ const root = path.resolve(process.argv[2] || sourceRoot);
         await page.evaluate(
           () => WorkTimeApp.services.preferences.page.state.lastBackupAt,
         ),
-        "2026-10-28T04:00:00.000Z",
+        "2026-10-28T04:00:37.000Z",
       );
       if (!(await page.locator("#autoBackupTrigger").isVisible()))
         await clickSettingsControl(page, "#pageSettingsOpen");
       assert.equal(
         await page.locator("#autoBackupHelp").textContent(),
-        "今日12h00m已备份",
+        "10月28日12h00m已备份",
       );
+      assert.equal(await page.locator("#autoBackupHelp").isVisible(), true);
       for (const width of [390, 1280]) {
         await page.setViewportSize({ width, height: 900 });
         await page.locator("#autoBackupTrigger").scrollIntoViewIfNeeded();
-        const bounds = await page.evaluate(() => {
-          const a = document
-            .querySelector("#autoBackupTrigger")
-            .getBoundingClientRect();
-          const b = document
-            .querySelector("#recoveryOpen")
-            .getBoundingClientRect();
-          return {
-            a: a.width,
-            b: b.width,
-            dy: Math.abs(a.top - b.top),
-            dh: Math.abs(a.height - b.height),
-          };
-        });
-        assert.ok(
-          Math.abs(bounds.a / bounds.b - 2 / 3) < 0.02,
-          "backup controls use a 2:3 ratio",
+        assert.equal(
+          await page
+            .locator("#recoveryOpen,#recoveryDialog,#clearSnapshotsDialog")
+            .count(),
+          0,
         );
-        assert.ok(
-          bounds.dy < 1 && bounds.dh < 1,
-          "backup controls share one row and height",
-        );
+        assert.ok(await page.locator("#autoBackupTrigger").isVisible());
         await page.screenshot({
           path: path.join(results, `auto-backup-status-${width}.png`),
         });
@@ -232,7 +219,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
       });
       assert.equal(
         await page.locator("#autoBackupHelp").textContent(),
-        "2026年10月27日11h05m已备份",
+        "10月27日11h05m已备份",
       );
       await page.evaluate(async () => {
         await WorkTimeApp.services.preferences.page.saveBackupAt(

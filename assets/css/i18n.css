@@ -10,12 +10,10 @@ body #pageSettingsPane .language-trigger .button-label { overflow: hidden; text-
   margin-bottom: 0;
 }
 .language-settings select { position: absolute; width: 1px; opacity: 0; pointer-events: none; }
-.auto-backup-settings { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 0.428571rem; min-width: 0; position: relative; }
+.auto-backup-settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0.857143rem; row-gap: 0.428571rem; min-width: 0; position: relative; }
 body .editor .auto-backup-settings > .field { display: contents; }
 .auto-backup-settings > .field > label { grid-column: 1 / -1; grid-row: 1; }
 .auto-backup-settings .language-trigger { grid-column: 1; grid-row: 2; }
-body .editor .auto-backup-settings > .settings-archive-actions { display: block; grid-column: 2; grid-row: 2; }
-body .editor .auto-backup-settings > .settings-archive-actions > button { height: 100%; }
 .auto-backup-settings .help { grid-column: 1 / -1; grid-row: 3; margin: 0; white-space: normal; overflow-wrap: anywhere; }
 .auto-backup-settings .theme-save-notice { grid-column: 1 / -1; grid-row: 4; margin: 0; }
 body #pageSettingsPane .language-trigger {
@@ -60,7 +58,7 @@ body .settings-select-options {
 }
 body .settings-select-options[hidden] { display: none; }
 body .settings-select-options:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.285714rem; }
-body #pageSettingsPane :is(#weatherOptions, #languageOptions) > button {
+body #pageSettingsPane :is(#weatherOptions, #languageOptions, #autoBackupOptions) > button {
   width: 100%;
   max-width: 100%;
   height: auto !important;
@@ -129,7 +127,6 @@ html:not([lang="zh-CN"]) .button-label { min-width: 0; }
 html[lang="ko"] { word-break: keep-all; }
 
 /* Compact localized archive labels retain the shared six-column button slot. */
-body .editor .settings-archive-actions > button .button-label { white-space: nowrap; }
 /* Korean planned-overtime text is wider than the shared fixed Chinese button. */
 html:not([lang="zh-CN"]) body .editor #dayForm #plannedOvertimeToggle {
   width: max-content;

@@ -162,9 +162,6 @@ const { chromium } = require("playwright");
         await page.locator("dialog:modal [data-close]").first().click();
       }
       await clickSettingsControl(page, "#pageSettingsOpen");
-      await page.locator("#recoveryOpen").click();
-      await inspect("recovery");
-      await page.locator("dialog:modal [data-close]").first().click();
       await page.locator("#personalSettingsCancel").click();
       await clickSettingsControl(page, "#settingsWorkTab");
       await page.locator("#scheduleApplyOpen").click();

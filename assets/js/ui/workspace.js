@@ -63,7 +63,6 @@ WorkTimeApp.ui.createWorkspace = function ({
           "importDialog",
           "sourceDialog",
           "restoreDialog",
-          "recoveryDialog",
           "initializeDialog",
         ].includes(id)
       )

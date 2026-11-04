@@ -1,29 +1,3 @@
-/* Compact recovery dialog; only the snapshot list grows and scrolls. */
-body #recoveryDialog {
-  width: min(520px, calc(100vw - 32px));
-  max-width: calc(100vw - 32px);
-  max-height: 88dvh;
-}
-body #recoveryDialog[open] { display: flex; flex-direction: column; }
-body #recoveryDialog .dialog-head,
-body #recoveryDialog .dialog-body { padding: 1rem 1.25rem; }
-body #recoveryDialog .dialog-head,
-body #recoveryDialog .dialog-foot { flex: none; }
-body #recoveryDialog .dialog-body { min-height: 0; max-height: none; }
-body #recoveryDialog .help { margin: 0; line-height: 1.6; }
-body #recoveryDialog #snapshotList {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.571429rem;
-  margin-top: 1rem;
-  max-height: 240px;
-  overflow-y: auto;
-}
-body #recoveryDialog #snapshotList button { flex: none; }
-body #recoveryDialog #recoveryError:empty { display: none; }
-body #recoveryDialog .dialog-foot { padding: 0.857143rem 1.25rem; flex-wrap: wrap; }
-
 /* Residual shared-file rules restored to their component owner. */
 dialog {
   padding: 0;

@@ -1436,6 +1436,9 @@ body .calendar .day:is([data-holiday], .weekend, .full-leave).today .daynum {
 body .calendar .day:is([data-holiday], .weekend, .full-leave) .daykind {
   color: #647c72;
 }
+body .calendar .day .daykind.is-planned-overtime {
+  color: #e58a2b;
+}
 body .calendar .day:is([data-holiday], .weekend, .full-leave) .daytime {
   color: #48675d;
 }
@@ -1821,6 +1824,26 @@ body .calendar .day-date .daynum-text {
   bottom: 0.5rem;
   background-position: bottom left;
   max-width: calc(100% - clamp(32px, 3.5vw, 56px) - 1.5rem);
+}
+/* Planned and recorded rest-day overtime share a quiet desk illustration. */
+.calendar .day.rest-overtime:not(.full-leave) {
+  isolation: isolate;
+}
+.calendar .day.rest-overtime:not(.full-leave)::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  width: auto;
+  max-width: none;
+  aspect-ratio: 4 / 5;
+  background: url("../images/overtime.svg") bottom left / 88% auto no-repeat;
+  filter: none;
+  opacity: 0.48;
+  pointer-events: none;
+  z-index: -1;
+}
+.calendar .day.rest-overtime:not(.full-leave)::after {
+  content: none;
 }
 #backup {
   touch-action: none;

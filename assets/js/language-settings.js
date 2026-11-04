@@ -207,37 +207,27 @@
   }
   function mount() {
     if (document.documentElement.dataset.appState === "failed") return;
-    const host = document.querySelector(".settings-archive-actions");
+    const host = document.querySelector(".auto-backup-settings");
     if (!host) return;
     const row = document.createElement("div");
     row.className = "settings-select-row";
     const divider = document.createElement("hr");
     divider.className = "settings-content-divider";
     host.before(row, divider);
-    const backupRow = document.createElement("div");
-    backupRow.className = "auto-backup-settings";
-    host.before(backupRow);
-    backupRow.append(host);
+    const backupRow = host;
     function backupStatus() {
       const saved = preferences.state.lastBackupAt;
       if (!saved) return "";
       const date = new Date(saved);
       if (!Number.isFinite(date.getTime())) return "";
       const shifted = new Date(date.getTime() + 8 * 3600000);
-      const day = WorkTimeApp.domain.time.businessDate(date);
       const time = {
-        year: shifted.getUTCFullYear(),
         month: shifted.getUTCMonth() + 1,
         day: shifted.getUTCDate(),
-        hour: String(shifted.getUTCHours()).padStart(2, "0"),
+        hour: shifted.getUTCHours(),
         minute: String(shifted.getUTCMinutes()).padStart(2, "0"),
       };
-      return i18n.t(
-        day === WorkTimeApp.domain.time.businessDate(new Date())
-          ? "autoBackup.savedToday"
-          : "autoBackup.savedDate",
-        time,
-      );
+      return i18n.t("autoBackup.savedDate", time);
     }
     mountPicker(backupRow, {
       id: "autoBackup",

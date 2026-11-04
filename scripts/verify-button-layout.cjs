@@ -72,18 +72,6 @@ async function verify() {
               checked.push(id);
               const style = getComputedStyle(host);
               const box = host.getBoundingClientRect();
-              if (
-                id === "recoveryOpen" &&
-                !host.closest(".auto-backup-settings")
-              ) {
-                const row = host.parentElement;
-                const gap = parseFloat(getComputedStyle(row).columnGap);
-                const expected = (row.getBoundingClientRect().width - gap) / 2;
-                if (Math.abs(box.width - expected) > 1)
-                  issues.push(
-                    id + ": backup button does not occupy six shares",
-                  );
-              }
               if (host.parentElement.matches(".settings-pane-actions")) {
                 const row = host.parentElement;
                 const rowStyle = getComputedStyle(row);
@@ -218,7 +206,6 @@ async function verify() {
         "batchSave",
         "dayLeaveFull",
         "dayLeaveDone",
-        "recoveryOpen",
         "personalSettingsCancel",
       ])
         assert.ok(checked.has(id), language + ": missing coverage for " + id);

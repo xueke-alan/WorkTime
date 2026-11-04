@@ -1874,16 +1874,6 @@ body .editor .settings-content-divider {
   border-top: 1px solid var(--line);
   margin: 1rem 0;
 }
-body .editor .settings-archive-actions {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 0.428571rem;
-}
-body .editor .settings-archive-actions > button {
-  grid-column: span 6;
-  width: 100%;
-  min-width: 0;
-}
 body .editor .settings-pane-actions button {
   grid-column: 3;
   width: 100%;

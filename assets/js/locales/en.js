@@ -100,17 +100,7 @@ WorkTimeApp.data.locales["en"] = {
   "copy.c4eb94d079": "Clipboard",
   "copy.32936d1ceb": "Backup ready. Confirm to restore.",
   "copy.9f71e85dd5": "Could not read clipboard backup. Choose a file.",
-  "copy.8110f0f8ff": "Daily snapshot ",
-  "copy.9d53968411": "Before-change snapshot ",
-  "copy.7f928d3f63": "Snapshots",
-  "copy.19d1b9b4a4":
-    "Cannot restore this snapshot directly. Download recovery data: ",
-  "copy.2901f95580": "No snapshots yet.",
-  "copy.1e79e236e5": "Could not read recovery data: ",
-  "copy.3a8bf199c6": "worktime-recovery-",
-  "copy.47a732ee5e": "Could not delete snapshots: ",
-  "copy.fe1afd4a86": "No readable legacy archive found.",
-  "copy.a02ab93291": "Legacy archive",
+
   "copy.d3ca375f67": "Reset not saved: ",
   "copy.c3b5086f19": "Backup exceeds 100 MiB.",
   "copy.49deaf7da2": "File",
@@ -789,8 +779,7 @@ WorkTimeApp.data.locales["en"] = {
   "copy.3e413a048b":
     "Enter year, month and day, or paste 2000-9-9 or 20000909.",
   "copy.acb666728b": "Work city",
-  "settings.backupManage": "Backup management",
-  "copy.7fd5b7383b": "Snapshots & recovery",
+
   "copy.e638050747": "Work schedule",
   "copy.ab9e21f1dc": "Start time",
   "copy.7af358a422": "End time",
@@ -862,14 +851,7 @@ WorkTimeApp.data.locales["en"] = {
   "copy.cdb66f2811":
     "Removes punches from this batch. Overlapping dates keep other imports. Manual entries, leave and templates are retained.",
   "copy.3c06abe116": "Delete",
-  "copy.77ac965e85":
-    "Keeps up to 7 daily and 3 before-change snapshots, within 100 MiB. Legacy originals are retained separately. Export backups outside the browser too.",
-  "copy.4f18bb315f": "Download recovery data",
-  "copy.7a9e9b3d55": "Reimport legacy archive",
-  "copy.eca8c5214c": "Delete snapshots",
-  "copy.f7c698676a":
-    "Deletes all snapshots. Current archive and legacy originals are retained. You can download recovery data first.",
-  "copy.c1ac3cc2cf": "Delete snapshots",
+
   "copy.00ecd909a7": "Retry saving theme",
   "copy.c7cd96dadb":
     "Replaces all records, templates and schedules in this browser. A snapshot is saved first; you can also download a backup. Local files and websites use separate storage. Export before moving files or changing browsers.",

@@ -813,42 +813,6 @@ WorkTimeApp.services.indexedStorage = (() => {
           ),
         };
       },
-      async recoveryData() {
-        await queue;
-        const tx = transaction(["snapshots", "migrations"]);
-        const [snapshots, migrations] = await Promise.all([
-          request(tx.objectStore("snapshots").getAll()),
-          request(tx.objectStore("migrations").getAll()),
-        ]);
-        await tx.done;
-        let currentArchive;
-        try {
-          currentArchive = await documentFromDatabase();
-        } catch {
-          currentArchive = await rawDatabase();
-        }
-        return {
-          format: "worktime-recovery",
-          version: 1,
-          snapshots,
-          migrations,
-          legacyText: legacy().text,
-          currentArchive,
-        };
-      },
-      async snapshots() {
-        await queue;
-        const tx = transaction(["snapshots"]);
-        const rows = await request(tx.objectStore("snapshots").getAll());
-        await tx.done;
-        return rows.sort((a, b) => b.at.localeCompare(a.at));
-      },
-      async clearSnapshots() {
-        await queue;
-        const tx = transaction(["snapshots"], "readwrite");
-        tx.objectStore("snapshots").clear();
-        await tx.done;
-      },
       async hasExternalUpdate() {
         const tx = transaction(["archives"]),
           value = await request(tx.objectStore("archives").get("active"));

@@ -13,6 +13,7 @@ async function verify() {
   try {
     for (const width of [1480, 1000, 390]) {
       for (const { weeks, today } of [
+        { weeks: 1, today: "2026-11-04T04:00:00Z" },
         { weeks: 1, today: "2026-10-20T04:00:00Z" },
         { weeks: 2, today: "2026-10-20T04:00:00Z" },
         { weeks: 1, today: "2026-12-30T04:00:00Z" },
@@ -146,35 +147,31 @@ async function verify() {
               : 0;
             result.handoffError = 0;
             result.handoffOpacityError = 0;
-            result.revealTracks = cards.filter((card) =>
+            const surrounding = cards.filter(
+              (card) =>
+                !oldWeekDates.includes(
+                  card.dataset.date || card.dataset.previewDate,
+                ) && card.getClientRects().length,
+            );
+            result.surroundingCount = surrounding.length;
+            result.visibleCount = cards.filter(
+              (card) => card.getClientRects().length,
+            ).length;
+            result.surroundingMoving = surrounding.filter((card) =>
               card
                 .getAnimations()
-                .some((a) => a.effect.getKeyframes().some((f) => f.clipPath)),
+                .some((a) => a.effect.getKeyframes().some((f) => f.height)),
             ).length;
-            const earlier = cards.filter(
-              (card) =>
-                (card.dataset.date || card.dataset.previewDate) <
-                  oldWeekDates[0] && card.getClientRects().length,
+            result.surroundingReveal = surrounding.some((card) =>
+              card
+                .getAnimations()
+                .some((a) =>
+                  a.effect
+                    .getKeyframes()
+                    .some((f) => f.opacity !== undefined || f.clipPath),
+                ),
             );
-            result.earlierCount = earlier.length;
-            result.earlierMoving = earlier.filter((card) =>
-              card.getAnimations().some((animation) => {
-                const frames = animation.effect.getKeyframes();
-                return (
-                  frames[0].transform?.startsWith("translateY(") &&
-                  frames.at(-1).transform === "none"
-                );
-              }),
-            ).length;
-            result.earlierFading = earlier.filter((card) =>
-              card.getAnimations().some((animation) => {
-                const frames = animation.effect.getKeyframes();
-                return (
-                  frames[0].opacity === "0" && Number(frames.at(-1).opacity) > 0
-                );
-              }),
-            ).length;
-            result.revealOverlap = 0;
+            result.rowError = 0;
             if (ghosts.length) {
               for (const time of [0, 115, 230, 345, 459]) {
                 for (const animation of document
@@ -224,29 +221,31 @@ async function verify() {
                     ),
                   );
                 }
-                const edge = selected.getBoundingClientRect().top;
-                for (const earlier of cards.filter(
-                  (card) =>
-                    (card.dataset.date || card.dataset.previewDate) <
-                    oldWeekDates[0],
-                )) {
-                  const rect = earlier.getBoundingClientRect();
-                  const clip = getComputedStyle(earlier)
-                    .clipPath.match(/[\d.]+px/g)
-                    ?.map(parseFloat);
-                  const bottom = clip?.[2] ?? clip?.[0] ?? 0;
-                  if (rect.height - bottom > 0.1)
-                    result.revealOverlap = Math.max(
-                      result.revealOverlap,
-                      rect.bottom - bottom - edge,
-                    );
+                const selectedIndex = cards.indexOf(selected);
+                const row = Math.floor(selectedIndex / 7);
+                const gap =
+                  parseFloat(
+                    getComputedStyle(document.querySelector("#calendar"))
+                      .rowGap,
+                  ) || 0;
+                for (const card of surrounding) {
+                  const index = cards.indexOf(card);
+                  const anchor = cards[row * 7 + (index % 7)];
+                  const owner = anchor.getBoundingClientRect();
+                  const rect = card.getBoundingClientRect();
+                  const rows = row - Math.floor(index / 7);
+                  result.rowError = Math.max(
+                    result.rowError,
+                    Math.abs(rect.left - owner.left),
+                    Math.abs(rect.width - owner.width),
+                    Math.abs(rect.height - owner.height),
+                    Math.abs(
+                      rect.top - (owner.top - rows * (owner.height + gap)),
+                    ),
+                  );
                 }
               }
             }
-            for (const animation of document
-              .querySelector("#calendar")
-              .getAnimations({ subtree: true }))
-              animation.finish();
             return result;
           });
           const weekReturn = !entering && weeks === 1;
@@ -280,23 +279,24 @@ async function verify() {
               result.handoffOpacityError < 0.02,
               "Old and new cards maintain continuous opacity through the handoff",
             );
-            assert.ok(
-              result.revealTracks > 0,
-              "Earlier rows are revealed by the moving week rather than a separate entrance",
+            assert.equal(
+              result.surroundingCount,
+              result.visibleCount - 7,
+              "Exercise every row around the expanded week",
             );
             assert.equal(
-              result.earlierMoving,
-              result.earlierCount,
-              "Every earlier month row moves, including a return from the final December week",
+              result.surroundingMoving,
+              result.surroundingCount,
+              "Every surrounding row shares the returning week's geometry animation",
             );
             assert.equal(
-              result.earlierFading,
-              result.earlierCount,
-              "Every earlier month row fades in with its motion",
+              result.surroundingReveal,
+              false,
+              "Surrounding rows use natural container clipping without a fade reveal",
             );
             assert.ok(
-              result.revealOverlap < 1,
-              "Earlier rows never appear ahead of the descending week edge",
+              result.rowError < 1,
+              `Surrounding rows keep their size, columns and spacing: ${JSON.stringify(result)}`,
             );
           }
           assert.ok(
@@ -316,6 +316,37 @@ async function verify() {
               `Switch preserves starting geometry: entering=${entering}, ${width}px, ${weeks} weeks, ${JSON.stringify(result)}`,
             ),
           );
+          if (
+            weekReturn &&
+            today.startsWith("2026-11-04") &&
+            process.env.WORKTIME_MOTION_SCREENSHOTS
+          ) {
+            const fs = require("node:fs");
+            const output = path.resolve(
+              process.env.WORKTIME_MOTION_SCREENSHOTS,
+            );
+            fs.mkdirSync(output, { recursive: true });
+            for (const time of [0, 230, 460]) {
+              await page.evaluate((time) => {
+                for (const animation of document
+                  .querySelector("#calendar")
+                  .getAnimations({ subtree: true })) {
+                  animation.pause();
+                  animation.currentTime = time;
+                }
+              }, time);
+              await page.screenshot({
+                path: path.join(output, `return-${width}-${time}.png`),
+                fullPage: true,
+              });
+            }
+          }
+          await page.evaluate(() => {
+            for (const animation of document
+              .querySelector("#calendar")
+              .getAnimations({ subtree: true }))
+              animation.finish();
+          });
           await settled();
           assert.equal(
             await page.locator(".agenda-week-return-exits").count(),
@@ -529,6 +560,56 @@ async function verify() {
         const pageReturn = await capture();
         assert.equal(pageReturn.day?.duration, weeks === 1 ? 460 : 360);
         assert.equal(pageReturn.outlines, 0);
+        const rowError = await page.evaluate(() => {
+          const calendar = document.querySelector("#calendar");
+          const cards = [...calendar.querySelectorAll(":scope > .day")];
+          const row = Math.floor(
+            cards.findIndex((card) => card.classList.contains("selected")) / 7,
+          );
+          const gap = parseFloat(getComputedStyle(calendar).rowGap) || 0;
+          let error = 0;
+          for (const time of [0, 115, 230, 345, 459]) {
+            for (const animation of calendar.getAnimations({ subtree: true })) {
+              animation.pause();
+              animation.currentTime = time;
+            }
+            for (let index = 0; index < cards.length; index++) {
+              if (Math.floor(index / 7) === row) continue;
+              const rect = cards[index].getBoundingClientRect();
+              const anchor = cards[row * 7 + (index % 7)];
+              const owner = anchor.getBoundingClientRect();
+              const track = (card) =>
+                card
+                  .getAnimations()
+                  .find((a) => a.effect.getKeyframes().some((f) => f.height));
+              if (
+                track(cards[index])?.effect.getTiming().duration !==
+                track(anchor)?.effect.getTiming().duration
+              )
+                throw Error(
+                  "Surrounding rows must share their anchor's timing",
+                );
+              error = Math.max(
+                error,
+                Math.abs(rect.left - owner.left),
+                Math.abs(rect.width - owner.width),
+                Math.abs(rect.height - owner.height),
+                Math.abs(
+                  rect.top -
+                    (owner.top -
+                      (row - Math.floor(index / 7)) * (owner.height + gap)),
+                ),
+              );
+            }
+          }
+          for (const animation of calendar.getAnimations({ subtree: true }))
+            animation.finish();
+          return error;
+        });
+        assert.ok(
+          rowError < 1,
+          `Filtered return preserves row geometry: ${rowError}`,
+        );
         await settle(false);
         const entering = await capture("#agendaMode");
         assert.equal(

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 200" fill="none">
+  <!-- A quiet desk, with open space above for the date and records. -->
+  <circle cx="43" cy="125" r="27" fill="#eee8f6"/>
+  <g stroke="#b5a1cc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 179h119"/>
+    <path d="M32 178v-48l18-20 15 12"/>
+    <path d="m56 114-10 14 23 10 4-17Z" fill="#e1d5ee"/>
+    <path d="M24 178h19"/>
+    <path d="M56 146h51a3 3 0 0 1 3 3v23H53v-23a3 3 0 0 1 3-3Z" fill="#e6ddf1"/>
+    <path d="M58 151h47v16H58Z" fill="#f7f3fb" stroke-width="1.2"/>
+    <path d="M48 173h67l-4 5H52Z" fill="#d8cbe7"/>
+    <path d="m76 159 4 3 7-7" stroke="#b6a3cc" stroke-width="1.3"/>
+    <path d="M119 157h12v14a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5Z" fill="#e1d5ee"/>
+    <path d="M131 160h2a4 4 0 0 1 0 8h-2M123 151q-3-4 0-8m5 8q-3-4 0-8"/>
+  </g>
+  <path d="m51 133-9 22h17l5-16Z" fill="#f1e6cd" opacity=".65"/>
+</svg>
