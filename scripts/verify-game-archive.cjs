@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
@@ -34,7 +35,8 @@ function environment() {
       filename: file,
     });
   load("assets/js/games/registry.js");
-  for (const name of ["sudoku", "sokoban"]) load("assets/data/" + name + ".js");
+  for (const name of ["sudoku", "sokoban", "xiangqi"])
+    load("assets/data/" + name + ".js");
   for (const name of [
     "2048",
     "minesweeper",
@@ -43,6 +45,7 @@ function environment() {
     "sokoban",
     "link",
     "garden",
+    "xiangqi",
   ])
     load("assets/js/games/" + name + "-rules.js");
   load("assets/js/backup.js");
@@ -101,6 +104,17 @@ async function unit() {
     G.sokobanRules.move(map, sokoban, d),
   );
   assert.ok(direction);
+  const [mate] = app.data.xiangqi;
+  const [, , , , , , twoMoves] = app.data.xiangqi;
+  const [winningMove, alternative] = Object.keys(mate.tree[1]).map(Number);
+  const [opening, otherOpening] = Object.keys(twoMoves.tree[1]).map(Number);
+  const round = (move) => [move, G.xiangqiRules.reply(twoMoves.tree[1][move])];
+  const xiangqi = {
+    version: 1,
+    current: twoMoves.id,
+    drafts: { [twoMoves.id]: { path: round(opening) } },
+    completed: { [mate.id]: { path: [winningMove] } },
+  };
   const saves = {
     "game-2048": {
       version: 1,
@@ -143,6 +157,7 @@ async function unit() {
       records: Array(G.gardenRules.levelCount).fill(1),
     },
     "game-tank": { best: 100, custom: Array(2704).fill(0), muted: false },
+    "game-xiangqi": xiangqi,
   };
   const archive = (games) => ({
     type: S.TYPE,
@@ -152,15 +167,112 @@ async function unit() {
   });
   for (const [id, value] of Object.entries(saves))
     storage.setItem(S.keys[id], JSON.stringify(value));
+  for (const [id, kind, value] of [
+    ["game-2048", "best", 100],
+    ["game-minesweeper", "wins", 4],
+    ["game-snake", "best", 100],
+    ["game-sudoku", "completed", 1],
+    ["game-jump", "best", 120],
+    ["game-sokoban", "empty"],
+    ["game-link", "best", 100],
+    ["game-garden", "completed", G.gardenRules.levelCount],
+    ["game-tank", "best", 100],
+    ["game-xiangqi", "completed", 1],
+  ]) {
+    const progress = owner.progressSummary(id);
+    assert.equal(progress.kind, kind, id);
+    assert.equal(progress.value, value, id);
+  }
+  const unavailable = S.create(() => {
+    throw Error("Storage denied");
+  });
+  assert.equal(unavailable.progressSummary("game-2048").kind, "unavailable");
   storage.setItem("worktime.unrelated", "keep");
   const packed = owner.exportArchive();
-  assert.equal(Object.keys(packed.games).length, 9);
+  assert.equal(Object.keys(packed.games).length, 10);
   assert.deepEqual(copy(await S.decode(await S.encode(packed))), copy(packed));
   assert.deepEqual(
     copy(await S.decode(S.PREFIX + "JSON:" + JSON.stringify(packed))),
     copy(packed),
   );
   assert.deepEqual(copy(await S.decode(JSON.stringify(packed))), copy(packed));
+  const { ["game-xiangqi"]: savedXiangqi, ...legacy } = packed.games;
+  assert.deepEqual(copy(savedXiangqi), xiangqi);
+  assert.deepEqual(copy(S.validate(archive(legacy)).games), copy(legacy));
+  const legacyStorage = memory();
+  legacyStorage.setItem(S.keys["game-xiangqi"], JSON.stringify(xiangqi));
+  const legacyBefore = Object.fromEntries(
+    Object.keys(legacy).map((id) => [id, null]),
+  );
+  legacyStorage.setItem(
+    S.JOURNAL,
+    JSON.stringify({
+      version: 1,
+      revision: "legacy",
+      before: legacyBefore,
+    }),
+  );
+  const legacyOwner = S.create(() => legacyStorage);
+  legacyOwner.recover();
+  assert.deepEqual(copy(legacyOwner.read().games), { "game-xiangqi": xiangqi });
+  const otherMate = app.data.xiangqi[1];
+  const otherWin = Number(Object.keys(otherMate.tree[1])[0]);
+  const incomingXiangqi = {
+    ...xiangqi,
+    drafts: { [twoMoves.id]: { path: round(otherOpening) } },
+    completed: { [otherMate.id]: { path: [otherWin] } },
+  };
+  const xiangqiArchive = archive({ "game-xiangqi": incomingXiangqi });
+  const [defaultChoice] = owner.preview(xiangqiArchive).rows;
+  assert.equal(defaultChoice.conflict, true);
+  assert.deepEqual(copy(defaultChoice.value.drafts), xiangqi.drafts);
+  const [importedChoice] = owner.preview(xiangqiArchive, {
+    "game-xiangqi": "incoming",
+  }).rows;
+  assert.deepEqual(copy(importedChoice.value.drafts), incomingXiangqi.drafts);
+  assert.equal(importedChoice.completedAdded, 1);
+  const freePlay = {
+    version: 1,
+    current: mate.id,
+    drafts: { [mate.id]: { path: [90, 283] } },
+    completed: { [mate.id]: { path: [90, 283, 2460] } },
+  };
+  const freeArchive = archive({ "game-xiangqi": freePlay });
+  assert.deepEqual(
+    copy(await S.decode(await S.encode(freeArchive))),
+    freeArchive,
+  );
+  const [freeChoice] = owner.preview(freeArchive, {
+    "game-xiangqi": "incoming",
+  }).rows;
+  assert.deepEqual(copy(freeChoice.value.drafts), {
+    ...xiangqi.drafts,
+    ...freePlay.drafts,
+  });
+  assert.throws(
+    () =>
+      S.normalize("game-xiangqi", {
+        ...freePlay,
+        completed: freePlay.drafts,
+      }),
+    { code: "invalid" },
+  );
+  assert.throws(
+    () =>
+      S.normalize("game-xiangqi", {
+        ...xiangqi,
+        completed: { [mate.id]: { path: [alternative, winningMove] } },
+      }),
+    { code: "invalid" },
+  );
+  assert.throws(
+    () =>
+      S.normalize("game-xiangqi", {
+        ...xiangqi,
+        drafts: { [twoMoves.id]: { path: [opening] } },
+      }),
+    { code: "invalid" },
+  );
   const compressed = await app.services.backup.encode(JSON.stringify(packed));
   await assert.rejects(() =>
     app.services.backup.decode(JSON.stringify(packed), (v) => v),
@@ -488,7 +600,7 @@ async function unit() {
     { code: "tooLarge" },
   );
   console.log(
-    "Nine-game transport, validation, merge policy, idempotence, preview isolation, rollback, recovery and stale sessions passed.",
+    "Game transport, validation, merge policy, idempotence, preview isolation, rollback, recovery and stale sessions passed.",
   );
 }
 async function ui() {
@@ -541,13 +653,49 @@ async function ui() {
       await page.locator("#gamesPanel .game-menu-archive-status").textContent(),
       /暂无|No game/,
     );
-    await page.evaluate(() =>
-      localStorage.setItem("worktime.games.jump.best.v1", "10"),
-    );
+    const xiangqi = await page.evaluate(async () => {
+      localStorage.setItem("worktime.games.jump.best.v1", "10");
+      await WorkTimeApp.games.prepareArchive(["game-xiangqi"]);
+      const [level] = WorkTimeApp.data.xiangqi;
+      const save = {
+        version: 1,
+        current: null,
+        drafts: {},
+        completed: {
+          [level.id]: { path: [Number(Object.keys(level.tree[1])[0])] },
+        },
+      };
+      localStorage.setItem(
+        WorkTimeApp.services.gameArchive.keys["game-xiangqi"],
+        JSON.stringify(save),
+      );
+      return save;
+    });
     await save.click();
     await page.waitForFunction(() =>
       window.copiedGameSave?.startsWith("WORKTIME:GAMES:1:"),
     );
+    await page.setViewportSize({ width: 320, height: 740 });
+    const copyStatus = page.locator("#gamesPanel .game-menu-archive-status");
+    for (const language of ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"]) {
+      await page.evaluate((id) => WorkTimeApp.i18n.setLanguage(id), language);
+      await save.click();
+      await page.waitForFunction(
+        () =>
+          document.querySelector("#gamesPanel .game-menu-archive-status")
+            .textContent === WorkTimeApp.i18n.t("gameArchive.copied"),
+      );
+      const lines = await copyStatus.evaluate((status) => {
+        const range = document.createRange();
+        range.selectNodeContents(status);
+        return range.getClientRects().length;
+      });
+      assert.equal(lines, 1, `Copy confirmation fits at 320px in ${language}`);
+    }
+    await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
+    await page.setViewportSize({ width: 2560, height: 1440 });
+    const xiangqiKey = "worktime.games.xiangqi.v1";
+    await page.evaluate((key) => localStorage.removeItem(key), xiangqiKey);
     await restore.click();
     const dialog = page.locator(".game-archive-dialog");
     const confirm = dialog.locator(".game-archive-footer .primary");
@@ -558,6 +706,13 @@ async function ui() {
     await confirm.click();
     await dialog.waitFor({ state: "hidden" });
     assert.equal(await dialog.isVisible(), false);
+    assert.deepEqual(
+      await page.evaluate(
+        (key) => JSON.parse(localStorage.getItem(key)),
+        xiangqiKey,
+      ),
+      xiangqi,
+    );
     await restore.click();
     const raw = JSON.stringify({
       type: "worktime-games",
@@ -676,10 +831,43 @@ async function ui() {
     await restore.click();
     await dialog.locator("textarea").fill(JSON.stringify(conflictArchive));
     await dialog.getByRole("button", { name: "预览合并", exact: true }).click();
-    const select = dialog.locator('[data-game-conflict="game-2048"]');
-    await select.waitFor();
-    assert.equal(await select.inputValue(), "local");
-    await select.selectOption("incoming");
+    const choice = dialog.getByRole("checkbox", { name: /2048/ });
+    await choice.waitFor();
+    assert.equal(await choice.isChecked(), false);
+    await page.setViewportSize({ width: 320, height: 360 });
+    await choice.press("Space");
+    assert.equal(await choice.isChecked(), true);
+    assert.equal(
+      await choice.evaluate((el) => el === document.activeElement),
+      true,
+    );
+    await choice.press("Space");
+    assert.equal(await choice.isChecked(), false);
+    await choice.locator("..").click();
+    assert.equal(await choice.isChecked(), true);
+    await page.evaluate(() => WorkTimeApp.i18n.setLanguage("en"));
+    assert.equal(await choice.isChecked(), true);
+    assert.equal(
+      await choice.evaluate((el) => el === document.activeElement),
+      true,
+    );
+    assert.equal(
+      await dialog.evaluate((element) => {
+        const body = element.querySelector(".game-archive-body");
+        const footer = element.querySelector(".game-archive-footer");
+        const top = footer.getBoundingClientRect().top;
+        body.scrollTop = body.scrollHeight;
+        return (
+          body.scrollTop > 0 &&
+          top === footer.getBoundingClientRect().top &&
+          footer.getBoundingClientRect().bottom <= window.innerHeight &&
+          body.scrollWidth <= body.clientWidth
+        );
+      }),
+      true,
+    );
+    await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
+    await page.setViewportSize({ width: 2560, height: 1440 });
     fs.mkdirSync(path.join(root, "test-results/game-archive"), {
       recursive: true,
     });
@@ -714,7 +902,7 @@ async function ui() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await other.locator("#date-tab-games").click();
-    await other.locator('#gamesPanel [data-game="game-2048"]').click();
+    await launchGame(other, "game-2048");
     await other.waitForFunction(
       () => document.getElementById("gameShell").dataset.state === "open",
     );
@@ -787,7 +975,7 @@ async function ui() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await restrictedPage.locator("#date-tab-games").click();
-    await restrictedPage.locator('#gamesPanel [data-game="game-2048"]').click();
+    await launchGame(restrictedPage, "game-2048");
     await restrictedPage.waitForFunction(
       () => document.getElementById("gameShell").dataset.state === "open",
     );

@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -336,7 +337,7 @@ async function verifyBrowser() {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.locator("#date-tab-games").click();
     async function open() {
-      await page.locator('#gamesPanel [data-game="game-snake"]').click();
+      await launchGame(page, "game-snake");
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
@@ -634,18 +635,40 @@ async function verifyBrowser() {
     const out = path.join(root, "test-results/snake");
     fs.mkdirSync(out, { recursive: true });
     await page.screenshot({ path: path.join(out, "desktop.png") });
-    for (const width of [390, 320, 768, 1440]) {
-      await page.setViewportSize({ width, height: width < 400 ? 844 : 1000 });
+    for (const [width, height, sideLayout] of [
+      [390, 844, false],
+      [320, 568, false],
+      [768, 1000, false],
+      [844, 390, true],
+      [1440, 1000, true],
+    ]) {
+      await page.setViewportSize({ width, height });
       await page.clock.runFor(150);
       // Advancing the game clock does not flush native resize notifications.
       // Wait for the measured board size to catch up with the actual viewport.
-      await page.waitForFunction(() => {
-        const board = document
-          .querySelector(".snake-board")
-          .getBoundingClientRect();
-        return board.x >= 0 && board.right <= innerWidth + 1;
-      });
+      await page.waitForFunction(
+        ({ width, height, sideLayout }) => {
+          const root = document.querySelector(".game-snake");
+          const board = root
+            .querySelector(".snake-board")
+            .getBoundingClientRect();
+          const stage = root
+            .querySelector(".snake-stage")
+            .getBoundingClientRect();
+          return (
+            innerWidth === width &&
+            innerHeight === height &&
+            root.classList.contains("snake-side-layout") === sideLayout &&
+            board.width <= stage.width + 1 &&
+            board.height <= stage.height + 1 &&
+            (stage.width - board.width < 1 || stage.height - board.height < 1)
+          );
+        },
+        { width, height, sideLayout },
+      );
       const b = await page.locator(".snake-board").boundingBox();
+      const counters = await page.locator(".snake-counters").boundingBox();
+      const sidebar = await page.locator(".snake-sidebar").boundingBox();
       assert.ok(
         b.x >= 0 && b.x + b.width <= width + 1,
         `board fits ${width}px viewport: ${JSON.stringify(b)}`,
@@ -654,6 +677,15 @@ async function verifyBrowser() {
         b.width >= 140 && Math.abs(b.width / b.height - 1.2) < 0.02,
         "rectangular board preserves square cells",
       );
+      if (sideLayout) {
+        assert.ok(counters.x + counters.width <= b.x + 1);
+        assert.ok(sidebar.x >= b.x + b.width - 1);
+      } else {
+        assert.ok(counters.y + counters.height <= b.y + 1);
+        assert.ok(sidebar.y >= b.y + b.height - 1);
+      }
+      if (width === 1440)
+        assert.ok(b.width > 900, "desktop board grows beyond the old cap");
       assert.equal(
         await page.locator(".snake-feedback").count(),
         0,
@@ -719,11 +751,19 @@ async function verifyBrowser() {
       { key, save: packed(touchState) },
     );
     await touch.locator("#date-tab-games").tap();
-    await touch.locator('#gamesPanel [data-game="game-snake"]').tap();
+    await launchGame(touch, "game-snake", { touch: true });
     await touch.waitForFunction(
       () => document.querySelector("#gameShell").dataset.state === "open",
     );
     assert.equal(await touch.locator(".snake-pad").isVisible(), true);
+    await touch.setViewportSize({ width: 844, height: 390 });
+    await touch.waitForSelector(".snake-side-layout");
+    const landscapeBoard = await touch.locator(".snake-board").boundingBox();
+    const landscapePad = await touch.locator(".snake-pad").boundingBox();
+    assert.ok(landscapePad.x >= landscapeBoard.x + landscapeBoard.width - 1);
+    assert.ok(landscapePad.y + landscapePad.height <= 390);
+    await touch.setViewportSize({ width: 390, height: 844 });
+    await touch.waitForSelector(".snake-side-layout", { state: "detached" });
     await touch.locator('[data-snake-action="start"]').tap();
     await touch.clock.runFor(1850);
     const box = await touch.locator(".snake-board canvas").boundingBox();

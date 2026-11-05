@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -448,7 +449,7 @@ async function main() {
     });
     const action = (key) => page.locator(`[data-tank-action="${key}"]`);
     await page.locator("#date-tab-games").click();
-    await page.locator('[data-game="game-tank"]').click();
+    await launchGame(page, "game-tank");
     await page.waitForSelector('#gameShell[data-state="open"]');
     assert.equal(await page.locator(".game-tank").count(), 1);
     const statsBox = await page.locator(".tank-counters").boundingBox();
@@ -466,7 +467,71 @@ async function main() {
       fieldBox.width > 720,
       "sidebars release space for a larger field",
     );
+    const chooseStage = action("choose-stage");
+    const stageGrid = page.locator(".tank-stage-grid");
+    const stagePage = page.locator("#tank-stage-page");
+    const stageBody = stagePage.locator(".game-level-page-body");
+    const isFocused = (locator) =>
+      locator.evaluate((element) => document.activeElement === element);
+    await chooseStage.press("Enter");
+    assert.equal(await page.locator(".tank-board").isVisible(), false);
+    assert.equal(await page.locator(".tank-controls").isVisible(), false);
+    assert.ok((await stagePage.boundingBox()).height >= fieldBox.height);
+    assert.equal(
+      await stageBody.evaluate((body) => body.scrollHeight > body.clientHeight),
+      false,
+    );
+    await page.setViewportSize({ width: 390, height: 390 });
+    assert.equal(await stageGrid.locator("button:enabled").count(), 35);
+    assert.equal(await isFocused(action("stage-1")), true);
+    assert.equal(await action("stage-1").getAttribute("aria-current"), "step");
+    assert.equal(
+      await action("stage-1")
+        .locator(".game-level-badge")
+        .getAttribute("data-state"),
+      "current",
+    );
+    assert.equal(
+      await stageBody.evaluate((body) => body.scrollHeight > body.clientHeight),
+      true,
+    );
+    await page.keyboard.press("Escape");
+    assert.equal(await stagePage.isVisible(), false);
+    assert.equal(await isFocused(chooseStage), true);
+    await chooseStage.click();
+    await action("stage-35").click();
+    assert.equal(await page.evaluate(() => window.tankTest.stage), 35);
+    assert.equal(await stagePage.isVisible(), false);
+    assert.equal(await isFocused(chooseStage), true);
+    await chooseStage.press("Enter");
+    assert.equal(await isFocused(action("stage-35")), true);
+    assert.equal(await action("stage-35").getAttribute("aria-current"), "step");
+    assert.equal(await stageBody.evaluate((body) => body.scrollTop > 0), true);
+    assert.ok(
+      await action("stage-35").evaluate((card) => {
+        const range = document.createRange();
+        range.selectNode(card.firstChild);
+        const number = range.getBoundingClientRect();
+        const badge = card
+          .querySelector(".game-level-badge")
+          .getBoundingClientRect();
+        const bounds = card.getBoundingClientRect();
+        const style = getComputedStyle(card);
+        return (
+          badge.top >= bounds.top &&
+          badge.right <= bounds.right &&
+          badge.bottom <= number.top &&
+          style.outlineStyle === "solid" &&
+          parseFloat(style.outlineWidth) >= 2
+        );
+      }),
+      "narrow cards separate the number and badge and show keyboard focus",
+    );
+    await action("stage-1").click();
+    assert.equal(await page.evaluate(() => window.tankTest.stage), 1);
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await action("start").click();
+    assert.equal(await chooseStage.isDisabled(), true);
     await page.keyboard.down("KeyW");
     await page.waitForTimeout(250);
     await page.keyboard.up("KeyW");
@@ -533,6 +598,7 @@ async function main() {
       s.reason = "base";
     });
     await page.waitForSelector('.game-tank[data-mode="over"]');
+    assert.equal(await chooseStage.isEnabled(), true);
     assert.ok(
       (await page.locator(".tank-results").textContent()).includes("1234"),
     );
@@ -560,7 +626,7 @@ async function main() {
     assert.equal(await page.evaluate(() => window.tankTest.stage), 2);
     await page.locator(".tank-board").focus();
     await page.keyboard.press("Escape");
-    await page.locator('#gameShell [data-game="game-tank"]').click();
+    await launchGame(page, "game-tank", { menu: "#gameShell" });
     await page.evaluate(() => {
       const el = document.querySelector('[data-tank-select="players"]');
       el.value = "2";
@@ -688,6 +754,17 @@ async function main() {
     );
     await page.waitForSelector('.game-tank[data-mode="clear"]');
     assert.equal(await page.locator(".tank-cover").isVisible(), true);
+    await page.evaluate(() => (window.tankTest.stage = 35));
+    await action("start").click();
+    assert.equal(await page.evaluate(() => window.tankTest.stage), 36);
+    await page.evaluate(() => {
+      window.tankTest.status = "over";
+      window.tankTest.reason = "base";
+    });
+    await page.waitForSelector('.game-tank[data-mode="over"]');
+    await chooseStage.click();
+    assert.equal(await isFocused(action("stage-1")), true);
+    await page.keyboard.press("Escape");
     await page.locator("#gameExitButton").click();
     await page.waitForSelector('#gameShell[data-state="closed"]', {
       state: "attached",
@@ -709,7 +786,7 @@ async function main() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await blocked.locator("#date-tab-games").click();
-    await blocked.locator('[data-game="game-tank"]').click();
+    await launchGame(blocked, "game-tank");
     assert.ok((await blocked.locator(".tank-warning").textContent()).length);
     await blocked.locator('[data-tank-action="start"]').click();
     assert.equal(

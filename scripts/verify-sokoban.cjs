@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -133,7 +134,7 @@ async function main() {
       );
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
       await page.locator("#date-tab-games").click();
-      await page.locator('#gamesPanel [data-game="game-sokoban"]').click();
+      await launchGame(page, "game-sokoban");
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
@@ -141,9 +142,47 @@ async function main() {
     }
     await launch();
     assert.equal(await page.locator(".sokoban-levels button").count(), 20);
-    assert.equal(await action("level-1").isDisabled(), true);
+    assert.equal(
+      await page.locator(".sokoban-levels button:enabled").count(),
+      20,
+    );
+    const chapterProgress = page.locator(
+      ".sokoban-catalog .game-level-progress",
+    );
+    const columnCount = () =>
+      page
+        .locator(".sokoban-levels")
+        .evaluate(
+          (grid) =>
+            getComputedStyle(grid).gridTemplateColumns.split(" ").length,
+        );
+    assert.equal(await columnCount(), 5);
+    assert.equal(await action("level-0").innerText(), "01");
+    assert.equal(await chapterProgress.innerText(), "已完成 0 / 20");
     await action("chapter-2").click();
-    assert.equal(await action("level-0").isDisabled(), true);
+    assert.equal(
+      await action("chapter-2").getAttribute("aria-pressed"),
+      "true",
+    );
+    assert.equal(await action("level-0").innerText(), "41");
+    await action("level-19").click();
+    const lastLevel = bank.levels.at(-1);
+    const laterSave = await saved();
+    assert.equal(laterSave.current, lastLevel.id);
+    assert.deepEqual(laterSave.completed, {});
+    assert.equal(
+      await page.evaluate(
+        (save) =>
+          WorkTimeApp.services.gameArchive.normalize("game-sokoban", save)
+            .current,
+        laterSave,
+      ),
+      lastLevel.id,
+    );
+    await launch();
+    assert.equal(await board.isVisible(), true);
+    assert.equal((await saved()).current, lastLevel.id);
+    await action("choose").click();
     await action("chapter-0").click();
     await page.screenshot({ path: path.join(output, "levels-desktop.png") });
     await action("level-0").click();
@@ -369,27 +408,44 @@ async function main() {
         },
       },
     };
-    await page.evaluate(
-      ({ key, fixture }) =>
-        localStorage.setItem(key + ".fixture", JSON.stringify(fixture)),
-      { key, fixture },
+    async function finishLastLevel(completed) {
+      await page.evaluate(
+        ({ key, fixture }) =>
+          localStorage.setItem(key + ".fixture", JSON.stringify(fixture)),
+        { key, fixture: { ...fixture, completed } },
+      );
+      await launch();
+      await board.press(
+        { u: "ArrowUp", r: "ArrowRight", d: "ArrowDown", l: "ArrowLeft" }[
+          lastLevel.solution.at(-1)
+        ],
+      );
+    }
+    await finishLastLevel({});
+    assert.equal(Object.keys((await saved()).completed).length, 1);
+    assert.equal(
+      await page.locator(".sokoban-status").innerText(),
+      "本关完成！",
     );
-    await launch();
-    await board.press(
-      { u: "ArrowUp", r: "ArrowRight", d: "ArrowDown", l: "ArrowLeft" }[
-        bank.levels.at(-1).solution.at(-1)
-      ],
-    );
+    await finishLastLevel(fixture.completed);
     assert.equal(Object.keys((await saved()).completed).length, 60);
     assert.ok(
       (await page.locator(".sokoban-status").innerText()).includes("60"),
     );
     await action("next").click();
     assert.equal(
-      await page.locator(".sokoban-levels .is-complete").count(),
+      await page
+        .locator('.sokoban-levels .game-level-badge[data-state="complete"]')
+        .count(),
       20,
     );
-    // Invalid storage does not grant unlocks or break startup.
+    assert.equal(await columnCount(), 4);
+    assert.equal(await chapterProgress.innerText(), "已完成 20 / 20");
+    assert.equal(
+      await page.locator(".sokoban-progress").innerText(),
+      "已完成 60 / 60",
+    );
+    // Invalid storage falls back to the catalog without adding records.
     await page.evaluate(
       (key) =>
         localStorage.setItem(
@@ -404,7 +460,13 @@ async function main() {
       key,
     );
     await launch();
-    assert.equal(await action("level-1").isDisabled(), true);
+    assert.equal(await action("level-1").isVisible(), true);
+    assert.equal(
+      await page
+        .locator('.sokoban-levels .game-level-badge[data-state="complete"]')
+        .count(),
+      0,
+    );
     await page.evaluate(
       (key) => localStorage.setItem(key + ".fixture", "broken json"),
       key,
@@ -576,7 +638,7 @@ async function main() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await noStorage.locator("#date-tab-games").click();
-    await noStorage.locator('[data-game="game-sokoban"]').click();
+    await launchGame(noStorage, "game-sokoban");
     await noStorage.locator('[data-sokoban-action="level-0"]').click();
     await noStorage.locator(".sokoban-board").press("ArrowRight");
     assert.equal(
@@ -585,7 +647,7 @@ async function main() {
     );
     assert.ok((await noStorage.locator(".sokoban-warning").innerText()).length);
     console.log(
-      "Sokoban: 60 source puzzles and solutions, rules, unlocks, saves, undo, restart, keyboard, touch, six languages, responsive layout and storage failures verified: " +
+      "Sokoban: 60 source puzzles and solutions, rules, free level selection, saves, undo, restart, keyboard, touch, six languages, responsive layout and storage failures verified: " +
         entry,
     );
   } finally {

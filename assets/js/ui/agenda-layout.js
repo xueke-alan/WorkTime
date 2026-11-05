@@ -8,6 +8,7 @@ WorkTimeApp.ui.createAgendaLayout = function ({
   updateCompletion = () => false,
   edit,
   select,
+  showDayAgenda,
   moreLabel,
 }) {
   const rules = WorkTimeApp.domain.agenda;
@@ -1114,7 +1115,8 @@ WorkTimeApp.ui.createAgendaLayout = function ({
           )
         ];
       if (button?.dataset.agendaEdit) edit(button.dataset.agendaEdit, true);
-      else if (button?.dataset.agendaDate) select(button.dataset.agendaDate);
+      else if (button?.dataset.agendaDate)
+        showDayAgenda(button.dataset.agendaDate);
       else if (!button) select(chosen);
     },
     { signal: scope.signal },

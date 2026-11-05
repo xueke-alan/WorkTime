@@ -63,16 +63,18 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
   const heading = node("h2", "", dialog);
   heading.id = "gameArchiveTitle";
   dialog.setAttribute("aria-labelledby", heading.id);
-  const inputLabel = node("label", "game-archive-input-label", dialog);
+  const body = node("div", "game-archive-body", dialog);
+  const inputLabel = node("label", "game-archive-input-label", body);
   inputLabel.htmlFor = "gameArchiveText";
-  const input = node("textarea", "", dialog);
+  const input = node("textarea", "", body);
   input.id = "gameArchiveText";
+  input.rows = 3;
   input.spellcheck = false;
-  const file = node("input", "", dialog);
+  const file = node("input", "", body);
   file.type = "file";
   file.accept = ".json,.txt,application/json,text/plain";
   file.hidden = true;
-  const tools = node("div", "game-archive-actions", dialog);
+  const tools = node("div", "game-archive-actions", body);
   const chooseFile = button(tools, "file", () => file.click());
   const readText = button(tools, "preview", () => loadText(input.value));
   const backup = button(tools, "before", async () => {
@@ -84,9 +86,9 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
       errorText.textContent = message(error);
     }
   });
-  const summary = node("div", "game-archive-preview", dialog);
-  const errorText = node("p", "game-archive-error", dialog);
+  const errorText = node("p", "game-archive-error", body);
   errorText.setAttribute("role", "alert");
+  const summary = node("div", "game-archive-preview", body);
   const footer = node(
     "div",
     "game-archive-actions game-archive-footer",
@@ -97,6 +99,7 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
     if (!previewed || busy) return;
     busy = true;
     committing = true;
+    summary.inert = true;
     for (const element of [input, chooseFile, readText, backup, cancel])
       element.disabled = true;
     confirm.disabled = true;
@@ -123,6 +126,7 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
     } finally {
       busy = false;
       committing = false;
+      summary.inert = false;
       for (const element of [input, chooseFile, readText, backup, cancel])
         element.disabled = false;
       confirm.disabled = !previewed?.rows.length;
@@ -141,18 +145,22 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
     );
   }
   function renderPreview(choices = {}) {
+    const focusedId = document.activeElement?.dataset.gameConflict;
     previewed = null;
     confirm.disabled = true;
     summary.replaceChildren();
     previewed = service.preview(archive, choices);
-    const note = node("p", "", summary);
+    const note = node("p", "game-archive-note", summary);
     note.textContent = t("mergeNote");
+    const list = node("ul", "game-archive-results", summary);
+    list.setAttribute("role", "list");
     for (const row of previewed.rows) {
-      const line = node("div", "game-archive-row", summary);
+      const line = node("li", "game-archive-row", list);
       const name = WorkTimeApp.games.get(row.id);
       const label = node("strong", "", line);
       label.textContent = name ? WorkTimeApp.i18n.t(name.nameKey) : row.id;
-      const result = node("span", "", line);
+      const result = node("span", "game-archive-result", line);
+      result.dataset.status = row.status;
       result.textContent =
         t(row.status) +
         (row.improved && row.status !== "added" ? " · " + t("improved") : "");
@@ -163,35 +171,31 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
         result.textContent +=
           " · " + t("completedAdded", { count: row.completedAdded });
       if (row.conflict) {
-        const selectLabel = node("label", "", line);
-        selectLabel.textContent = t("conflict");
-        const select = node("select", "", selectLabel);
-        select.setAttribute(
+        const choice = node("label", "game-archive-choice", line);
+        const checkbox = node("input", "", choice);
+        checkbox.type = "checkbox";
+        checkbox.dataset.gameConflict = row.id;
+        checkbox.checked = choices[row.id] === "incoming";
+        checkbox.setAttribute(
           "aria-label",
-          label.textContent + " · " + t("conflict"),
+          label.textContent + " · " + t("incoming"),
         );
-        for (const source of ["local", "incoming"]) {
-          const option = node("option", "", select);
-          option.value = source;
-          option.textContent = t(source);
-        }
-        select.value = choices[row.id] || "local";
-        select.onchange = () => {
-          const next = { ...previewed.choices, [row.id]: select.value };
-          const focusedId = row.id;
+        node("span", "", choice).textContent = t("incoming");
+        checkbox.onchange = () => {
+          if (busy || !previewed) return;
+          const source = checkbox.checked ? "incoming" : "local";
           try {
-            renderPreview(next);
+            renderPreview({ ...previewed.choices, [row.id]: source });
           } catch (error) {
             errorText.textContent = message(error);
-            return;
           }
-          summary
-            .querySelector('[data-game-conflict="' + focusedId + '"]')
-            ?.focus();
         };
-        select.dataset.gameConflict = row.id;
       }
     }
+    if (focusedId)
+      summary
+        .querySelector('[data-game-conflict="' + focusedId + '"]')
+        ?.focus({ preventScroll: true });
     confirm.disabled = !previewed.rows.length;
     if (!previewed.rows.length) errorText.textContent = t("empty");
   }
@@ -249,6 +253,7 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
     confirm.disabled = true;
     translate();
     dialog.showModal();
+    body.scrollTop = 0;
     clipboard
       .readText()
       .then((text) => {
@@ -317,22 +322,18 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
   }
   function decorate(container, header) {
     detach(container);
-    const actions = node(
-      "div",
-      "game-menu-archive-actions backup-button-group",
-      header,
-    );
+    const actions = node("div", "game-menu-archive-actions", header);
     actions.setAttribute("role", "group");
     actions.setAttribute("aria-label", t("save") + " / " + t("import"));
     const save = button(actions, "save", () => {});
-    save.classList.add("icon-only");
+    save.className = "icon-only";
     save.setAttribute("aria-label", t("saveHint"));
     save.title = t("saveHint");
     save.innerHTML =
       '<span class="backup-icon-slot" aria-hidden="true"><svg class="ui-icon backup-idle-icon"><use href="#ms-backup"/></svg><svg class="backup-hold-icon" viewBox="0 0 32 32"><circle class="hold-track" cx="16" cy="16" r="14"/><circle class="hold-progress" cx="16" cy="16" r="14" pathLength="100"/><use class="download-glyph" href="#ms-download" x="6" y="6" width="20" height="20" fill="currentColor" stroke="none"/></svg></span>';
     save.dataset.gameArchive = "save";
     const restore = button(actions, "import", () => open(restore));
-    restore.classList.add("icon-only");
+    restore.className = "icon-only";
     restore.setAttribute("aria-label", t("import"));
     restore.title = t("import");
     restore.innerHTML =

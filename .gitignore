@@ -65,6 +65,7 @@ __pycache__/
 !/scripts/verify-performance.cjs
 !/scripts/verify-games.cjs
 !/scripts/verify-game-menu.cjs
+!/scripts/game-test-helpers.cjs
 !/scripts/verify-game-archive.cjs
 !/scripts/verify-backup-clipboard.cjs
 !/scripts/verify-minesweeper.cjs
@@ -74,6 +75,9 @@ __pycache__/
 !/scripts/import-sudoku.cjs
 !/scripts/import-sokoban.cjs
 !/scripts/verify-sokoban.cjs
+!/scripts/build-xiangqi.cjs
+!/scripts/xiangqi-positions.json
+!/scripts/verify-xiangqi.cjs
 !/scripts/verify-link.cjs
 !/scripts/verify-garden.cjs
 !/scripts/verify-tank.cjs

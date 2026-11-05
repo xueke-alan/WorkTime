@@ -2871,6 +2871,7 @@ WorkTimeApp.ui.createAgenda = function ({
     takeChip: (item) => transferChips.get(item.id),
     edit,
     select,
+    showDayAgenda,
     moreLabel: (count) => t("more", { count }),
   });
   agendaDrag = WorkTimeApp.ui.createAgendaDrag({
@@ -2957,19 +2958,23 @@ WorkTimeApp.ui.createAgenda = function ({
     edit,
     select,
     focusDraft() {
-      openForm();
-      $("agendaTitle").focus({ preventScroll: true });
+      actions.requestSettingsExit(() => {
+        openForm();
+        $("agendaTitle").focus({ preventScroll: true });
+      });
     },
     create(fields) {
       if (busy || model.loadIssue === "unsupported") return;
-      if (hasDraft() && !window.confirm(t("discard"))) return;
-      model.selected = model.calendarSelected = fields.date;
-      openForm();
-      reset();
-      schedule.setValue(fields);
-      baseline = JSON.stringify(values());
-      actions.render();
-      $("agendaTitle").focus({ preventScroll: true });
+      actions.requestSettingsExit(() => {
+        if (hasDraft() && !window.confirm(t("discard"))) return;
+        model.selected = model.calendarSelected = fields.date;
+        openForm();
+        reset();
+        schedule.setValue(fields);
+        baseline = JSON.stringify(values());
+        actions.render();
+        $("agendaTitle").focus({ preventScroll: true });
+      });
     },
     async save(item, date) {
       const draft =
@@ -3671,9 +3676,16 @@ WorkTimeApp.ui.createAgenda = function ({
     if (!hasDraft() && !keepEditor) reset();
     actions.render();
   }
+  function showDayAgenda(date) {
+    actions.requestSettingsExit(() => select(date));
+  }
   function edit(id, keepView = false, clickedDate = null, focusEditor = true) {
     const item = (model.state.agenda || []).find((entry) => entry.id === id);
     if (!item || busy) return false;
+    if (focusEditor && !$("settingsPane").hidden) {
+      actions.requestSettingsExit(() => edit(id, keepView, clickedDate));
+      return false;
+    }
     const retainDraft = !focusEditor && formOpen && editingId === id;
     if (!retainDraft && hasDraft() && !window.confirm(t("discard")))
       return false;
@@ -4048,7 +4060,8 @@ WorkTimeApp.ui.createAgenda = function ({
         event.stopImmediatePropagation();
         if (busy) return;
         if (button?.dataset.agendaEdit) edit(button.dataset.agendaEdit);
-        else if (button?.dataset.agendaDate) select(button.dataset.agendaDate);
+        else if (button?.dataset.agendaDate)
+          showDayAgenda(button.dataset.agendaDate);
         else select(cardDate(card));
       },
       { capture: true },

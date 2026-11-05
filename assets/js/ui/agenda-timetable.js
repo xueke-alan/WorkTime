@@ -1139,6 +1139,7 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
     "click",
     (event) => {
       if (!enabled()) return;
+      if (event.target.closest("[data-agenda-date]")) return;
       if (event.target.closest(".timetable-draft")) {
         event.stopImmediatePropagation();
         focusDraft();

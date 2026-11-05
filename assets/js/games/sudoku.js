@@ -52,11 +52,7 @@ WorkTimeApp.games.register({
           selectedGroup = saved.group;
         const puzzle = puzzles.get(saved.current);
         const group = groups.find((g) => g.puzzles.includes(puzzle));
-        if (
-          puzzle &&
-          drafts[puzzle.id] &&
-          unlocked(group, group.puzzles.indexOf(puzzle))
-        ) {
+        if (puzzle && drafts[puzzle.id]) {
           current = puzzle;
           state = drafts[puzzle.id];
           selectedGroup = group.id;
@@ -66,13 +62,6 @@ WorkTimeApp.games.register({
       }
     } catch {
       saveFailed = true;
-    }
-    function unlocked(group, index) {
-      return (
-        index === 0 ||
-        !!completed[group.puzzles[index - 1].id] ||
-        !!completed[group.puzzles[index].id]
-      );
     }
     function node(tag, className, parent) {
       const element = document.createElement(tag);
@@ -86,22 +75,9 @@ WorkTimeApp.games.register({
     const hud = node("div", "sudoku-hud game-hud", root);
     const title = node("h3", "game-title", hud);
     const sessionMeta = node("div", "sudoku-session-meta", hud);
-    const meters = ["time"].map((name) => {
-      const box = node("div", "sudoku-time", sessionMeta);
-      return {
-        name,
-        label: node("span", "", box),
-        value: node("strong", "", box),
-      };
-    });
-    const options = node("details", "sudoku-options", hud);
-    const optionsToggle = node(
-      "summary",
-      "game-button game-icon-button",
-      options,
-    );
-    optionsToggle.append(WorkTimeApp.games.createIcon("more-horiz"));
-    const controls = node("div", "sudoku-controls", options);
+    const timerBox = node("div", "sudoku-time", sessionMeta);
+    const timerLabel = node("span", "game-sr-only", timerBox);
+    const timerValue = node("strong", "", timerBox);
     function button(parent, action, callback) {
       const b = node("button", "game-button", parent);
       b.type = "button";
@@ -111,6 +87,25 @@ WorkTimeApp.games.register({
       });
       return b;
     }
+    const pause = button(sessionMeta, "pause", () => {
+      manualPaused = !manualPaused;
+      syncClock();
+      save();
+      render();
+      if (!manualPaused) cells[selected].focus();
+    });
+    const options = node("details", "sudoku-options", sessionMeta);
+    const optionsToggle = node(
+      "summary",
+      "game-button game-icon-button",
+      options,
+    );
+    optionsToggle.append(WorkTimeApp.games.createIcon("more-horiz"));
+    const controls = node(
+      "div",
+      "sudoku-controls settings-select-options",
+      options,
+    );
     const choose = button(controls, "choose", () => {
       options.open = false;
       choosing = true;
@@ -119,13 +114,6 @@ WorkTimeApp.games.register({
       render();
       groupButtons.get(selectedGroup).focus();
     });
-    const pause = button(sessionMeta, "pause", () => {
-      manualPaused = !manualPaused;
-      syncClock();
-      save();
-      render();
-      if (!manualPaused) cells[selected].focus();
-    });
     const restart = button(controls, "restart", () => {
       options.open = false;
       confirming = true;
@@ -133,9 +121,17 @@ WorkTimeApp.games.register({
       render();
       cancel.focus();
     });
-    const catalog = node("div", "sudoku-catalog", root);
-    const categoryTitle = node("h3", "", catalog);
-    const categoryList = node("div", "sudoku-categories", catalog);
+    const catalog = WorkTimeApp.games.createLevelPage(
+      root,
+      "sudoku-level-page",
+    );
+    catalog.page.classList.add("sudoku-catalog");
+    const categoryList = node(
+      "div",
+      "sudoku-categories game-level-categories",
+      catalog.body,
+    );
+    categoryList.setAttribute("role", "group");
     const groupButtons = new Map(
       groups.map((group) => {
         const b = button(categoryList, group.id, () => {
@@ -146,8 +142,7 @@ WorkTimeApp.games.register({
         return [group.id, b];
       }),
     );
-    const progress = node("p", "sudoku-progress", catalog);
-    const levels = node("div", "sudoku-levels", catalog);
+    const levels = node("div", "sudoku-levels game-level-grid", catalog.body);
     const levelButtons = Array.from({ length: 20 }, (_, i) =>
       button(levels, "level-" + (i + 1), () =>
         open(groups.find((g) => g.id === selectedGroup).puzzles[i]),
@@ -213,31 +208,14 @@ WorkTimeApp.games.register({
     });
     const actions = node("div", "sudoku-actions", tools);
     tools.prepend(actions);
+    const undo = button(actions, "undo", () => {
+      if (canInput() && rules.undo(state)) changed();
+    });
     const notes = button(actions, "notes", () => {
       pencil = !pencil;
       render();
     });
     const erase = button(actions, "erase", () => input(0));
-    const undo = button(actions, "undo", () => {
-      if (canInput() && rules.undo(state)) changed();
-    });
-    const hint = button(actions, "hint", () => {
-      if (!canInput()) return;
-      let index = selected;
-      if (
-        current.givens[index] !== "0" ||
-        state.values[index] === Number(current.solution[index])
-      )
-        index = state.values.findIndex(
-          (n, i) => n !== Number(current.solution[i]),
-        );
-      if (index < 0) return;
-      selected = index;
-      if (rules.enter(current, state, index, Number(current.solution[index]))) {
-        state.hints++;
-        changed();
-      }
-    });
     const keypad = node("div", "sudoku-keypad", play);
     const digits = Array.from({ length: 9 }, (_, i) => {
       const b = button(keypad, "digit-" + (i + 1), () => input(i + 1));
@@ -395,6 +373,7 @@ WorkTimeApp.games.register({
       settle();
       if (isWon()) {
         const record = completed[current.id];
+        // Preserve how assisted attempts from older saves rank.
         if (
           !record ||
           state.hints < record.hints ||
@@ -421,15 +400,7 @@ WorkTimeApp.games.register({
       );
     }
     function paintMeters() {
-      const values = [
-        time(state?.elapsed || 0),
-        (state?.values.filter(Boolean).length || 0) + "/81",
-        state?.hints || 0,
-      ];
-      meters.forEach((meter, i) => {
-        meter.label.textContent = t(meter.name);
-        WorkTimeApp.games.paintCounter(meter.value, values[i]);
-      });
+      WorkTimeApp.games.paintCounter(timerValue, time(state?.elapsed || 0));
     }
     function drawThermos() {
       svg.replaceChildren();
@@ -496,50 +467,45 @@ WorkTimeApp.games.register({
     function render() {
       root.dataset.playing = String(!choosing);
       const group = groups.find((g) => g.id === selectedGroup);
-      title.textContent = choosing
-        ? t("name")
-        : t(group.id) +
-          " · " +
-          t("level", { n: group.puzzles.indexOf(current) + 1 });
+      title.textContent =
+        t(group.id) +
+        " · " +
+        t("level", { n: group.puzzles.indexOf(current) + 1 });
       paintMeters();
+      timerLabel.textContent = t("time");
       for (const [id, b] of groupButtons) {
         b.textContent = t(id);
         b.setAttribute("aria-pressed", String(id === selectedGroup));
       }
-      categoryTitle.textContent = t("categories");
-      progress.textContent = t("completed", {
+      categoryList.setAttribute("aria-label", t("categories"));
+      catalog.refresh();
+      catalog.summary.textContent = t("completed", {
         n: group.puzzles.filter((p) => completed[p.id]).length,
         total: group.puzzles.length,
       });
       levelButtons.forEach((b, i) => {
         const p = group.puzzles[i],
           record = completed[p.id];
-        b.disabled = !unlocked(group, i);
-        b.textContent =
-          String(i + 1).padStart(2, "0") +
-          (record ? " ✓" : drafts[p.id] ? " ·" : "");
-        b.title =
-          t("level", { n: i + 1 }) +
-          (b.disabled
-            ? " · " + t("locked")
-            : record
-              ? " · " +
-                time(record.elapsed) +
-                " · " +
-                t("hints") +
-                " " +
-                record.hints
-              : "");
-        b.setAttribute("aria-label", b.title);
-        b.classList.toggle("is-complete", !!record);
+        WorkTimeApp.games.paintLevelCard(b, {
+          number: i + 1,
+          label:
+            t("level", { n: i + 1 }) +
+            (record ? " · " + time(record.elapsed) : ""),
+          complete: !!record,
+          draft: !!drafts[p.id],
+          current: p === current,
+        });
       });
-      catalog.hidden = !choosing;
-      sessionMeta.hidden = choosing;
+      catalog.page.hidden = !choosing;
+      hud.hidden = choosing;
+      const optionsHost = choosing ? catalog.header : sessionMeta;
+      if (options.parentElement !== optionsHost) optionsHost.append(options);
+      timerBox.hidden = choosing;
       play.hidden = choosing;
       choose.hidden = choosing;
       pause.hidden = choosing;
       restart.hidden = choosing;
-      choose.textContent = t("choose");
+      labelButton(choose, t("choose"), "grid-4x4");
       labelButton(
         pause,
         t(manualPaused ? "resume" : "pause"),
@@ -549,7 +515,7 @@ WorkTimeApp.games.register({
       pause.querySelector("span").classList.add("game-sr-only");
       optionsToggle.setAttribute("aria-label", t("more"));
       optionsToggle.title = t("more");
-      restart.textContent = t("restart");
+      labelButton(restart, t("restart"), "restart-alt");
       pause.disabled = isWon() || confirming;
       restart.disabled = !state || confirming;
       ruleText.hidden = !current?.parity && !current?.thermos;
@@ -569,13 +535,7 @@ WorkTimeApp.games.register({
         coverDescription.textContent = confirming
           ? t("confirm")
           : isWon()
-            ? t("time") +
-              " " +
-              time(state.elapsed) +
-              " · " +
-              t("hints") +
-              " " +
-              state.hints
+            ? t("time") + " " + time(state.elapsed)
             : "";
         cancel.hidden = !confirming;
         cancel.textContent = t("cancel");
@@ -585,10 +545,9 @@ WorkTimeApp.games.register({
         accept.disabled = suspended;
       }
       for (const [b, name, icon] of [
+        [undo, "undo", "undo"],
         [notes, "notes", "event-note"],
         [erase, "erase", "delete-outline"],
-        [undo, "undo", "undo"],
-        [hint, "hint", "help"],
       ]) {
         labelButton(b, t(name), icon);
         b.disabled = !canInput();
@@ -631,6 +590,10 @@ WorkTimeApp.games.register({
     }
     listen(document, "pointerdown", (event) => {
       if (!options.contains(event.target)) options.open = false;
+    });
+    listen(options, "focusout", (event) => {
+      if (event.relatedTarget && !options.contains(event.relatedTarget))
+        options.open = false;
     });
     listen(options, "keydown", (event) => {
       if (event.key === "Escape" && options.open) {

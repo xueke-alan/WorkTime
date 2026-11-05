@@ -39,6 +39,7 @@ WorkTimeApp.games = (() => {
       <path d="m8.5 15-2 8h7l-2-8zM4 27h12m5-9h7"/>`,
     "game-sokoban": `<rect x="6" y="6" width="20" height="20" rx="2"/>
       <path d="m10 10 12 12m0-12L10 22"/>`,
+    "game-xiangqi": `<circle cx="16" cy="16" r="11"/><path d="M11 11h10M16 11v10m-6 0h12"/>`,
   };
   return {
     define(catalog) {

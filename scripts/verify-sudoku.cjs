@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -171,7 +172,7 @@ async function main() {
       );
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
       await page.locator("#date-tab-games").click();
-      await page.locator('#gamesPanel [data-game="game-sudoku"]').click();
+      await launchGame(page, "game-sudoku");
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
@@ -190,14 +191,82 @@ async function main() {
       await page.waitForFunction((k) => localStorage.getItem(k) !== null, key);
       return page.evaluate((k) => JSON.parse(localStorage.getItem(k)), key);
     };
+    async function assertActionRow() {
+      const buttons = await Promise.all(
+        ["undo", "notes", "erase"].map((name) => action(name).boundingBox()),
+      );
+      assert.equal(await page.locator(".sudoku-actions button").count(), 3);
+      assert.ok(buttons.every((box) => Math.abs(box.y - buttons[0].y) < 1));
+      assert.ok(buttons[0].x < buttons[1].x && buttons[1].x < buttons[2].x);
+    }
     await launch();
     assert.equal(await page.locator(".sudoku-categories button").count(), 6);
     assert.equal(await page.locator(".sudoku-levels button").count(), 20);
-    assert.equal(await action("level-2").isDisabled(), true);
-    await page.screenshot({ path: path.join(output, "categories.png") });
+    assert.equal(
+      await page.locator(".sudoku-levels button:enabled").count(),
+      20,
+    );
+    for (const width of [1440, 320]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const categories = await page.locator(".sudoku-categories").boundingBox();
+      const levels = await page.locator(".sudoku-levels").boundingBox();
+      assert.ok(Math.abs(categories.x - levels.x) < 1);
+      assert.ok(categories.y + categories.height < levels.y);
+      assert.ok(levels.x + levels.width <= width);
+      const tiles = await page
+        .locator(".sudoku-levels button")
+        .evaluateAll((buttons) =>
+          buttons.map((button) => {
+            const { width, height } = button.getBoundingClientRect();
+            return {
+              width,
+              height,
+              radius: parseFloat(getComputedStyle(button).borderRadius),
+            };
+          }),
+        );
+      assert.ok(
+        tiles.every(
+          ({ width, height, radius }) =>
+            Math.abs(Math.max(44, (width * 3) / 4) - height) < 1 && radius > 0,
+        ),
+      );
+      await page.screenshot({
+        path: path.join(output, "categories-" + width + ".png"),
+      });
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await action("thermo").click();
+    await action("level-20").click();
+    const laterPuzzle = data.sudoku.groups.at(-1).puzzles.at(-1);
+    const laterIndex = laterPuzzle.givens.indexOf("0");
+    const laterDigit = laterPuzzle.solution[laterIndex];
+    await action("digit-" + laterDigit).click();
+    const laterSave = await saved();
+    assert.equal(laterSave.current, laterPuzzle.id);
+    assert.equal(
+      laterSave.drafts[laterPuzzle.id].values[laterIndex],
+      Number(laterDigit),
+    );
+    assert.deepEqual(laterSave.completed, {});
+    assert.equal(
+      await page.evaluate(
+        (save) =>
+          WorkTimeApp.services.gameArchive.normalize("game-sudoku", save)
+            .current,
+        laterSave,
+      ),
+      laterPuzzle.id,
+    );
+    await launch();
+    assert.equal(await page.locator(".sudoku-catalog").isVisible(), false);
+    assert.equal((await saved()).current, laterPuzzle.id);
+    await menuAction("choose");
+    await action("easy").click();
     await action("level-1").click();
     const puzzle = data.sudoku.groups[0].puzzles[0],
       index = puzzle.givens.indexOf("0");
+    const digit = Number(puzzle.solution[index]);
     const cell = page.locator('[data-cell="' + index + '"]');
     await cell.focus();
     await cell.press("n");
@@ -206,12 +275,12 @@ async function main() {
     await action("undo").click();
     assert.equal((await saved()).drafts[puzzle.id].notes[index], 0);
     await action("notes").click();
-    await action("hint").click();
-    assert.equal(
-      (await saved()).drafts[puzzle.id].values[index],
-      Number(puzzle.solution[index]),
-    );
-    assert.equal((await saved()).drafts[puzzle.id].hints, 1);
+    await action("digit-" + digit).click();
+    assert.equal((await saved()).drafts[puzzle.id].values[index], digit);
+    await action("erase").click();
+    assert.equal((await saved()).drafts[puzzle.id].values[index], 0);
+    await action("undo").click();
+    assert.equal((await saved()).drafts[puzzle.id].values[index], digit);
     for (const viewport of [
       { width: 1440, height: 1000 },
       { width: 1213, height: 1021 },
@@ -222,6 +291,7 @@ async function main() {
       await page.waitForFunction(
         () => document.querySelector(".game-sudoku").dataset.layout === "wide",
       );
+      await assertActionRow();
       const board = await page.locator(".sudoku-board").boundingBox();
       const tools = await page.locator(".sudoku-tools").boundingBox();
       const keypad = await page.locator(".sudoku-keypad").boundingBox();
@@ -246,7 +316,44 @@ async function main() {
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
     const geometry = await page.locator(".sudoku-board").boundingBox();
-    await page.locator(".sudoku-options > summary").click();
+    const optionsToggle = page.locator(".sudoku-options > summary");
+    const menu = page.locator(".sudoku-controls");
+    const title = page.locator(".sudoku-hud .game-title");
+    async function assertToolbar() {
+      const [heading, timer, pause, more] = await Promise.all(
+        [
+          title,
+          page.locator(".sudoku-time strong"),
+          action("pause"),
+          optionsToggle,
+        ].map((element) => element.boundingBox()),
+      );
+      assert.ok(heading.x + heading.width <= timer.x);
+      assert.ok(
+        timer.x + timer.width < pause.x && pause.x + pause.width < more.x,
+      );
+      const centerY = (box) => box.y + box.height / 2;
+      assert.ok(Math.abs(centerY(timer) - centerY(pause)) < 1);
+      assert.ok(Math.abs(centerY(pause) - centerY(more)) < 1);
+      const panel = await menu.boundingBox();
+      assert.ok(Math.abs(panel.x + panel.width - more.x - more.width) < 1);
+    }
+    const hud = await page.locator(".sudoku-hud").boundingBox();
+    assert.ok(Math.abs(hud.x - geometry.x) < 1);
+    assert.ok(Math.abs(hud.width - geometry.width) < 1);
+    await optionsToggle.click();
+    await assertToolbar();
+    await action("choose").press("Escape");
+    assert.equal(await menu.isVisible(), false);
+    assert.equal(
+      await optionsToggle.evaluate((el) => el === document.activeElement),
+      true,
+    );
+    await optionsToggle.click();
+    await title.click();
+    assert.equal(await menu.isVisible(), false);
+    await optionsToggle.click();
+    await page.screenshot({ path: path.join(output, "options-desktop.png") });
     await page.locator("[data-game-help]").click();
     assert.equal(await page.locator(".game-help-screen").isVisible(), true);
     await page.locator("[data-game-help-close]").click();
@@ -256,8 +363,24 @@ async function main() {
     );
     await menuAction("restart");
     await action("cancel").click();
-    assert.equal((await saved()).drafts[puzzle.id].hints, 1);
+    assert.equal((await saved()).drafts[puzzle.id].values[index], digit);
     await action("pause").click();
+    const cover = page.locator(".sudoku-cover");
+    assert.equal(await page.locator(".sudoku-board").isVisible(), false);
+    assert.deepEqual(await cover.boundingBox(), geometry);
+    const heading = await cover.locator("h3").boundingBox();
+    const resume = await action("accept").boundingBox();
+    assert.ok(
+      Math.abs(heading.x + heading.width / 2 - (resume.x + resume.width / 2)) <
+        1,
+    );
+    assert.ok(
+      Math.abs(
+        (heading.y + resume.y + resume.height) / 2 -
+          (geometry.y + geometry.height / 2),
+      ) < 1,
+    );
+    await page.screenshot({ path: path.join(output, "paused-desktop.png") });
     const paused = (await saved()).drafts[puzzle.id].elapsed;
     await page.waitForTimeout(1200);
     assert.equal((await saved()).drafts[puzzle.id].elapsed, paused);
@@ -277,6 +400,12 @@ async function main() {
     await page.screenshot({ path: path.join(output, "thermometer.png") });
     await menuAction("choose");
     await action("easy").click();
+    assert.equal(
+      await action("level-1")
+        .locator(".game-level-badge")
+        .getAttribute("data-state"),
+      "draft",
+    );
     await action("level-1").click();
     assert.equal(
       (await saved()).drafts[puzzle.id].values[index],
@@ -305,7 +434,7 @@ async function main() {
         ),
       );
       for (const entries of Object.values(translations)) {
-        assert.equal(entries.length, 43);
+        assert.equal(entries.length, 40);
         assert.ok(entries.every(([, v]) => typeof v === "string" && v.length));
       }
     }
@@ -325,6 +454,7 @@ async function main() {
           board.right <= innerWidth + 1
         );
       });
+      await assertActionRow();
       const bounds = await page.locator(".sudoku-board").boundingBox();
       assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width + 1);
       assert.equal(
@@ -336,9 +466,24 @@ async function main() {
       await page.screenshot({
         path: path.join(output, "mobile-" + width + ".png"),
       });
+      await optionsToggle.click();
+      await assertToolbar();
+      const menuBounds = await menu.boundingBox();
+      assert.ok(menuBounds.x >= 0 && menuBounds.x + menuBounds.width <= width);
+      await page.screenshot({
+        path: path.join(output, "options-mobile-" + width + ".png"),
+      });
+      await optionsToggle.press("Escape");
+      await action("pause").click();
+      assert.equal(await page.locator(".sudoku-board").isVisible(), false);
+      assert.deepEqual(await cover.boundingBox(), bounds);
+      await page.screenshot({
+        path: path.join(output, "paused-mobile-" + width + ".png"),
+      });
+      await action("accept").click();
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
-    // Complete through a normal final keypress, verify unlocking and replay records.
+    // Complete through a normal final keypress and verify the replay record.
     await page.evaluate(
       ({ key, id, solution, index }) => {
         const save = JSON.parse(localStorage.getItem(key));
@@ -364,6 +509,13 @@ async function main() {
     );
     assert.ok((await saved()).completed[puzzle.id]);
     await menuAction("choose");
+    assert.equal(
+      await action("level-1")
+        .locator(".game-level-badge")
+        .getAttribute("data-state"),
+      "complete",
+    );
+    assert.match(await action("level-1").getAttribute("aria-label"), /已通关/);
     assert.equal(await action("level-2").isEnabled(), true);
     await action("level-1").click();
     await menuAction("restart");
@@ -389,7 +541,7 @@ async function main() {
         ),
       key,
     );
-    await page.locator('#gamesPanel [data-game="game-sudoku"]').click();
+    await launchGame(page, "game-sudoku");
     assert.equal(await page.locator(".sudoku-catalog").isVisible(), true);
     await context.close();
     const blocked = await browser.newContext({ reducedMotion: "reduce" });
@@ -408,16 +560,16 @@ async function main() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await noStorage.locator("#date-tab-games").click();
-    await noStorage.locator('[data-game="game-sudoku"]').click();
+    await launchGame(noStorage, "game-sudoku");
     await noStorage.locator('[data-sudoku-action="level-1"]').click();
-    await noStorage.locator('[data-sudoku-action="hint"]').click();
+    await noStorage.locator('[data-sudoku-action="digit-1"]').click();
     assert.equal(await noStorage.locator("[data-game-error]").count(), 0);
     assert.ok(
       (await noStorage.locator(".sudoku-feedback").textContent()).length > 0,
     );
     await blocked.close();
     console.log(
-      "Sudoku: 120 unique solutions, variant constraints, input, undo, drafts, progression, replay, pause, help, six languages, mobile, unavailable storage and offline loading verified.",
+      "Sudoku: 120 unique solutions, variant constraints, free level selection, input, undo, drafts, replay, pause, help, six languages, mobile, unavailable storage and offline loading verified.",
     );
   } finally {
     await browser.close();

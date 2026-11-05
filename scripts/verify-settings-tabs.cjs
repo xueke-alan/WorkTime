@@ -122,6 +122,39 @@ async function verify() {
       await selected("#settingsWorkTab");
       assert.equal(await page.locator("#standardStart").inputValue(), draft);
       await page.locator("#personalSettingsCancel").click();
+      const agendaMode = page.locator("#agendaMode");
+      const settings = page.locator("#settingsPane");
+      await open();
+      await page.locator("#nextMonth").click();
+      assert.equal(await settings.isVisible(), true);
+      await page.locator("#standardStart").fill("09:21");
+      await agendaMode.press("Enter");
+      await page.waitForSelector("#scheduleDraftDialog[open]");
+      await page.locator("#scheduleDraftContinue").click();
+      assert.equal(await agendaMode.getAttribute("aria-pressed"), "false");
+      assert.equal(await settings.isVisible(), true);
+      assert.equal(await page.locator("#standardStart").inputValue(), "09:21");
+      await agendaMode.click();
+      await page.locator("#scheduleDraftDiscard").click();
+      assert.equal(await agendaMode.getAttribute("aria-pressed"), "true");
+      assert.equal(await settings.isVisible(), false);
+      await page.locator("#agendaNew").click();
+      await page.locator("#agendaTitle").fill("Settings navigation");
+      await page.locator("#agendaSave").click();
+      const event = page.locator("#calendar .agenda-chip").first();
+      await event.waitFor();
+      await open();
+      await event.click();
+      assert.equal(await settings.isVisible(), false);
+      assert.equal(
+        await page.locator("#agendaTitle").inputValue(),
+        "Settings navigation",
+      );
+      await page.locator("#agendaCancel").click();
+      await open();
+      await agendaMode.click();
+      assert.equal(await agendaMode.getAttribute("aria-pressed"), "false");
+      assert.equal(await settings.isVisible(), false);
       // A refresh resets tab memory. Settings remain usable in English.
       await page.reload();
       await ready();
@@ -219,9 +252,13 @@ async function verify() {
       assert.equal(await page.locator("#settingsPane").isVisible(), true);
       await page.waitForFunction(
         () =>
-          document
+          !document
             .querySelector(".workspace > .editor")
-            .getAnimations({ subtree: true }).length === 0,
+            .getAnimations({ subtree: true })
+            .some(
+              (animation) =>
+                animation.effect.getTiming().iterations !== Infinity,
+            ),
       );
       await page.emulateMedia({ reducedMotion: "reduce" });
       await page.evaluate(() =>

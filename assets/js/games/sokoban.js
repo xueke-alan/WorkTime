@@ -37,10 +37,6 @@ WorkTimeApp.games.register({
       saveFailed = false;
     const drafts = {},
       completed = {};
-    const unlocked = (index) =>
-      index === 0 ||
-      !!completed[levels[index - 1].id] ||
-      !!completed[levels[index].id];
     try {
       const saved = JSON.parse(gameStorage.getItem(key));
       if (saved?.version === 1) {
@@ -61,7 +57,7 @@ WorkTimeApp.games.register({
         )
           chapter = saved.chapter;
         const index = levels.findIndex((level) => level.id === saved.current);
-        if (index >= 0 && unlocked(index) && drafts[levels[index].id]) {
+        if (index >= 0 && drafts[levels[index].id]) {
           current = index;
           chapter = Math.floor(index / 20);
           choosing = false;
@@ -115,17 +111,28 @@ WorkTimeApp.games.register({
       render();
       chapterButtons[chapter].focus();
     });
-    const catalog = node("div", "sokoban-catalog", root);
-    const chapters = node("div", "sokoban-chapters", catalog);
-    const chapterButtons = [0, 1, 2].map((index) =>
+    const catalog = WorkTimeApp.games.createLevelPage(
+      root,
+      "sokoban-level-page",
+    );
+    catalog.page.classList.add("sokoban-catalog");
+    const progress = node("span", "sokoban-progress", catalog.summary);
+    const chapterProgress = node(
+      "span",
+      "game-level-progress",
+      catalog.summary,
+    );
+    const chapters = node("div", "game-level-categories", catalog.body);
+    chapters.setAttribute("role", "group");
+    const chapterNames = ["easy", "medium", "hard"];
+    const chapterButtons = chapterNames.map((_, index) =>
       button(chapters, "chapter-" + index, () => {
         chapter = index;
         save();
         render();
       }),
     );
-    const progress = node("p", "sokoban-progress", catalog);
-    const grid = node("div", "sokoban-levels", catalog);
+    const grid = node("div", "sokoban-levels game-level-grid", catalog.body);
     const levelButtons = Array.from({ length: 20 }, (_, index) =>
       button(grid, "level-" + index, () => open(chapter * 20 + index)),
     );
@@ -235,7 +242,6 @@ WorkTimeApp.games.register({
       warning.textContent = saveFailed ? t("saveFailed") : "";
     }
     function open(index) {
-      if (!unlocked(index)) return;
       current = index;
       chapter = Math.floor(index / 20);
       choosing = false;
@@ -317,34 +323,39 @@ WorkTimeApp.games.register({
             previous.set(piece.dataset.piece, piece.getBoundingClientRect()),
           );
       stopMotion(!animateMove);
-      catalog.hidden = !choosing;
+      root.dataset.playing = String(!choosing);
+      catalog.page.hidden = !choosing;
+      hud.hidden = choosing;
       play.hidden = choosing;
       choose.hidden = choosing;
-      title.textContent = choosing
-        ? t("catalog")
-        : t("level", { n: current + 1, total: levels.length });
+      title.textContent = t("level", { n: current + 1, total: levels.length });
       choose.textContent = t("choose");
+      catalog.refresh();
+      chapters.setAttribute("aria-label", t("catalog"));
       chapterButtons.forEach((element, index) => {
-        element.textContent = t(["easy", "medium", "hard"][index]);
+        element.textContent = t(chapterNames[index]);
         element.setAttribute("aria-pressed", String(index === chapter));
       });
+      const completedCount = Object.keys(completed).length;
       progress.textContent = t("progress", {
-        n: Object.keys(completed).length,
+        n: completedCount,
         total: levels.length,
       });
+      const chapterLevels = levels.slice(chapter * 20, (chapter + 1) * 20);
+      chapterProgress.textContent = t("progress", {
+        n: chapterLevels.filter(({ id }) => completed[id]).length,
+        total: chapterLevels.length,
+      });
       levelButtons.forEach((element, index) => {
-        const number = chapter * 20 + index,
-          done = !!completed[levels[number].id];
-        element.textContent = String(number + 1) + (done ? " ✓" : "");
-        element.disabled = !unlocked(number);
-        element.classList.toggle("is-complete", done);
-        element.title = element.disabled
-          ? t("locked")
-          : t("level", { n: number + 1, total: levels.length });
-        element.setAttribute(
-          "aria-label",
-          element.title + (done ? " · " + t("complete") : ""),
-        );
+        const number = chapter * 20 + index + 1;
+        const { id } = chapterLevels[index];
+        WorkTimeApp.games.paintLevelCard(element, {
+          number,
+          label: t("level", { n: number, total: levels.length }),
+          complete: !!completed[id],
+          draft: !!drafts[id]?.moves,
+          current: current === number - 1 && Object.hasOwn(drafts, id),
+        });
       });
       undo.textContent = t("undo");
       restart.textContent = t("restart");
@@ -384,7 +395,7 @@ WorkTimeApp.games.register({
       next.textContent =
         current === levels.length - 1 ? t("finish") : t("next");
       status.textContent = won
-        ? current === levels.length - 1
+        ? completedCount === levels.length
           ? t("allWon")
           : t("won")
         : rules.deadlocked(map, value)

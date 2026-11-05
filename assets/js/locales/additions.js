@@ -1,5 +1,26 @@
 "use strict";
 for (const [language, labels] of Object.entries({
+  "zh-CN": ["可选", "进行中", "已通关", "未解锁", "选择关卡", "关闭"],
+  "zh-TW": ["可選", "進行中", "已通關", "未解鎖", "選擇關卡", "關閉"],
+  "zh-HK": ["可選", "進行中", "已通關", "未解鎖", "選擇關卡", "關閉"],
+  en: [
+    "Available",
+    "In progress",
+    "Completed",
+    "Locked",
+    "Choose stage",
+    "Close",
+  ],
+  ja: ["選択可能", "進行中", "クリア済み", "未解放", "ステージ選択", "閉じる"],
+  ko: ["선택 가능", "진행 중", "완료", "잠김", "스테이지 선택", "닫기"],
+})) {
+  const keys = ["available", "draft", "complete", "locked", "choose", "close"];
+  keys.forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["games.levelStatus." + key] =
+      labels[index];
+  });
+}
+for (const [language, labels] of Object.entries({
   "zh-CN": ["仅显示工作日（包含加班和计划加班）", "本周没有工作日"],
   "zh-TW": ["僅顯示工作日（包含加班和計劃加班）", "本週沒有工作日"],
   "zh-HK": ["僅顯示工作日（包含加班和計劃加班）", "本週沒有工作日"],
@@ -2023,6 +2044,78 @@ for (const [language, label] of Object.entries({
 }
 (() => {
   const keys = [
+    "title",
+    "empty",
+    "unavailable",
+    "saved",
+    "best",
+    "wins",
+    "completed",
+  ];
+  const messages = {
+    "zh-CN": [
+      "进度",
+      "暂无记录",
+      "无法读取",
+      "有已保存进度",
+      "最高分 {n}",
+      "获胜 {n} 局",
+      "已完成 {n} 关",
+    ],
+    "zh-TW": [
+      "進度",
+      "暫無紀錄",
+      "無法讀取",
+      "有已儲存進度",
+      "最高分 {n}",
+      "獲勝 {n} 局",
+      "已完成 {n} 關",
+    ],
+    "zh-HK": [
+      "進度",
+      "暫無紀錄",
+      "無法讀取",
+      "有已儲存進度",
+      "最高分 {n}",
+      "獲勝 {n} 局",
+      "已完成 {n} 關",
+    ],
+    en: [
+      "Progress",
+      "No record yet",
+      "Unavailable",
+      "Saved progress",
+      "Best score {n}",
+      "Wins {n}",
+      "Completed {n}",
+    ],
+    ja: [
+      "進捗",
+      "記録なし",
+      "読み込み不可",
+      "保存済みの進捗あり",
+      "最高スコア {n}",
+      "勝利数 {n}",
+      "クリア数 {n}",
+    ],
+    ko: [
+      "진행 상황",
+      "기록 없음",
+      "읽을 수 없음",
+      "저장된 진행 상황 있음",
+      "최고 점수 {n}",
+      "승리 {n}회",
+      "완료 {n}개",
+    ],
+  };
+  for (const [language, values] of Object.entries(messages))
+    keys.forEach((key, index) => {
+      WorkTimeApp.data.locales[language]["games.progress." + key] =
+        values[index];
+    });
+})();
+(() => {
+  const keys = [
     "save",
     "saveHint",
     "import",
@@ -2070,13 +2163,13 @@ for (const [language, label] of Object.entries({
       "成绩与通关记录自动择优合并；冲突进度默认保留本机。胜场取较大值，不累加。",
       "冲突进度来源",
       "保留本机",
-      "采用导入",
+      "采用导入的进度",
       "新增",
       "合并",
       "未变化",
       "成绩提升",
       "游戏存档导入完成：新增 {added}，合并 {merged}，未变化 {unchanged}。",
-      "游戏存档已复制；长按保存可下载文件。",
+      "存档已复制",
       "游戏存档已下载。",
       "暂无游戏存档。",
       "游戏存档数据损坏或包含不支持的游戏。",
@@ -2104,13 +2197,13 @@ for (const [language, label] of Object.entries({
       "成績與通關紀錄自動擇優合併；衝突進度預設保留本機。勝場取較大值，不累加。",
       "衝突進度來源",
       "保留本機",
-      "採用匯入",
+      "採用匯入的進度",
       "新增",
       "合併",
       "未變更",
       "成績提升",
       "遊戲存檔匯入完成：新增 {added}，合併 {merged}，未變更 {unchanged}。",
-      "遊戲存檔已複製；長按儲存可下載檔案。",
+      "存檔已複製",
       "遊戲存檔已下載。",
       "暫無遊戲存檔。",
       "遊戲存檔資料損壞或包含不支援的遊戲。",
@@ -2138,13 +2231,13 @@ for (const [language, label] of Object.entries({
       "成績與過關紀錄自動擇優合併；衝突進度預設保留本機。勝場取較大值，不累加。",
       "衝突進度來源",
       "保留本機",
-      "採用匯入",
+      "採用匯入的進度",
       "新增",
       "合併",
       "未變更",
       "成績提升",
       "遊戲存檔匯入完成：新增 {added}，合併 {merged}，未變更 {unchanged}。",
-      "遊戲存檔已複製；長按儲存可下載檔案。",
+      "存檔已複製",
       "遊戲存檔已下載。",
       "暫無遊戲存檔。",
       "遊戲存檔資料損壞或包含不支援的遊戲。",
@@ -2172,13 +2265,13 @@ for (const [language, label] of Object.entries({
       "Best scores and completed levels merge automatically. Conflicting progress keeps local data by default. Win counts use the maximum, never a sum.",
       "Conflicting progress",
       "Keep local",
-      "Use imported",
+      "Use imported progress",
       "Added",
       "Merged",
       "Unchanged",
       "Improved record",
       "Game saves imported: {added} added, {merged} merged, {unchanged} unchanged.",
-      "Game saves copied. Hold Save to download a file.",
+      "Saves copied",
       "Game saves downloaded.",
       "No game saves yet.",
       "Game saves are damaged or contain an unsupported game.",
@@ -2206,13 +2299,13 @@ for (const [language, label] of Object.entries({
       "最高記録とクリア済みステージを統合します。競合する進行状況は既定でこの端末を優先します。勝利数は加算せず大きい値を採用します。",
       "競合する進行状況",
       "この端末を優先",
-      "読み込むデータを優先",
+      "読み込んだ進行状況を使う",
       "追加",
       "統合",
       "変更なし",
       "記録更新",
       "セーブの読み込み完了：追加 {added}、統合 {merged}、変更なし {unchanged}。",
-      "セーブをコピーしました。長押しでファイルを保存できます。",
+      "コピー済み",
       "セーブをダウンロードしました。",
       "セーブはまだありません。",
       "セーブが破損しているか、未対応のゲームが含まれています。",
@@ -2240,13 +2333,13 @@ for (const [language, label] of Object.entries({
       "최고 기록과 완료한 단계를 자동 병합합니다. 충돌하는 진행 상황은 기본적으로 현재 기기를 유지합니다. 승리 횟수는 합산하지 않고 큰 값을 사용합니다.",
       "충돌하는 진행 상황",
       "현재 기기 유지",
-      "가져온 저장 사용",
+      "가져온 진행 상황 사용",
       "추가",
       "병합",
       "변경 없음",
       "기록 향상",
       "게임 저장 가져오기 완료: 추가 {added}, 병합 {merged}, 변경 없음 {unchanged}.",
-      "게임 저장을 복사했습니다. 길게 누르면 파일로 다운로드합니다.",
+      "복사 완료",
       "게임 저장을 다운로드했습니다.",
       "게임 저장이 없습니다.",
       "저장 데이터가 손상되었거나 지원하지 않는 게임이 포함되어 있습니다.",
@@ -2323,92 +2416,6 @@ for (const [language, labels] of Object.entries({
   locale["backup.workOnly"] = labels[2];
   locale["backup.unsupported"] = labels[3];
 }
-// Short card captions follow the shared game catalog order.
-for (const [language, captions] of Object.entries({
-  "zh-CN": [
-    "合并数字挑战",
-    "寻找地雷线索",
-    "吃点长大",
-    "九宫格逻辑挑战",
-    "蓄力跳跃挑战",
-    "推箱解谜",
-    "连线配对消除",
-    "种花照料花园",
-    "守护坦克基地",
-  ],
-  "zh-TW": [
-    "合併數字挑戰",
-    "尋找地雷線索",
-    "吃點長大",
-    "九宮格邏輯挑戰",
-    "蓄力跳躍挑戰",
-    "推箱解謎",
-    "連線配對消除",
-    "種花照料花園",
-    "守護坦克基地",
-  ],
-  "zh-HK": [
-    "合併數字挑戰",
-    "尋找地雷線索",
-    "吃點長大",
-    "九宮格邏輯挑戰",
-    "蓄力跳躍挑戰",
-    "推箱解謎",
-    "連線配對消除",
-    "種花照料花園",
-    "守護坦克基地",
-  ],
-  en: [
-    "Merge your way to 2048",
-    "Find clues, dodge mines",
-    "Eat, grow, keep moving",
-    "A little logic in every grid",
-    "Charge, jump, land",
-    "Push each crate into place",
-    "Match pairs, clear the board",
-    "Plant and tend your garden",
-    "Defend your base",
-  ],
-  ja: [
-    "数字を合わせて2048へ",
-    "手がかりを探して地雷回避",
-    "食べて伸びて進もう",
-    "マス目に隠れた論理パズル",
-    "ためて跳んで着地",
-    "箱を押してゴールへ",
-    "ペアをつないで消そう",
-    "花を植えて庭づくり",
-    "基地を守って敵を迎撃",
-  ],
-  ko: [
-    "숫자를 합쳐 2048 도전",
-    "단서를 찾아 지뢰 피하기",
-    "먹고 자라며 방향 전환",
-    "칸마다 숨겨진 논리 퍼즐",
-    "힘을 모아 점프하고 착지",
-    "상자를 밀어 목표 지점으로",
-    "짝을 연결해 보드 비우기",
-    "꽃을 심고 정원 가꾸기",
-    "기지를 지키며 적군 격퇴",
-  ],
-})) {
-  const ids = [
-    "2048",
-    "minesweeper",
-    "snake",
-    "sudoku",
-    "jump",
-    "sokoban",
-    "link",
-    "garden",
-    "tank",
-  ];
-  ids.forEach((id, index) => {
-    WorkTimeApp.data.locales[language]["games.card.game-" + id] =
-      captions[index];
-  });
-}
-
 // Personal agenda labels.
 for (const [language, labels] of Object.entries({
   "zh-CN": [

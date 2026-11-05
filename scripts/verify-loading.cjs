@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -64,7 +65,7 @@ async function verify() {
         );
         assert.equal(
           requests.filter((url) =>
-            /\/games\/(?!catalog|registry|menu|ui)[^/]+\.js|\/data\/(?:sudoku|sokoban)\.js|\/css\/(?:2048|minesweeper|snake|sudoku|jump|sokoban|link|garden|tank)\.css/.test(
+            /\/games\/(?!catalog|registry|menu|ui)[^/]+\.js|\/data\/(?:sudoku|sokoban|xiangqi)\.js|\/css\/(?:2048|minesweeper|snake|sudoku|jump|sokoban|link|garden|tank|xiangqi)\.css/.test(
               url,
             ),
           ).length,
@@ -73,7 +74,7 @@ async function verify() {
         );
         assert.equal(
           await page.evaluate(() => WorkTimeApp.games.list().length),
-          9,
+          10,
         );
         await page.evaluate(async () => {
           await WorkTimeApp.i18n.setLanguage("ja");
@@ -129,7 +130,7 @@ async function verify() {
             await route.continue();
           });
           await page.locator("#date-tab-games").click();
-          await page.locator('#gamesPanel [data-game="game-snake"]').click();
+          await launchGame(page, "game-snake");
           await started;
           await page.locator("#gameExitButton").click();
           await page.waitForTimeout(300);
@@ -142,7 +143,7 @@ async function verify() {
             0,
             "a cancelled load must not mount a game after exit",
           );
-          await page.locator('#gamesPanel [data-game="game-snake"]').click();
+          await launchGame(page, "game-snake");
           await page.locator(".game-snake").waitFor();
           await page.evaluate(() => WorkTimeApp.games.prepareArchive());
           assert.equal(
@@ -151,7 +152,7 @@ async function verify() {
           );
           if (root.endsWith("_site")) {
             const dynamic = requests.filter((url) =>
-              /\/locales\/runtime\/(?!zh-CN)|\/games\/(?:snake|garden|.*-rules)\.js|\/data\/(?:sudoku|sokoban)\.js|\/css\/(?:snake|garden)\.css/.test(
+              /\/locales\/runtime\/(?!zh-CN)|\/games\/(?:snake|garden|.*-rules)\.js|\/data\/(?:sudoku|sokoban|xiangqi)\.js|\/css\/(?:snake|garden)\.css/.test(
                 url,
               ),
             );

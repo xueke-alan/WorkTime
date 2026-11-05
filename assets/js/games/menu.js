@@ -1,7 +1,10 @@
 "use strict";
-/** Both menu surfaces launch games directly from the shared card catalog. */
-WorkTimeApp.ui.renderGameMenu = function (container, onSelect, archiveUI) {
-  const t = WorkTimeApp.i18n.t;
+/** The menu previews the selected entry without loading its game. */
+WorkTimeApp.ui.renderGameMenu = function (
+  container,
+  { selectedId, onSelect, onLaunch, archiveUI },
+) {
+  const { t, number } = WorkTimeApp.i18n;
   const entries = WorkTimeApp.games.list();
   const title = document.createElement("h2");
   title.textContent = t("games.menu");
@@ -15,6 +18,63 @@ WorkTimeApp.ui.renderGameMenu = function (container, onSelect, archiveUI) {
   list.className = "game-menu-list";
   list.setAttribute("role", "group");
   list.setAttribute("aria-label", t("games.menu"));
+  const detail = document.createElement("section");
+  detail.className = "game-menu-detail";
+  const detailHeader = document.createElement("header");
+  detailHeader.className = "game-menu-detail-header";
+  const detailArtwork = document.createElement("span");
+  detailArtwork.className = "game-menu-artwork";
+  detailArtwork.setAttribute("aria-hidden", "true");
+  const detailTitle = document.createElement("h3");
+  detailHeader.append(detailArtwork, detailTitle);
+  const description = document.createElement("p");
+  description.className = "game-menu-description";
+  const play = document.createElement("button");
+  play.type = "button";
+  play.className = "ui-button primary game-menu-play";
+  play.textContent = t("games.play");
+  play.onclick = () => onLaunch(selectedId);
+  const progress = document.createElement("div");
+  progress.className = "game-menu-progress";
+  const progressTitle = document.createElement("h4");
+  progressTitle.textContent = t("games.progress.title");
+  const progressText = document.createElement("p");
+  progress.append(progressTitle, progressText);
+  detail.append(detailHeader, description, play, progress);
+
+  function refreshProgress() {
+    const { kind, value } =
+      WorkTimeApp.services.gameArchive.progressSummary(selectedId);
+    const message = t(
+      "games.progress." + kind,
+      value === undefined ? undefined : { n: number(value) },
+    );
+    if (progressText.textContent !== message)
+      progressText.textContent = message;
+  }
+
+  const buttons = [];
+  function setTabStop(active) {
+    for (const button of buttons) button.tabIndex = button === active ? 0 : -1;
+  }
+  function select(id) {
+    const index = entries.findIndex((entry) => entry.id === id);
+    if (index < 0) return;
+    const entry = entries[index];
+    selectedId = id;
+    for (const button of buttons)
+      button.setAttribute("aria-pressed", String(button === buttons[index]));
+    setTabStop(buttons[index]);
+    const name = t(entry.nameKey);
+    detail.setAttribute("aria-label", name);
+    detailArtwork.replaceChildren(WorkTimeApp.games.createIcon(entry.icon));
+    detailTitle.textContent = name;
+    description.textContent = t(entry.descriptionKey);
+    description.scrollTop = 0;
+    play.setAttribute("aria-label", t("games.play") + " · " + name);
+    refreshProgress();
+    detail.scrollTop = 0;
+  }
   for (const entry of entries) {
     const button = document.createElement("button");
     button.type = "button";
@@ -27,34 +87,21 @@ WorkTimeApp.ui.renderGameMenu = function (container, onSelect, archiveUI) {
     const label = document.createElement("span");
     label.className = "game-menu-name";
     label.textContent = t(entry.nameKey);
-    const description = document.createElement("span");
-    description.className = "game-menu-description";
-    const captionKey = "games.card." + entry.id;
-    const caption = t(captionKey);
-    description.textContent =
-      caption === captionKey ? t(entry.descriptionKey) : caption;
-    button.setAttribute(
-      "aria-label",
-      t("games.play") + " · " + t(entry.nameKey),
-    );
-    button.append(artwork, label, description);
+    button.append(artwork, label);
     button.onclick = () => {
-      container.dataset.selectedGame = entry.id;
+      select(entry.id);
       onSelect(entry.id);
     };
+    button.onfocus = () => setTabStop(button);
+    buttons.push(button);
     list.append(button);
   }
   list.onkeydown = (event) => {
-    const buttons = [...list.children];
     const current = buttons.indexOf(event.target);
     if (current < 0) return;
-    const columns =
-      getComputedStyle(list).gridTemplateColumns.split(" ").length;
     const next = {
-      ArrowRight: Math.min(current + 1, buttons.length - 1),
-      ArrowLeft: Math.max(current - 1, 0),
-      ArrowDown: Math.min(current + columns, buttons.length - 1),
-      ArrowUp: Math.max(current - columns, 0),
+      ArrowDown: Math.min(current + 1, buttons.length - 1),
+      ArrowUp: Math.max(current - 1, 0),
       Home: 0,
       End: buttons.length - 1,
     }[event.key];
@@ -62,7 +109,14 @@ WorkTimeApp.ui.renderGameMenu = function (container, onSelect, archiveUI) {
     event.preventDefault();
     buttons[next].focus();
   };
-  if (entries.length) library.append(list);
-  else library.textContent = t("games.empty");
+  if (entries.length) {
+    library.append(list, detail);
+    select(
+      entries.some((entry) => entry.id === selectedId)
+        ? selectedId
+        : entries[0].id,
+    );
+  } else library.textContent = t("games.empty");
   container.replaceChildren(header, library);
+  return { select, refreshProgress };
 };

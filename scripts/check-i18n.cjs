@@ -30,6 +30,7 @@ function checkI18n() {
     "sudoku",
     "jump",
     "sokoban",
+    "xiangqi",
     "link",
     "garden",
     "tank",

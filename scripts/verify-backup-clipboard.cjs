@@ -15,8 +15,29 @@ const { chromium } = require("playwright");
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
-    await page.evaluate(() => {
+    const xiangqi = await page.evaluate(async () => {
       localStorage.setItem("worktime.games.jump.best.v1", "42");
+      await WorkTimeApp.games.prepareArchive(["game-xiangqi"]);
+      const [level] = WorkTimeApp.data.xiangqi;
+      const draftLevel = WorkTimeApp.data.xiangqi.find(
+        ({ goal }) => goal === 2,
+      );
+      const opening = Number(Object.keys(draftLevel.tree[1])[0]);
+      const reply = WorkTimeApp.games.xiangqiRules.reply(
+        draftLevel.tree[1][opening],
+      );
+      const save = {
+        version: 1,
+        current: draftLevel.id,
+        drafts: { [draftLevel.id]: { path: [opening, reply] } },
+        completed: {
+          [level.id]: { path: [Number(Object.keys(level.tree[1])[0])] },
+        },
+      };
+      localStorage.setItem(
+        WorkTimeApp.services.gameArchive.keys["game-xiangqi"],
+        JSON.stringify(save),
+      );
       Object.defineProperty(navigator, "clipboard", {
         configurable: true,
         value: {
@@ -41,7 +62,11 @@ const { chromium } = require("playwright");
           },
         },
       });
+      return save;
     });
+    const xiangqiKey = "worktime.games.xiangqi.v1";
+    const savedXiangqi = () =>
+      page.evaluate((key) => JSON.parse(localStorage.getItem(key)), xiangqiKey);
     await page.locator("#backup").click();
     await page.waitForFunction(() => !!window.testBackupText);
     assert.ok(
@@ -67,17 +92,19 @@ const { chromium } = require("playwright");
     });
     assert.equal(original.format, "worktime-full-backup");
     assert.equal(original.games["game-jump"], 42);
+    assert.deepEqual(original.games["game-xiangqi"], xiangqi);
     assert.ok(original.compressedLength < original.rawLength);
-    await page.evaluate(() =>
-      localStorage.setItem("worktime.games.jump.best.v1", "99"),
-    );
+    await page.evaluate((key) => {
+      localStorage.setItem("worktime.games.jump.best.v1", "99");
+      localStorage.removeItem(key);
+    }, xiangqiKey);
     await page.locator("#restore").click();
     await page.waitForFunction(
       () => document.querySelector("#restoreDialog").open,
     );
     assert.match(
       await page.locator("#restoreSummary").textContent(),
-      /1.*游戏|1.*game/,
+      /2.*游戏|2.*game/,
     );
     // Cancelling a full restore leaves game storage untouched.
     await page.evaluate(() => document.querySelector("#restoreDialog").close());
@@ -97,6 +124,7 @@ const { chromium } = require("playwright");
       ),
       "42",
     );
+    assert.deepEqual(await savedXiangqi(), xiangqi);
     await page.evaluate(() => {
       window.testBackupText = null;
     });
@@ -129,6 +157,7 @@ const { chromium } = require("playwright");
       ),
       "77",
     );
+    assert.deepEqual(await savedXiangqi(), xiangqi);
 
     const downloading = page.waitForEvent("download");
     await page.locator("#backup").focus();
@@ -143,6 +172,7 @@ const { chromium } = require("playwright");
       fileText,
     );
     assert.equal(fileGames["game-jump"], 77);
+    assert.deepEqual(fileGames["game-xiangqi"], xiangqi);
     await page.evaluate(() =>
       localStorage.setItem("worktime.games.jump.best.v1", "88"),
     );
@@ -178,6 +208,7 @@ const { chromium } = require("playwright");
       ),
       null,
     );
+    assert.equal(await savedXiangqi(), null);
     console.log(
       `Full backup copy/file restore, legacy compatibility, cancellation and empty games: PASS (${original.rawLength} -> ${original.compressedLength} characters)`,
     );

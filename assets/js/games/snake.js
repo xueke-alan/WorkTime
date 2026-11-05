@@ -88,7 +88,8 @@ WorkTimeApp.games.register({
         value: node("strong", "", box),
       };
     });
-    const controls = node("div", "snake-controls game-controls", root);
+    const sidebar = node("div", "snake-sidebar", root);
+    const controls = node("div", "snake-controls game-controls", sidebar);
     const modeHost = node("div", "snake-mode", controls);
     const modeLabel = node("label", "game-sr-only", modeHost);
     modeLabel.id = "snakeModeLabel";
@@ -138,9 +139,10 @@ WorkTimeApp.games.register({
       });
       return element;
     }
-    const pauseButton = button(controls, "pause", togglePause, "pause");
+    const actions = node("div", "snake-actions", controls);
+    const pauseButton = button(actions, "pause", togglePause, "pause");
     const restart = button(
-      controls,
+      actions,
       "restart",
       () => requestNew(state.mode),
       "restart-alt",
@@ -169,7 +171,7 @@ WorkTimeApp.games.register({
       else if (["won", "lost"].includes(state.status)) newGame(state.mode);
       else begin();
     });
-    const pad = node("div", "snake-pad", root);
+    const pad = node("div", "snake-pad", sidebar);
     const arrows = {
       up: "arrow-upward",
       left: "arrow-back",
@@ -186,12 +188,12 @@ WorkTimeApp.games.register({
       b.classList.add("game-icon-button");
       return b;
     });
-    const notice = node("div", "game-notice", root);
+    const notice = node("div", "game-notice", sidebar);
     const warning = node("p", "", notice);
     warning.setAttribute("role", "status");
     const help = WorkTimeApp.games.createHelp({
       root,
-      controls,
+      controls: actions,
       signal,
       text: () => t("help"),
       onChange(open) {
@@ -750,23 +752,28 @@ WorkTimeApp.games.register({
     });
     function resize(size) {
       viewportSize = size;
+      root.classList.toggle(
+        "snake-side-layout",
+        size.width >= 840 ||
+          (size.width >= 560 && size.height <= size.width * 0.65),
+      );
+      root.style.setProperty("--snake-height", size.height + "px");
       root.style.setProperty(
-        "--snake-height",
-        Math.max(440, size.height) + "px",
+        "--snake-arena-width",
+        ((size.height - 2) * state.columns) / state.rows + 2 + "px",
       );
       const available = stage.getBoundingClientRect();
       const cell = Math.max(
-        6,
+        0,
         Math.min(
-          (available.width - 4) / state.columns,
-          (available.height - 4) / state.rows,
-          32,
+          (available.width - 2) / state.columns,
+          (available.height - 2) / state.rows,
         ),
       );
-      const boardWidth = Math.floor(cell * state.columns),
-        boardHeight = Math.floor(cell * state.rows);
-      root.style.setProperty("--snake-width", boardWidth + "px");
-      root.style.setProperty("--snake-board-height", boardHeight + "px");
+      const boardWidth = cell * state.columns,
+        boardHeight = cell * state.rows;
+      root.style.setProperty("--snake-width", boardWidth + 2 + "px");
+      root.style.setProperty("--snake-board-height", boardHeight + 2 + "px");
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(boardWidth * ratio);
       canvas.height = Math.round(boardHeight * ratio);

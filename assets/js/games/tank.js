@@ -106,6 +106,8 @@ WorkTimeApp.games.register({
       paused = false,
       suspended = false,
       disposed = false;
+    let selectedStage = 1;
+    let choosingStage = false;
     let frame = null,
       last = null,
       accumulator = 0,
@@ -153,40 +155,22 @@ WorkTimeApp.games.register({
       };
     });
     const controls = node("aside", "tank-controls game-controls", playfield);
-    const pickers = [];
-    function select(key, options) {
-      const host = node("div", "tank-select", controls);
-      const label = node("label", "game-sr-only", host);
-      label.id = "tank-" + key + "-label";
-      label.textContent = t(key);
-      const el = node("select", "", host);
-      el.id = "tank-" + key;
-      el.dataset.tankSelect = key;
-      options.forEach(([value, label]) => {
-        const op = node("option", "", el);
-        op.value = value;
-        op.textContent = label;
-      });
-      const picker = WorkTimeApp.games.createSelect({
-        host,
-        select: el,
-        label,
-        signal,
-      });
-      pickers.push({ key, el, picker, label });
-      return el;
-    }
-    const players = select("players", [
-      [1, t("solo")],
-      [2, t("duo")],
-    ]);
-    const stages = select(
-      "stage",
-      Array.from({ length: 35 }, (_, i) => [
-        i + 1,
-        t("stageOption", { n: i + 1 }),
-      ]),
-    );
+    const playerHost = node("div", "tank-select", controls);
+    const playerLabel = node("label", "game-sr-only", playerHost);
+    playerLabel.id = "tank-players-label";
+    const players = node("select", "", playerHost);
+    players.id = "tank-players";
+    players.dataset.tankSelect = "players";
+    const solo = node("option", "", players);
+    solo.value = "1";
+    const duo = node("option", "", players);
+    duo.value = "2";
+    const playerPicker = WorkTimeApp.games.createSelect({
+      host: playerHost,
+      select: players,
+      label: playerLabel,
+      signal,
+    });
     function button(parent, key, fn, icon) {
       const el = node(
         "button",
@@ -198,6 +182,45 @@ WorkTimeApp.games.register({
       if (icon) el.append(WorkTimeApp.games.createIcon(icon));
       listen(el, "click", fn);
       return el;
+    }
+    const stageHost = node("div", "tank-select", controls);
+    const stagePicker = button(stageHost, "choose-stage", () => {
+      choosingStage = true;
+      sync();
+      stageButtons[selectedStage - 1].focus();
+    });
+    stagePicker.classList.add("game-select-trigger");
+    stagePicker.setAttribute("aria-controls", "tank-stage-page");
+    const stageValue = node("span", "button-label", stagePicker);
+    stagePicker.append(WorkTimeApp.games.createIcon("grid-4x4"));
+    const levels = WorkTimeApp.games.createLevelPage(root, "tank-stage-page");
+    const closeStages = button(
+      levels.header,
+      "close-stages",
+      closeStagePage,
+      "close",
+    );
+    const stageGrid = node(
+      "div",
+      "game-level-grid tank-stage-grid",
+      levels.body,
+    );
+    const stageButtons = Array.from({ length: 35 }, (_, index) => {
+      const number = index + 1;
+      return button(stageGrid, "stage-" + number, () => {
+        selectedStage = number;
+        mode = "ready";
+        state = rules.create({
+          stage: selectedStage,
+          players: Number(players.value),
+        });
+        closeStagePage();
+      });
+    });
+    function closeStagePage() {
+      choosingStage = false;
+      sync();
+      stagePicker.focus({ preventScroll: true });
     }
     const actions = node("div", "tank-actions", controls);
     const pauseButton = button(actions, "pause", togglePause, "pause");
@@ -280,7 +303,7 @@ WorkTimeApp.games.register({
     const cancelEditor = button(editorBar, "back", () => {
       mode = "ready";
       state = rules.create({
-        stage: Number(stages.value),
+        stage: selectedStage,
         players: Number(players.value),
       });
       sync();
@@ -415,7 +438,7 @@ WorkTimeApp.games.register({
       unlockAudio();
       state = rules.create({
         players: Number(players.value),
-        stage: Number(stages.value),
+        stage: selectedStage,
         custom: useCustom ? custom : null,
       });
       mode = "playing";
@@ -431,7 +454,7 @@ WorkTimeApp.games.register({
       state = rules.next(state);
       mode = "playing";
       paused = false;
-      stages.value = String(((state.stage - 1) % 35) + 1);
+      selectedStage = ((state.stage - 1) % stageButtons.length) + 1;
       sync();
       tone("start");
       board.focus();
@@ -526,17 +549,37 @@ WorkTimeApp.games.register({
     function sync() {
       paintCounters();
       meters.forEach((m) => (m.label.textContent = t(m.key)));
-      pickers.forEach(({ key, el, picker, label }) => {
-        label.textContent = t(key);
-        [...el.options].forEach(
-          (op, i) =>
-            (op.textContent =
-              key === "players"
-                ? t(i ? "duo" : "solo")
-                : t("stageOption", { n: i + 1 })),
-        );
-        el.disabled = mode !== "ready" && mode !== "over";
-        picker.sync();
+      const canSelect = mode === "ready" || mode === "over";
+      playerLabel.textContent = t("players");
+      solo.textContent = t("solo");
+      duo.textContent = t("duo");
+      players.disabled = !canSelect;
+      playerPicker.sync();
+      stagePicker.disabled = !canSelect;
+      stagePicker.setAttribute("aria-expanded", String(choosingStage));
+      levels.page.hidden = !choosingStage;
+      playfield.hidden = choosingStage;
+      feedback.hidden = choosingStage;
+      levels.refresh();
+      stageValue.textContent = t("stageOption", { n: selectedStage });
+      levels.summary.textContent = stageValue.textContent;
+      stagePicker.setAttribute(
+        "aria-label",
+        WorkTimeApp.i18n.t("games.levelStatus.choose") +
+          " · " +
+          stageValue.textContent,
+      );
+      closeStages.setAttribute(
+        "aria-label",
+        WorkTimeApp.i18n.t("games.levelStatus.close"),
+      );
+      stageButtons.forEach((element, index) => {
+        const number = index + 1;
+        WorkTimeApp.games.paintLevelCard(element, {
+          number,
+          label: t("stageOption", { n: number }),
+          current: number === selectedStage,
+        });
       });
       const isPaused = paused || suspended;
       pauseButton.disabled = mode !== "playing";
@@ -1119,6 +1162,12 @@ WorkTimeApp.games.register({
     for (const event of ["pointerup", "pointercancel", "lostpointercapture"])
       listen(board, event, () => (painting = null));
     listen(root, "keydown", (e) => {
+      if (choosingStage && e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        closeStagePage();
+        return;
+      }
       if (e.target.closest("button,select,[role=listbox]")) return;
       if (mode === "editor") {
         const dir = mappings[1][e.code];
@@ -1160,14 +1209,7 @@ WorkTimeApp.games.register({
     listen(players, "change", () => {
       state = rules.create({
         players: Number(players.value),
-        stage: Number(stages.value),
-      });
-      sync();
-    });
-    listen(stages, "change", () => {
-      state = rules.create({
-        players: Number(players.value),
-        stage: Number(stages.value),
+        stage: selectedStage,
       });
       sync();
     });
@@ -1178,6 +1220,7 @@ WorkTimeApp.games.register({
     function layout({ width, height }) {
       viewport = { width, height };
       root.style.setProperty("--tank-height", Math.max(0, height) + "px");
+      if (choosingStage) return;
       const mobile =
         window.matchMedia("(pointer: coarse)").matches || width < 620;
       root.classList.toggle("tank-has-touch", mobile);

@@ -92,10 +92,12 @@ WorkTimeApp.games.register({
     chapterTitle.setAttribute("role", "listitem");
     const picker = button(steps, "levels", () => {
       stopMotion();
+      confirming = false;
       choosing = true;
       render();
       levelButtons[state.level].focus();
     });
+    picker.setAttribute("aria-controls", "garden-level-page");
     const progress = node("div", "garden-progress game-sr-only", root);
     progress.setAttribute("role", "progressbar");
     const field = node("div", "garden-field", root);
@@ -105,17 +107,28 @@ WorkTimeApp.games.register({
     const cover = node("section", "garden-cover", stage);
     const coverTitle = node("h3", "", cover),
       coverText = node("p", "", cover);
-    const levelGrid = node("div", "garden-level-grid", cover);
+    const levels = WorkTimeApp.games.createLevelPage(root, "garden-level-page");
+    const closeLevels = button(levels.header, "close-levels", closeLevelPage);
+    closeLevels.classList.add("game-icon-button");
+    closeLevels.append(WorkTimeApp.games.createIcon("close"));
+    const levelGrid = node(
+      "div",
+      "garden-level-grid game-level-grid",
+      levels.body,
+    );
     const levelButtons = Array.from({ length: rules.levelCount }, (_, level) =>
       button(levelGrid, "level-" + level, () => {
         if (level > unlocked()) return;
         if (level === state.level && rules.phase(state, tiles) !== "won") {
-          choosing = false;
-          render();
-          picker.focus();
+          closeLevelPage();
         } else start(level, state.seed);
       }),
     );
+    function closeLevelPage() {
+      choosing = false;
+      render();
+      picker.focus({ preventScroll: true });
+    }
     const coverActions = node("div", "garden-cover-actions", cover);
     const primary = button(coverActions, "primary", () => {
       if (confirming) start(0, Math.floor(Math.random() * 4294967296));
@@ -199,25 +212,11 @@ WorkTimeApp.games.register({
     });
     const toolLabels = new Map();
     for (const [element, icon] of [
-      [store, "store"],
+      [store, "backup"],
       [undo, "undo"],
-      [hint, "hint"],
+      [hint, "info"],
     ]) {
-      const graphic = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg",
-      );
-      graphic.setAttribute("viewBox", "0 0 48 48");
-      graphic.setAttribute("aria-hidden", "true");
-      graphic.classList.add("garden-tool-art");
-      const paths = {
-        store:
-          '<path d="M8 24v16h31V24H28v8H19v-8Z"/><path d="M19 7h10v10h8L24 29 11 17h8Z"/>',
-        undo: '<path d="m19 8-13 12 13 12v-8h10a7 7 0 1 1 0 14H19v7h10a14 14 0 1 0 0-28H19Z"/>',
-        hint: '<path d="M24 4a14 14 0 0 0-9 25l3 5h12l3-5A14 14 0 0 0 24 4Z"/><path d="M18 39h12m-10 5h8" fill="none"/>',
-      };
-      graphic.innerHTML = paths[icon];
-      element.append(graphic);
+      element.append(WorkTimeApp.games.createIcon(icon));
       toolLabels.set(element, node("span", "garden-tool-label", element));
     }
     const notice = node("p", "garden-notice game-sr-only", root);
@@ -662,23 +661,32 @@ WorkTimeApp.games.register({
       picker.textContent =
         String(state.level + 1).padStart(2, "0") + " / " + rules.levelCount;
       picker.title = t("choose");
+      picker.setAttribute("aria-expanded", String(choosing));
+      root.dataset.choosing = String(choosing);
+      levels.page.hidden = !choosing;
+      header.hidden =
+        field.hidden =
+        trayBlock.hidden =
+        footer.hidden =
+          choosing;
+      levels.refresh();
+      levels.summary.textContent = t("chooseText");
+      closeLevels.setAttribute("aria-label", t("cancel"));
+      closeLevels.title = t("cancel");
       picker.setAttribute(
         "aria-label",
         t("levelLabel", { n: state.level + 1, stars: records[state.level] }),
       );
+      const unlockedLevel = unlocked();
       levelButtons.forEach((element, level) => {
-        element.textContent =
-          String(level + 1).padStart(2, "0") +
-          (records[level] ? " " + "★".repeat(records[level]) : "");
-        element.disabled = level > unlocked();
-        element.setAttribute(
-          "aria-label",
-          t("levelLabel", { n: level + 1, stars: records[level] }),
-        );
-        element.setAttribute(
-          "aria-current",
-          level === state.level ? "true" : "false",
-        );
+        WorkTimeApp.games.paintLevelCard(element, {
+          number: level + 1,
+          label: t("levelLabel", { n: level + 1, stars: records[level] }),
+          locked: level > unlockedLevel,
+          current: level === state.level,
+          draft: level === state.level && phase !== "won" && !!removed.size,
+          stars: records[level],
+        });
       });
       progress.setAttribute("aria-label", t("progress"));
       progress.setAttribute("aria-valuemin", "0");
@@ -785,30 +793,24 @@ WorkTimeApp.games.register({
               : feedback,
       );
       warning.textContent = saveFailed ? t("saveFailed") : "";
-      cover.hidden = !confirming && !choosing && phase === "playing";
-      levelGrid.hidden = !choosing;
-      primary.hidden = choosing;
+      cover.hidden = !confirming && phase === "playing";
       coverTitle.textContent = t(
-        choosing
-          ? "choose"
-          : confirming
-            ? "confirm"
-            : phase === "won"
-              ? state.level === rules.levelCount - 1
-                ? "finished"
-                : "won"
-              : "blocked",
+        confirming
+          ? "confirm"
+          : phase === "won"
+            ? state.level === rules.levelCount - 1
+              ? "finished"
+              : "won"
+            : "blocked",
       );
       coverText.textContent = t(
-        choosing
-          ? "chooseText"
-          : confirming
-            ? "confirmText"
-            : phase === "won"
-              ? "wonText"
-              : "blockedText",
+        confirming
+          ? "confirmText"
+          : phase === "won"
+            ? "wonText"
+            : "blockedText",
       );
-      if (!choosing && !confirming && phase === "won")
+      if (!confirming && phase === "won")
         coverText.textContent =
           "★".repeat(rules.stars(state, tiles)) + " · " + t("rating");
       primary.textContent = t(
@@ -820,7 +822,7 @@ WorkTimeApp.games.register({
               : "next"
             : "retry",
       );
-      cancel.hidden = !confirming && !choosing;
+      cancel.hidden = !confirming;
       cancel.textContent = t("cancel");
       help.refresh();
     }
@@ -866,8 +868,11 @@ WorkTimeApp.games.register({
       if ((confirming || choosing) && event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
+        if (choosing) {
+          closeLevelPage();
+          return;
+        }
         confirming = false;
-        choosing = false;
         render();
         restart.focus();
       }

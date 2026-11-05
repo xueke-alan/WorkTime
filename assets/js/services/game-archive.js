@@ -19,12 +19,14 @@ WorkTimeApp.services.gameArchive = (() => {
         "link",
         "garden",
         "tank",
+        "xiangqi",
       ].map((id) => [
         "game-" + id,
         "worktime.games." + id + (id === "jump" ? ".best" : "") + ".v1",
       ]),
     ),
   );
+  const levelGames = ["game-sudoku", "game-sokoban", "game-xiangqi"];
   const plain = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
   const clone = (v) => JSON.parse(JSON.stringify(v));
   const stable = (v) =>
@@ -147,6 +149,32 @@ WorkTimeApp.services.gameArchive = (() => {
       return { state, best: fields(input.best, ["zen", "quest", "tide"]) };
     }
     requireValue(input.version === 1, id);
+    if (id === "game-xiangqi") {
+      const levels = new Map(
+        WorkTimeApp.data.xiangqi.map((level) => [level.id, level]),
+      );
+      const result = {
+        version: 1,
+        current: input.current ?? null,
+        drafts: {},
+        completed: {},
+      };
+      requireValue(result.current === null || levels.has(result.current), id);
+      for (const kind of ["drafts", "completed"]) {
+        requireValue(plain(input[kind]), id);
+        for (const [level, value] of Object.entries(input[kind])) {
+          const entry = levels.get(level);
+          const restored =
+            entry && plain(value) && G.xiangqiRules.restore(entry, value.path);
+          requireValue(
+            restored && (restored.status === "won") === (kind === "completed"),
+            id,
+          );
+          result[kind][level] = { path: [...value.path] };
+        }
+      }
+      return fixSelection(id, result);
+    }
     if (id === "game-garden") {
       const state = G.gardenRules.restore(input.state);
       const previous =
@@ -240,6 +268,10 @@ WorkTimeApp.services.gameArchive = (() => {
   }
   function fixSelection(id, value) {
     if (!value.current) return value;
+    if (id === "game-xiangqi") {
+      if (!Object.hasOwn(value.drafts, value.current)) value.current = null;
+      return value;
+    }
     const sudoku = id === "game-sudoku";
     const group = sudoku
       ? WorkTimeApp.data.sudoku.groups.find((g) =>
@@ -248,13 +280,7 @@ WorkTimeApp.services.gameArchive = (() => {
       : null;
     const levels = sudoku ? group.puzzles : WorkTimeApp.data.sokoban.levels;
     const index = levels.findIndex((p) => p.id === value.current);
-    if (
-      !value.drafts[value.current] ||
-      (index > 0 &&
-        !value.completed[levels[index - 1].id] &&
-        !value.completed[value.current])
-    )
-      value.current = null;
+    if (!value.drafts[value.current]) value.current = null;
     else if (sudoku) value.group = group.id;
     else value.chapter = Math.floor(index / 20);
     return value;
@@ -278,7 +304,8 @@ WorkTimeApp.services.gameArchive = (() => {
       return hasProgress(id, v) || v.records.some((n) => n > 0);
     if (Object.keys(v.completed).length) return true;
     return Object.entries(v.drafts).some(([level, draft]) => {
-      if (id === "game-sokoban") return draft.path.length > 0;
+      if (id === "game-sokoban" || id === "game-xiangqi")
+        return draft.path.length > 0;
       const puzzle = WorkTimeApp.data.sudoku.groups
         .flatMap((g) => g.puzzles)
         .find((p) => p.id === level);
@@ -384,7 +411,7 @@ WorkTimeApp.services.gameArchive = (() => {
   function progress(id, v) {
     if (id === "game-jump") return null;
     if (id === "game-tank") return fields(v, ["custom", "muted"]);
-    if (["game-sudoku", "game-sokoban"].includes(id))
+    if (levelGames.includes(id))
       return fields(v, ["current", "group", "chapter", "drafts"]);
     return fields(
       v,
@@ -401,7 +428,7 @@ WorkTimeApp.services.gameArchive = (() => {
         improved: hasContent(id, incoming),
       };
     let conflict = false;
-    if (["game-sudoku", "game-sokoban"].includes(id)) {
+    if (levelGames.includes(id)) {
       conflict = Object.keys(local.drafts).some(
         (key) =>
           Object.hasOwn(incoming.drafts, key) &&
@@ -519,6 +546,77 @@ WorkTimeApp.services.gameArchive = (() => {
   }
   function create(getStorage, notify = () => {}, notifySaved = () => {}) {
     let recovering = false;
+    // The menu reads only the selected save's summary fields. Full validation
+    // remains in the archive and game paths, where their rules are loaded.
+    function progressSummary(id) {
+      if (!Object.hasOwn(keys, id)) return { kind: "empty" };
+      let save;
+      try {
+        const storage = getStorage();
+        if (storage.getItem(JOURNAL)) return { kind: "unavailable" };
+        save = JSON.parse(storage.getItem(keys[id]));
+      } catch {
+        return { kind: "unavailable" };
+      }
+      const positive = (n) => integer(n) && n > 0;
+      const values = (record) => (plain(record) ? Object.values(record) : []);
+      const summary = (kind, value, saved = false) =>
+        positive(value) ? { kind, value } : { kind: saved ? "saved" : "empty" };
+      if (id === "game-jump") return summary("best", save);
+      if (!plain(save) || (save.version !== undefined && save.version !== 1))
+        return { kind: "empty" };
+      switch (id) {
+        case "game-2048":
+          return summary(
+            "best",
+            save.best,
+            positive(save.state?.score) || plain(save.previous),
+          );
+        case "game-minesweeper":
+          return summary(
+            "wins",
+            values(save.stats)
+              .map((stat) => stat?.wins)
+              .filter(positive)
+              .reduce((total, wins) => total + wins, 0),
+            save.state?.status === "playing",
+          );
+        case "game-snake":
+        case "game-link":
+          return summary(
+            "best",
+            values(save.best)
+              .filter(positive)
+              .reduce((best, score) => Math.max(best, score), 0),
+            id === "game-snake"
+              ? positive(save.state?.ticks)
+              : positive(save.state?.score) || positive(save.state?.level),
+          );
+        case "game-sudoku":
+        case "game-sokoban":
+        case "game-xiangqi":
+          return summary(
+            "completed",
+            values(save.completed).filter(plain).length,
+            values(save.drafts).some((draft) =>
+              id === "game-sudoku"
+                ? positive(draft?.elapsed) || positive(draft?.hints)
+                : Array.isArray(draft?.path) && draft.path.length > 0,
+            ),
+          );
+        case "game-garden":
+          return summary(
+            "completed",
+            Array.isArray(save.records)
+              ? save.records.filter((stars) => positive(stars) && stars <= 3)
+                  .length
+              : 0,
+            positive(save.state?.moves),
+          );
+        default:
+          return summary("best", save.best);
+      }
+    }
     function rawRead() {
       const storage = getStorage();
       return Object.fromEntries(
@@ -526,16 +624,19 @@ WorkTimeApp.services.gameArchive = (() => {
       );
     }
     function restoreRaw(raw) {
+      // Journals created before Xiangqi have no entry for its storage key.
+      const ids = Object.keys(keys).filter(
+        (id) => id !== "game-xiangqi" || Object.hasOwn(raw ?? {}, id),
+      );
       requireValue(
         plain(raw) &&
-          Object.keys(raw).length === Object.keys(keys).length &&
-          Object.keys(keys).every(
-            (id) => raw[id] === null || typeof raw[id] === "string",
-          ),
+          Object.keys(raw).length === ids.length &&
+          ids.every((id) => raw[id] === null || typeof raw[id] === "string"),
         "",
       );
       const storage = getStorage();
-      for (const [id, key] of Object.entries(keys)) {
+      for (const id of ids) {
+        const key = keys[id];
         if (raw[id] === null) storage.removeItem(key);
         else storage.setItem(key, raw[id]);
       }
@@ -746,6 +847,7 @@ WorkTimeApp.services.gameArchive = (() => {
     }
     return {
       read,
+      progressSummary,
       recover,
       exportArchive,
       replace,

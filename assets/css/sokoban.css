@@ -32,34 +32,6 @@
   letter-spacing: normal;
   line-height: 1.4;
 }
-.sokoban-chapters {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.6rem;
-}
-.sokoban-chapters .game-button {
-  white-space: normal;
-  height: auto;
-  min-height: 3rem;
-}
-.sokoban-progress {
-  color: var(--muted);
-  margin: 1.4rem 0 0.8rem;
-}
-.sokoban-levels {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.6rem;
-}
-.sokoban-levels .game-button {
-  height: 3.5rem;
-  font-family: var(--font-numeric);
-}
-.sokoban-levels .is-complete {
-  background: var(--accent-light);
-  border-color: var(--accent);
-  color: var(--accent);
-}
 .sokoban-play {
   display: flex;
   flex-direction: column;

@@ -126,6 +126,7 @@ function prepareAssets({ check = false } = {}) {
     "link",
     "garden",
     "tank",
+    "xiangqi",
   ])
     vm.runInContext(
       fs.readFileSync(
@@ -183,6 +184,7 @@ function prepareAssets({ check = false } = {}) {
     "link",
     "garden",
     "tank",
+    "xiangqi",
   ];
   const entries = games.map((id) => {
     const source = fs.readFileSync(
@@ -201,7 +203,7 @@ function prepareAssets({ check = false } = {}) {
         .map((node) => [node.key.name, node.value.value]),
     );
     const rules = [];
-    if (["sudoku", "sokoban"].includes(id))
+    if (["sudoku", "sokoban", "xiangqi"].includes(id))
       rules.push("assets/data/" + id + ".js");
     if (id === "tank") rules.push("assets/js/games/tank-stages.js");
     rules.push("assets/js/games/" + id + "-rules.js");

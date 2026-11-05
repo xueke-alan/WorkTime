@@ -1,0 +1,218 @@
+.game-xiangqi {
+  --xiangqi-red: #ad3734;
+  --xiangqi-black: #262f35;
+  --xiangqi-grid: color-mix(in srgb, var(--ink) 62%, var(--paper));
+  --xiangqi-mark: color-mix(in srgb, var(--accent) 68%, var(--ink));
+  width: 100%;
+  max-width: 36rem;
+  margin-inline: auto;
+}
+.game-xiangqi [hidden] {
+  display: none;
+}
+.game-xiangqi[data-playing="false"] {
+  max-width: none;
+}
+.game-xiangqi .game-title {
+  margin: 0 0 0.65rem;
+  font-size: 1.15rem;
+}
+.xiangqi-objective,
+.xiangqi-status,
+.xiangqi-help,
+.xiangqi-warning {
+  margin: 0.6rem 0;
+  text-align: center;
+}
+.xiangqi-help {
+  color: var(--muted);
+}
+.xiangqi-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  grid-template-rows: repeat(10, minmax(0, 1fr));
+  width: min(100%, 30rem, max(17rem, calc((100dvh - 22rem) * 0.9)));
+  aspect-ratio: 9 / 10;
+  margin: 0 auto;
+  border: 1px solid color-mix(in srgb, var(--ink) 20%, var(--line));
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--paper) 64%, var(--accent-light));
+  color: var(--xiangqi-grid);
+  container-type: inline-size;
+  overflow: clip;
+  touch-action: manipulation;
+}
+.xiangqi-art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.xiangqi-art svg {
+  width: 100%;
+  height: 100%;
+}
+.xiangqi-art path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.025;
+}
+.xiangqi-art text {
+  fill: currentColor;
+  font: 600 0.36px "Microsoft JhengHei", "Microsoft YaHei", sans-serif;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.xiangqi-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 12%;
+  background: transparent;
+  color: var(--xiangqi-black);
+  cursor: pointer;
+  user-select: none;
+}
+.xiangqi-cell.is-red {
+  color: var(--xiangqi-red);
+}
+.xiangqi-board .xiangqi-cell:not(.is-drop):is(:hover, :active) {
+  background: transparent;
+}
+.xiangqi-cell.is-draggable {
+  touch-action: none;
+  cursor: grab;
+}
+.xiangqi-board[data-replying] .xiangqi-cell {
+  cursor: wait;
+}
+.xiangqi-cell.is-drag-origin .xiangqi-piece {
+  visibility: hidden;
+}
+.xiangqi-cell:is(.is-selected, .is-capture, .is-check)::before {
+  position: absolute;
+  z-index: 3;
+  inset: 4%;
+  border: 2px solid var(--xiangqi-mark);
+  border-radius: 50%;
+  pointer-events: none;
+  content: "";
+}
+.xiangqi-cell.is-capture::before {
+  border-style: dashed;
+}
+.xiangqi-cell.is-check::before {
+  border-color: var(--xiangqi-red);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--xiangqi-red) 23%, transparent);
+}
+.xiangqi-cell.is-drop {
+  box-shadow: inset 0 0 0 2px var(--xiangqi-red);
+}
+.xiangqi-cell.is-drop:is(.is-legal, .is-selected) {
+  box-shadow: inset 0 0 0 2px var(--xiangqi-mark);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+.game-xiangqi .xiangqi-cell:focus-visible {
+  z-index: 4;
+  outline: 2px dashed var(--ink);
+  outline-offset: -2px;
+}
+.game-xiangqi .xiangqi-board[data-pointer-entry] .xiangqi-cell:focus-visible {
+  outline: none;
+}
+.xiangqi-piece {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 80%;
+  aspect-ratio: 1;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: #fcfcf9;
+  box-shadow:
+    inset 0 0 0 2px #fcfcf9,
+    inset 0 0 0 3px color-mix(in srgb, currentColor 45%, #fcfcf9),
+    0 1px 2px rgb(20 31 28 / 15%);
+  font: 700 1.15rem/1 "Microsoft JhengHei", "Microsoft YaHei", sans-serif;
+  font-size: 5.7cqi;
+  pointer-events: none;
+}
+.xiangqi-piece:empty {
+  visibility: hidden;
+}
+.xiangqi-ghost {
+  position: absolute;
+  z-index: 5;
+  color: var(--xiangqi-red);
+  transform: translate(-50%, -50%);
+}
+.xiangqi-cell:is(.is-legal, .is-last-from, .is-last-to, .is-suggested)::after {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  content: "";
+}
+.xiangqi-cell.is-last-from::after {
+  inset: 36%;
+  border: 1px solid var(--xiangqi-grid);
+  border-radius: 50%;
+}
+.xiangqi-cell.is-last-to::after {
+  inset: 8% 8% auto auto;
+  width: 22%;
+  aspect-ratio: 1;
+  border-top: 2px solid var(--xiangqi-grid);
+  border-right: 2px solid var(--xiangqi-grid);
+}
+.xiangqi-cell.is-last-red::after {
+  border-color: var(--xiangqi-red);
+}
+.xiangqi-cell.is-legal:not(.is-capture, .is-suggested)::after {
+  inset: 41%;
+  width: auto;
+  border: none;
+  border-radius: 50%;
+  background: var(--xiangqi-mark);
+}
+.xiangqi-cell.is-suggested::after {
+  inset: 9% auto auto 9%;
+  width: 24%;
+  aspect-ratio: 1;
+  border: 0;
+  border-top: 2px solid var(--xiangqi-mark);
+  border-left: 2px solid var(--xiangqi-mark);
+  border-radius: 0;
+}
+.xiangqi-status {
+  display: grid;
+  place-items: center;
+  min-height: 2.8em;
+  line-height: 1.4;
+  font-weight: 600;
+}
+.xiangqi-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+}
+.xiangqi-help,
+.xiangqi-warning {
+  font-size: var(--text-small);
+}
+@media (max-width: 480px) {
+  .xiangqi-objective,
+  .xiangqi-status,
+  .xiangqi-help {
+    margin-block: 0.35rem;
+  }
+  .xiangqi-actions {
+    gap: 0.3rem;
+  }
+}

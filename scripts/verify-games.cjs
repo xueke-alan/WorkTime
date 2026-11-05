@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -178,7 +179,7 @@ async function verifyPuzzle(browser) {
   assert.ok((await read()).previous);
   const afterMove = await read();
   await page.keyboard.press("Escape");
-  await page.locator('#gameShell [data-game="game-2048"]').click();
+  await launchGame(page, "game-2048", { menu: "#gameShell" });
   assert.deepEqual(
     await read(),
     afterMove,
@@ -482,7 +483,7 @@ function assertMotion(result, opening) {
 }
 async function enter(page) {
   await page.locator("#date-tab-games").click();
-  await page.locator('#gamesPanel [data-game="game-2048"]').click();
+  await launchGame(page, "game-2048");
   await state(page, "open");
 }
 async function close(page) {
@@ -568,7 +569,7 @@ async function verify() {
       path: path.join(root, "test-results/games/menu.png"),
     });
     await page.evaluate(() =>
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+      document.querySelector("#gamesPanel .game-menu-play").click(),
     );
     assertMotion(await sampleMotion(page, [80, 180, 280, 410]), true);
     await state(page, "open");
@@ -713,7 +714,7 @@ async function verify() {
         WorkTimeApp.i18n.language === "en" ? "zh-CN" : "en",
       );
     });
-    await page.locator('#gamesPanel [data-game="probe"]').click();
+    await launchGame(page, "probe");
     await state(page, "open");
     assert.equal(
       await page.evaluate(() => {
@@ -739,7 +740,7 @@ async function verify() {
     });
     await page.setViewportSize({ width: 1600, height: 900 });
     await page.keyboard.press("Escape");
-    await page.locator('#gameShell [data-game="probe"]').click();
+    await launchGame(page, "probe", { menu: "#gameShell" });
     await close(page);
     const probe = await page.evaluate(() => window.gameProbe);
     assert.equal(probe.created, 2);
@@ -767,9 +768,7 @@ async function verify() {
     }
     // Cancel transitions through both exit and resizing; repeated clicks cannot mount twice.
     await page.evaluate(() => {
-      const button = document.querySelector(
-        '#gamesPanel [data-game="game-2048"]',
-      );
+      const button = document.querySelector("#gamesPanel .game-menu-play");
       button.click();
       button.click();
       button.click();
@@ -777,7 +776,7 @@ async function verify() {
     });
     await state(page, "closed");
     const reversal = await page.evaluate(() => {
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click();
+      document.querySelector("#gamesPanel .game-menu-play").click();
       const targets = [
         ...document.querySelectorAll(
           ".workspace > .panel, .game-shell, .game-surface, .game-toolbar, .game-content",
@@ -818,7 +817,7 @@ async function verify() {
     );
     await state(page, "closed");
     await page.evaluate(() => {
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click();
+      document.querySelector("#gamesPanel .game-menu-play").click();
       Object.defineProperty(document, "hidden", {
         configurable: true,
         value: true,
@@ -836,7 +835,7 @@ async function verify() {
     });
     await close(page);
     await page.evaluate(() =>
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+      document.querySelector("#gamesPanel .game-menu-play").click(),
     );
     await page.setViewportSize({ width: 1440, height: 900 });
     await state(page, "open");
@@ -850,7 +849,7 @@ async function verify() {
       0,
     );
     await page.evaluate(() =>
-      document.querySelector('#gamesPanel [data-game="game-2048"]').click(),
+      document.querySelector("#gamesPanel .game-menu-play").click(),
     );
     await page.emulateMedia({ reducedMotion: "reduce" });
     await state(page, "open");
@@ -904,7 +903,7 @@ async function verify() {
       });
       WorkTimeApp.i18n.setLanguage("zh-CN");
     });
-    await page.locator('#gamesPanel [data-game="broken"]').click();
+    await launchGame(page, "broken");
     await state(page, "open");
     assert.equal(await page.evaluate(() => window.brokenAborted), true);
     await page.evaluate(() => WorkTimeApp.i18n.setLanguage("en"));
@@ -912,7 +911,7 @@ async function verify() {
     assert.equal(await page.locator("#gameExitButton").isEnabled(), true);
     await page.locator("#gameExitButton").click();
     await state(page, "closed");
-    await page.locator('#gamesPanel [data-game="probe"]').click();
+    await launchGame(page, "probe");
     await state(page, "open");
     const priorDisposals = await page.evaluate(() => window.gameProbe.disposed);
     await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));

@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -187,7 +188,7 @@ async function main() {
       );
     async function open() {
       await page.locator("#date-tab-games").click();
-      await page.locator('#gamesPanel [data-game="game-garden"]').click();
+      await launchGame(page, "game-garden");
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
@@ -249,7 +250,23 @@ async function main() {
       await page.locator(".garden-level-grid button:enabled").count(),
       1,
     );
-    await action("cancel").click();
+    assert.equal(await action("level-0").getAttribute("aria-current"), "step");
+    assert.equal(
+      await action("level-1")
+        .locator(".game-level-badge")
+        .getAttribute("data-state"),
+      "locked",
+    );
+    assert.match(await action("level-1").getAttribute("aria-label"), /未解锁/);
+    const savedBeforeChoosing = (await load()).state;
+    await page.keyboard.press("Escape");
+    assert.equal(
+      await action("levels").evaluate(
+        (button) => button === document.activeElement,
+      ),
+      true,
+    );
+    assert.deepEqual((await load()).state, savedBeforeChoosing);
     await page.evaluate(async () => {
       const art = document.querySelector(".garden-art");
       const source = getComputedStyle(art).backgroundImage;
@@ -322,37 +339,43 @@ async function main() {
           await page.setViewportSize({ width, height });
           await assertFits();
           await action("levels").click();
-          await assertFits();
-          assert.equal(
-            await page.evaluate(() => {
-              const board = document.querySelector(".garden-board"),
-                cover = document.querySelector(".garden-cover");
-              // Inert suppresses hit testing, but does not change paint order.
-              // Temporarily lift it to detect tiles painted above the cover.
-              board.inert = false;
-              try {
-                return [...board.children].every((tile) => {
-                  const box = tile.getBoundingClientRect();
-                  return cover.contains(
-                    document.elementFromPoint(
-                      box.x + box.width / 2,
-                      box.y + box.height / 2,
-                    ),
-                  );
-                });
-              } finally {
-                board.inert = true;
-              }
-            }),
-            true,
-            "The level picker covers every tile, including the seventh layer",
-          );
-          const grid = await page.locator(".garden-level-grid").boundingBox();
-          const cover = await page.locator(".garden-cover").boundingBox();
+          assert.equal(await page.locator(".garden-board").isVisible(), false);
+          assert.equal(await page.locator(".garden-tray").isVisible(), false);
+          const levelPage = await page
+            .locator("#garden-level-page")
+            .boundingBox();
+          const content = await page.locator(".game-content").evaluate((el) => {
+            const { top, height } = el.getBoundingClientRect();
+            const { paddingTop, paddingBottom } = getComputedStyle(el);
+            return {
+              y: top + parseFloat(paddingTop),
+              height:
+                height - parseFloat(paddingTop) - parseFloat(paddingBottom),
+            };
+          });
           assert.ok(
-            grid.y >= cover.y && grid.y + grid.height <= cover.y + cover.height,
+            Math.abs(levelPage.y - content.y) < 1 &&
+              Math.abs(levelPage.height - content.height) < 1,
           );
-          await action("cancel").click();
+          assert.equal(
+            await action("level-17").evaluate(
+              (button) => button === document.activeElement,
+            ),
+            true,
+          );
+          assert.equal(await action("level-17").isVisible(), true);
+          if (level > 0) {
+            const firstCard = action("level-0");
+            const badge = firstCard.locator(".game-level-badge");
+            assert.equal(await badge.textContent(), "★★★");
+            const cardBox = await firstCard.boundingBox();
+            const badgeBox = await badge.boundingBox();
+            assert.ok(
+              badgeBox.x >= cardBox.x &&
+                badgeBox.x + badgeBox.width <= cardBox.x + cardBox.width,
+            );
+          }
+          await action("close-levels").click();
           const bounds = await page.locator(".garden-stage").boundingBox();
           assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width);
           assert.ok(await page.locator(".garden-tile:enabled").count());
@@ -468,7 +491,7 @@ async function main() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await unavailable.locator("#date-tab-games").click();
-    await unavailable.locator('[data-game="game-garden"]').click();
+    await launchGame(unavailable, "game-garden");
     assert.ok(
       (await unavailable.locator(".garden-warning").innerText()).length,
     );
@@ -503,7 +526,7 @@ async function verifyMotion(browser) {
     () => document.documentElement.dataset.appState === "ready",
   );
   await page.locator("#date-tab-games").click();
-  await page.locator('[data-game="game-garden"]').click();
+  await launchGame(page, "game-garden");
   await page.waitForFunction(
     () => document.querySelector("#gameShell").dataset.state === "open",
   );
@@ -652,7 +675,7 @@ async function verifyMotion(browser) {
     () => document.querySelector("#gameShell").dataset.state === "closed",
   );
   assert.equal(await page.locator(".garden-motion").count(), 0);
-  await page.locator('[data-game="game-garden"]').click();
+  await launchGame(page, "game-garden");
   await page.waitForFunction(
     () => document.querySelector("#gameShell").dataset.state === "open",
   );
@@ -700,7 +723,7 @@ async function verifyMotion(browser) {
   await page
     .locator(".garden-level-grid")
     .screenshot({ path: path.join(output, "level-picker.png") });
-  await action("cancel").click();
+  await action("close-levels").click();
   assert.deepEqual(errors, []);
   await context.close();
   console.log(

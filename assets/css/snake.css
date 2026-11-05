@@ -1,16 +1,55 @@
 .game-snake {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
+  display: grid;
+  grid-template:
+    "counters" auto
+    "stage" minmax(0, 1fr)
+    "sidebar" auto / minmax(0, 1fr);
+  justify-items: center;
+  gap: 0.5rem;
   height: var(--snake-height, 100%);
-  min-height: 440px;
+  min-height: 0;
 }
 .game-snake [hidden] {
   display: none !important;
 }
-.snake-counters,
+.snake-side-layout {
+  grid-template: "counters stage sidebar" minmax(0, 1fr) /
+    7rem minmax(0, var(--snake-arena-width, 1fr)) 10rem;
+  justify-content: center;
+  gap: clamp(0.5rem, 1.3vw, 1rem);
+}
+.snake-counters {
+  grid-area: counters;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+  width: min(100%, 29rem);
+  min-height: 0;
+}
+.snake-counters .game-stat {
+  width: 100%;
+  padding-inline: 0.25rem;
+}
+.snake-sidebar {
+  grid-area: sidebar;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.snake-side-layout :is(.snake-counters, .snake-sidebar) {
+  overflow: auto;
+  align-content: start;
+}
+.snake-side-layout .snake-counters {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+}
 .snake-controls,
+.snake-actions,
 .snake-cover-actions {
   display: flex;
   justify-content: center;
@@ -20,13 +59,18 @@
 }
 .snake-controls {
   flex-wrap: wrap;
+  width: 100%;
 }
 .snake-mode {
-  width: 11rem;
+  width: min(100%, 11rem);
+}
+.snake-side-layout .snake-mode {
+  width: 100%;
 }
 .snake-stage {
-  flex: 1;
-  min-height: 150px;
+  grid-area: stage;
+  min-width: 0;
+  min-height: 0;
   width: 100%;
   display: grid;
   place-items: center;
@@ -81,8 +125,10 @@
 }
 .snake-pad {
   display: grid;
-  grid-template-columns: repeat(3, 42px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
+  width: min(100%, 134px);
+  flex: none;
 }
 .snake-pad [data-snake-action="up"] {
   grid-column: 2;
@@ -100,7 +146,8 @@
   grid-row: 2;
 }
 .snake-pad .game-button {
-  width: 42px;
+  width: 100%;
+  min-width: 0;
   height: 36px;
 }
 .game-snake .game-notice {
@@ -114,17 +161,5 @@
 @media (hover: hover) and (pointer: fine) {
   .snake-pad {
     display: none;
-  }
-}
-@media (max-width: 540px) {
-  .game-snake {
-    gap: 0.5rem;
-    min-height: 480px;
-  }
-  .snake-counters {
-    gap: 0.35rem;
-  }
-  .snake-counters .game-stat {
-    width: 4.7rem;
   }
 }

@@ -1,0 +1,562 @@
+[
+  {
+    "id": "xq-01",
+    "goal": 1,
+    "position": "1R1a5/9/3k5/R8/9/9/9/9/9/4K4"
+  },
+  {
+    "id": "xq-02",
+    "goal": 1,
+    "position": "9/1H2aP3/4k4/9/9/9/6R2/9/5K3/9"
+  },
+  {
+    "id": "xq-03",
+    "goal": 1,
+    "position": "3a5/9/5k3/2C6/2R6/9/9/4K4/9/9"
+  },
+  {
+    "id": "xq-04",
+    "goal": 1,
+    "position": "7r1/5k3/9/5H3/9/9/6C1P/9/4K4/9"
+  },
+  {
+    "id": "xq-05",
+    "goal": 1,
+    "position": "9/5P3/1H1k1a3/9/5R3/6E2/9/4K4/9/9"
+  },
+  {
+    "id": "xq-06",
+    "goal": 1,
+    "position": "2R6/6C2/e4k3/9/3h5/9/9/9/4K4/5A3"
+  },
+  {
+    "id": "xq-07",
+    "goal": 2,
+    "position": "1r2k4/9/R8/6R2/9/9/9/9/9/5K3"
+  },
+  {
+    "id": "xq-08",
+    "goal": 2,
+    "position": "9/4H4/4ka3/5R3/9/9/9/8p/9/5K3"
+  },
+  {
+    "id": "xq-09",
+    "goal": 2,
+    "position": "3a4C/9/5k3/9/9/2R6/9/9/9/3K5"
+  },
+  {
+    "id": "xq-10",
+    "goal": 2,
+    "position": "2Ca5/9/5k3/9/9/4R4/C8/4p4/9/4K4"
+  },
+  {
+    "id": "xq-11",
+    "goal": 2,
+    "position": "3k2C2/4a4/3P5/8H/9/9/2H6/5K3/9/9"
+  },
+  {
+    "id": "xq-12",
+    "goal": 2,
+    "position": "9/5k3/4P2r1/9/9/6H2/3R5/9/9/4K4"
+  },
+  {
+    "id": "xq-13",
+    "goal": 2,
+    "position": "4k4/5P1C1/4e4/9/2h6/9/2R6/9/9/3K5"
+  },
+  {
+    "id": "xq-14",
+    "goal": 2,
+    "position": "5a3/1H7/5k3/1P7/9/4R4/9/3K5/9/2E6"
+  },
+  {
+    "id": "xq-15",
+    "goal": 3,
+    "position": "3k5/6H1R/3a5/9/9/1p7/9/9/3K5/9"
+  },
+  {
+    "id": "xq-16",
+    "goal": 3,
+    "position": "9/8R/5k2e/2C6/9/2C6/8h/4K4/9/9"
+  },
+  {
+    "id": "xq-17",
+    "goal": 3,
+    "position": "8C/5k3/2H2a3/5H3/P8/9/9/3K5/9/9"
+  },
+  {
+    "id": "xq-18",
+    "goal": 3,
+    "position": "5a3/3k5/9/1R1P5/9/9/P8/9/p8/5K3"
+  },
+  {
+    "id": "xq-19",
+    "goal": 3,
+    "position": "1PP6/9/3k5/9/2e5R/7h1/9/5K3/9/9"
+  },
+  {
+    "id": "xq-20",
+    "goal": 3,
+    "position": "5k3/3Pa4/4R4/H8/9/9/9/9/4K4/9"
+  },
+  {
+    "id": "xq-21",
+    "goal": 1,
+    "position": "r4k3/9/9/9/9/4R4/9/9/9/4K4"
+  },
+  {
+    "id": "xq-22",
+    "goal": 1,
+    "position": "9/H3C4/3ke4/9/4R4/9/3p5/4K4/9/9"
+  },
+  {
+    "id": "xq-23",
+    "goal": 1,
+    "position": "9/3H1R3/4k4/9/9/9/9/4p4/3K5/9"
+  },
+  {
+    "id": "xq-24",
+    "goal": 1,
+    "position": "7h1/5kH2/9/9/9/8R/9/9/9/4K4"
+  },
+  {
+    "id": "xq-25",
+    "goal": 1,
+    "position": "1P3k3/9/9/R8/9/9/8C/4K4/9/2p6"
+  },
+  {
+    "id": "xq-26",
+    "goal": 1,
+    "position": "3k5/9/5a2e/4R4/8R/9/9/5K3/9/9"
+  },
+  {
+    "id": "xq-27",
+    "goal": 1,
+    "position": "R4a3/P8/3ke4/9/9/9/4C4/4K4/9/9"
+  },
+  {
+    "id": "xq-28",
+    "goal": 1,
+    "position": "4k4/3Pa4/5a3/9/6C2/8R/9/9/4K4/9"
+  },
+  {
+    "id": "xq-29",
+    "goal": 1,
+    "position": "6R2/9/5k3/c3P4/3H5/9/p8/9/3K5/9"
+  },
+  {
+    "id": "xq-30",
+    "goal": 1,
+    "position": "9/2C1a4/4ka3/6R2/9/9/9/9/3K5/9"
+  },
+  {
+    "id": "xq-31",
+    "goal": 1,
+    "position": "4k4/4a1C2/5P1R1/9/8r/9/9/4K4/9/9"
+  },
+  {
+    "id": "xq-32",
+    "goal": 1,
+    "position": "4C4/9/3k1a3/4R4/9/9/9/9/h3K4/9"
+  },
+  {
+    "id": "xq-33",
+    "goal": 1,
+    "position": "5k3/9/P8/4R4/6P2/9/3p5/9/4K4/9"
+  },
+  {
+    "id": "xq-34",
+    "goal": 1,
+    "position": "2e1k4/2P6/4P4/9/9/2p6/6R2/4K4/9/9"
+  },
+  {
+    "id": "xq-35",
+    "goal": 1,
+    "position": "3kH3h/9/2R6/9/9/9/9/4K4/9/9"
+  },
+  {
+    "id": "xq-36",
+    "goal": 1,
+    "position": "9/9/3k5/9/1Re6/9/R8/8p/9/4K4"
+  },
+  {
+    "id": "xq-37",
+    "goal": 1,
+    "position": "3a1k3/9/9/9/1R1R5/9/9/4K4/9/9"
+  },
+  {
+    "id": "xq-38",
+    "goal": 1,
+    "position": "5a3/9/3k5/2P5R/6P2/9/9/4K4/9/9"
+  },
+  {
+    "id": "xq-39",
+    "goal": 1,
+    "position": "4k4/9/9/9/R4R3/8h/9/9/9/3K5"
+  },
+  {
+    "id": "xq-40",
+    "goal": 1,
+    "position": "3k5/9/8R/4HP3/9/9/9/4K4/9/5p3"
+  },
+  {
+    "id": "xq-41",
+    "goal": 1,
+    "position": "5C3/9/5k3/9/H7R/9/5p3/4K4/9/9"
+  },
+  {
+    "id": "xq-42",
+    "goal": 1,
+    "position": "5a3/9/5k3/6H2/9/6H2/p8/9/3K5/9"
+  },
+  {
+    "id": "xq-43",
+    "goal": 1,
+    "position": "9/5k1P1/3a5/9/6e2/C6R1/9/9/9/4K4"
+  },
+  {
+    "id": "xq-44",
+    "goal": 1,
+    "position": "9/HC7/4ka3/9/9/9/7R1/9/3K5/9"
+  },
+  {
+    "id": "xq-45",
+    "goal": 2,
+    "position": "4kae2/4a4/2H1e4/9/9/1R7/5r3/2c1EA3/6h2/2EA1KC2"
+  },
+  {
+    "id": "xq-46",
+    "goal": 2,
+    "position": "3aka3/9/4c1H2/1C7/9/9/1r5h1/C3E4/4A4/4KAE2"
+  },
+  {
+    "id": "xq-47",
+    "goal": 2,
+    "position": "3aka3/9/9/5H2C/9/9/4c2h1/4E4/4A4/3AK4"
+  },
+  {
+    "id": "xq-48",
+    "goal": 2,
+    "position": "4P1H2/3k5/9/9/9/9/6Ch1/9/4K4/9"
+  },
+  {
+    "id": "xq-49",
+    "goal": 2,
+    "position": "9/2C6/5k3/8c/2R6/2p6/9/4K4/9/9"
+  },
+  {
+    "id": "xq-50",
+    "goal": 2,
+    "position": "4ka3/9/1R7/9/9/5R3/9/5r3/3K5/9"
+  },
+  {
+    "id": "xq-51",
+    "goal": 2,
+    "position": "R1e6/4k4/9/9/9/1R7/9/9/6p2/3K5"
+  },
+  {
+    "id": "xq-52",
+    "goal": 2,
+    "position": "9/8R/4k4/9/9/2HC5/9/9/5K3/c8"
+  },
+  {
+    "id": "xq-53",
+    "goal": 2,
+    "position": "7H1/9/r2k5/9/6P2/7C1/9/9/9/4K4"
+  },
+  {
+    "id": "xq-54",
+    "goal": 2,
+    "position": "5a3/3ka4/4P4/9/9/6H2/8R/9/5K3/9"
+  },
+  {
+    "id": "xq-55",
+    "goal": 2,
+    "position": "3a5/3P1P3/4k4/9/R1c6/9/9/3K5/9/9"
+  },
+  {
+    "id": "xq-56",
+    "goal": 2,
+    "position": "5kH2/9/5aP1C/1r7/9/9/9/9/4K4/9"
+  },
+  {
+    "id": "xq-57",
+    "goal": 2,
+    "position": "9/5P2H/4k4/9/9/9/8R/9/6c2/5K3"
+  },
+  {
+    "id": "xq-58",
+    "goal": 2,
+    "position": "9/9/3a1k3/1r7/9/7R1/2H6/9/4K4/9"
+  },
+  {
+    "id": "xq-59",
+    "goal": 2,
+    "position": "2ha5/9/5k3/8R/4C4/8H/9/4K4/9/9"
+  },
+  {
+    "id": "xq-60",
+    "goal": 2,
+    "position": "3a1kH2/P8/5a3/9/9/9/7C1/4K4/9/9"
+  },
+  {
+    "id": "xq-61",
+    "goal": 2,
+    "position": "5a3/4a4/4k4/9/H8/1R7/9/9/9/5K3"
+  },
+  {
+    "id": "xq-62",
+    "goal": 2,
+    "position": "6P2/4R2P1/5k3/9/2c6/8p/9/4K4/9/9"
+  },
+  {
+    "id": "xq-63",
+    "goal": 2,
+    "position": "1P1a5/9/3k5/7c1/9/5H3/5R3/9/9/4K4"
+  },
+  {
+    "id": "xq-64",
+    "goal": 2,
+    "position": "6P2/9/3k5/7C1/1r7/4R4/9/4K4/9/9"
+  },
+  {
+    "id": "xq-65",
+    "goal": 2,
+    "position": "5k3/9/9/9/1R4R2/9/9/9/8r/3K5"
+  },
+  {
+    "id": "xq-66",
+    "goal": 2,
+    "position": "1R7/7R1/3k5/9/9/9/9/2c2K3/9/9"
+  },
+  {
+    "id": "xq-67",
+    "goal": 2,
+    "position": "3ak4/9/9/5R3/6e2/R8/9/5K3/9/9"
+  },
+  {
+    "id": "xq-68",
+    "goal": 2,
+    "position": "3k5/9/9/9/3H5/9/7R1/5K1p1/9/9"
+  },
+  {
+    "id": "xq-69",
+    "goal": 2,
+    "position": "9/H3k4/4e4/9/2C6/9/5R3/4p4/9/5K3"
+  },
+  {
+    "id": "xq-70",
+    "goal": 2,
+    "position": "9/4k4/5a3/7R1/9/2p6/1R7/9/9/5K3"
+  },
+  {
+    "id": "xq-71",
+    "goal": 2,
+    "position": "3a5/9/3P1k3/4c4/C2R5/9/9/9/9/4K4"
+  },
+  {
+    "id": "xq-72",
+    "goal": 3,
+    "position": "3a1k3/4a4/6R2/8R/2r6/9/9/1r7/4A4/3K1A3"
+  },
+  {
+    "id": "xq-73",
+    "goal": 3,
+    "position": "3a1k3/4a4/6R2/8R/2r6/9/1r7/9/4A4/3K1A3"
+  },
+  {
+    "id": "xq-74",
+    "goal": 3,
+    "position": "3k3r1/1c7/9/4R4/9/9/9/4R4/r8/4K4"
+  },
+  {
+    "id": "xq-75",
+    "goal": 3,
+    "position": "4k4/3P2P2/e2H2R2/7r1/2e6/9/9/3h5/4p3r/2R2K3"
+  },
+  {
+    "id": "xq-76",
+    "goal": 3,
+    "position": "1reak3r/1H1Ra4/cR2e1H2/9/9/9/9/9/5p3/4K4"
+  },
+  {
+    "id": "xq-77",
+    "goal": 3,
+    "position": "3k1a3/1HR2h3/3a5/1r4CC1/2e6/9/9/9/1c1p3r1/4K4"
+  },
+  {
+    "id": "xq-78",
+    "goal": 3,
+    "position": "2eak3C/4aP2H/4e4/5C3/9/9/9/3p5/4p2r1/3K5"
+  },
+  {
+    "id": "xq-79",
+    "goal": 3,
+    "position": "2ek5/r3aR3/h1r1e4/9/9/6R2/9/3h5/4p4/1C3K3"
+  },
+  {
+    "id": "xq-80",
+    "goal": 3,
+    "position": "3a3hC/1R4c2/2C1k2r1/9/9/r6H1/9/9/4p4/3K5"
+  },
+  {
+    "id": "xq-81",
+    "goal": 3,
+    "position": "4k4/3Ra4/9/9/6H2/9/5C3/2r6/5K3/9"
+  },
+  {
+    "id": "xq-82",
+    "goal": 3,
+    "position": "5a3/4k4/3P1a3/9/2R1C4/9/9/9/3K5/9"
+  },
+  {
+    "id": "xq-83",
+    "goal": 3,
+    "position": "3a5/4k4/3h1P3/3P5/1R7/9/9/5K3/9/9"
+  },
+  {
+    "id": "xq-84",
+    "goal": 3,
+    "position": "9/3k5/3a5/3P2P2/9/9/3R5/9/5K3/9"
+  },
+  {
+    "id": "xq-85",
+    "goal": 3,
+    "position": "3a4P/2r6/3k1H1R1/9/9/9/9/9/9/5K3"
+  },
+  {
+    "id": "xq-86",
+    "goal": 3,
+    "position": "5a3/5k3/9/5P3/4P4/9/2R6/9/5K3/8p"
+  },
+  {
+    "id": "xq-87",
+    "goal": 3,
+    "position": "5a3/5k3/3a5/9/5PPR1/9/9/5K3/9/9"
+  },
+  {
+    "id": "xq-88",
+    "goal": 3,
+    "position": "8R/4k4/3a5/9/9/2R6/9/6r2/9/3K5"
+  },
+  {
+    "id": "xq-89",
+    "goal": 3,
+    "position": "6R2/9/4k4/9/9/5H3/9/9/5K3/5p3"
+  },
+  {
+    "id": "xq-90",
+    "goal": 3,
+    "position": "4k4/9/3a3R1/9/9/8R/9/6c2/9/3K5"
+  },
+  {
+    "id": "xq-91",
+    "goal": 3,
+    "position": "9/7C1/4k4/9/8R/3H5/9/2cK5/2p6/9"
+  },
+  {
+    "id": "xq-92",
+    "goal": 3,
+    "position": "R2a5/5k3/9/1H7/2C6/7p1/9/9/9/3K5"
+  },
+  {
+    "id": "xq-93",
+    "goal": 3,
+    "position": "9/4k2H1/3a3P1/9/1R7/9/9/9/5K1p1/9"
+  },
+  {
+    "id": "xq-94",
+    "goal": 3,
+    "position": "9/9/1H3k1P1/P8/9/9/3p5/9/9/4K4"
+  },
+  {
+    "id": "xq-95",
+    "goal": 3,
+    "position": "9/H2k1P3/3a5/9/7C1/9/9/7r1/4K4/9"
+  },
+  {
+    "id": "xq-96",
+    "goal": 3,
+    "position": "3k1a3/9/3aP4/5R3/8H/9/9/9/4K4/9"
+  },
+  {
+    "id": "xq-97",
+    "goal": 3,
+    "position": "9/4a4/5k3/9/7R1/9/3H5/4p4/9/3K5"
+  },
+  {
+    "id": "xq-98",
+    "goal": 3,
+    "position": "9/9/1H2ka3/9/R8/3C3r1/9/9/5K3/9"
+  },
+  {
+    "id": "xq-99",
+    "goal": 3,
+    "position": "5a3/4k4/1H2e4/9/6R2/9/8C/9/9/5K3"
+  },
+  {
+    "id": "xq-100",
+    "goal": 3,
+    "position": "5k1H1/9/9/9/4c4/3p5/7R1/9/9/3K5"
+  },
+  {
+    "id": "xq-101",
+    "goal": 4,
+    "position": "1C3k3/1H2P4/1hH1e4/9/9/9/9/4p4/3p1p3/4K4",
+    "title": "双蜓点水"
+  },
+  {
+    "id": "xq-102",
+    "goal": 4,
+    "position": "3ak3H/4aP3/8R/1rr5H/9/9/9/9/5p3/4K4",
+    "title": "双鹭窥鱼"
+  },
+  {
+    "id": "xq-103",
+    "goal": 4,
+    "position": "9/9/R2ak1P2/2rH5/9/9/1C7/4rh3/3K5/9",
+    "title": "金创满身"
+  },
+  {
+    "id": "xq-104",
+    "goal": 4,
+    "position": "3k1a3/9/3a5/3rRH2C/9/9/9/6h2/5r3/4K4",
+    "title": "入穴取虎"
+  },
+  {
+    "id": "xq-105",
+    "goal": 4,
+    "position": "9/r2k5/1R1ae4/3H5/2e6/1C7/9/3h1p3/9/5K3",
+    "title": "舍命如归"
+  },
+  {
+    "id": "xq-106",
+    "goal": 4,
+    "position": "3k1a3/hPR1a4/2Hr5/9/9/9/9/9/5r3/2c1K4",
+    "title": "辎重塞途"
+  },
+  {
+    "id": "xq-107",
+    "goal": 4,
+    "position": "r4k3/4a1P2/1h3a3/4H4/9/9/9/4C4/4p4/2EK5",
+    "title": "一骑困魏"
+  },
+  {
+    "id": "xq-108",
+    "goal": 5,
+    "position": "3k5/4R4/4e3R/2r1p4/9/7C1/9/9/5pr2/4K4",
+    "title": "直造竹所"
+  },
+  {
+    "id": "xq-109",
+    "goal": 5,
+    "position": "3C1a1c1/9/C2keH3/4P4/9/9/9/9/r4p3/4K4",
+    "title": "脱网逢钩"
+  },
+  {
+    "id": "xq-110",
+    "goal": 6,
+    "position": "4k4/4a3R/4Pa3/7C1/4p4/9/9/2r6/5r3/3K5",
+    "title": "增补隘口"
+  }
+]

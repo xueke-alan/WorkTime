@@ -13,6 +13,89 @@ WorkTimeApp.games.paintCounter = function (element, value) {
   if (element.style.fontSize !== size) element.style.fontSize = size;
   if (element.title !== text) element.title = text;
 };
+WorkTimeApp.games.createLevelPage = function (root, id) {
+  function node(parent, tag, className) {
+    const element = document.createElement(tag);
+    element.className = className;
+    parent.append(element);
+    return element;
+  }
+  const page = node(root, "section", "game-level-page");
+  page.id = id;
+  const header = node(page, "header", "game-level-page-header");
+  const title = node(header, "h3", "game-level-page-title");
+  title.id = id + "-title";
+  page.setAttribute("aria-labelledby", title.id);
+  const body = node(page, "div", "game-level-page-body");
+  const summary = node(body, "div", "game-level-page-summary");
+  return {
+    page,
+    header,
+    body,
+    summary,
+    refresh() {
+      title.textContent = WorkTimeApp.i18n.t("games.levelStatus.choose");
+    },
+  };
+};
+WorkTimeApp.games.paintLevelCard = function (
+  button,
+  { number, label, complete, draft, locked, current, stars = 0 },
+) {
+  const status = locked
+    ? "locked"
+    : complete || stars
+      ? "complete"
+      : draft
+        ? "draft"
+        : "available";
+  const badgeState =
+    stars && !locked
+      ? "stars"
+      : current && status === "available"
+        ? "current"
+        : status;
+  const text = String(number).padStart(2, "0");
+  let badge = button.querySelector(".game-level-badge");
+  if (!badge) {
+    button.classList.add("game-level-card");
+    badge = document.createElement("span");
+    badge.className = "game-level-badge";
+    badge.setAttribute("aria-hidden", "true");
+    button.replaceChildren(document.createTextNode(text), badge);
+  } else if (button.firstChild.nodeValue !== text) {
+    button.firstChild.nodeValue = text;
+  }
+  if (
+    badge.dataset.state !== badgeState ||
+    badge.dataset.stars !== String(stars)
+  ) {
+    badge.dataset.state = badgeState;
+    badge.dataset.stars = String(stars);
+    badge.hidden = badgeState === "available";
+    badge.replaceChildren();
+    if (badgeState === "stars") badge.textContent = "★".repeat(stars);
+    if (badgeState === "complete" || badgeState === "draft")
+      badge.append(
+        WorkTimeApp.games.createIcon(
+          badgeState === "complete" ? "check" : "play-arrow",
+        ),
+      );
+    if (badgeState === "locked")
+      badge.innerHTML =
+        '<svg class="ui-icon" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" d="M5 7V5a3 3 0 0 1 6 0v2"/><rect x="3" y="7" width="10" height="7" rx="1.5"/></svg>';
+  }
+  const name =
+    label + " · " + WorkTimeApp.i18n.t("games.levelStatus." + status);
+  if (button.title !== name) {
+    button.title = name;
+    button.setAttribute("aria-label", name);
+  }
+  button.dataset.levelStatus = status;
+  if (current) button.setAttribute("aria-current", "step");
+  else button.removeAttribute("aria-current");
+  button.disabled = !!locked;
+};
 /** Match the site's settings picker, retaining a native select as the value owner. */
 WorkTimeApp.games.createSelect = function ({ host, select, label, signal }) {
   const trigger = document.createElement("button");

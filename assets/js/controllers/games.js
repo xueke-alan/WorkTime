@@ -93,6 +93,8 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     lastSize = null,
     restingPanels = [];
   let loadGeneration = 0;
+  let selectedId = WorkTimeApp.games.list()[0]?.id;
+  let sidebarMenu, shellMenu;
   const t = (key) => WorkTimeApp.i18n.t(key);
   const setState = (value) => {
     state = value;
@@ -121,6 +123,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     instance = null;
     currentId = null;
     lastSize = null;
+    shellMenu = null;
     content.replaceChildren();
   }
   function translateToolbar() {
@@ -337,16 +340,28 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     if (savedScroll) window.scrollTo(savedScroll.x, savedScroll.y);
     savedScroll = null;
     setState("closed");
+    sidebarMenu?.refreshProgress();
     if (focus) WorkTimeApp.ui.dateInfo.selectTab("games");
     if (focus)
       document.getElementById("date-tab-games")?.focus({ preventScroll: true });
   }
+  function renderMenu(container) {
+    return WorkTimeApp.ui.renderGameMenu(container, {
+      selectedId,
+      onSelect(id) {
+        selectedId = id;
+        if (container === content) sidebarMenu.select(id);
+      },
+      onLaunch: launch,
+      archiveUI,
+    });
+  }
   function showMenu() {
     if (state !== "open") return;
     releaseGame();
-    WorkTimeApp.ui.renderGameMenu(content, launch, archiveUI);
+    shellMenu = renderMenu(content);
     translateToolbar();
-    content.querySelector("button")?.focus({ preventScroll: true });
+    content.querySelector('.game-menu-entry[aria-pressed="true"]')?.focus();
   }
   async function launch(id) {
     if (!archiveReady) return;
@@ -429,22 +444,27 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   function refreshLanguage() {
     const focused = document.activeElement;
     const gameId = focused?.dataset.game;
-    const inMenu = sidebar.contains(focused) || content.contains(focused);
-    WorkTimeApp.ui.renderGameMenu(sidebar, launch, archiveUI);
+    const menu = focused?.closest(
+      ".game-menu-header, .game-library",
+    )?.parentElement;
+    const control = focused?.dataset.gameArchive;
+    const play = focused?.classList.contains("game-menu-play");
+    sidebarMenu = renderMenu(sidebar);
     if (state !== "closed") {
       translateToolbar();
       if (content.querySelector("[data-game-error]"))
         content.querySelector("[data-game-error]").textContent =
           t("games.failed");
-      else if (!currentId)
-        WorkTimeApp.ui.renderGameMenu(content, launch, archiveUI);
+      else if (!currentId) shellMenu = renderMenu(content);
     }
-    if (gameId && inMenu) {
-      const target = state === "closed" ? sidebar : content;
-      [...target.querySelectorAll("[data-game]")]
-        .find((button) => button.dataset.game === gameId)
-        ?.focus({ preventScroll: true });
-    }
+    const selector = gameId
+      ? `[data-game="${gameId}"]`
+      : control
+        ? `[data-game-archive="${control}"]`
+        : play
+          ? ".game-menu-play"
+          : null;
+    if (selector) menu?.querySelector(selector)?.focus();
   }
   events.listen(exitButton, "click", exit);
   events.listen(shell, "keydown", (event) => {
@@ -492,7 +512,12 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   events.listen(document, "worktime:languagechange", refreshLanguage);
   events.listen(window, "resize", onResize);
   function archiveChanged() {
-    if (handlingArchiveChange || disposed || !currentId) return;
+    if (handlingArchiveChange || disposed) return;
+    if (!currentId) {
+      sidebarMenu.refreshProgress();
+      shellMenu?.refreshProgress();
+      return;
+    }
     handlingArchiveChange = true;
     try {
       revision++;
@@ -506,6 +531,11 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   events.listen(window, "worktime:gamearchive", archiveChanged);
   events.listen(window, "storage", (event) => {
     if (event.key === gameArchive.REVISION || event.key === gameArchive.JOURNAL)
+      archiveChanged();
+    else if (
+      !currentId &&
+      (event.key === gameArchive.keys[selectedId] || event.key === null)
+    )
       archiveChanged();
   });
   if (window.visualViewport)

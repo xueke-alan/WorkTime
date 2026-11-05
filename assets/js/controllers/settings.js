@@ -141,6 +141,16 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     pendingLeave = continuation;
     actions.open("scheduleDraftDialog");
   }
+  function requestSettingsExit(continuation) {
+    if ($("settingsPane").hidden) {
+      continuation();
+      return;
+    }
+    requestSettingsLeave(() => {
+      actions.closeSettings();
+      continuation();
+    });
+  }
   function openScheduleRange() {
     try {
       const schedule = readSchedule();
@@ -227,8 +237,16 @@ WorkTimeApp.ui.createSettingsController = function (options) {
   }
   function guardNavigation(event) {
     if ($("settingsPane").hidden) return;
+    // Agenda controls guard the editor action themselves, including pointer
+    // gestures that open it without a click.
+    if (
+      event.target.closest(
+        "#calendar :is([data-agenda-edit], [data-agenda-date])",
+      )
+    )
+      return;
     const target = event.target.closest(
-      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #batchToggle, #restore, #analysisToggle",
+      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #agendaMode, #batchToggle, #restore, #restoreStorage, #initializeStorage, #analysisToggle",
     );
     if (!target) return;
     const keepSettings = target.matches(
@@ -238,12 +256,13 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     event.preventDefault();
     event.stopImmediatePropagation();
     const shiftKey = event.shiftKey;
-    requestSettingsLeave(() => {
-      if (!keepSettings) actions.closeSettings();
+    const resume = () => {
       target.dispatchEvent(
         new MouseEvent("click", { bubbles: true, shiftKey }),
       );
-    });
+    };
+    if (keepSettings) requestSettingsLeave(resume);
+    else requestSettingsExit(resume);
   }
   function trapScheduleFocus(event) {
     if (event.key !== "Tab") return;
@@ -447,6 +466,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     refreshSettings,
     hasScheduleDraft,
     requestSettingsLeave,
+    requestSettingsExit,
     onSaveRecovered() {
       WorkTimeApp.ui.fieldErrors.saved($("settingsError"));
     },

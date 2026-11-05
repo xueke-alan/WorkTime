@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -44,7 +45,7 @@ async function verify() {
         document.querySelector("#editorDate").firstChild,
     );
     await page.locator("#date-tab-games").click();
-    await page.locator('#gamesPanel [data-game="game-jump"]').click();
+    await launchGame(page, "game-jump");
     await page.waitForFunction(
       () => document.querySelector("#gameShell").dataset.state === "open",
     );

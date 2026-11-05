@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -398,7 +399,7 @@ async function verifyTideAnimations(browser) {
       { storageKey: key, fixture },
     );
     await page.locator("#date-tab-games").click();
-    await page.locator('#gamesPanel [data-game="game-link"]').click();
+    await launchGame(page, "game-link");
     await page.waitForFunction(
       () => document.getElementById("gameShell").dataset.state === "open",
     );
@@ -640,7 +641,7 @@ async function main() {
       );
     async function open() {
       await page.locator("#date-tab-games").click();
-      await page.locator('#gamesPanel [data-game="game-link"]').click();
+      await launchGame(page, "game-link");
       await page.waitForFunction(
         () => document.getElementById("gameShell").dataset.state === "open",
       );
@@ -1037,7 +1038,7 @@ async function main() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await unavailable.locator("#date-tab-games").click();
-    await unavailable.locator('[data-game="game-link"]').click();
+    await launchGame(unavailable, "game-link");
     await unavailable.locator('[data-link-action="zen"]').click();
     assert.ok((await unavailable.locator(".link-warning").innerText()).length);
     assert.equal(await unavailable.locator(".link-tile:enabled").count(), 240);

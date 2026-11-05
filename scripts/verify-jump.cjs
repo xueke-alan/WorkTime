@@ -1,4 +1,5 @@
 "use strict";
+const { launchGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -101,7 +102,7 @@ async function verifyUI(browser, viewport, reducedMotion) {
     };
   });
   await page.locator("#date-tab-games").click();
-  await page.locator('[data-game="game-jump"]').click();
+  await launchGame(page, "game-jump");
   await page.waitForFunction(
     () => document.querySelector("#gameShell").dataset.state === "open",
   );
@@ -257,7 +258,7 @@ async function verifyUI(browser, viewport, reducedMotion) {
   await page.locator("#gameExitButton").click();
   await page.clock.runFor(500);
   assert.equal(await game.count(), 0);
-  await page.locator('[data-game="game-jump"]').click();
+  await launchGame(page, "game-jump");
   await page.clock.runFor(600);
   assert.equal(await best.textContent(), "6");
   assert.equal(await score.textContent(), "0");
