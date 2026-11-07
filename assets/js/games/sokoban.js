@@ -114,6 +114,7 @@ WorkTimeApp.games.register({
     const catalog = WorkTimeApp.games.createLevelPage(
       root,
       "sokoban-level-page",
+      signal,
     );
     catalog.page.classList.add("sokoban-catalog");
     const progress = node("span", "sokoban-progress", catalog.summary);
@@ -122,7 +123,7 @@ WorkTimeApp.games.register({
       "game-level-progress",
       catalog.summary,
     );
-    const chapters = node("div", "game-level-categories", catalog.body);
+    const chapters = catalog.categories;
     chapters.setAttribute("role", "group");
     const chapterNames = ["easy", "medium", "hard"];
     const chapterButtons = chapterNames.map((_, index) =>
@@ -132,7 +133,7 @@ WorkTimeApp.games.register({
         render();
       }),
     );
-    const grid = node("div", "sokoban-levels game-level-grid", catalog.body);
+    const grid = node("div", "sokoban-levels game-level-grid", catalog.entries);
     const levelButtons = Array.from({ length: 20 }, (_, index) =>
       button(grid, "level-" + index, () => open(chapter * 20 + index)),
     );
@@ -331,6 +332,7 @@ WorkTimeApp.games.register({
       title.textContent = t("level", { n: current + 1, total: levels.length });
       choose.textContent = t("choose");
       catalog.refresh();
+      catalog.selectCategory(chapter);
       chapters.setAttribute("aria-label", t("catalog"));
       chapterButtons.forEach((element, index) => {
         element.textContent = t(chapterNames[index]);

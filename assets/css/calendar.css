@@ -133,6 +133,7 @@ body .editor .analysis-sidebar-header {
   padding: 0 12px 14px;
 }
 .day {
+  isolation: isolate;
   border: 1px solid var(--theme-border-soft, #e6ede8);
   color: var(--ink);
   font-weight: 500;
@@ -337,7 +338,7 @@ body .editor .analysis-sidebar-header {
   background: #fff;
   border-radius: var(--day-radius);
   transition:
-    background 0.14s,
+    background-color 300ms var(--motion-ease),
     border-color 0.14s,
     box-shadow 0.14s;
 }
@@ -1386,7 +1387,7 @@ body .calendar .day:is([data-holiday], .weekend, .full-leave) {
   border-color: var(--theme-border-soft, #e6ede8);
   color: var(--ink);
   transition:
-    background 0.15s,
+    background-color 300ms var(--motion-ease),
     border-color 0.15s,
     box-shadow 0.15s;
 }
@@ -2063,12 +2064,18 @@ body .calendar.is-batch-editing > .day[aria-disabled="true"] {
 /* Shared date marker slot: overlap icons while the carousel changes. */
 body .calendar .date-markers {
   position: relative;
+  z-index: 3;
+  pointer-events: auto;
   display: inline-flex;
   width: calc(var(--date-ink-height, 1em) + 8px);
   height: calc(var(--date-ink-height, 1em) + 8px);
   flex: none;
   overflow: hidden;
   border-radius: 50%;
+}
+body .calendar .date-markers:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 body .calendar .date-markers > .payday-icon {
   position: absolute;
@@ -2164,4 +2171,9 @@ body #monthTitle[aria-disabled="true"] {
 
 .calendar-navigation-copy .day > .agenda-card-items {
   z-index: 3;
+}
+@media (prefers-reduced-motion: reduce) {
+  body .calendar .day {
+    transition: none;
+  }
 }

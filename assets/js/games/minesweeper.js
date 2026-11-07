@@ -34,9 +34,8 @@ WorkTimeApp.games.register({
     let newRecord = false,
       previewIndex = null,
       chordHint = false;
-    let resultMotion = null,
-      celebration = null,
-      confettiMotions = [];
+    let resultMotion = null;
+    const celebration = WorkTimeApp.games.createCelebration(signal);
     try {
       const saved = rules.restore(JSON.parse(gameStorage.getItem(key)));
       if (saved) ({ state, stats, elapsed, manualPaused } = saved);
@@ -225,7 +224,7 @@ WorkTimeApp.games.register({
     function newGame(difficulty) {
       if (!difficulty) return;
       const from = board.getBoundingClientRect();
-      stopCelebration();
+      celebration.stop();
       stopBoardMotion();
       clearPointer();
       // Settle the old clock before replacing the board and elapsed time.
@@ -328,72 +327,6 @@ WorkTimeApp.games.register({
           { opacity: 1, transform: "none" },
         ],
         options,
-      );
-    }
-    function stopCelebration() {
-      confettiMotions.forEach((motion) => motion.cancel());
-      confettiMotions = [];
-      celebration?.remove();
-      celebration = null;
-    }
-    function celebrate() {
-      stopCelebration();
-      if (
-        reduced.matches ||
-        document.hidden ||
-        suspended ||
-        disposed ||
-        signal.aborted
-      )
-        return;
-      const layer = node("div", "mine-celebration", document.body);
-      layer.setAttribute("aria-hidden", "true");
-      celebration = layer;
-      const colors = [
-        "#168b72",
-        "#f2bb47",
-        "#e57a80",
-        "#6a9fe0",
-        "#a583cd",
-        "#f4d779",
-      ];
-      const width = window.innerWidth,
-        height = window.innerHeight;
-      for (let i = 0; i < 120; i++) {
-        const piece = node("i", "mine-confetti", layer);
-        piece.style.background = colors[i % colors.length];
-        piece.style.borderRadius = i % 3 === 0 ? "50%" : "2px";
-        const side = i % 2,
-          startX = side ? width + 12 : -12;
-        const targetX = width * (0.08 + Math.random() * 0.84);
-        const startY = height * (0.7 + Math.random() * 0.2);
-        const peakY = height * (0.02 + Math.random() * 0.28);
-        const rotation = (Math.random() - 0.5) * 1440;
-        const frames = Array.from({ length: 9 }, (_, step) => {
-          const p = step / 8;
-          const x = startX + (targetX - startX) * p;
-          const y =
-            startY * (1 - p) +
-            (height + 40) * p -
-            ((startY + height + 40) / 2 - peakY) * 4 * p * (1 - p);
-          return {
-            transform: `translate3d(${x}px, ${y}px, 0) rotate(${rotation * p}deg) rotateY(${p * 720}deg)`,
-            opacity: p > 0.75 ? (1 - p) * 4 : 1,
-          };
-        });
-        confettiMotions.push(
-          compat.animate(piece, frames, {
-            duration: 2300 + Math.random() * 700,
-            delay: Math.floor(i / 40) * 220,
-            easing: "linear",
-            fill: "both",
-          }),
-        );
-      }
-      void Promise.all(confettiMotions.map((motion) => motion.finished)).then(
-        () => {
-          if (celebration === layer) stopCelebration();
-        },
       );
     }
     function buildBoard() {
@@ -639,7 +572,8 @@ WorkTimeApp.games.register({
       render();
       if (ended()) {
         animateOutcome(from);
-        if (state.status === "won") celebrate();
+        if (state.status === "won" && !suspended && !disposed)
+          celebration.play();
       }
       cells.forEach((cell, cellIndex) => {
         if (state.revealed[cellIndex] && !previous.revealed[cellIndex]) {
@@ -818,16 +752,12 @@ WorkTimeApp.games.register({
     listen(document, "worktime:languagechange", render);
     listen(window, "pagehide", save);
     const unlistenMotion = compat.listen(reduced, () => {
-      if (reduced.matches) {
-        stopBoardMotion();
-        stopCelebration();
-      }
+      if (reduced.matches) stopBoardMotion();
     });
     signal.addEventListener(
       "abort",
       () => {
         suspended = true;
-        stopCelebration();
         stopBoardMotion();
         clearPointer();
         syncClock();
@@ -847,7 +777,7 @@ WorkTimeApp.games.register({
       },
       pause() {
         suspended = true;
-        stopCelebration();
+        celebration.stop();
         stopBoardMotion();
         difficulty.close();
         clearPointer();
@@ -862,7 +792,7 @@ WorkTimeApp.games.register({
       },
       dispose() {
         disposed = true;
-        stopCelebration();
+        celebration.dispose();
         stopBoardMotion();
         unlistenMotion();
         clearPointer();

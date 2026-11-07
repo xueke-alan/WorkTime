@@ -37,6 +37,7 @@ function bundleSite(root) {
       "assets/data",
     ]
       .flatMap(dynamicFiles)
+      .concat(["assets/js/auto-backup-folder.js"])
       .map((asset) => [
         asset,
         crypto

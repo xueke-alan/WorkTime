@@ -95,6 +95,7 @@ WorkTimeApp.games.register({
       confirming = false;
       choosing = true;
       render();
+      levelRanges.reveal(state.level);
       levelButtons[state.level].focus();
     });
     picker.setAttribute("aria-controls", "garden-level-page");
@@ -107,14 +108,18 @@ WorkTimeApp.games.register({
     const cover = node("section", "garden-cover", stage);
     const coverTitle = node("h3", "", cover),
       coverText = node("p", "", cover);
-    const levels = WorkTimeApp.games.createLevelPage(root, "garden-level-page");
+    const levels = WorkTimeApp.games.createLevelPage(
+      root,
+      "garden-level-page",
+      signal,
+    );
     const closeLevels = button(levels.header, "close-levels", closeLevelPage);
     closeLevels.classList.add("game-icon-button");
     closeLevels.append(WorkTimeApp.games.createIcon("close"));
     const levelGrid = node(
       "div",
       "garden-level-grid game-level-grid",
-      levels.body,
+      levels.entries,
     );
     const levelButtons = Array.from({ length: rules.levelCount }, (_, level) =>
       button(levelGrid, "level-" + level, () => {
@@ -124,6 +129,7 @@ WorkTimeApp.games.register({
         } else start(level, state.seed);
       }),
     );
+    const levelRanges = levels.addRanges(levelGrid);
     function closeLevelPage() {
       choosing = false;
       render();

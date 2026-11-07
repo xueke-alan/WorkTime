@@ -1,4 +1,27 @@
 /* Keep the established grid and type scale; let English prose use natural wraps. */
+/* Shared floating surface for hints, pickers and contextual menus. */
+body :is(.site-hint, [popover], .popover-compat, .settings-select-options, .game-select-options, #workCityOptions, #scheduleRangeOptions, .analysis-hover, .nextday-tip, .timetable-hint) {
+  border: 1px solid var(--theme-border-soft, var(--line));
+  border-radius: var(--control-radius);
+  background: var(--theme-surface-paper, var(--paper));
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgba(var(--theme-rgb, 32, 59, 54), 0.14);
+}
+body .site-hint {
+  position: fixed;
+  inset: auto;
+  z-index: 20000;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 20px));
+  margin: 0;
+  padding: 0.571429rem 0.714286rem;
+  font: 500 var(--text-small)/1.6 var(--font-ui);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+.site-hint[hidden] { display: none; }
 .settings-select-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0.857143rem; row-gap: 0.428571rem; }
 body .editor .settings-select-row > .field { display: grid; grid-row: span 3; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
 body .editor .settings-select-row > .field > label { min-width: 0; white-space: normal; overflow-wrap: anywhere; align-self: end; }
@@ -10,11 +33,11 @@ body #pageSettingsPane .language-trigger .button-label { overflow: hidden; text-
   margin-bottom: 0;
 }
 .language-settings select { position: absolute; width: 1px; opacity: 0; pointer-events: none; }
-.auto-backup-settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0.857143rem; row-gap: 0.428571rem; min-width: 0; position: relative; }
+.auto-backup-settings { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); column-gap: 0.857143rem; row-gap: 0.428571rem; min-width: 0; position: relative; }
 body .editor .auto-backup-settings > .field { display: contents; }
-.auto-backup-settings > .field > label { grid-column: 1 / -1; grid-row: 1; }
+.auto-backup-settings > .field > label { grid-column: 1; grid-row: 1; }
 .auto-backup-settings .language-trigger { grid-column: 1; grid-row: 2; }
-.auto-backup-settings .help { grid-column: 1 / -1; grid-row: 3; margin: 0; white-space: normal; overflow-wrap: anywhere; }
+.auto-backup-settings .help { grid-column: 1 / -1; grid-row: 3; margin: 0; padding-inline-start: 8px; white-space: normal; overflow-wrap: anywhere; }
 .auto-backup-settings .theme-save-notice { grid-column: 1 / -1; grid-row: 4; margin: 0; }
 body #pageSettingsPane .language-trigger {
   width: 100%;
@@ -58,7 +81,7 @@ body .settings-select-options {
 }
 body .settings-select-options[hidden] { display: none; }
 body .settings-select-options:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.285714rem; }
-body #pageSettingsPane :is(#weatherOptions, #languageOptions, #autoBackupOptions) > button {
+body #settingsPane #pageSettingsPane .settings-select-options > button {
   width: 100%;
   max-width: 100%;
   height: auto !important;
@@ -85,8 +108,8 @@ body #pageSettingsPane .settings-select-options > button > .button-label {
   transform: none;
 }
 body #pageSettingsPane .settings-select-options > button > .language-selected-icon { flex: 0 0 var(--icon-size-small); }
-body #pageSettingsPane .settings-select-options > button:is(:hover, :focus-visible) { background: var(--control-hover); }
-body #pageSettingsPane .settings-select-options > button[aria-selected="true"] { color: var(--accent); background: var(--accent-light); }
+body #settingsPane #pageSettingsPane .settings-select-options > button[aria-selected="true"] { color: var(--accent); background: var(--accent-light); }
+body #settingsPane #pageSettingsPane .settings-select-options > button:is(:hover, :focus-visible) { background: var(--control-hover); }
 body .date-context-header .date-context-switch button[hidden] { display: none; }
 body .calendar-today-weekday { margin-left: 0; width: auto; flex: 0 0 auto; }
 html:not([lang="zh-CN"]) .button-label,
@@ -126,11 +149,9 @@ html:not([lang="zh-CN"]) body #dateInfoPanel.festivals-panel .date-info-rows dt 
 html:not([lang="zh-CN"]) .button-label { min-width: 0; }
 html[lang="ko"] { word-break: keep-all; }
 
-/* Compact localized archive labels retain the shared six-column button slot. */
-/* Korean planned-overtime text is wider than the shared fixed Chinese button. */
-html:not([lang="zh-CN"]) body .editor #dayForm #plannedOvertimeToggle {
-  width: max-content;
-  max-width: 100%;
+/* Keep action states at one width; reserve extra room for Korean labels. */
+html[lang="ko"] body .editor #dayForm #plannedOvertimeToggle {
+  --planned-overtime-width: 9.142857rem;
 }
 
 html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row { --day-action-columns: minmax(max-content, 1fr) max-content max-content; }
@@ -160,3 +181,19 @@ html:not([lang="zh-CN"]) body #dayPreview .preview-period > span { min-width: 0;
     overflow-wrap: anywhere;
   }
 }
+
+/* Frequency and directory share the 2:3 action row. */
+body .editor .auto-backup-settings > .auto-backup-folder { display: contents; }
+body .auto-backup-settings > .auto-backup-folder > label { grid-column: 2; grid-row: 1; }
+.auto-backup-folder-control { grid-column: 2; grid-row: 2; display: flex; align-items: stretch; min-width: 0; overflow: hidden; border: 1px solid var(--control-border); border-radius: var(--control-radius); background: var(--theme-surface-paper, var(--paper)); box-shadow: var(--control-shadow); }
+body #pageSettingsPane .auto-backup-folder-control > .auto-backup-folder-action { display: flex; align-items: center; justify-content: center; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; color: var(--ink); font: inherit; cursor: pointer; min-height: var(--control-height); }
+.auto-backup-folder-control > .auto-backup-folder-action:disabled { cursor: default; opacity: 0.5; }
+body #pageSettingsPane #autoBackupFolderChoose { flex: 1; min-width: 0; justify-content: flex-start; text-align: left; font-size: var(--text-small); font-weight: 500; padding-inline: var(--language-control-inset, 12px); white-space: normal; overflow-wrap: anywhere; height: auto; }
+body #pageSettingsPane #autoBackupFolderReset { flex: 0 0 auto; width: auto; min-width: 0; padding: 0 var(--language-control-inset, 0.857143rem); align-self: stretch; color: var(--muted); }
+body #pageSettingsPane #autoBackupFolderReset > .ui-icon { width: var(--icon-size-small); height: var(--icon-size-small); }
+body #pageSettingsPane #autoBackupFolderReset:is(:hover, :focus-visible) { color: var(--accent); background: var(--control-hover); }
+.auto-backup-folder-control:focus-within { border-color: var(--accent); }
+.auto-backup-settings .auto-backup-folder > .help { grid-column: 1 / -1; grid-row: 4; padding-inline-start: 8px; margin: 0; white-space: normal; overflow-wrap: anywhere; }
+.auto-backup-folder > .row { grid-column: 1 / -1; grid-row: 5; flex-wrap: wrap; gap: 8px; }
+.auto-backup-folder > .row .ui-button { white-space: normal; height: auto; min-height: 36px; max-width: 100%; }
+.auto-backup-folder [hidden] { display: none !important; }

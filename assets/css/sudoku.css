@@ -6,6 +6,38 @@
   flex-direction: column;
   gap: 1rem;
 }
+.game-sudoku .sudoku-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.sudoku-difficulties {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.game-sudoku .sudoku-difficulties .game-button {
+  min-height: 3rem;
+  padding: 0.25rem 0.1rem;
+  font-size: 0.8rem;
+}
+.sudoku-variants {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 3.5rem;
+  gap: 0.5rem;
+}
+@media (max-width: 540px) {
+  .game-sudoku .sudoku-difficulties .game-button {
+    font-size: 0.65rem;
+  }
+  .sudoku-variants {
+    grid-auto-rows: 4.5rem;
+    gap: 0.35rem;
+  }
+}
 .sudoku-hud,
 .sudoku-session-meta,
 .sudoku-actions,
@@ -125,6 +157,41 @@
 .sudoku-stage {
   position: relative;
 }
+.sudoku-field.is-skyscraper {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  grid-template-rows: repeat(11, minmax(0, 1fr));
+  aspect-ratio: 1;
+}
+.is-skyscraper .sudoku-board {
+  grid-area: 2 / 2 / 11 / 11;
+}
+.sudoku-sky-clues {
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  font: 700 clamp(0.85rem, 3vw, 1.3rem) var(--font-numeric);
+}
+.sudoku-sky-top,
+.sudoku-sky-bottom {
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+}
+.sudoku-sky-left,
+.sudoku-sky-right {
+  grid-template-rows: repeat(9, minmax(0, 1fr));
+}
+.sudoku-sky-top {
+  grid-area: 1 / 2 / 2 / 11;
+}
+.sudoku-sky-left {
+  grid-area: 2 / 1 / 11 / 2;
+}
+.sudoku-sky-bottom {
+  grid-area: 11 / 2 / 12 / 11;
+}
+.sudoku-sky-right {
+  grid-area: 2 / 11 / 11 / 12;
+}
 .sudoku-board {
   position: relative;
   isolation: isolate;
@@ -138,6 +205,7 @@
   overflow: hidden;
 }
 body .sudoku-cell {
+  --sudoku-cell-fill: transparent;
   position: relative;
   display: flex;
   align-items: center;
@@ -152,7 +220,7 @@ body .sudoku-cell {
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   border-radius: 0;
-  background: transparent;
+  background: var(--sudoku-cell-fill);
   box-shadow: none;
   color: var(--accent);
   font: 500 clamp(1.1rem, 3.5vw, 1.8rem) var(--font-numeric);
@@ -163,22 +231,27 @@ body .sudoku-cell {
 body .sudoku-cell:is(:hover, :active) {
   border-color: var(--line);
 }
+/* Shared button interaction fills must not obscure the SVG clues below cells.
+   Preserve the same translucent state fill during mouse and touch interaction. */
+body .sudoku-cell:is(:hover, :active):not(:disabled) {
+  background: var(--sudoku-cell-fill);
+}
 body .sudoku-cell.is-given {
   color: var(--ink);
   font-weight: 750;
 }
 body .sudoku-cell.is-peer {
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  --sudoku-cell-fill: color-mix(in srgb, var(--accent) 5%, transparent);
 }
 body .sudoku-cell.is-same {
-  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  --sudoku-cell-fill: color-mix(in srgb, var(--accent) 13%, transparent);
 }
 body .sudoku-cell.is-selected {
-  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  --sudoku-cell-fill: color-mix(in srgb, var(--accent) 24%, transparent);
 }
 body .sudoku-cell.is-conflict {
+  --sudoku-cell-fill: color-mix(in srgb, #e42f48 14%, transparent);
   color: #b02c39;
-  background: #ffe1e4;
 }
 body .sudoku-cell.sudoku-box-right {
   border-right: 2px solid var(--accent);
@@ -252,6 +325,58 @@ body .sudoku-cell:focus-visible::after {
 .sudoku-thermos circle {
   fill: color-mix(in srgb, var(--accent) 28%, var(--paper));
 }
+.sudoku-thermos .sudoku-line {
+  fill: none;
+  stroke-width: 1.1;
+}
+.sudoku-thermos .sudoku-whispers {
+  stroke: color-mix(in srgb, #16854d 65%, var(--paper));
+  stroke-width: 2.5;
+}
+.sudoku-thermos .sudoku-renban {
+  stroke: color-mix(in srgb, #ae43be 65%, var(--paper));
+  stroke-width: 2.5;
+}
+.sudoku-thermos .sudoku-arrow,
+.sudoku-thermos .sudoku-arrow-circle {
+  stroke: color-mix(in srgb, var(--ink) 60%, var(--paper));
+  stroke-width: 0.65;
+  fill: none;
+}
+.sudoku-variant-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+.sudoku-cage {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.18;
+  stroke-dasharray: 0.7 0.5;
+}
+.sudoku-cage-sum {
+  fill: var(--ink);
+  stroke: var(--paper);
+  stroke-width: 0.7;
+  paint-order: stroke;
+  font: 700 2.35px var(--font-numeric);
+}
+.sudoku-kropki {
+  stroke: var(--ink);
+  stroke-width: 0.3;
+}
+.sudoku-kropki-white {
+  fill: var(--paper);
+}
+.sudoku-kropki-black {
+  fill: var(--ink);
+}
+.has-cage-sum .sudoku-notes {
+  top: 27%;
+}
 .sudoku-cover {
   position: absolute;
   inset: 0;
@@ -274,8 +399,32 @@ body .sudoku-cell:focus-visible::after {
 .sudoku-cover p:empty {
   display: none;
 }
+.sudoku-replay {
+  display: grid;
+  gap: 0.5rem;
+  order: 2;
+  margin-block-start: 0.75rem;
+}
+.sudoku-replay h4,
+.sudoku-replay p {
+  margin: 0;
+}
+.sudoku-replay p {
+  color: var(--muted);
+  font-size: var(--text-small);
+}
+.sudoku-replay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.sudoku-replay-actions .game-button {
+  height: auto;
+  min-height: var(--control-height);
+  white-space: normal;
+}
 /* Keep the square board edges behind the rounded cover out of view. */
-.sudoku-stage:has(> .sudoku-cover:not([hidden])) > .sudoku-board {
+.sudoku-stage:has(> .sudoku-cover:not([hidden])) > .sudoku-field {
   visibility: hidden;
 }
 .sudoku-actions {
@@ -340,6 +489,8 @@ body .sudoku-cell:focus-visible::after {
 .game-sudoku[data-layout="wide"] .sudoku-play {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 16rem;
+  grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+  height: var(--sudoku-size);
   align-items: center;
   column-gap: 2rem;
   width: 100%;
@@ -347,6 +498,8 @@ body .sudoku-cell:focus-visible::after {
 .game-sudoku[data-layout="wide"] .sudoku-tools {
   display: flex;
   flex-direction: column;
+  grid-column: 2;
+  grid-row: 2;
   gap: 1rem;
   min-width: 0;
 }
@@ -354,10 +507,19 @@ body .sudoku-cell:focus-visible::after {
   margin: 0;
 }
 .game-sudoku[data-layout="wide"] .sudoku-rule {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  order: -1;
   min-height: 0;
-  margin: 0;
+  max-height: calc(100% - 1rem);
+  overflow: auto;
+  margin: 0 0 1rem;
 }
 .game-sudoku[data-layout="wide"] .sudoku-stage {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  align-self: start;
   width: var(--sudoku-size, 100%);
   max-width: 100%;
   justify-self: center;

@@ -89,23 +89,31 @@ WorkTimeApp.ui.createBackupController = function (options) {
     $("restoreDialog").close();
     actions.toast(WorkTimeApp.i18n.t("copy.8e990e61b4"), "countdown");
   }
-  async function backup() {
+  async function backup(automatic = false) {
     if (!beginBackup()) return false;
     const lifetime = generation;
     try {
       const text = await exportBackup();
       if (disposed || lifetime !== generation) return false;
-      download(
+      const name =
         WorkTimeApp.i18n.t("copy.35c89c4491") +
-          new Date(Date.now() + 8 * 3600000)
-            .toISOString()
-            .slice(0, 19)
-            .replace(/[T:]/g, "-") +
-          ".txt",
-        text,
-        "text/plain;charset=utf-8",
+        new Date(Date.now() + 8 * 3600000)
+          .toISOString()
+          .slice(0, 19)
+          .replace(/[-:]/g, "")
+          .replace("T", "-") +
+        ".txt";
+      const folder = WorkTimeApp.services.autoBackupFolder;
+      const written = automatic === true && (await folder.write(name, text));
+      if (!written) download(name, text, "text/plain;charset=utf-8");
+      if (written)
+        await WorkTimeApp.ui.loadAutoBackupFolderSettings().catch(() => {});
+      actions.toast(
+        written
+          ? WorkTimeApp.ui.autoBackupFolderText?.("saved") || name
+          : WorkTimeApp.i18n.t("copy.5091362c8b"),
+        "countdown",
       );
-      actions.toast(WorkTimeApp.i18n.t("copy.5091362c8b"), "countdown");
       if (
         !model.loadIssue &&
         !model.storageFailed &&
@@ -120,9 +128,14 @@ WorkTimeApp.ui.createBackupController = function (options) {
       }
       return true;
     } catch (error) {
+      if (error.folderCode)
+        await WorkTimeApp.ui.loadAutoBackupFolderSettings().catch(() => {});
       actions.toast(
         WorkTimeApp.i18n.t("copy.d09d00bfdf") +
-          WorkTimeApp.i18n.message(error.message),
+          (error.folderCode
+            ? WorkTimeApp.ui.autoBackupFolderText?.(error.folderCode) ||
+              error.message
+            : WorkTimeApp.i18n.message(error.message)),
         "error",
       );
       return false;
@@ -130,35 +143,49 @@ WorkTimeApp.ui.createBackupController = function (options) {
       endBackup(lifetime);
     }
   }
-  let autoBackupChecked = false;
-  async function checkAutoBackup() {
-    if (autoBackupChecked || disposed) return;
+  let autoBackupChecked = false,
+    autoBackupRunning = false;
+  async function checkAutoBackup({ retry = false } = {}) {
+    if (
+      autoBackupRunning ||
+      backupBusy ||
+      disposed ||
+      (autoBackupChecked && !retry)
+    )
+      return;
+    autoBackupRunning = true;
     autoBackupChecked = true;
-    const pagePreferences = WorkTimeApp.services.preferences.page;
-    const lastDate = pagePreferences.state.lastAutoBackupDate;
-    const today = WorkTimeApp.domain.time.businessDate(new Date());
-    if (
-      model.loadIssue ||
-      model.storageFailed ||
-      !persistence.canWrite ||
-      !persistence.readSucceeded ||
-      pagePreferences.dirty ||
-      !WorkTimeApp.domain.preferences.autoBackupDue(
-        pagePreferences.state,
-        today,
+    try {
+      await WorkTimeApp.services.autoBackupFolder.initialize();
+      if (disposed) return;
+      const pagePreferences = WorkTimeApp.services.preferences.page;
+      const lastDate = pagePreferences.state.lastAutoBackupDate;
+      const today = WorkTimeApp.domain.time.businessDate(new Date());
+      if (
+        model.loadIssue ||
+        model.storageFailed ||
+        !persistence.canWrite ||
+        !persistence.readSucceeded ||
+        pagePreferences.dirty ||
+        !WorkTimeApp.domain.preferences.autoBackupDue(
+          pagePreferences.state,
+          today,
+        )
       )
-    )
-      return;
-    if (!(await backup()) || disposed) return;
-    // Respect a setting change or restore that happened while preparing the file.
-    if (
-      !pagePreferences.state.autoBackupDays ||
-      pagePreferences.state.lastAutoBackupDate !== lastDate
-    )
-      return;
-    const result = await pagePreferences.saveAutoBackupDate(today);
-    if (!disposed && !result.persisted)
-      actions.toast(WorkTimeApp.i18n.t("autoBackup.dateFailed"), "error");
+        return;
+      if (!(await backup(true)) || disposed) return;
+      // Respect a setting change or restore while preparing the file.
+      if (
+        !pagePreferences.state.autoBackupDays ||
+        pagePreferences.state.lastAutoBackupDate !== lastDate
+      )
+        return;
+      const result = await pagePreferences.saveAutoBackupDate(today);
+      if (!disposed && !result.persisted)
+        actions.toast(WorkTimeApp.i18n.t("autoBackup.dateFailed"), "error");
+    } finally {
+      autoBackupRunning = false;
+    }
   }
   async function copyBackup() {
     const lifetime = generation;
@@ -303,6 +330,9 @@ WorkTimeApp.ui.createBackupController = function (options) {
     events.listen(document, "worktime:ready", () => {
       void cache.warm();
       void checkAutoBackup();
+    });
+    events.listen(document, "worktime:autobackupretry", () => {
+      void checkAutoBackup({ retry: true });
     });
     events.handler($("exportCorruptStorage"), "onclick", exportOriginal);
     events.handler($("exportBeforeInitialize"), "onclick", exportOriginal);

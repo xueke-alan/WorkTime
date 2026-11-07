@@ -470,7 +470,7 @@ async function main() {
     const chooseStage = action("choose-stage");
     const stageGrid = page.locator(".tank-stage-grid");
     const stagePage = page.locator("#tank-stage-page");
-    const stageBody = stagePage.locator(".game-level-page-body");
+    const stageBody = stagePage.locator(".game-level-entries");
     const isFocused = (locator) =>
       locator.evaluate((element) => document.activeElement === element);
     await chooseStage.press("Enter");
@@ -492,13 +492,20 @@ async function main() {
       "current",
     );
     assert.equal(
-      await stageBody.evaluate((body) => body.scrollHeight > body.clientHeight),
+      await action("stage-10").evaluate((card) => {
+        const bounds = card.getBoundingClientRect();
+        const entries = card
+          .closest(".game-level-entries")
+          .getBoundingClientRect();
+        return bounds.right <= entries.right && bounds.left >= entries.left;
+      }),
       true,
     );
     await page.keyboard.press("Escape");
     assert.equal(await stagePage.isVisible(), false);
     assert.equal(await isFocused(chooseStage), true);
     await chooseStage.click();
+    await stagePage.locator(".game-level-categories button").last().click();
     await action("stage-35").click();
     assert.equal(await page.evaluate(() => window.tankTest.stage), 35);
     assert.equal(await stagePage.isVisible(), false);
@@ -506,7 +513,13 @@ async function main() {
     await chooseStage.press("Enter");
     assert.equal(await isFocused(action("stage-35")), true);
     assert.equal(await action("stage-35").getAttribute("aria-current"), "step");
-    assert.equal(await stageBody.evaluate((body) => body.scrollTop > 0), true);
+    assert.equal(
+      await stagePage
+        .locator(".game-level-categories button")
+        .last()
+        .getAttribute("aria-pressed"),
+      "true",
+    );
     assert.ok(
       await action("stage-35").evaluate((card) => {
         const range = document.createRange();
@@ -527,6 +540,7 @@ async function main() {
       }),
       "narrow cards separate the number and badge and show keyboard focus",
     );
+    await stagePage.locator(".game-level-categories button").first().click();
     await action("stage-1").click();
     assert.equal(await page.evaluate(() => window.tankTest.stage), 1);
     await page.setViewportSize({ width: 1440, height: 1000 });

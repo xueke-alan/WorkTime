@@ -82,6 +82,11 @@ async function unit() {
   const nextPuzzle = group.puzzles[1];
   const draft = G.sudokuRules.create(puzzle);
   draft.elapsed = 100;
+  draft.replay = G.sudokuRules.startReplay(puzzle, draft);
+  const log = { moves: "", finishedAt: 1000 };
+  for (let i = 0; i < 81; i++)
+    if (puzzle.givens[i] === "0")
+      G.sudokuRules.recordEdit(log, i, Number(puzzle.solution[i]), false);
   const mineStats = G.minesweeperRules.emptyStats();
   const difficulty = Object.keys(mineStats)[0];
   mineStats[difficulty] = { best: 1000, wins: 4 };
@@ -139,7 +144,7 @@ async function unit() {
       current: puzzle.id,
       group: group.id,
       drafts: { [puzzle.id]: draft },
-      completed: { [puzzle.id]: { elapsed: 1000, hints: 2 } },
+      completed: { [puzzle.id]: { elapsed: 1000, hints: 2, replay: log } },
     },
     "game-jump": 120,
     "game-sokoban": {
@@ -273,6 +278,62 @@ async function unit() {
       }),
     { code: "invalid" },
   );
+  const legacySudoku = {
+    ...copy(saves["game-sudoku"]),
+    group: "fog",
+    current: "fog-2",
+  };
+  for (let n = 1; n <= 6; n++) {
+    legacySudoku.drafts["fog-" + n] = copy(draft);
+    legacySudoku.completed["fog-" + n] = { elapsed: 10, hints: 0 };
+  }
+  const migratedSudoku = S.normalize("game-sudoku", legacySudoku);
+  assert.equal(migratedSudoku.group, group.id);
+  assert.equal(migratedSudoku.current, null);
+  assert.deepEqual(
+    migratedSudoku.drafts,
+    S.normalize("game-sudoku", saves["game-sudoku"]).drafts,
+  );
+  assert.deepEqual(
+    migratedSudoku.completed,
+    S.normalize("game-sudoku", saves["game-sudoku"]).completed,
+  );
+  assert.throws(
+    () =>
+      S.normalize("game-sudoku", { ...legacySudoku, current: "unknown-level" }),
+    { code: "invalid" },
+  );
+  for (const variant of ["parity", "thermo"]) {
+    const legacy = copy(saves["game-sudoku"]);
+    legacy.group = variant;
+    legacy.current = variant + "-20";
+    for (let n = 16; n <= 20; n++) {
+      const level = app.data.sudoku.groups.find((g) => g.id === variant)
+        .puzzles[n - 1];
+      const progress = G.sudokuRules.create(level);
+      const cell = level.givens.indexOf("0");
+      G.sudokuRules.enter(level, progress, cell, Number(level.solution[cell]));
+      legacy.drafts[level.id] = copy(progress);
+      legacy.completed[level.id] = { elapsed: 10, hints: 0 };
+    }
+    const normalized = S.normalize("game-sudoku", legacy);
+    assert.equal(normalized.current, variant + "-20");
+    assert.equal(normalized.group, variant);
+    for (let n = 16; n <= 20; n++) {
+      assert.deepEqual(
+        copy(normalized.drafts[variant + "-" + n].values),
+        legacy.drafts[variant + "-" + n].values,
+      );
+      assert.deepEqual(copy(normalized.completed[variant + "-" + n]), {
+        elapsed: 10,
+        hints: 0,
+      });
+    }
+    assert.throws(
+      () => S.normalize("game-sudoku", { ...legacy, current: variant + "-21" }),
+      { code: "invalid" },
+    );
+  }
   const compressed = await app.services.backup.encode(JSON.stringify(packed));
   await assert.rejects(() =>
     app.services.backup.decode(JSON.stringify(packed), (v) => v),
@@ -353,6 +414,27 @@ async function unit() {
   assert.equal(merged["game-sudoku"].drafts[puzzle.id].elapsed, 300);
   assert.ok(merged["game-sudoku"].drafts[nextPuzzle.id]);
   assert.equal(merged["game-sudoku"].completed[puzzle.id].hints, 1);
+  assert.deepEqual(
+    copy(merged["game-sudoku"].completed[puzzle.id].replay),
+    log,
+  );
+  const sudoku = copy(merged["game-sudoku"]);
+  const newer = copy(sudoku);
+  newer.completed[puzzle.id] = {
+    elapsed: 9999,
+    hints: 2,
+    replay: { ...log, finishedAt: 2000 },
+  };
+  const replayMerge = S.merge("game-sudoku", sudoku, newer).value;
+  assert.equal(replayMerge.completed[puzzle.id].elapsed, 2000);
+  assert.equal(replayMerge.completed[puzzle.id].replay.finishedAt, 2000);
+  assert.deepEqual(copy(replayMerge.drafts[puzzle.id].replay), { moves: "" });
+  newer.completed[puzzle.id].replay.moves = "zzz";
+  newer.drafts[puzzle.id].replay.moves = log.moves;
+  const sanitized = S.normalize("game-sudoku", newer);
+  assert.equal(sanitized.completed[puzzle.id].elapsed, 9999);
+  assert.equal(sanitized.completed[puzzle.id].replay, undefined);
+  assert.equal(sanitized.drafts[puzzle.id].replay, undefined);
   assert.equal(merged["game-tank"].custom[0], 1);
   const secondLevel = app.data.sokoban.levels[1];
   const thirdLevel = app.data.sokoban.levels[2];

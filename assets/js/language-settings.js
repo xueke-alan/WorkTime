@@ -241,7 +241,7 @@
           id: String(days),
           name: i18n.t("autoBackup.option" + days),
         })),
-      read: () => String(preferences.state.autoBackupDays ?? 0),
+      read: () => String(preferences.state.autoBackupDays ?? 1),
       save: (value) => preferences.saveAutoBackupDays(Number(value)),
     });
     mountPicker(row, {

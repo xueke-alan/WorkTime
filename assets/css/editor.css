@@ -2011,37 +2011,50 @@ body .editor .time-template-header {
 }
 .template-header-actions {
   --template-header-height: 1.714286rem;
+  --template-header-width: 2rem;
+  --template-header-gap: 0.285714rem;
   --icon-size: 0.785714rem;
   --control-radius: 0.357143rem;
   display: flex;
   align-items: center;
-  gap: var(--row-spacing, 0.571429rem);
+  gap: var(--template-header-gap);
   flex: none;
 }
 .template-share-buttons {
   --control-height: var(--template-header-height);
   display: inline-flex;
   align-items: center;
-  width: calc(2 * var(--input-height) + 2px);
+  width: auto;
   flex: none;
   height: var(--control-height);
-  overflow: hidden;
-  border: 1px solid var(--control-border);
-  border-radius: var(--control-radius);
+  overflow: visible;
+}
+.template-share-buttons::after {
+  content: "";
+  flex: none;
+  width: 1px;
+  height: 1rem;
+  margin-inline-start: var(--template-header-gap);
+  background: var(--control-border);
+}
+body .editor .time-template-header .template-header-actions button {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+body .editor .time-template-header .template-header-actions button:hover:not(:disabled) {
+  color: var(--accent);
 }
 body .editor .time-template-header .template-share-buttons button {
-  --control-height: calc(var(--template-header-height) - 2px);
+  --control-height: var(--template-header-height);
   flex: none;
-  width: var(--input-height) !important;
-  min-width: var(--input-height) !important;
-  max-width: var(--input-height) !important;
+  width: var(--template-header-width) !important;
+  min-width: var(--template-header-width) !important;
+  max-width: var(--template-header-width) !important;
   padding: 0;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none;
-}
-body .editor .time-template-header .template-share-buttons button + button {
-  border-left: 1px solid var(--control-border) !important;
 }
 body .editor .time-template-header .template-header-actions .ui-icon {
   width: var(--icon-size);
@@ -2064,9 +2077,9 @@ body .editor :is(#dayForm, #batchForm) .time-template-header .time-template-titl
 }
 body .editor .time-template-header :is(#addTimeTemplate, #batchAddTimeTemplate) {
   --control-height: var(--template-header-height);
-  width: var(--input-height) !important;
-  min-width: var(--input-height) !important;
-  max-width: var(--input-height) !important;
+  width: var(--template-header-width) !important;
+  min-width: var(--template-header-width) !important;
+  max-width: var(--template-header-width) !important;
   height: var(--control-height) !important;
   min-height: var(--control-height) !important;
   padding: 0;
@@ -2314,8 +2327,9 @@ body #dayPreview .preview-totals strong small { display: inline; margin: 0; font
 body #dayPreview #previewAverage { margin-top: 0.15rem; }
 
 /* Accessible appearance picker, using the existing sidebar's scrolling body. */
-body .editor #dayForm #plannedOvertimeToggle {
-  width: min(7.142857rem, 100%);
+body .editor #dayForm .day-action-row #plannedOvertimeToggle {
+  width: var(--planned-overtime-width, 7.142857rem);
+  min-width: var(--planned-overtime-width, 7.142857rem);
   white-space: nowrap;
 }
 body .editor #dayForm #clearManual.is-planned-reset {

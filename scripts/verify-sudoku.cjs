@@ -16,21 +16,34 @@ for (const file of ["assets/data/sudoku.js", "assets/js/games/sudoku-rules.js"])
 const { data, games } = sandbox.WorkTimeApp;
 const rules = games.sudokuRules;
 const plain = (value) => JSON.parse(JSON.stringify(value));
+const groupById = (id) => data.sudoku.groups.find((group) => group.id === id);
 function verifyBank() {
-  assert.equal(data.sudoku.groups.length, 6);
+  assert.equal(data.sudoku.groups.length, 16);
   const seen = new Set();
   for (const group of data.sudoku.groups) {
-    assert.ok(group.puzzles.length >= 10 && group.puzzles.length <= 30);
+    assert.equal(group.puzzles.length, 20);
     let lastRating = 0;
     for (const puzzle of group.puzzles) {
       assert.equal(
-        seen.has(puzzle.originalGivens || puzzle.givens),
+        seen.has(
+          puzzle.originalGivens ||
+            (group.source === "worktime"
+              ? JSON.stringify(puzzle)
+              : puzzle.givens),
+        ),
         false,
         "distinct source puzzles",
       );
-      seen.add(puzzle.originalGivens || puzzle.givens);
-      assert.ok(puzzle.rating >= lastRating);
-      lastRating = puzzle.rating;
+      seen.add(
+        puzzle.originalGivens ||
+          (group.source === "worktime"
+            ? JSON.stringify(puzzle)
+            : puzzle.givens),
+      );
+      if (puzzle.rating !== undefined) {
+        assert.ok(puzzle.rating >= lastRating);
+        lastRating = puzzle.rating;
+      }
       assert.deepEqual(
         plain(rules.solve(puzzle)),
         [puzzle.solution],
@@ -77,6 +90,28 @@ function verifyBank() {
           }
         });
       }
+      if (puzzle.skyscrapers) {
+        assert.equal(rules.solve({ givens: puzzle.givens }).length, 2);
+        for (let line = 0; line < 9; line++) {
+          const row = solved.values.slice(line * 9, line * 9 + 9);
+          const column = solved.values.filter((_, i) => i % 9 === line);
+          for (const [side, heights] of [
+            column,
+            row,
+            [...column].reverse(),
+            [...row].reverse(),
+          ].entries()) {
+            const clue = puzzle.skyscrapers[side][line];
+            if (clue)
+              assert.equal(
+                clue,
+                heights.filter((height, i) =>
+                  heights.slice(0, i).every((earlier) => earlier < height),
+                ).length,
+              );
+          }
+        }
+      }
     }
   }
   const puzzle = data.sudoku.groups[0].puzzles[0],
@@ -107,6 +142,16 @@ function verifyBank() {
   const peer = rules.peers[index].find((i) => fresh.values[i]);
   rules.enter(puzzle, fresh, index, fresh.values[peer]);
   assert.equal(rules.conflicts(puzzle, fresh)[index], true);
+  const draft = rules.create(puzzle);
+  let replay = rules.startReplay(puzzle, draft);
+  for (let step = 0; step < 2048; step++) {
+    assert.ok(rules.enter(puzzle, draft, index, 4, true));
+    replay = rules.recordEdit(replay, index, 4, true);
+  }
+  assert.equal(rules.restoreReplay(puzzle, replay, draft).moves.length, 6144);
+  assert.ok(rules.enter(puzzle, draft, index, 4, true));
+  assert.equal(rules.recordEdit(replay, index, 4, true), null);
+  assert.equal(rules.restoreReplay(puzzle, replay, draft), null);
   for (const variant of [
     data.sudoku.groups[4].puzzles[0],
     data.sudoku.groups[5].puzzles[0],
@@ -200,7 +245,7 @@ async function main() {
       assert.ok(buttons[0].x < buttons[1].x && buttons[1].x < buttons[2].x);
     }
     await launch();
-    assert.equal(await page.locator(".sudoku-categories button").count(), 6);
+    assert.equal(await page.locator(".sudoku-categories button").count(), 16);
     assert.equal(await page.locator(".sudoku-levels button").count(), 20);
     assert.equal(
       await page.locator(".sudoku-levels button:enabled").count(),
@@ -210,8 +255,8 @@ async function main() {
       await page.setViewportSize({ width, height: 1000 });
       const categories = await page.locator(".sudoku-categories").boundingBox();
       const levels = await page.locator(".sudoku-levels").boundingBox();
-      assert.ok(Math.abs(categories.x - levels.x) < 1);
-      assert.ok(categories.y + categories.height < levels.y);
+      assert.ok(categories.x + categories.width <= levels.x);
+      assert.ok(Math.abs(categories.y - levels.y) < 4);
       assert.ok(levels.x + levels.width <= width);
       const tiles = await page
         .locator(".sudoku-levels button")
@@ -238,7 +283,7 @@ async function main() {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await action("thermo").click();
     await action("level-20").click();
-    const laterPuzzle = data.sudoku.groups.at(-1).puzzles.at(-1);
+    const laterPuzzle = groupById("thermo").puzzles.at(-1);
     const laterIndex = laterPuzzle.givens.indexOf("0");
     const laterDigit = laterPuzzle.solution[laterIndex];
     await action("digit-" + laterDigit).click();
@@ -399,6 +444,37 @@ async function main() {
     assert.ok((await page.locator(".sudoku-thermos polyline").count()) > 0);
     await page.screenshot({ path: path.join(output, "thermometer.png") });
     await menuAction("choose");
+    assert.equal(await action("fog").count(), 0);
+    await action("skyscraper").click();
+    assert.equal(
+      await page.locator(".sudoku-levels button:visible").count(),
+      20,
+    );
+    await action("level-1").click();
+    const sky = groupById("skyscraper").puzzles[0];
+    for (const [side, name] of ["top", "left", "bottom", "right"].entries())
+      assert.deepEqual(
+        await page.locator(".sudoku-sky-" + name + " > span").allTextContents(),
+        Array.from(sky.skyscrapers[side], (clue) => (clue ? String(clue) : "")),
+      );
+    for (const width of [1440, 320]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const grid = await page.locator(".sudoku-board").boundingBox();
+      const top = await page.locator(".sudoku-sky-top").boundingBox();
+      const left = await page.locator(".sudoku-sky-left").boundingBox();
+      assert.ok(
+        Math.abs(grid.x - top.x) < 1 && Math.abs(grid.width - top.width) < 1,
+      );
+      assert.ok(
+        Math.abs(grid.y - left.y) < 1 &&
+          Math.abs(grid.height - left.height) < 1,
+      );
+      await page.screenshot({
+        path: path.join(output, "skyscraper-" + width + ".png"),
+      });
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await menuAction("choose");
     await action("easy").click();
     assert.equal(
       await action("level-1")
@@ -434,7 +510,7 @@ async function main() {
         ),
       );
       for (const entries of Object.values(translations)) {
-        assert.equal(entries.length, 40);
+        assert.equal(entries.length, 78);
         assert.ok(entries.every(([, v]) => typeof v === "string" && v.length));
       }
     }
@@ -507,7 +583,23 @@ async function main() {
       await page.locator(".sudoku-cover h3").textContent(),
       "本关完成！",
     );
-    assert.ok((await saved()).completed[puzzle.id]);
+    assert.equal(await page.locator(".game-celebration").count(), 0);
+    const firstResult = (await saved()).completed[puzzle.id];
+    assert.ok(firstResult.replay.base, "old draft starts at its saved board");
+    await action("replay").click();
+    assert.ok(await page.getByText("从旧存档接续处开始。").isVisible());
+    await page.getByText("第 1 / 1 步", { exact: true }).waitFor();
+    assert.equal(await action("replay-toggle").isDisabled(), true);
+    assert.equal(
+      await action("cell-" + last)
+        .locator(".sudoku-digit")
+        .textContent(),
+      puzzle.solution[last],
+    );
+    await action("replay-exit").click();
+    assert.ok(
+      await action("replay").evaluate((el) => el === document.activeElement),
+    );
     await menuAction("choose");
     assert.equal(
       await action("level-1")
@@ -520,8 +612,123 @@ async function main() {
     await action("level-1").click();
     await menuAction("restart");
     await action("accept").click();
-    await launch();
-    assert.ok((await saved()).completed[puzzle.id]);
+    {
+      const noted = rules.peers[index].find((i) => puzzle.givens[i] === "0");
+      const digit = Number(puzzle.solution[index]);
+      const wrong = rules.peers[index]
+        .map((i) => Number(puzzle.givens[i]))
+        .find(Boolean);
+      await action("cell-" + noted).click();
+      await action("notes").click();
+      await action("digit-" + digit).click();
+      await page.evaluate(
+        ({ key, id }) => {
+          const save = JSON.parse(localStorage.getItem(key));
+          save.drafts[id].elapsed = 1000;
+          localStorage.setItem(key + ".fixture", JSON.stringify(save));
+        },
+        { key, id: puzzle.id },
+      );
+      await launch();
+      await action("accept").click();
+      await action("cell-" + index).click();
+      await action("digit-" + wrong).click();
+      await action("erase").click();
+      await action("undo").click();
+      await action("digit-" + digit).click();
+      await action("cell-" + index).press("Control+z");
+      await action("digit-" + digit).click();
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.evaluate(
+        ({ index, puzzle }) => {
+          for (let i = 0; i < 81; i++) {
+            if (i === index || puzzle.givens[i] !== "0") continue;
+            const cell = document.querySelector('[data-cell="' + i + '"]');
+            cell.click();
+            cell.dispatchEvent(
+              new KeyboardEvent("keydown", {
+                key: puzzle.solution[i],
+                bubbles: true,
+                cancelable: true,
+              }),
+            );
+          }
+        },
+        { index, puzzle },
+      );
+      assert.equal(await page.locator(".game-confetti").count(), 120);
+      const winningSave = await saved();
+      const latest = winningSave.completed[puzzle.id];
+      assert.equal(latest.elapsed, firstResult.elapsed);
+      assert.ok(latest.replay.finishedAt > firstResult.replay.finishedAt);
+      assert.equal(latest.replay.base, undefined);
+      await action("replay").click();
+      assert.equal(await page.locator(".game-celebration").count(), 0);
+      await page.evaluate(() => {
+        Object.defineProperty(document, "hidden", {
+          configurable: true,
+          value: true,
+        });
+        document.dispatchEvent(new Event("visibilitychange"));
+        delete document.hidden;
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+      const progress = page.locator(".sudoku-replay > p").first();
+      const pausedAt = await progress.textContent();
+      await page.waitForTimeout(300);
+      assert.equal(
+        await progress.textContent(),
+        pausedAt,
+        "background pauses playback",
+      );
+      await page.evaluate(() => {
+        document.querySelector('[data-sudoku-action="replay-restart"]').click();
+        document.querySelector('[data-sudoku-action="replay-toggle"]').click();
+      });
+      assert.match(await progress.textContent(), /第 0 \/ /);
+      const cell = action("cell-" + index);
+      const note = action("cell-" + noted).locator(".sudoku-notes");
+      assert.equal(await cell.isDisabled(), true);
+      await action("replay-next").click();
+      assert.equal(await note.textContent(), String(digit));
+      await action("replay-next").click();
+      assert.match(await cell.getAttribute("class"), /is-conflict/);
+      await action("replay-next").click();
+      assert.equal(await cell.locator(".sudoku-digit").textContent(), "");
+      await action("replay-next").click();
+      assert.equal(
+        await cell.locator(".sudoku-digit").textContent(),
+        String(wrong),
+      );
+      await action("replay-next").click();
+      assert.equal(await note.textContent(), "");
+      await action("replay-next").click();
+      assert.equal(await note.textContent(), String(digit));
+      await action("replay-previous").click();
+      assert.equal(await note.textContent(), "");
+      await page.setViewportSize({ width: 320, height: 800 });
+      assert.ok(
+        await page
+          .locator(".game-content")
+          .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+      );
+      await action("replay-exit").press("Escape");
+      assert.deepEqual(await saved(), winningSave);
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await launch();
+      assert.equal(await page.locator(".game-celebration").count(), 0);
+      await menuAction("restart");
+      await action("accept").click();
+      await menuAction("menu-replay");
+      await action("replay-exit").click();
+      assert.ok(
+        await page
+          .locator(".sudoku-options > summary")
+          .evaluate((el) => el === document.activeElement),
+      );
+      assert.deepEqual((await saved()).completed[puzzle.id], latest);
+    }
     await menuAction("choose");
     assert.equal(await action("level-2").isEnabled(), true);
     assert.deepEqual(errors, []);
@@ -569,7 +776,7 @@ async function main() {
     );
     await blocked.close();
     console.log(
-      "Sudoku: 120 unique solutions, variant constraints, free level selection, input, undo, drafts, replay, pause, help, six languages, mobile, unavailable storage and offline loading verified.",
+      "Sudoku: 320 unique solutions, variant constraints, free level selection, input, undo, drafts, replay, pause, help, six languages, mobile, unavailable storage and offline loading verified.",
     );
   } finally {
     await browser.close();

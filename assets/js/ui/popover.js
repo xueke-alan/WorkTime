@@ -157,3 +157,143 @@ WorkTimeApp.ui.popover = (() => {
     anyOpen: () => [...instances].some((item) => item.isOpen()),
   };
 })();
+
+/** One themed hint surface replaces browser title bubbles, including lazy UI. */
+(() => {
+  const hint = document.createElement("div");
+  hint.id = "siteHint";
+  hint.className = "site-hint";
+  hint.setAttribute("role", "tooltip");
+  hint.hidden = true;
+  const native = typeof hint.showPopover === "function";
+  if (native) hint.setAttribute("popover", "manual");
+  document.body.append(hint);
+  let target = null,
+    text = "",
+    description = null,
+    timer = null,
+    motion = null;
+  function close() {
+    clearTimeout(timer);
+    timer = null;
+    motion?.cancel();
+    motion = null;
+    if (native && !hint.hidden) hint.hidePopover();
+    hint.hidden = true;
+    if (target) {
+      // Rendering may have supplied a newer title while this hint was open.
+      if (target.getAttribute("title") === "")
+        target.setAttribute("title", text);
+      if (description === null) target.removeAttribute("aria-describedby");
+      else target.setAttribute("aria-describedby", description);
+    }
+    target = null;
+  }
+  function show() {
+    timer = null;
+    if (!target?.isConnected || document.hidden) return close();
+    hint.textContent = text;
+    if (!native) (target.closest("dialog[open]") || document.body).append(hint);
+    hint.hidden = false;
+    if (native) hint.showPopover();
+    const rect = target.getBoundingClientRect(),
+      box = hint.getBoundingClientRect();
+    const inset = 10,
+      gap = 8;
+    hint.style.left =
+      Math.max(
+        inset,
+        Math.min(
+          rect.left + (rect.width - box.width) / 2,
+          window.innerWidth - box.width - inset,
+        ),
+      ) + "px";
+    hint.style.top =
+      Math.max(
+        inset,
+        rect.top >= box.height + gap + inset
+          ? rect.top - box.height - gap
+          : Math.min(
+              rect.bottom + gap,
+              window.innerHeight - box.height - inset,
+            ),
+      ) + "px";
+    if (!WorkTimeApp.ui.animationCompat.preference().matches)
+      motion = WorkTimeApp.ui.animationCompat.animate(
+        hint,
+        [
+          { opacity: 0, transform: "translateY(3px)" },
+          { opacity: 1, transform: "none" },
+        ],
+        { duration: 160, easing: "ease-out" },
+      );
+  }
+  function open(element, immediate = false) {
+    if (element === target) return;
+    close();
+    const title = element?.getAttribute("title")?.trim();
+    if (
+      !title ||
+      element.closest(".agenda-content-outgoing,.calendar-navigation-copy")
+    )
+      return;
+    target = element;
+    text = title;
+    description = target.getAttribute("aria-describedby");
+    // Suppress native bubbles even when a visible label makes the hint redundant.
+    target.setAttribute("title", "");
+    const normalize = (value) =>
+      value.normalize("NFKC").replace(/[^\p{L}\p{N}]/gu, "");
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const visible = [];
+    while (walker.nextNode()) {
+      const parent = walker.currentNode.parentElement;
+      if (parent.closest("svg,[aria-hidden='true'],.game-sr-only,.sr-only"))
+        continue;
+      const style = getComputedStyle(parent);
+      if (style.visibility !== "hidden" && parent.getClientRects().length)
+        visible.push(walker.currentNode.textContent);
+    }
+    const clipped = [
+      element,
+      ...element.querySelectorAll(".button-label,.game-menu-name"),
+    ].some(
+      (node) => node.clientWidth > 0 && node.scrollWidth > node.clientWidth + 1,
+    );
+    if (!clipped && normalize(visible.join("")) === normalize(title)) return;
+    target.setAttribute(
+      "aria-describedby",
+      [description, hint.id].filter(Boolean).join(" "),
+    );
+    timer = setTimeout(show, immediate ? 0 : 240);
+  }
+  document.addEventListener("pointerover", (event) => {
+    if (event.pointerType !== "touch") open(event.target.closest?.("[title]"));
+  });
+  document.addEventListener("pointerout", (event) => {
+    if (target && !target.contains(event.relatedTarget)) close();
+  });
+  document.addEventListener("focusin", (event) =>
+    open(event.target.closest?.("[title]"), true),
+  );
+  document.addEventListener("focusout", close);
+  document.addEventListener("pointerdown", close, true);
+  document.addEventListener("pointerup", (event) => {
+    if (
+      event.pointerType === "touch" &&
+      event.target.closest?.(".date-markers")
+    )
+      open(event.target.closest(".date-markers"), true);
+  });
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key === "Escape") close();
+    },
+    true,
+  );
+  document.addEventListener("scroll", close, { capture: true, passive: true });
+  window.addEventListener("resize", close);
+  document.addEventListener("visibilitychange", close);
+  document.addEventListener("worktime:languagechange", close);
+})();

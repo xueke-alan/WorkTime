@@ -54,7 +54,7 @@ WorkTimeApp.ui.createSummary = function (options) {
         WorkTimeApp.i18n.t("copy.cc954e610b"),
         ready && valid && actual.average !== null ? actual.average / 60 : 0,
         WorkTimeApp.i18n.t("short.averageFormula"),
-        { decimals: 3, unit: "h" },
+        { decimals: 2, unit: "h" },
       ],
       [
         WorkTimeApp.i18n.t(surplusLabel),

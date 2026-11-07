@@ -21,7 +21,7 @@ const WorkTimeDomainState = (() => {
       preferences: {
         pageTheme: "green",
         language: "auto",
-        autoBackupDays: 0,
+        autoBackupDays: 1,
         lastAutoBackupDate: null,
         lastBackupAt: null,
       },

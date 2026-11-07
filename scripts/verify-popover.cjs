@@ -54,6 +54,48 @@ async function verify() {
             !document.documentElement.classList.contains("app-loading"),
         );
 
+        const marker = page.locator("#calendar .date-markers").first();
+        const hintText = await marker.getAttribute("title");
+        await marker.hover();
+        await page.locator("#siteHint").waitFor({ state: "visible" });
+        assert.equal(await page.locator("#siteHint").textContent(), hintText);
+        assert.equal(
+          await marker.getAttribute("title"),
+          "",
+          "Suppress native title bubble",
+        );
+        const hintBox = await page.locator("#siteHint").boundingBox();
+        assert.ok(hintBox.x >= 0 && hintBox.x + hintBox.width <= width);
+        await page.mouse.move(0, 0);
+        await page.locator("#siteHint").waitFor({ state: "hidden" });
+        assert.equal(await marker.getAttribute("title"), hintText);
+        await marker.focus();
+        await page.locator("#siteHint").waitFor({ state: "visible" });
+        await page.keyboard.press("Escape");
+        await page.locator("#siteHint").waitFor({ state: "hidden" });
+        await page.evaluate(() => {
+          const fixture = document.createElement("div");
+          fixture.id = "hintFixture";
+          fixture.style.cssText = "position:fixed;top:0;left:0;z-index:9999";
+          fixture.innerHTML =
+            '<button id="redundantHint" title="擦除">擦除</button><button id="usefulHint" title="擦除所选单元格，保留题目数字">擦除</button><button id="iconHint" title="更多操作" aria-label="更多操作">⋯</button>';
+          document.body.append(fixture);
+        });
+        await page.locator("#redundantHint").hover();
+        assert.equal(await page.locator("#siteHint").isVisible(), false);
+        assert.equal(
+          await page.locator("#redundantHint").getAttribute("title"),
+          "",
+        );
+        for (const id of ["usefulHint", "iconHint"]) {
+          await page.locator("#" + id).hover();
+          await page.locator("#siteHint").waitFor({ state: "visible" });
+        }
+        await page.mouse.move(0, 200);
+        await page.evaluate(() =>
+          document.getElementById("hintFixture").remove(),
+        );
+
         // Exercise the standalone picker inside a modal and a clipped container.
         await page.evaluate(() => {
           const dialog = document.createElement("dialog");

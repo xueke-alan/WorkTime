@@ -209,6 +209,8 @@ WorkTimeApp.services.gameArchive = (() => {
     const bank = sudoku
       ? WorkTimeApp.data.sudoku.groups.flatMap((g) => g.puzzles)
       : WorkTimeApp.data.sokoban.levels;
+    // Retired levels are skipped so older backups remain importable.
+    const retired = (level) => sudoku && /^fog-[1-6]$/.test(level);
     const lookup = new Map(bank.map((entry) => [entry.id, entry]));
     const drafts = {},
       completed = {};
@@ -218,6 +220,7 @@ WorkTimeApp.services.gameArchive = (() => {
       ["completed", completed],
     ]) {
       for (const [level, value] of Object.entries(input[kind])) {
+        if (retired(level)) continue;
         const entry = lookup.get(level);
         requireValue(entry && plain(value), id);
         if (sudoku && kind === "completed") {
@@ -229,6 +232,8 @@ WorkTimeApp.services.gameArchive = (() => {
             id,
           );
           output[level] = fields(value, ["elapsed", "hints"]);
+          const replay = G.sudokuRules.restoreReplay(entry, value.replay);
+          if (replay) output[level].replay = replay;
         } else if (sudoku) {
           const restored = G.sudokuRules.restore(entry, value);
           requireValue(restored, id);
@@ -238,6 +243,12 @@ WorkTimeApp.services.gameArchive = (() => {
             "elapsed",
             "hints",
           ]);
+          const replay = G.sudokuRules.restoreReplay(
+            entry,
+            value.replay,
+            restored,
+          );
+          if (replay || value.replay === null) output[level].replay = replay;
         } else {
           const map = G.sokobanRules.parse(entry);
           const restored = G.sokobanRules.restore(map, value);
@@ -250,17 +261,30 @@ WorkTimeApp.services.gameArchive = (() => {
         }
       }
     }
-    requireValue(input.current == null || lookup.has(input.current), id);
+    requireValue(
+      input.current == null ||
+        retired(input.current) ||
+        lookup.has(input.current),
+      id,
+    );
     if (sudoku)
       requireValue(
-        WorkTimeApp.data.sudoku.groups.some((g) => g.id === input.group),
+        input.group === "fog" ||
+          WorkTimeApp.data.sudoku.groups.some((g) => g.id === input.group),
         id,
       );
     else requireValue(integer(input.chapter, 2), id);
     result = {
       version: 1,
-      ...(sudoku ? { group: input.group } : { chapter: input.chapter }),
-      current: input.current ?? null,
+      ...(sudoku
+        ? {
+            group:
+              input.group === "fog"
+                ? WorkTimeApp.data.sudoku.groups[0].id
+                : input.group,
+          }
+        : { chapter: input.chapter }),
+      current: retired(input.current) ? null : (input.current ?? null),
       drafts,
       completed,
     };
@@ -519,6 +543,17 @@ WorkTimeApp.services.gameArchive = (() => {
             (br.pushes === ar.pushes && br.moves < ar.moves);
         }
         if (better) out.completed[level] = clone(b);
+        if (a && id === "game-sudoku") {
+          const replay =
+            b.replay &&
+            (!a.replay ||
+              b.replay.finishedAt > a.replay.finishedAt ||
+              (b.replay.finishedAt === a.replay.finishedAt &&
+                source === "incoming"))
+              ? b.replay
+              : a.replay;
+          if (replay) out.completed[level].replay = clone(replay);
+        }
       }
       if (!out.current) {
         const other = source === "incoming" ? local : incoming;

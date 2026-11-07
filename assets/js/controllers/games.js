@@ -409,6 +409,8 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       instance = entry.create({ container: content, signal: abort.signal });
       if (!instance || typeof instance.dispose !== "function")
         throw Error("Game must return a disposable instance");
+      WorkTimeApp.games.recordPlay(id);
+      sidebarMenu?.refreshOrder();
       notifySize();
       call(document.hidden ? "pause" : "resume");
     } catch (error) {

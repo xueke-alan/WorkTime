@@ -8,6 +8,44 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
   let calendarMarkup = "";
   const calendarNodes = new Map(),
     markup = new WeakMap();
+  const artworkKey = (card) =>
+    ["weekend", "full-leave", "rest-overtime"]
+      .map((name) => card.classList.contains(name))
+      .join(":") +
+    ":" +
+    card.getAttribute("data-holiday");
+  function artworkLayers(card) {
+    return ["::before", "::after"].map((pseudo) => {
+      const style = getComputedStyle(card, pseudo);
+      const paint = Object.fromEntries(
+        [
+          "position",
+          "top",
+          "right",
+          "bottom",
+          "left",
+          "width",
+          "height",
+          "max-width",
+          "aspect-ratio",
+          "background",
+          "filter",
+          "opacity",
+          "transform",
+          "border-radius",
+          "z-index",
+        ].map((property) => [property, style.getPropertyValue(property)]),
+      );
+      return {
+        pseudo,
+        paint,
+        visible:
+          !["none", "normal"].includes(style.content) &&
+          style.backgroundImage !== "none" &&
+          Number(style.opacity) > 0,
+      };
+    });
+  }
   function attributeValue(element, attribute) {
     if (attribute.name !== "class") return attribute.value;
     // Font profiles belong to alignment, not the calendar's business markup.
@@ -109,6 +147,7 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
     }
     const headerAlignment = [],
       contentMotions = [],
+      artworkMotions = [],
       sourceMotions = [];
     candidates.forEach((candidate, index) => {
       const key = nodeKey(candidate, index),
@@ -125,6 +164,16 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
       if (previous && previous.element.parentElement === container) {
         element = previous.element;
         if (previous.source !== source) {
+          if (
+            element.matches(".day") &&
+            artworkKey(element) !== artworkKey(candidate) &&
+            !WorkTimeApp.ui.animationCompat.preference().matches &&
+            !document.hidden
+          )
+            artworkMotions.push({
+              card: element,
+              layers: artworkLayers(element),
+            });
           // Preserve the day surface and weather layers across record updates.
           for (const attribute of previous.attributes)
             if (!candidate.hasAttribute(attribute))
@@ -185,7 +234,7 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
               if (
                 !(child instanceof Element) ||
                 !child.matches(
-                  ".calendar-weather-icon, .calendar-weather-outgoing, .agenda-card-items",
+                  ".calendar-weather-icon, .calendar-weather-outgoing, .agenda-card-items, .calendar-artwork-outgoing",
                 )
               )
                 child.remove();
@@ -253,6 +302,11 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
     if (headerAlignment.length && container.closest(".agenda-mode"))
       WorkTimeApp.ui.alignment?.refresh(headerAlignment);
     weatherLayer.refresh();
+    const artworkPlans = artworkMotions.map(({ card, layers }) => ({
+      card,
+      layers,
+      next: artworkLayers(card),
+    }));
     const plans = sourceMotions.map(({ dot, transform }) => ({
       element: dot,
       frames: [{ transform }, { transform: getComputedStyle(dot).transform }],
@@ -264,6 +318,38 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
     for (const { dot } of sourceMotions)
       for (const animation of dot.getAnimations?.() || []) animation.cancel();
     WorkTimeApp.ui.motion.animateCalendar(plans);
+    for (const { card, layers, next } of artworkPlans) {
+      const timing = {
+        duration: WorkTimeApp.ui.motion.calendar.contentDuration,
+        easing: WorkTimeApp.ui.motion.calendar.easing,
+        fill: "backwards",
+      };
+      for (const layer of layers) {
+        if (!layer.visible) continue;
+        const outgoing = document.createElement("span");
+        outgoing.className = "calendar-artwork-outgoing";
+        outgoing.setAttribute("aria-hidden", "true");
+        for (const [property, value] of Object.entries(layer.paint))
+          outgoing.style.setProperty(property, value);
+        outgoing.style.pointerEvents = "none";
+        card.append(outgoing);
+        WorkTimeApp.ui.animationCompat
+          .animate(
+            outgoing,
+            [{ opacity: layer.paint.opacity }, { opacity: 0 }],
+            timing,
+          )
+          .finished.then(() => outgoing.remove());
+      }
+      for (const layer of next) {
+        if (!layer.visible) continue;
+        WorkTimeApp.ui.animationCompat.animate(
+          card,
+          [{ opacity: 0 }, { opacity: layer.paint.opacity }],
+          { ...timing, pseudoElement: layer.pseudo },
+        );
+      }
+    }
     for (const child of contentMotions)
       WorkTimeApp.ui.motion.play(child, "motion-card-content");
   }

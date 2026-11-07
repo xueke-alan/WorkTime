@@ -114,7 +114,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     return {
       label: markers.map((marker) => " " + marker.label).join(""),
       html: markers.length
-        ? '<span class="date-markers" role="img" aria-label="' +
+        ? '<span class="date-markers" role="img" tabindex="0" aria-label="' +
           esc(markers.map((marker) => marker.label).join("、")) +
           '" title="' +
           esc(markers.map((marker) => marker.hint).join("\n")) +

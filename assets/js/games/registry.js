@@ -8,6 +8,24 @@
 WorkTimeApp.games = (() => {
   const entries = new Map();
   const definitions = new Map();
+  const usageKey = "worktime.games.usage.v1";
+  let usage = {};
+  try {
+    const saved = JSON.parse(localStorage.getItem(usageKey) || "{}");
+    if (saved && typeof saved === "object" && !Array.isArray(saved))
+      usage = Object.fromEntries(
+        Object.entries(saved).filter(
+          ([, value]) =>
+            value &&
+            Number.isSafeInteger(value.count) &&
+            value.count > 0 &&
+            Number.isSafeInteger(value.lastPlayed) &&
+            value.lastPlayed >= 0,
+        ),
+      );
+  } catch {
+    // Storage restrictions must not prevent opening the game library.
+  }
   async function load(id, rulesOnly = false) {
     const definition = definitions.get(id);
     if (!definition) {
@@ -71,7 +89,24 @@ WorkTimeApp.games = (() => {
         throw Error("Invalid or duplicate game registration");
       entries.set(entry.id, Object.freeze({ ...entry }));
     },
-    list: () => [...entries.values()],
+    list: () =>
+      [...entries.values()].sort(
+        (a, b) =>
+          (usage[b.id]?.count || 0) - (usage[a.id]?.count || 0) ||
+          (usage[b.id]?.lastPlayed || 0) - (usage[a.id]?.lastPlayed || 0),
+      ),
+    recordPlay(id) {
+      if (!entries.has(id)) return;
+      usage[id] = {
+        count: Math.min(Number.MAX_SAFE_INTEGER, (usage[id]?.count || 0) + 1),
+        lastPlayed: Date.now(),
+      };
+      try {
+        localStorage.setItem(usageKey, JSON.stringify(usage));
+      } catch {
+        // Keep the current session's order when persistence is unavailable.
+      }
+    },
     get: (id) => entries.get(id),
     createIcon(icon = "sports-esports") {
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");

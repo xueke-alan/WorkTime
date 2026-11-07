@@ -5,7 +5,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 const crypto = require("node:crypto");
 const root = path.resolve(__dirname, "..");
-const context = vm.createContext({ WorkTimeApp: { games: {} } });
+const context = vm.createContext({ WorkTimeApp: { games: {}, data: {} } });
 vm.runInContext(
   fs.readFileSync(path.join(root, "assets/js/games/sudoku-rules.js"), "utf8"),
   context,
@@ -50,9 +50,10 @@ async function main() {
   ]) {
     const available = banks[source].filter((p) => !used.has(p.givens));
     const puzzles = [];
-    for (let level = 0; level < 20; level++) {
+    const count = 20;
+    for (let level = 0; level < count; level++) {
       const original =
-        available[Math.floor(((available.length - 1) * level) / 19)];
+        available[Math.floor(((available.length - 1) * level) / (count - 1))];
       used.add(original.givens);
       const solutions = rules.solve(original);
       if (solutions.length !== 1) throw Error("Source must have one solution");
@@ -122,9 +123,27 @@ async function main() {
     }
     groups.push({ id, source, puzzles });
   }
+  const catalogPath = path.join(root, "assets/data/sudoku.js");
+  // Refresh imported groups while preserving the locally curated variants.
+  if (fs.existsSync(catalogPath)) {
+    vm.runInContext(fs.readFileSync(catalogPath, "utf8"), context);
+    for (const group of groups) {
+      if (!["parity", "thermo"].includes(group.id)) continue;
+      const existing = context.WorkTimeApp.data.sudoku.groups.find(
+        (g) => g.id === group.id,
+      );
+      if (existing?.puzzles.length >= 20)
+        group.puzzles = existing.puzzles.slice(0, 20);
+    }
+    groups.push(
+      ...context.WorkTimeApp.data.sudoku.groups.filter(
+        (group) => group.source === "worktime",
+      ),
+    );
+  }
   const data = { version: 1, repository, sources, groups };
   fs.writeFileSync(
-    path.join(root, "assets/data/sudoku.js"),
+    catalogPath,
     '"use strict";\n// Sudoku Exchange public-domain puzzle bank. See licenses/sudoku-exchange.txt.\nWorkTimeApp.data.sudoku = ' +
       JSON.stringify(data, null, 2) +
       ";\n",
@@ -135,7 +154,9 @@ async function main() {
     path.join(root, "licenses/sudoku-exchange.txt"),
     await license.text(),
   );
-  console.log("Imported and verified 120 unique puzzles in six groups.");
+  console.log(
+    "Imported classics and retained 20 levels per parity/thermometer variant; local variants preserved.",
+  );
 }
 main().catch((error) => {
   console.error(error);

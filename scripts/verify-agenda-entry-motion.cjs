@@ -215,9 +215,12 @@ async function verify() {
                     result.handoffOpacityError,
                     Math.abs(
                       (1 - Number(getComputedStyle(ghost).opacity)) *
-                        (1 -
-                          Number(getComputedStyle(target).opacity) /
-                            finalOpacity),
+                        Math.max(
+                          0,
+                          1 -
+                            Number(getComputedStyle(target).opacity) /
+                              finalOpacity,
+                        ),
                     ),
                   );
                 }

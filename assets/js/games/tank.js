@@ -187,13 +187,18 @@ WorkTimeApp.games.register({
     const stagePicker = button(stageHost, "choose-stage", () => {
       choosingStage = true;
       sync();
+      levelRanges.reveal(selectedStage - 1);
       stageButtons[selectedStage - 1].focus();
     });
     stagePicker.classList.add("game-select-trigger");
     stagePicker.setAttribute("aria-controls", "tank-stage-page");
     const stageValue = node("span", "button-label", stagePicker);
     stagePicker.append(WorkTimeApp.games.createIcon("grid-4x4"));
-    const levels = WorkTimeApp.games.createLevelPage(root, "tank-stage-page");
+    const levels = WorkTimeApp.games.createLevelPage(
+      root,
+      "tank-stage-page",
+      signal,
+    );
     const closeStages = button(
       levels.header,
       "close-stages",
@@ -203,7 +208,7 @@ WorkTimeApp.games.register({
     const stageGrid = node(
       "div",
       "game-level-grid tank-stage-grid",
-      levels.body,
+      levels.entries,
     );
     const stageButtons = Array.from({ length: 35 }, (_, index) => {
       const number = index + 1;
@@ -217,6 +222,7 @@ WorkTimeApp.games.register({
         closeStagePage();
       });
     });
+    const levelRanges = levels.addRanges(stageGrid);
     function closeStagePage() {
       choosingStage = false;
       sync();

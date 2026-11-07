@@ -178,7 +178,12 @@ async function checkLayout(menu, context) {
           true,
         );
       }
-      assert.deepEqual(gameRequests, []);
+      // Daily automatic backups may load rules for archive validation, while
+      // browsing the menu must still avoid loading game implementations.
+      assert.deepEqual(
+        gameRequests.filter((url) => !url.includes("-rules.js")),
+        [],
+      );
       assert.equal(await shell.getAttribute("data-state"), "closed");
 
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
@@ -209,11 +214,21 @@ async function checkLayout(menu, context) {
         await checkLayout(shell, { viewport, language, menu: "expanded" });
         assert.equal(await snake.getAttribute("aria-pressed"), "true");
       }
-      assert.ok(gameRequests.every((url) => !url.includes("snake")));
+      assert.ok(gameRequests.every((url) => !url.endsWith("/snake.js")));
       await shell.locator(".game-menu-play").click();
       await page.locator(".game-snake").waitFor();
       await page.keyboard.press("Escape");
       await snake.waitFor();
+      assert.equal(
+        await shellEntries.first().getAttribute("data-game"),
+        "game-snake",
+        "Equally played games put the most recent first",
+      );
+      assert.equal(
+        await entries.first().getAttribute("data-game"),
+        "game-snake",
+        "The sidebar follows the expanded menu's play order",
+      );
       assert.equal(await snake.getAttribute("aria-pressed"), "true");
       assert.equal(
         await snake.evaluate((el) => el === document.activeElement),
@@ -229,6 +244,28 @@ async function checkLayout(menu, context) {
           .locator('[data-game="game-snake"]')
           .getAttribute("aria-pressed"),
         "true",
+      );
+      const frequent = await page.evaluate(() => {
+        WorkTimeApp.games.recordPlay("game-2048");
+        WorkTimeApp.games.recordPlay("game-jump");
+        return WorkTimeApp.games.list()[0].id;
+      });
+      assert.equal(
+        frequent,
+        "game-2048",
+        "Frequency takes priority over recency",
+      );
+      await page.reload();
+      await page.waitForFunction(
+        () => document.documentElement.dataset.appState === "ready",
+      );
+      assert.equal(
+        await sidebar
+          .locator(".game-menu-entry")
+          .first()
+          .getAttribute("data-game"),
+        "game-2048",
+        "Play order persists across reloads",
       );
       assert.deepEqual(errors, []);
       console.log(

@@ -273,7 +273,7 @@ const WorkTimeDomainValidation = (() => {
     if (![0, 3, 5, 7].includes(weatherDays))
       fail("preferences.weatherDays", "备份中的天气显示天数无效。");
     clean.preferences.weatherDays = weatherDays;
-    const autoBackupDays = input.preferences.autoBackupDays ?? 0;
+    const autoBackupDays = input.preferences.autoBackupDays ?? 1;
     const lastAutoBackupDate = input.preferences.lastAutoBackupDate ?? null;
     if (![0, 1, 3, 7].includes(autoBackupDays))
       fail("preferences.autoBackupDays", "Invalid automatic backup interval.");

@@ -55,6 +55,7 @@ function prepareAssets({ check = false } = {}) {
       "analysis-renderer",
       "editor",
       "../services/backup-cache",
+      "../services/auto-backup-folder",
       "../controllers/backup",
       "../controllers/navigation",
     ]

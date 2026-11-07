@@ -408,22 +408,6 @@ body .mine-cell > .mine-incorrect-icon {
 .mine-result .game-button {
   width: 100%;
 }
-.mine-celebration {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  overflow: hidden;
-  pointer-events: none;
-  contain: strict;
-}
-.mine-confetti {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 9px;
-  height: 14px;
-  will-change: transform, opacity;
-}
 .game-minesweeper[data-status="lost"] .mine-result {
   background: #fcf0ec;
 }

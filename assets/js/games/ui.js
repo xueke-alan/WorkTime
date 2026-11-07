@@ -13,7 +13,7 @@ WorkTimeApp.games.paintCounter = function (element, value) {
   if (element.style.fontSize !== size) element.style.fontSize = size;
   if (element.title !== text) element.title = text;
 };
-WorkTimeApp.games.createLevelPage = function (root, id) {
+WorkTimeApp.games.createLevelPage = function (root, id, signal) {
   function node(parent, tag, className) {
     const element = document.createElement(tag);
     element.className = className;
@@ -26,13 +26,69 @@ WorkTimeApp.games.createLevelPage = function (root, id) {
   const title = node(header, "h3", "game-level-page-title");
   title.id = id + "-title";
   page.setAttribute("aria-labelledby", title.id);
+  const summary = node(page, "div", "game-level-page-summary");
   const body = node(page, "div", "game-level-page-body");
-  const summary = node(body, "div", "game-level-page-summary");
+  const categories = node(body, "div", "game-level-categories");
+  categories.setAttribute("role", "group");
+  categories.setAttribute("aria-labelledby", title.id);
+  const entries = node(body, "div", "game-level-entries");
+  entries.id = id + "-entries";
+  const compat = WorkTimeApp.ui.animationCompat;
+  let selectedCategory, animation;
+  signal?.addEventListener("abort", () => animation?.cancel(), { once: true });
+  function selectCategory(key) {
+    const changed = selectedCategory !== undefined && selectedCategory !== key;
+    selectedCategory = key;
+    if (!changed) return;
+    animation?.cancel();
+    entries.scrollTop = 0;
+    if (page.hidden || compat.preference().matches || document.hidden) return;
+    animation = compat.animate(
+      entries,
+      [
+        { opacity: 0, transform: "translateX(14px)" },
+        { opacity: 1, transform: "translateX(0)" },
+      ],
+      { duration: 240, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+    );
+  }
+  // Games without named chapters use ranges without changing their level IDs.
+  function addRanges(grid, size = 10) {
+    const cards = [...grid.children];
+    const buttons = [];
+    function reveal(index) {
+      const range = Math.floor(index / size);
+      buttons.forEach((button, i) => {
+        button.setAttribute("aria-pressed", String(i === range));
+      });
+      cards.forEach((card, i) => {
+        card.hidden = Math.floor(i / size) !== range;
+      });
+      selectCategory(range);
+    }
+    for (let start = 0; start < cards.length; start += size) {
+      const button = node(categories, "button", "game-button");
+      button.type = "button";
+      button.textContent =
+        String(start + 1).padStart(2, "0") +
+        "–" +
+        String(Math.min(start + size, cards.length)).padStart(2, "0");
+      button.setAttribute("aria-controls", entries.id);
+      button.addEventListener("click", () => reveal(start), { signal });
+      buttons.push(button);
+    }
+    reveal(0);
+    return { reveal };
+  }
   return {
     page,
     header,
     body,
     summary,
+    categories,
+    entries,
+    selectCategory,
+    addRanges,
     refresh() {
       title.textContent = WorkTimeApp.i18n.t("games.levelStatus.choose");
     },
@@ -316,4 +372,85 @@ WorkTimeApp.games.createHelp = function ({
   );
   refresh();
   return { refresh, isOpen: () => opened };
+};
+
+/** A decorative, cancellable win effect shared by game sessions. */
+WorkTimeApp.games.createCelebration = function (signal) {
+  const compat = WorkTimeApp.ui.animationCompat;
+  const reduced = compat.preference();
+  let celebration = null,
+    confettiMotions = [];
+  function stop() {
+    confettiMotions.forEach((motion) => motion.cancel());
+    confettiMotions = [];
+    celebration?.remove();
+    celebration = null;
+  }
+  function play() {
+    stop();
+    if (reduced.matches || document.hidden || signal.aborted) return;
+    const layer = document.createElement("div");
+    layer.className = "game-celebration";
+    layer.setAttribute("aria-hidden", "true");
+    document.body.append(layer);
+    celebration = layer;
+    const colors = [
+      "#168b72",
+      "#f2bb47",
+      "#e57a80",
+      "#6a9fe0",
+      "#a583cd",
+      "#f4d779",
+    ];
+    const width = window.innerWidth,
+      height = window.innerHeight;
+    for (let i = 0; i < 120; i++) {
+      const piece = document.createElement("i");
+      piece.className = "game-confetti";
+      layer.append(piece);
+      piece.style.background = colors[i % colors.length];
+      piece.style.borderRadius = i % 3 === 0 ? "50%" : "2px";
+      const side = i % 2,
+        startX = side ? width + 12 : -12;
+      const targetX = width * (0.08 + Math.random() * 0.84);
+      const startY = height * (0.7 + Math.random() * 0.2);
+      const peakY = height * (0.02 + Math.random() * 0.28);
+      const rotation = (Math.random() - 0.5) * 1440;
+      const frames = Array.from({ length: 9 }, (_, step) => {
+        const p = step / 8;
+        const x = startX + (targetX - startX) * p;
+        const y =
+          startY * (1 - p) +
+          (height + 40) * p -
+          ((startY + height + 40) / 2 - peakY) * 4 * p * (1 - p);
+        return {
+          transform: `translate3d(${x}px, ${y}px, 0) rotate(${rotation * p}deg) rotateY(${p * 720}deg)`,
+          opacity: p > 0.75 ? (1 - p) * 4 : 1,
+        };
+      });
+      confettiMotions.push(
+        compat.animate(piece, frames, {
+          duration: 2300 + Math.random() * 700,
+          delay: Math.floor(i / 40) * 220,
+          easing: "linear",
+          fill: "both",
+        }),
+      );
+    }
+    void Promise.all(confettiMotions.map((motion) => motion.finished)).then(
+      () => {
+        if (celebration === layer) stop();
+      },
+    );
+  }
+  const unlisten = compat.listen(reduced, () => {
+    if (reduced.matches) stop();
+  });
+  function dispose() {
+    stop();
+    unlisten();
+    signal.removeEventListener("abort", dispose);
+  }
+  signal.addEventListener("abort", dispose, { once: true });
+  return { play, stop, dispose };
 };

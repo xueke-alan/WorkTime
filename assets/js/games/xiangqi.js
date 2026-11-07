@@ -78,10 +78,11 @@ WorkTimeApp.games.register({
     const catalog = WorkTimeApp.games.createLevelPage(
       root,
       "xiangqi-level-page",
+      signal,
     );
     const progress = node(catalog.summary, "span", "xiangqi-progress");
     const groupProgress = node(catalog.summary, "span", "game-level-progress");
-    const categories = node(catalog.body, "div", "game-level-categories");
+    const categories = catalog.categories;
     categories.setAttribute("role", "group");
     const groups = [1, 2, 3, 4].map((group) => ({
       group,
@@ -89,7 +90,7 @@ WorkTimeApp.games.register({
         selectedGroup = group;
         render();
       }),
-      entries: node(catalog.body, "div", "xiangqi-levels game-level-grid"),
+      entries: node(catalog.entries, "div", "xiangqi-levels game-level-grid"),
     }));
     const levelButtons = levels.map((entry, index) =>
       button(groups[groupFor(entry) - 1].entries, entry.id, (keyboard) =>
@@ -479,6 +480,7 @@ WorkTimeApp.games.register({
       heading.textContent = t("name");
       if (!level) {
         catalog.refresh();
+        catalog.selectCategory(selectedGroup);
         categories.setAttribute("aria-label", t("categories"));
         const groupLevels = levels.filter(
           (entry) => groupFor(entry) === selectedGroup,

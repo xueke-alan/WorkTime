@@ -145,6 +145,7 @@ Thumbs.db
 !/scripts/verify-agenda-workspace.cjs
 !/scripts/verify-agenda-motion.cjs
 !/scripts/verify-agenda-entry-motion.cjs
+!/scripts/verify-agenda-mode-label-motion.cjs
 !/scripts/profile-calendar-motion.cjs
 !/scripts/verify-toolbar-motion.cjs
 !/scripts/verify-agenda-border.cjs
@@ -185,3 +186,11 @@ Thumbs.db
 
 !/scripts/settings-test-helpers.cjs
 !/scripts/verify-settings-tabs.cjs
+
+!/scripts/verify-level-layout.cjs
+
+!/scripts/generate-sudoku-variants.cjs
+!/scripts/verify-sudoku-variants.cjs
+!/scripts/verify-sudoku-hover.cjs
+
+!/scripts/verify-auto-backup-folder.cjs

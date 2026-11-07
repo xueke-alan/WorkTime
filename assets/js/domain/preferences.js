@@ -23,7 +23,7 @@ const WorkTimeDomainPreferences = (() => {
     isTheme,
     normalize: (id) => (isTheme(id) ? id : "green"),
     autoBackupDue: (preferences, today) => {
-      const interval = preferences.autoBackupDays || 0;
+      const interval = preferences.autoBackupDays ?? 1;
       const last = preferences.lastAutoBackupDate;
       return (
         [1, 3, 7].includes(interval) &&

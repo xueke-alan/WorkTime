@@ -70,7 +70,15 @@ const root = path.resolve(process.argv[2] || sourceRoot);
   delete legacy.preferences.autoBackupDays;
   delete legacy.preferences.lastAutoBackupDate;
   const validated = realm.C.validateBackup(legacy);
-  assert.equal(validated.preferences.autoBackupDays, 0);
+  assert.equal(validated.preferences.autoBackupDays, 1);
+  assert.equal(
+    realm.C.validateBackup({
+      ...legacy,
+      preferences: { ...legacy.preferences, autoBackupDays: 0 },
+    }).preferences.autoBackupDays,
+    0,
+    "Preserve an explicitly disabled automatic backup preference",
+  );
   assert.equal(validated.preferences.lastAutoBackupDate, null);
   assert.equal(validated.preferences.lastBackupAt, null);
   for (const patch of [
@@ -129,9 +137,31 @@ const root = path.resolve(process.argv[2] || sourceRoot);
       page.on("download", (download) => downloads.push(download));
       await page.route(/https?:\/\/(?!127\.0\.0\.1)/, (route) => route.abort());
       await page.clock.setFixedTime(new Date("2026-10-28T12:00:37+08:00"));
+      const defaultDownload = page.waitForEvent("download");
       await page.goto(url);
       await ready(page);
-      assert.equal(downloads.length, 0, "default off");
+      assert.match(
+        (await defaultDownload).suggestedFilename(),
+        /20261028-120037\.txt$/,
+      );
+      await page.waitForFunction(
+        () =>
+          WorkTimeApp.services.preferences.page.state.lastAutoBackupDate ===
+          "2026-10-28",
+      );
+      await settled(page);
+      assert.equal(
+        await page.evaluate(
+          () => WorkTimeApp.services.preferences.page.state.autoBackupDays,
+        ),
+        1,
+        "Automatic backup defaults to every day",
+      );
+      await page.evaluate(() =>
+        WorkTimeApp.services.preferences.page.saveAutoBackupDays(0),
+      );
+      await settled(page);
+      downloads.length = 0;
       await clickSettingsControl(page, "#pageSettingsOpen");
       await page.locator("#autoBackupTrigger").click();
       await page.locator('#autoBackupOptions [data-value="3"]').click();
@@ -163,7 +193,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
           await controller.checkAutoBackup();
         }
       });
-      assert.equal(await page.locator("#autoBackupHelp").isVisible(), false);
+      assert.equal(await page.locator("#autoBackupHelp").isVisible(), true);
       await page.locator("#autoBackupTrigger").scrollIntoViewIfNeeded();
       await page.screenshot({
         path: path.join(
@@ -178,7 +208,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
       await page.reload();
       await ready(page);
       const download = await first;
-      assert.match(download.suggestedFilename(), /2026-10-28-12-00-37\.txt$/);
+      assert.match(download.suggestedFilename(), /20261028-120037\.txt$/);
       await page.waitForFunction(
         () =>
           WorkTimeApp.services.preferences.page.state.lastAutoBackupDate ===

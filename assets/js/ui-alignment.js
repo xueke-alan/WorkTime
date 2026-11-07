@@ -530,7 +530,7 @@
       // animation and removal must not trigger another pass over the live dates.
       if (
         element.closest(
-          ".agenda-content-outgoing,.agenda-mode-exit-clip,.calendar-navigation-copy,.agenda-date-edges,.agenda-week-return-exits",
+          ".agenda-content-outgoing,.agenda-mode-exit-clip,.calendar-artwork-outgoing,.calendar-navigation-copy,.agenda-date-edges,.agenda-week-return-exits",
         )
       )
         continue;
@@ -540,7 +540,7 @@
           (node) =>
             node instanceof Element &&
             node.matches(
-              ".agenda-content-outgoing,.agenda-mode-exit-clip,.calendar-navigation-copy,.calendar-navigation-viewport,.agenda-date-edges,.agenda-week-return-exits",
+              ".agenda-content-outgoing,.agenda-mode-exit-clip,.calendar-artwork-outgoing,.calendar-navigation-copy,.calendar-navigation-viewport,.agenda-date-edges,.agenda-week-return-exits",
             ),
         )
       )

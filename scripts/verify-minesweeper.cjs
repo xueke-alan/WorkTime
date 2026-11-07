@@ -841,7 +841,7 @@ async function verifyBrowser(fixtures) {
     await cell(page, finalCell).click();
     await verifyResultLayout(page);
     assert.equal(
-      await page.locator(".mine-celebration").count(),
+      await page.locator(".game-celebration").count(),
       0,
       "reduced motion suppresses confetti",
     );
@@ -879,16 +879,16 @@ async function verifyBrowser(fixtures) {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await seed(page, almost, 42400);
     await cell(page, finalCell).click();
-    assert.equal(await page.locator(".mine-confetti").count(), 120);
+    assert.equal(await page.locator(".game-confetti").count(), 120);
     const effects = await page.evaluate(() => ({
       board: document.querySelector(".mine-board").getAnimations().length,
       card: document.querySelector(".mine-result").getAnimations().length,
       layer: document
-        .querySelector(".mine-celebration")
+        .querySelector(".game-celebration")
         .getBoundingClientRect()
         .toJSON(),
       pointerEvents: getComputedStyle(
-        document.querySelector(".mine-celebration"),
+        document.querySelector(".game-celebration"),
       ).pointerEvents,
       width: innerWidth,
       height: innerHeight,
@@ -904,10 +904,10 @@ async function verifyBrowser(fixtures) {
     await verifyResultLayout(page);
     await page.screenshot({ path: path.join(output, "celebration.png") });
     await page.waitForFunction(
-      () => !document.querySelector(".mine-celebration"),
+      () => !document.querySelector(".game-celebration"),
     );
     await action(page, "again").click();
-    assert.equal(await page.locator(".mine-celebration").count(), 0);
+    assert.equal(await page.locator(".game-celebration").count(), 0);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await close(page);
     const workAfter = await page.evaluate(() =>

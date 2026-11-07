@@ -109,6 +109,35 @@ async function verify() {
     await card("2026-10-24").click();
     assert.equal(await button.isEnabled(), true);
     assert.equal(await button.getAttribute("aria-pressed"), "true");
+    await card("2026-10-18").click();
+    await view.emulateMedia({ reducedMotion: "no-preference" });
+    await button.click();
+    const artwork = await card("2026-10-18").evaluate((node) => ({
+      outgoing: node.querySelectorAll(".calendar-artwork-outgoing").length,
+      incoming: node
+        .getAnimations({ subtree: true })
+        .some(
+          (animation) =>
+            animation.effect.pseudoElement === "::before" &&
+            animation.effect.getKeyframes()[0].opacity === "0",
+        ),
+    }));
+    assert.equal(artwork.outgoing, 1, "Retain old artwork while fading it out");
+    assert.equal(
+      artwork.incoming,
+      true,
+      "Fade in the new background illustration",
+    );
+    await view.waitForFunction(
+      () => !document.querySelector(".calendar-artwork-outgoing"),
+    );
+    assert.equal(
+      await card("2026-10-18").evaluate(
+        (node) => getComputedStyle(node, "::before").opacity,
+      ),
+      "0.48",
+      "Release the reveal at the illustration's resting opacity",
+    );
     assert.deepEqual(errors, []);
     await seeded.close();
     console.log(

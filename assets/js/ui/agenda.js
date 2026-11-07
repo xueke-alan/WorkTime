@@ -328,6 +328,7 @@ WorkTimeApp.ui.createAgenda = function ({
         "padding",
         "border",
         "font",
+        "color",
         "line-height",
         "white-space",
         "overflow",
@@ -435,7 +436,14 @@ WorkTimeApp.ui.createAgenda = function ({
     if (!canAnimate()) return;
     stopOutgoing(card);
     for (const element of elements)
-      revealIncoming(element, delay, !timing, timing?.enterDuration);
+      // Date labels use transform for ink alignment. Animate only opacity so
+      // cancelling the reveal cannot restore a different vertical position.
+      revealIncoming(
+        element,
+        delay,
+        !timing && !element.matches(".daykind"),
+        timing?.enterDuration,
+      );
     const entries = snapshots.map((node) => {
       // A full week can be taller than the destination month. Clip the visual
       // copy in a stationary viewport so neither its old size nor its horizontal
@@ -2026,11 +2034,15 @@ WorkTimeApp.ui.createAgenda = function ({
           card,
           [
             {
+              ...(Number(previous.opacity) !== opacity
+                ? { opacity: Number(previous.opacity) }
+                : {}),
               transform: `translate(${previous.rect.left - next.left}px, ${previous.rect.top - next.top}px)`,
               height: previous.rect.height + "px",
               width: previous.rect.width + "px",
             },
             {
+              ...(Number(previous.opacity) !== opacity ? { opacity } : {}),
               transform: "none",
               height: next.height + "px",
               width: next.width + "px",
@@ -2107,7 +2119,7 @@ WorkTimeApp.ui.createAgenda = function ({
       const owner = dayMotions.get(anchor.date);
       animateDay(
         card,
-        owner.frames.map((frame) => ({
+        owner.frames.map(({ opacity: _opacity, ...frame }) => ({
           ...frame,
           transform:
             `translate(${anchor.rect.left - next.left}px, ${anchor.rect.top - next.top - rows * (parseFloat(frame.height) + rowGap)}px)` +
@@ -3483,7 +3495,7 @@ WorkTimeApp.ui.createAgenda = function ({
     updateMarkup(
       $("agendaList"),
       selectedItems.map(entry).join("") ||
-        `<div class="agenda-empty"><svg class="ui-icon" aria-hidden="true"><use href="#ms-event-note"/></svg><p>${esc(t("empty"))}</p><button type="button" class="ui-button" data-agenda-create>${esc(t("new"))}</button></div>`,
+        `<div class="agenda-empty"><svg class="ui-icon" aria-hidden="true"><use href="#ms-event-note"/></svg><p>${esc(t("empty"))}</p></div>`,
     );
     // Decorate the existing keyed day cards; the calendar owns dates, headers,
     // selection, adjacent days, weather layers and responsive grid geometry.
@@ -3745,7 +3757,6 @@ WorkTimeApp.ui.createAgenda = function ({
   async function click(event) {
     const button = event.target.closest("button");
     if (!button || button.disabled || busy) return;
-    if (button.hasAttribute("data-agenda-create")) $("agendaNew").click();
     if (button.dataset.agendaExpand) {
       const key = button.dataset.agendaExpand;
       if (expandedGroups.has(key)) expandedGroups.delete(key);
@@ -3820,6 +3831,17 @@ WorkTimeApp.ui.createAgenda = function ({
     const switchAgendaMode = () => {
       if (model.batchMode || busy || !leaveForm()) return;
       actions.closeImport();
+      // Read painted surfaces before cancelling an interrupted mode animation.
+      const surfaces = new Map(
+        (canAnimate() ? dayCards() : []).map((card) => {
+          const style = getComputedStyle(card);
+          return [
+            cardDate(card),
+            // CSS owns colors; avoid freezing an in-flight transition.
+            { opacity: style.opacity },
+          ];
+        }),
+      );
       const weekLayout =
         weekView && !model.yearMode && !model.analysisMode
           ? captureWeekLayout({ captureLower: canAnimate() })
@@ -3857,14 +3879,16 @@ WorkTimeApp.ui.createAgenda = function ({
       const staged = !!weekLayout && workdaysOnly;
       const movingDates = staged ? new Set(weekDates()) : null;
       const snapshots = new Map(
-        [...calendar.querySelectorAll(".day[data-date]")]
+        dayCards()
           .filter(
             (card) =>
               !staged ||
-              (movingDates.has(card.dataset.date) &&
-                card.getClientRects().length),
+              (movingDates.has(cardDate(card)) && card.getClientRects().length),
           )
-          .map((card) => [card.dataset.date, captureContent(card)]),
+          .map((card) => [
+            cardDate(card),
+            captureContent(card, contentSelector + ", .daytop .daykind"),
+          ]),
       );
       const laneSnapshots = captureContent(
         calendar,
@@ -3881,14 +3905,67 @@ WorkTimeApp.ui.createAgenda = function ({
         switchingMode = false;
         preparingWeekLayout = false;
       }
-      const reveals = [...calendar.querySelectorAll(".day[data-date]")]
+      const reveals = dayCards()
         .filter(
           (card) =>
             !staged ||
-            (movingDates.has(card.dataset.date) &&
-              card.getClientRects().length),
+            (movingDates.has(cardDate(card)) && card.getClientRects().length),
         )
-        .map((card) => ({ card, elements: visibleContent(card) }));
+        .map((card) => {
+          const captured = snapshots.get(cardDate(card)) || [];
+          const oldKind = captured.find((node) => node.matches(".daykind"));
+          const kind = card.querySelector(".daytop .daykind");
+          const changed = oldKind && oldKind.textContent !== kind?.textContent;
+          if (oldKind && !changed)
+            snapshots.set(
+              cardDate(card),
+              captured.filter((node) => node !== oldKind),
+            );
+          return {
+            card,
+            elements: [
+              ...visibleContent(card),
+              ...(changed && kind ? [kind] : []),
+            ],
+          };
+        });
+      // Labels can change after the calendar renderer aligns its header.
+      // Resolve the new glyph baseline before snapshots and reveals are painted.
+      WorkTimeApp.ui.alignment?.refresh(
+        reveals.flatMap(({ elements }) =>
+          elements.filter((element) => element.matches(".daykind")),
+        ),
+      );
+      // Week layout owns card opacity while it moves the shared dates.
+      const surfacePlans = dayCards().flatMap((card) => {
+        const previous = surfaces.get(cardDate(card));
+        if (!previous || !card.getClientRects().length) return [];
+        const style = getComputedStyle(card);
+        const properties = Object.keys(previous).filter(
+          (property) =>
+            !(weekLayout && property === "opacity") &&
+            previous[property] !== style[property],
+        );
+        if (!properties.length) return [];
+        return [
+          {
+            element: card,
+            frames: [
+              Object.fromEntries(
+                properties.map((property) => [property, previous[property]]),
+              ),
+              Object.fromEntries(
+                properties.map((property) => [property, style[property]]),
+              ),
+            ],
+            options: {
+              duration: calendarMotion.duration,
+              easing: calendarMotion.easing,
+              fill: "both",
+            },
+          },
+        ];
+      });
       const contentTiming = staged
         ? { enterDuration: 180, leaveDuration: 100 }
         : null;
@@ -3898,13 +3975,23 @@ WorkTimeApp.ui.createAgenda = function ({
       for (const { card, elements } of reveals)
         revealContent(
           card,
-          snapshots.get(card.dataset.date) || [],
+          snapshots.get(cardDate(card)) || [],
           contentDelay ?? (active || laneSnapshots.length ? 120 : undefined),
           elements,
           contentTiming,
         );
       revealContent(calendar, laneSnapshots, 0, [], contentTiming);
       const pageMotion = weekLayout ? animateWeekLayout(weekLayout) : null;
+      const surfaceAnimations = motion.animateCalendar(surfacePlans);
+      surfaceAnimations.forEach((animation, index) => {
+        const card = surfacePlans[index].element;
+        incoming.set(card, animation);
+        animation.finished.then(() => {
+          if (incoming.get(card) !== animation) return;
+          incoming.delete(card);
+          animation.cancel();
+        });
+      });
       if (staged && active)
         revealIncoming(
           calendar.querySelector(".agenda-week-layers"),

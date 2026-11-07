@@ -789,7 +789,7 @@ body #gameExitButton > .ui-icon {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  width: min(100%, 40rem);
+  width: min(100%, 52rem);
   height: 100%;
   min-height: 0;
   margin-inline: auto;
@@ -811,20 +811,30 @@ body #gameExitButton > .ui-icon {
   flex: none;
 }
 .game-level-page-body {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: clamp(12rem, 40%, 20rem) minmax(0, 1fr);
   gap: 0.75rem;
+  flex: 1;
   min-height: 0;
-  padding: 3px;
+  min-width: 0;
+  overflow: hidden;
+}
+.game-level-entries,
+.game-level-categories {
+  min-width: 0;
+  min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable;
   scroll-padding-block: 0.5rem;
+}
+.game-level-entries {
+  padding: 3px;
+  scrollbar-gutter: stable;
 }
 .game-level-page-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.25rem;
   flex: none;
   justify-content: space-between;
   color: var(--muted);
@@ -833,16 +843,23 @@ body #gameExitButton > .ui-icon {
 }
 .game-level-categories {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 4.5rem;
+  align-content: start;
   gap: 0.5rem;
-  flex: none;
+  padding: 3px 0.75rem 3px 3px;
+  border-inline-end: 1px solid var(--line);
 }
-.game-level-categories .game-button {
+.game-session .game-level-categories .game-button {
+  justify-content: center;
+  width: 100%;
   min-width: 0;
-  height: auto;
-  min-height: var(--control-height);
-  padding: 0.5rem 0.75rem;
+  height: 100%;
+  min-height: 44px;
+  padding: 0.4rem;
+  text-align: center;
   font-size: 0.875rem;
+  line-height: 1.4;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -931,18 +948,41 @@ body #gameExitButton > .ui-icon {
   }
 }
 @media (max-width: 540px) {
-  .game-level-categories {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .game-level-page-body {
+    grid-template-columns: minmax(0, 44fr) minmax(0, 56fr);
+    gap: 0.4rem;
   }
-  .game-level-categories .game-button {
-    padding-inline: 0.4rem;
+  .game-level-categories {
+    grid-auto-rows: 5.5rem;
+    gap: 0.35rem;
+    padding-inline-end: 0.4rem;
+  }
+  .game-session .game-level-categories .game-button {
+    padding-inline: 0.2rem;
     font-size: 0.75rem;
   }
   .game-level-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.35rem;
   }
   .game-level-grid .game-button {
     font-size: 0.95rem;
   }
+}
+
+.game-celebration {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+.game-confetti {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 9px;
+  height: 14px;
+  will-change: transform, opacity;
 }
