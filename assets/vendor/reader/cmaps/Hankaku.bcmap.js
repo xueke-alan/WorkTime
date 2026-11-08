@@ -1,0 +1,2 @@
+/* PDF.js resource; Apache-2.0. See licenses/reader.txt. */
+(globalThis.WorkTimeReaderBinary ||= {})["cmaps/Hankaku.bcmap"] = "AuBSQ29weXJpZ2h0IDE5OTAtMjAwOSBBZG9iZSBTeXN0ZW1zIEluY29ycG9yYXRlZC4KQWxsIHJpZ2h0cyByZXNlcnZlZC4KU2VlIC4vTElDRU5TRQABAIF/YAogP4FnAACBZwAdgigCBIJHAAmEBAAAglYADoQOAT6CRwAdhB0AAYME";

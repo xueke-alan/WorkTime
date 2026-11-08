@@ -689,6 +689,18 @@ body button.ui-button.game-menu-entry:is([aria-pressed="true"], :active) {
 .game-toolbar .ui-button {
   flex: none;
 }
+body #gameShell #gameExitButton {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body #gameShell #gameExitButton:is(:hover, :active) {
+  background: color-mix(in srgb, var(--accent) 5%, var(--paper));
+}
+body #gameShell #gameExitButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
 /* Match the calendar's previous-month chevron and theme color. */
 body #gameExitButton > .ui-icon {
   width: var(--icon-size);

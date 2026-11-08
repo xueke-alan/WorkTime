@@ -34,6 +34,7 @@ WorkTimeApp.services.bootstrap.run(
       return;
     }
     const loaded = await persistence.load();
+    document.documentElement.dataset.firstRun = String(loaded.fresh === true);
     await WorkTimeApp.i18n.setLanguage(
       WorkTimeApp.i18n.normalize(loaded.state.preferences.language),
     );

@@ -17,6 +17,7 @@
     active = localStorage.getItem(tabStorageKey) || active;
   } catch {}
   function rememberTab() {
+    if (active === "music" || active === "reader") return;
     try {
       localStorage.setItem(tabStorageKey, active);
     } catch {}
@@ -47,6 +48,18 @@
   gamesPanel.setAttribute("role", "tabpanel");
   gamesPanel.setAttribute("aria-labelledby", "date-tab-games");
   panel.after(gamesPanel);
+  const musicPanel = node("section", undefined, "music-panel");
+  musicPanel.id = "musicPanel";
+  musicPanel.hidden = true;
+  musicPanel.setAttribute("role", "tabpanel");
+  musicPanel.setAttribute("aria-labelledby", "musicOpen");
+  gamesPanel.after(musicPanel);
+  const readerPanel = node("section", undefined, "reader-panel");
+  readerPanel.id = "readerPanel";
+  readerPanel.hidden = true;
+  readerPanel.setAttribute("role", "tabpanel");
+  readerPanel.setAttribute("aria-labelledby", "readerOpen");
+  musicPanel.after(readerPanel);
   let selectedDateView = dateViews.includes(active) ? active : "history";
   const dateHeader = node("div", undefined, "date-context-header");
   const dateHeading = node("time", "", "date-context-date");
@@ -387,6 +400,7 @@
     animateFocusChange(true);
   }
   function onFocusKeydown(event) {
+    if (event.target.closest("#musicDialog")) return;
     if (!countdownFocus) return;
     if (event.key === "Escape") {
       event.preventDefault();
@@ -489,13 +503,35 @@
     const view = active;
     if (renderedView !== null && renderedView !== view) {
       const surface = (id) =>
-        id === "notifications" ? notices : id === "games" ? gamesPanel : panel;
+        id === "notifications"
+          ? notices
+          : id === "games"
+            ? gamesPanel
+            : id === "music"
+              ? musicPanel
+              : id === "reader"
+                ? readerPanel
+                : panel;
       if (surface(renderedView) !== surface(view))
         WorkTimeApp.ui.motion?.stop(surface(renderedView));
       WorkTimeApp.ui.motion?.play(surface(view));
     }
     renderedView = view;
     for (const b of bar.children) {
+      if (b.id === "readerOpen") {
+        if (WorkTimeApp.ui.reader.isMini) {
+          b.setAttribute("aria-selected", String(active === "reader"));
+          b.tabIndex = active === "reader" ? 0 : -1;
+        }
+        continue;
+      }
+      if (b.id === "musicOpen") {
+        if (WorkTimeApp.ui.music.isMini) {
+          b.setAttribute("aria-selected", String(active === "music"));
+          b.tabIndex = active === "music" ? 0 : -1;
+        }
+        continue;
+      }
       const on =
         b.dataset.tab === active ||
         (b.dataset.tab === "history" && dateViews.includes(active));
@@ -503,8 +539,14 @@
       b.tabIndex = on ? 0 : -1;
     }
     notices.hidden = active !== "notifications";
-    panel.hidden = active === "notifications" || active === "games";
+    panel.hidden =
+      active === "notifications" ||
+      active === "games" ||
+      active === "music" ||
+      active === "reader";
     gamesPanel.hidden = active !== "games";
+    musicPanel.hidden = active !== "music";
+    readerPanel.hidden = active !== "reader";
     const grouped = dateViews.includes(active);
     dateHeader.hidden = !grouped;
     area.classList.toggle("has-date-context", grouped);
@@ -520,7 +562,15 @@
     }
     area.classList.toggle("has-date-info", active !== "notifications");
     WorkTimeApp.services.weather?.setDemand("details", active === "weather");
-    if (active === "notifications" || active === "games") return;
+    WorkTimeApp.ui.music.refresh();
+    WorkTimeApp.ui.reader.refresh();
+    if (
+      active === "notifications" ||
+      active === "games" ||
+      active === "music" ||
+      active === "reader"
+    )
+      return;
     panel.setAttribute(
       "aria-labelledby",
       (grouped ? "date-context-" : "date-tab-") + active,
@@ -846,10 +896,79 @@
         }
       });
       bar.append(b);
+      if (p.id === "games") {
+        const music = node("button", undefined, "notification-tab");
+        music.type = "button";
+        music.id = "musicOpen";
+        music.dataset.tab = "music";
+        music.title = WorkTimeApp.ui.musicText("title");
+        music.setAttribute("aria-label", music.title);
+        music.setAttribute("aria-haspopup", "dialog");
+        music.setAttribute("aria-controls", "musicDialog");
+        music.setAttribute("aria-expanded", "false");
+        music.innerHTML =
+          '<svg class="ui-icon headphones-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 14v-2a9 9 0 0 1 18 0v2M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm18 0h-3a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-5Z"/></svg>';
+        tabEvents.handler(music, "onclick", () => WorkTimeApp.ui.music.open());
+        tabEvents.handler(music, "onkeydown", (event) => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+            return;
+          event.preventDefault();
+          const buttons = [...bar.children],
+            position = buttons.indexOf(music);
+          const next =
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? buttons.length - 1
+                : (position +
+                    (event.key === "ArrowRight" ? 1 : -1) +
+                    buttons.length) %
+                  buttons.length;
+          buttons[next].focus();
+        });
+        bar.append(music);
+        const reader = node("button", undefined, "notification-tab");
+        reader.type = "button";
+        reader.id = "readerOpen";
+        reader.dataset.tab = "reader";
+        reader.title = WorkTimeApp.ui.readerText("title");
+        reader.setAttribute("aria-label", reader.title);
+        reader.setAttribute("aria-haspopup", "dialog");
+        reader.setAttribute("aria-controls", "readerDialog");
+        reader.setAttribute("aria-expanded", "false");
+        reader.innerHTML =
+          '<svg class="ui-icon" aria-hidden="true"><use href="#ms-book-5"/></svg>';
+        tabEvents.handler(reader, "onclick", () =>
+          WorkTimeApp.ui.reader.open(),
+        );
+        tabEvents.handler(reader, "onkeydown", (event) => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+            return;
+          event.preventDefault();
+          const buttons = [...bar.children],
+            position = buttons.indexOf(reader);
+          const next =
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? buttons.length - 1
+                : (position +
+                    (event.key === "ArrowRight" ? 1 : -1) +
+                    buttons.length) %
+                  buttons.length;
+          buttons[next].focus();
+        });
+        bar.append(reader);
+      }
     }
-    active = providers.some((p) => p.id === current)
-      ? current
-      : "notifications";
+    WorkTimeApp.ui.music.refresh();
+    WorkTimeApp.ui.reader.refresh();
+    active =
+      providers.some((p) => p.id === current) ||
+      (current === "music" && WorkTimeApp.ui.music.isMini) ||
+      (current === "reader" && WorkTimeApp.ui.reader.isMini)
+        ? current
+        : "notifications";
     if (date) render();
     updateNotificationBadge();
     updateWeatherTabIcon();
@@ -970,6 +1089,31 @@
     rememberTab();
   }
   WorkTimeApp.ui.dateInfo = {
+    hideReaderPanel() {
+      if (disposed || active !== "reader") return;
+      active = "notifications";
+      render();
+    },
+    showReaderPanel() {
+      if (disposed) return;
+      active = "reader";
+      render();
+      bar.closest(".editor").dispatchEvent(
+        new CustomEvent("worktime:auxiliaryrequest", {
+          detail: { id: "reader", open: true },
+        }),
+      );
+    },
+    showMusicPanel() {
+      if (disposed) return;
+      active = "music";
+      render();
+      bar.closest(".editor").dispatchEvent(
+        new CustomEvent("worktime:auxiliaryrequest", {
+          detail: { id: "music", open: true },
+        }),
+      );
+    },
     selectTab(id) {
       const button = [...bar.children].find((item) => item.dataset.tab === id);
       if (button && !disposed) button.click();
@@ -980,7 +1124,14 @@
       // These panels use live application data rather than the selected date.
       if (
         renderedView === active &&
-        ["weather", "countdown", "notifications", "games"].includes(active)
+        [
+          "weather",
+          "countdown",
+          "notifications",
+          "games",
+          "music",
+          "reader",
+        ].includes(active)
       )
         return;
       render();

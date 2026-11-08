@@ -147,6 +147,7 @@ WorkTimeApp.services.autoBackupFolder = (() => {
       }
       handle = null;
       status = "download";
+      document.dispatchEvent(new Event("worktime:folderreset"));
       return true;
     });
   }

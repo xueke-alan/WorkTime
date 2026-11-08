@@ -35,9 +35,22 @@ function bundleSite(root) {
       "assets/js/games",
       "assets/css",
       "assets/data",
+      "assets/vendor/reader",
     ]
       .flatMap(dynamicFiles)
-      .concat(["assets/js/auto-backup-folder.js"])
+      .concat([
+        "assets/js/auto-backup-folder.js",
+        "assets/js/services/music-library.js",
+        "assets/js/services/music-storage.js",
+        "assets/js/controllers/music.js",
+        "assets/js/controllers/workspace-expansion.js",
+        "assets/js/ui/music.js",
+        "assets/js/services/reader-storage.js",
+        "assets/js/services/reader-library.js",
+        "assets/js/services/reader-adapters.js",
+        "assets/js/controllers/reader.js",
+        "assets/js/ui/reader.js",
+      ])
       .map((asset) => [
         asset,
         crypto

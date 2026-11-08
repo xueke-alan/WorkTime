@@ -206,6 +206,8 @@
 }
 body .sudoku-cell {
   --sudoku-cell-fill: transparent;
+  --sudoku-grid-right: 1px;
+  --sudoku-grid-bottom: 1px;
   position: relative;
   display: flex;
   align-items: center;
@@ -217,19 +219,24 @@ body .sudoku-cell {
   margin: 0;
   padding: 0;
   border: 0;
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
   border-radius: 0;
   background: var(--sudoku-cell-fill);
   box-shadow: none;
   color: var(--accent);
-  font: 500 clamp(1.1rem, 3.5vw, 1.8rem) var(--font-numeric);
+  font: 500 clamp(1.1rem, 3.5vw, 1.8rem) / 1 var(--font-numeric);
   touch-action: manipulation;
   cursor: pointer;
 }
-/* Neutralize the shared button hover border; box edges below stay accented. */
-body .sudoku-cell:is(:hover, :active) {
-  border-color: var(--line);
+/* Draw grid lines on cell boundaries without shrinking the content box.
+   Digits, parity marks and SVG clues now share the same cell centers. */
+body .sudoku-cell::after {
+  content: "";
+  position: absolute;
+  inset: 0 calc(var(--sudoku-grid-right) / -2)
+    calc(var(--sudoku-grid-bottom) / -2) 0;
+  border-right: var(--sudoku-grid-right) solid var(--line);
+  border-bottom: var(--sudoku-grid-bottom) solid var(--line);
+  pointer-events: none;
 }
 /* Shared button interaction fills must not obscure the SVG clues below cells.
    Preserve the same translucent state fill during mouse and touch interaction. */
@@ -254,33 +261,38 @@ body .sudoku-cell.is-conflict {
   color: #b02c39;
 }
 body .sudoku-cell.sudoku-box-right {
-  border-right: 2px solid var(--accent);
+  --sudoku-grid-right: 2px;
 }
 body .sudoku-cell.sudoku-box-bottom {
-  border-bottom: 2px solid var(--accent);
+  --sudoku-grid-bottom: 2px;
+}
+body .sudoku-cell.sudoku-box-right::after {
+  border-right-color: var(--accent);
+}
+body .sudoku-cell.sudoku-box-bottom::after {
+  border-bottom-color: var(--accent);
 }
 body .sudoku-cell:nth-of-type(9n) {
-  border-right: 0;
+  --sudoku-grid-right: 0px;
 }
 body .sudoku-cell:nth-last-of-type(-n + 9) {
-  border-bottom: 0;
-}
-body .sudoku-cell:focus-visible {
-  outline: none;
+  --sudoku-grid-bottom: 0px;
 }
 /* Keep the keyboard focus cue inside the cell, clear of all grid lines. */
-body .sudoku-cell:focus-visible::after {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  border: 1px dashed var(--accent);
-  pointer-events: none;
-  z-index: 2;
+body .sudoku-cell:focus-visible {
+  outline: 1px dashed var(--accent);
+  outline-offset: -5px;
 }
 .sudoku-digit,
 .sudoku-notes {
   position: relative;
   z-index: 1;
+}
+.sudoku-digit,
+.sudoku-notes span {
+  /* Center visible numeral ink rather than the font's ascent/descent box. */
+  text-box: trim-both cap alphabetic;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .sudoku-notes {
   position: absolute;
@@ -339,8 +351,8 @@ body .sudoku-cell:focus-visible::after {
 }
 .sudoku-thermos .sudoku-arrow,
 .sudoku-thermos .sudoku-arrow-circle {
-  stroke: color-mix(in srgb, var(--ink) 60%, var(--paper));
-  stroke-width: 0.65;
+  stroke: color-mix(in srgb, var(--ink) 32%, var(--paper));
+  stroke-width: 0.4;
   fill: none;
 }
 .sudoku-variant-overlay {
@@ -360,7 +372,7 @@ body .sudoku-cell:focus-visible::after {
 .sudoku-cage-sum {
   fill: var(--ink);
   stroke: var(--paper);
-  stroke-width: 0.7;
+  stroke-width: 0.3;
   paint-order: stroke;
   font: 700 2.35px var(--font-numeric);
 }

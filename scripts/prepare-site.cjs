@@ -11,6 +11,8 @@ fs.mkdirSync(site);
 for (const entry of [
   "index.html",
   "rescue.html",
+  "manifest.webmanifest",
+  "service-worker.js",
   "assets",
   "licenses",
   "tools",

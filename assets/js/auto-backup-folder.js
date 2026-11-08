@@ -2,6 +2,14 @@
 /** Folder settings copy stays available in all offline languages. */
 WorkTimeApp.ui.autoBackupFolderText = (() => {
   const rows = {
+    confirmReset: [
+      "确定恢复默认文件夹？后续备份将改用浏览器下载，已有备份文件不会删除。下次打开页面时会重新提示选择存档文件夹。",
+      "確定恢復預設資料夾？之後備份將改用瀏覽器下載，現有備份檔案不會刪除。下次開啟頁面時會再次提示選擇存檔資料夾。",
+      "確定恢復預設資料夾？之後備份將改用瀏覽器下載，現有備份檔案不會刪除。下次開啟頁面時會再次提示選擇存檔資料夾。",
+      "Restore the default folder? Future backups will use browser downloads. Existing backup files will be kept. You will be reminded to choose an archive folder on your next visit.",
+      "既定の保存先に戻しますか？今後のバックアップはブラウザーでダウンロードされます。既存のファイルは削除されません。次回ページを開くと保存先の選択が再び表示されます。",
+      "기본 폴더로 복원할까요? 이후 백업은 브라우저로 다운로드됩니다. 기존 백업 파일은 삭제되지 않습니다. 다음에 페이지를 열면 보관 폴더 선택 안내가 다시 표시됩니다.",
+    ],
     label: [
       "存档文件夹",
       "存檔資料夾",
@@ -167,7 +175,11 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
       button.className =
         key === "retry" ? "ui-button" : "auto-backup-folder-action";
       button.setAttribute("aria-describedby", status.id);
-      button.addEventListener("click", () => void act(action));
+      button.addEventListener("click", () => {
+        if (pending || service.state.busy) return;
+        if (key === "reset" && !window.confirm(t("confirmReset"))) return;
+        void act(action);
+      });
       controls[key] = button;
       if (key === "retry") buttons.append(button);
     }

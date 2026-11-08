@@ -461,6 +461,13 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/calendar_month/materialsymbolsrounded/calendar_month_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "5e519e24938ba00d32b07f9cc16126584bfba6fe06e451b1ec3a17cdd286fe20"
+    },
+    {
+      "id": "ms-book-5",
+      "name": "book_5",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/book_5/materialsymbolsrounded/book_5_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "50013b6ee79063584ab72435e07eb4671f042cdd2c5c6752fa8024d6abf33749"
     }
   ]
 }

@@ -1,0 +1,19 @@
+{
+  "name": "HWorkTime · 工时记录",
+  "short_name": "HWorkTime",
+  "description": "Offline work time records",
+  "lang": "zh-CN",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef3f1",
+  "theme_color": "#24775f",
+  "icons": [
+    {
+      "src": "assets/icons/worktime-app.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -12,6 +12,8 @@
 !/.prettierignore
 !/eslint.config.cjs
 !/index.html
+!/manifest.webmanifest
+!/service-worker.js
 !/package.json
 !/package-lock.json
 !/README.md
@@ -51,6 +53,7 @@ __pycache__/
 !/scripts/verify-source-priority.cjs
 !/scripts/verify-theme.cjs
 !/scripts/verify-startup.cjs
+!/scripts/verify-onboarding.cjs
 !/scripts/verify-i18n.cjs
 !/scripts/check-i18n.cjs
 !/scripts/generate-locales.cjs
@@ -65,6 +68,9 @@ __pycache__/
 !/scripts/verify-performance.cjs
 !/scripts/verify-games.cjs
 !/scripts/verify-game-menu.cjs
+!/scripts/verify-music.cjs
+!/scripts/verify-reader.cjs
+!/scripts/prepare-reader.cjs
 !/scripts/game-test-helpers.cjs
 !/scripts/verify-game-archive.cjs
 !/scripts/verify-backup-clipboard.cjs

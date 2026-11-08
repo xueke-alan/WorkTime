@@ -4,30 +4,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   const events = WorkTimeApp.ui.createEventScope();
   const compat = WorkTimeApp.ui.animationCompat;
   const reduced = compat.preference();
-  const motion = {
-    expandEase: "cubic-bezier(0.22, 1, 0.36, 1)",
-    sideEase: "cubic-bezier(0.16, 1, 0.3, 1)",
-    open: {
-      surface: 380,
-      surfaceFade: 90,
-      sides: 240,
-      center: 160,
-      toolbar: 160,
-      toolbarDelay: 160,
-      content: 200,
-      contentDelay: 220,
-    },
-    close: {
-      surface: 360,
-      surfaceFade: 260,
-      sides: 340,
-      center: 300,
-      toolbar: 100,
-      toolbarDelay: 0,
-      content: 120,
-      contentDelay: 0,
-    },
-  };
+  const motion = compat.workspaceMotion;
   const workspace = document.querySelector(".workspace");
   const origin = workspace.querySelector("section.panel");
   const panels = [...workspace.children];

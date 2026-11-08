@@ -90,6 +90,7 @@ function prepareAssets({ check = false } = {}) {
     "icons",
     "motion",
     "i18n",
+    "onboarding",
   ];
   const cssSource = postcss.parse(
     styles

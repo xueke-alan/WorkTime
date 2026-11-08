@@ -1,0 +1,2 @@
+/* PDF.js resource; Apache-2.0. See licenses/reader.txt. */
+(globalThis.WorkTimeReaderBinary ||= {})["cmaps/UniKS-UTF8-V.bcmap"] = "A+BSQ29weXJpZ2h0IDE5OTAtMjAwOSBBZG9iZSBTeXN0ZW1zIEluY29ycG9yYXRlZC4KQWxsIHJpZ2h0cyByZXNlcnZlZC4KU2VlIC4vTElDRU5TReEMVW5pS1MtVVRGOC1IQgvigJa+fQ4Hg/9tILD3bQAKBAEALAwBAAEAgV43hAQ8YgfigJMBvnuD/2wBvngFCb8BAgG+f7D3cgG/DRAFvxGBewK/Gg==";

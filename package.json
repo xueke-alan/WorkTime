@@ -1,11 +1,13 @@
 {
   "name": "worktime",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "private": true,
   "description": "Offline work time records; development tools do not affect file:// use.",
   "scripts": {
     "prepare": "node scripts/install-hooks.cjs",
     "prepare:site": "node scripts/prepare-site.cjs",
+    "prepare:reader": "node scripts/prepare-reader.cjs",
+    "check:reader": "node scripts/verify-reader.cjs",
     "check:release": "node scripts/verify-release.cjs",
     "generate:locales": "node scripts/generate-locales.cjs && prettier --write \"assets/js/locales/**/*.js\" && npm run prepare:assets",
     "test": "npm run check",
@@ -23,13 +25,19 @@
   "devDependencies": {
     "acorn": "8.18.0",
     "clean-css": "5.3.3",
+    "epubjs": "0.3.93",
+    "esbuild": "0.28.2",
     "eslint": "10.11.0",
     "globals": "17.13.0",
     "opencc-js": "1.0.5",
+    "pdfjs-dist": "6.5.438",
     "playwright": "1.62.1",
     "postcss": "8.5.28",
     "prettier": "3.9.9",
     "terser": "5.51.2",
     "typescript": "5.4.2"
+  },
+  "overrides": {
+    "@xmldom/xmldom": "0.9.12"
   }
 }

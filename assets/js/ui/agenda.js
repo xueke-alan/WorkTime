@@ -4193,10 +4193,16 @@ WorkTimeApp.ui.createAgenda = function ({
     });
     listen(editor.querySelector(".notification-tabs"), "click", (event) => {
       const tab = event.target.closest(".notification-tab");
-      if (!active || !tab) return;
+      if (!active || !tab || tab.id === "musicOpen" || tab.id === "readerOpen")
+        return;
       const close = auxiliaryOpen && drawerTab === tab.dataset.tab;
       drawerTab = tab.dataset.tab;
       setAuxiliary(!close);
+    });
+    listen(editor, "worktime:auxiliaryrequest", (event) => {
+      if (!active || !["music", "reader"].includes(event.detail?.id)) return;
+      drawerTab = event.detail.id;
+      setAuxiliary(Boolean(event.detail.open));
     });
     listen(
       document,

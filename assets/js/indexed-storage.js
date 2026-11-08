@@ -283,6 +283,7 @@ WorkTimeApp.services.indexedStorage = (() => {
     }
     async function load() {
       readSucceeded = false;
+      let fresh = false;
       try {
         await open();
         let raw = await documentFromDatabase({ partial: true, adopt: true });
@@ -303,6 +304,7 @@ WorkTimeApp.services.indexedStorage = (() => {
         let state = raw ? A.decode(raw, { partial: true }) : null;
         if (!state) {
           const source = legacy();
+          fresh = source.text === null;
           originalText = source.text;
           readSucceeded = true;
           await migrate(source);
@@ -321,6 +323,7 @@ WorkTimeApp.services.indexedStorage = (() => {
             corrupt: false,
             loadIssue: null,
             readSucceeded: true,
+            fresh,
           };
         }
         try {
@@ -353,7 +356,14 @@ WorkTimeApp.services.indexedStorage = (() => {
           keys.forEach((name) => storage.removeItem(name));
           await cache.prune();
         } catch {}
-        return { state, error: null, corrupt: false, loadIssue, readSucceeded };
+        return {
+          state,
+          error: null,
+          corrupt: false,
+          loadIssue,
+          readSucceeded,
+          fresh,
+        };
       } catch (error) {
         loadIssue =
           error.code === "UNSUPPORTED_VERSION" || error.name === "VersionError"
@@ -380,7 +390,14 @@ WorkTimeApp.services.indexedStorage = (() => {
           try {
             originalText = JSON.stringify(await rawDatabase());
           } catch {}
-        return { state, error, corrupt: true, loadIssue, readSucceeded };
+        return {
+          state,
+          error,
+          corrupt: true,
+          loadIssue,
+          readSucceeded,
+          fresh: false,
+        };
       }
     }
     async function guard(tx, replacement = false) {

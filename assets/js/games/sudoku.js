@@ -644,9 +644,33 @@ WorkTimeApp.games.register({
       for (const path of current?.whispers || []) line(path, "whispers");
       for (const path of current?.renbans || []) line(path, "renban");
       for (const arrow of current?.arrows || []) {
-        line([arrow.circle, ...arrow.cells], "arrow");
         const [x, y] = center(arrow.circle);
-        shape(svg, "circle", { cx: x, cy: y, r: 3.8 }, "sudoku-arrow-circle");
+        const radius = 2.9;
+        const [nextX, nextY] = center(arrow.cells[0]);
+        const distance = Math.hypot(nextX - x, nextY - y);
+        // Start at the circle rim, leaving the digit inside it unobstructed.
+        shape(
+          svg,
+          "polyline",
+          {
+            points: [
+              [
+                x + ((nextX - x) * radius) / distance,
+                y + ((nextY - y) * radius) / distance,
+              ],
+              ...arrow.cells.map(center),
+            ]
+              .map((p) => p.join(","))
+              .join(" "),
+          },
+          "sudoku-line sudoku-arrow",
+        );
+        shape(
+          svg,
+          "circle",
+          { cx: x, cy: y, r: radius },
+          "sudoku-arrow-circle",
+        );
         const [ax, ay] = center(arrow.cells.at(-2)),
           [bx, by] = center(arrow.cells.at(-1));
         const dx = (bx - ax) / 10,
@@ -686,8 +710,8 @@ WorkTimeApp.games.register({
         }
         shape(overlay, "path", { d }, "sudoku-cage");
         const start = Math.min(...cage.cells),
-          x = (start % 9) * 10 + 1.3,
-          y = Math.floor(start / 9) * 10 + 2.7;
+          x = (start % 9) * 10 + 1.6,
+          y = Math.floor(start / 9) * 10 + 3.4;
         const label = shape(overlay, "text", { x, y }, "sudoku-cage-sum");
         label.textContent = String(cage.sum);
       }
