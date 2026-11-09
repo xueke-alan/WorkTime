@@ -810,7 +810,7 @@ WorkTimeApp.data.locales["en"] = {
     "Baidu Weather API. GitHub Actions fetches data at minutes 7, 22, 37 and 52 of each hour.",
   "copy.01f742eb2f": "Weather: ",
   "copy.c07924cd7c": "Baidu Weather",
-  "copy.2fcf9be743": "| China holiday schedules: 2020–2026",
+  "copy.2fcf9be743": "| China holiday schedules: 2020–2027",
   "copy.b72ca18819": "Copyright",
   "copy.b1515c0f17": "Template share code",
   "copy.18016bbf38": "Paste a template share code",

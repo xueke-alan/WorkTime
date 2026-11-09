@@ -91,6 +91,18 @@ WorkTimeApp.data.calendars = (() => {
       ],
       work: ["01-04", "02-14", "02-28", "05-09", "09-20", "10-10"],
     },
+    2027: {
+      off: [
+        ["01-01", "01-03", "元旦"],
+        ["02-05", "02-13", "春节"],
+        ["04-03", "04-05", "清明"],
+        ["05-01", "05-05", "劳动节"],
+        ["06-09", "06-09", "端午"],
+        ["09-15", "09-15", "中秋"],
+        ["10-01", "10-07", "国庆"],
+      ],
+      work: ["01-31", "02-14", "05-08", "09-26", "10-09"],
+    },
   };
   calendarSchedules[2022].off.push(
     ["10-01", "10-07", "国庆"],
@@ -101,9 +113,9 @@ WorkTimeApp.data.calendars = (() => {
   "timezone": "Asia/Shanghai",
   "coverage": [
     2020,
-    2026
+    2027
   ],
-  "reviewedAt": "2026-10-02",
+  "reviewedAt": "2026-11-09",
   "sources": {
     "2020": {
       "publishedAt": "2019-11-21",
@@ -149,6 +161,12 @@ WorkTimeApp.data.calendars = (() => {
       "publishedAt": "2025-11-04",
       "urls": [
         "https://big5.www.gov.cn/gate/big5/www.gov.cn/zhengce/zhengceku/202511/content_7047091.htm"
+      ]
+    },
+    "2027": {
+      "publishedAt": "2026-11-05",
+      "urls": [
+        "https://www.gov.cn/zhengce/content/202611/content_7085101.htm"
       ]
     }
   }

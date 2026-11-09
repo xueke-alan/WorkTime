@@ -816,7 +816,7 @@ WorkTimeApp.data.locales["ko"] = {
     "바이두 날씨 API. GitHub Actions가 매시 7, 22, 37, 52분에 수집합니다.",
   "copy.01f742eb2f": "날씨: ",
   "copy.c07924cd7c": "바이두 날씨",
-  "copy.2fcf9be743": "· 중국 공휴일 일정: 2020~2026",
+  "copy.2fcf9be743": "· 중국 공휴일 일정: 2020~2027",
   "copy.b72ca18819": "저작권",
   "copy.b1515c0f17": "템플릿 공유 코드",
   "copy.18016bbf38": "템플릿 공유 코드 붙여넣기",

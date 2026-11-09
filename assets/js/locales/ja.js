@@ -823,7 +823,7 @@ WorkTimeApp.data.locales["ja"] = {
     "百度天気API。GitHub Actionsで毎時7・22・37・52分に取得します。",
   "copy.01f742eb2f": "天気： ",
   "copy.c07924cd7c": "百度天気",
-  "copy.2fcf9be743": "・中国の休日予定：2020～2026",
+  "copy.2fcf9be743": "・中国の休日予定：2020～2027",
   "copy.b72ca18819": "著作権",
   "copy.b1515c0f17": "テンプレート共有コード",
   "copy.18016bbf38": "テンプレート共有コードを貼り付け",

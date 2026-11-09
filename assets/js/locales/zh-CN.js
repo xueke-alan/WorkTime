@@ -765,7 +765,7 @@ WorkTimeApp.data.locales["zh-CN"] = {
     "天气数据来源：百度地图天气 API，由 GitHub Actions 计划于每小时第 7、22、37、52 分钟采集",
   "copy.01f742eb2f": "天气来源：",
   "copy.c07924cd7c": "百度地图天气",
-  "copy.2fcf9be743": "｜ 2020-2026 调休日历已内置",
+  "copy.2fcf9be743": "｜ 2020-2027 调休日历已内置",
   "copy.b72ca18819": "版权",
   "copy.b1515c0f17": "模板分享字符串",
   "copy.18016bbf38": "在此粘贴模板分享字符串",
