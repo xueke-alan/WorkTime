@@ -1,21 +1,18 @@
+/* data-reduced-motion is the effective site preference, including the system default. */
 /* Short native color transitions keep palette switching simple. */
-@media (prefers-reduced-motion: no-preference) {
-  html:not(.app-loading) :where(body, .panel, .card, .calendar > .day, .panel-head, .editor-mode-header, .weekdays, .calendar-footer, .card-label, .card-foot, .metric, .ui-button) {
+html:where([data-reduced-motion="false"]):not(.app-loading) :where(body, .panel, .card, .calendar > .day, .panel-head, .editor-mode-header, .weekdays, .calendar-footer, .card-label, .card-foot, .metric, .ui-button) {
     transition: color 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out;
   }
-}
 
 /* Selection thickness is an inset shadow; keep it in the transition list even
    when shared palette rules replace the calendar's component transitions. */
-@media (prefers-reduced-motion: no-preference) {
-  html:not(.app-loading) body #calendar > .day,
-  html:not(.app-loading) body .year-month .year-day {
+html:where([data-reduced-motion="false"]):not(.app-loading) body #calendar > .day,
+  html:where([data-reduced-motion="false"]):not(.app-loading) body .year-month .year-day {
     transition:
       background-color 180ms ease-out,
       border-color 240ms var(--motion-ease),
       box-shadow 240ms var(--motion-ease);
   }
-}
 
 /* Residual shared-file rules restored to their component owner. */
 body .sidebar-actions > #importOpen {
@@ -50,13 +47,11 @@ body .summary-sidebar.sidebar-navigation-instant .sidebar-oa-pane[open] {
   animation-duration: 0s;
   animation-delay: 0s;
 }
-@media (prefers-reduced-motion: reduce) {
-  body #importOpen .import-main,
-  body .sidebar-actions .import-secondary-actions,
-  body .sidebar-actions:has(#importOpen.is-return) .import-secondary-actions {
+:where(html:where([data-reduced-motion="true"])) body #importOpen .import-main,
+  :where(html:where([data-reduced-motion="true"])) body .sidebar-actions .import-secondary-actions,
+  :where(html:where([data-reduced-motion="true"])) body .sidebar-actions:has(#importOpen.is-return) .import-secondary-actions {
     transition: none;
   }
-}
 
 @keyframes ring-drain {
   to {
@@ -83,17 +78,15 @@ body .summary-sidebar.sidebar-navigation-instant .sidebar-oa-pane[open] {
     opacity: 0;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+:where(html:where([data-reduced-motion="true"])) *,
+  :where(html:where([data-reduced-motion="true"])) *::before,
+  :where(html:where([data-reduced-motion="true"])) *::after {
     transition: none !important;
     scroll-behavior: auto !important;
-  }
-} /* Shared motion: animate surfaces, never the aligned text layers. */
+  } /* Shared motion: animate surfaces, never the aligned text layers. */
 body button,
 body button.ui-button:not(.notification-tab):not(#importOpen),
-body :is(.backup-button-group, .settings-button-group, .calendar-view-button-group),
+body :is(.settings-button-group, .calendar-view-button-group),
 body .calendar .day:is([data-holiday], .weekend, .full-leave) {
   transition:
     background var(--motion-fast),
@@ -140,10 +133,8 @@ body .motion-sidebar-back {
   from { opacity: 0; transform: translateX(-8px); }
   to { opacity: 1; transform: translateX(0); }
 }
-@media (prefers-reduced-motion: reduce) {
-  body .motion-sidebar-forward,
-  body .motion-sidebar-back { animation: none !important; }
-}
+:where(html:where([data-reduced-motion="true"])) body .motion-sidebar-forward,
+  :where(html:where([data-reduced-motion="true"])) body .motion-sidebar-back { animation: none !important; }
 .motion-day {
   animation: motion-month 280ms var(--motion-ease) var(--motion-delay, 0ms)
     backwards;
@@ -166,9 +157,7 @@ body .calendar.is-batch-editing > .day.batch-eligible[data-date]:nth-child(3n + 
   0%, 100% { transform: rotate(-0.65deg); }
   50% { transform: rotate(0.65deg); }
 }
-@media (prefers-reduced-motion: reduce) {
-  body .calendar.is-batch-editing > .day[data-date] { animation: none !important; }
-}
+:where(html:where([data-reduced-motion="true"])) body .calendar.is-batch-editing > .day[data-date] { animation: none !important; }
 body dialog[open] {
   animation: motion-fade 180ms cubic-bezier(0.2, 0, 0, 1);
 }
@@ -245,22 +234,20 @@ body .leave-popover:not(.hidden) {
     transform: translateY(-3px);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  body .motion-enter,
-  body .motion-content,
-  body .motion-day,
-  body .motion-selection,
-  body dialog[open],
-  body dialog[open]::backdrop,
-  body .feedback-notice,
-  body .feedback-notice.motion-leaving,
-  body .leave-popover:not(.hidden) {
+:where(html:where([data-reduced-motion="true"])) body .motion-enter,
+  :where(html:where([data-reduced-motion="true"])) body .motion-content,
+  :where(html:where([data-reduced-motion="true"])) body .motion-day,
+  :where(html:where([data-reduced-motion="true"])) body .motion-selection,
+  :where(html:where([data-reduced-motion="true"])) body dialog[open],
+  :where(html:where([data-reduced-motion="true"])) body dialog[open]::backdrop,
+  :where(html:where([data-reduced-motion="true"])) body .feedback-notice,
+  :where(html:where([data-reduced-motion="true"])) body .feedback-notice.motion-leaving,
+  :where(html:where([data-reduced-motion="true"])) body .leave-popover:not(.hidden) {
     animation: none !important;
   }
-  body .notification-tab svg {
+:where(html:where([data-reduced-motion="true"])) body .notification-tab svg {
     transform: none !important;
   }
-}
 
 /* Calendar mode changes reveal the new layout; year navigation follows arrow direction. */
 .motion-calendar-view {
@@ -303,13 +290,11 @@ body .leave-popover:not(.hidden) {
     transform: translateY(0);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  body .motion-calendar-view,
-  body .motion-calendar-year,
-  body .motion-year-month {
+:where(html:where([data-reduced-motion="true"])) body .motion-calendar-view,
+  :where(html:where([data-reduced-motion="true"])) body .motion-calendar-year,
+  :where(html:where([data-reduced-motion="true"])) body .motion-year-month {
     animation: none !important;
   }
-}
 
 /* Odometer transitions animate digit strips while the final value stays accessible. */
 .number-roll-up {
@@ -336,12 +321,10 @@ body .leave-popover:not(.hidden) {
     transform: translate3d(0, 0, 0);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  body .number-roll-up,
-  body .number-roll-down {
+:where(html:where([data-reduced-motion="true"])) body .number-roll-up,
+  :where(html:where([data-reduced-motion="true"])) body .number-roll-down {
     animation: none !important;
   }
-}
 
 /* First reveal starts only once data, fonts and alignment are ready. */
 .motion-startup {
@@ -358,8 +341,6 @@ body .leave-popover:not(.hidden) {
     transform: translateY(0);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  body .motion-startup {
+:where(html:where([data-reduced-motion="true"])) body .motion-startup {
     animation: none !important;
   }
-}

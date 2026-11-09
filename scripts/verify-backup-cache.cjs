@@ -1,20 +1,31 @@
 "use strict";
 const assert = require("node:assert/strict");
 const path = require("node:path");
-const { pathToFileURL } = require("node:url");
+const { runtimeServer } = require("./runtime-test-helpers.cjs");
+const { observeBackupWrites } = require("./lib/backup-test-file.cjs");
 const { chromium } = require("playwright");
 (async () => {
+  const server = await runtimeServer(path.resolve(process.argv[2] || "."));
   const browser = await chromium.launch({ channel: "msedge", headless: true });
   try {
-    const page = await browser.newPage();
+    const page = await browser.newPage({ serviceWorkers: "block" });
+    const capture = await observeBackupWrites(page);
+    page.on("download", () => assert.fail("Backup triggered browser download"));
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    await page.route(/^https?:/, (route) => route.abort());
-    await page.goto(
-      pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
-    );
+    await page.route(/^https?:\/\/(?!127\.0\.0\.1:)/, (route) => route.abort());
+    await page.goto(server.url);
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
+    );
+    await page.waitForFunction(
+      () =>
+        WorkTimeApp.services.preferences.page.state.lastAutoBackupDate ===
+          WorkTimeApp.domain.time.businessDate(new Date()) &&
+        !document.getElementById("backupBeforeRestore").disabled,
     );
     const result = await page.evaluate(async () => {
       const S = WorkTimeApp.services,
@@ -401,61 +412,32 @@ const { chromium } = require("playwright");
       return results;
     });
     console.table(measurements);
-    // Measure immediate controller feedback independently of clipboard system latency.
-    await page.evaluate(() => {
-      Object.defineProperty(navigator, "clipboard", {
-        configurable: true,
-        value: {
-          writeText: async () => {
-            window.backupClipboardStarted = performance.now();
-            await new Promise((resolve) => setTimeout(resolve, 30));
-            window.backupClipboardFinished = performance.now();
-          },
-        },
-      });
-      window.backupClickAt = performance.now();
-      document.getElementById("backup").click();
-      window.backupFeedbackMs = performance.now() - window.backupClickAt;
-      window.backupWasBusy =
-        document.getElementById("backup").getAttribute("aria-busy") === "true";
-    });
-    await page.waitForFunction(() => window.backupClipboardFinished);
-    const ui = await page.evaluate(() => ({
-      feedbackMs: window.backupFeedbackMs,
-      busy: window.backupWasBusy,
-      totalMs: window.backupClipboardFinished - window.backupClickAt,
-      clipboardMs:
-        window.backupClipboardFinished - window.backupClipboardStarted,
-    }));
-    assert.ok(ui.busy && ui.feedbackMs < 100, JSON.stringify(ui));
-    console.log("Controller timing (ms):", ui);
-    await page.waitForFunction(
-      () => !document.getElementById("backup").disabled,
-    );
-    await page.evaluate(() => {
-      navigator.clipboard.writeText = async () => {
-        throw new DOMException("denied", "NotAllowedError");
+    const downloading = capture.next();
+    const ui = await page.evaluate(() => {
+      const start = performance.now();
+      document.getElementById("backupBeforeRestore").click();
+      return {
+        feedbackMs: performance.now() - start,
+        busy:
+          document
+            .getElementById("backupBeforeRestore")
+            .getAttribute("aria-busy") === "true",
       };
-      document.getElementById("backup").classList.remove("is-copying");
-      document.getElementById("backup").click();
     });
+    await downloading;
+    assert.ok(ui.busy && ui.feedbackMs < 100, JSON.stringify(ui));
     await page.waitForFunction(
-      () => !document.getElementById("backup").disabled,
+      () => !document.getElementById("backupBeforeRestore").disabled,
     );
-    assert.equal(await page.locator("#backup").getAttribute("aria-busy"), null);
-    assert.ok(
-      await page.evaluate(() =>
-        document
-          .getElementById("feedbackList")
-          .textContent.includes(WorkTimeApp.i18n.t("copy.ee57d577cd")),
-      ),
+    assert.equal(
+      await page.locator("#backupBeforeRestore").getAttribute("aria-busy"),
+      null,
     );
-    console.log(
-      "Clipboard write denial does not report success; busy state cleared: PASS",
-    );
+    console.log("Folder save feedback and busy state: PASS", ui);
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();
+    await server.close();
   }
 })().catch((error) => {
   console.error(error);

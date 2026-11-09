@@ -113,6 +113,9 @@ async function verifyFirstDateSelection(browser) {
         assert.equal(result.date, date);
       }
       await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.waitForFunction(
+        () => document.documentElement.dataset.reducedMotion === "true",
+      );
       await page
         .locator('#calendar > .day[data-date="2026-10-21"] .day-select')
         .click({ position: { x: 8, y: 8 } });

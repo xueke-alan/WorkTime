@@ -18,7 +18,7 @@ body .editor #dateInfoPanel.weather-panel { position: relative; padding: 1rem 1.
 .weather-detail dd { margin: 0; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .weather-details { padding-bottom: 0.35rem; border-bottom: 1px solid var(--line); }
 .weather-panel > .weather-forecast { display: flex; flex-direction: column; gap: 0.35rem; flex: 1 1 auto; min-height: 0; margin-inline: -0.7rem; }
-.weather-footer { display: flex; align-items: baseline; justify-content: space-between; gap: 0.4rem; min-width: 0; }
+.weather-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.2rem; min-width: 0; }
 .weather-forecast-tabs { display: flex; gap: 0.35rem; flex-shrink: 0; align-items: baseline; }
 .weather-forecast-tabs button + button::before { content: "/"; color: var(--muted); margin-inline-end: 0.35rem; font-weight: 400; }
 /* Forecast tabs are text actions; they do not inherit ordinary button geometry. */
@@ -54,3 +54,41 @@ body #dateInfoPanel .weather-forecast-tabs button .button-label { translate: non
 body #dateInfoPanel.weather-panel .date-info-source { margin: 0; font-size: 0.75rem; line-height: 1.3; }
 .weather-panel .weather-stale { color: #95631b; }
 .weather-panel .weather-time { margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.weather-footer .weather-forecast-tabs { margin-inline-end: auto; }
+.weather-panel > .weather-source-info { align-self: flex-end; margin-top: auto; }
+.weather-source-info {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  flex: none;
+  padding: 0.2rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+/* Match the visible digit center above the font line-box center. */
+.weather-source-info .ui-icon { width: 1rem; height: 1rem; translate: 0 -0.1em; }
+.weather-source-tooltip {
+  position: absolute;
+  z-index: 5;
+  bottom: 2.3rem;
+  inset-inline: 1rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.6;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.weather-source-info:hover + .weather-source-tooltip,
+.weather-source-info:focus + .weather-source-tooltip {
+  visibility: visible;
+  opacity: 1;
+}

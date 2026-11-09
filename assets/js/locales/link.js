@@ -92,7 +92,7 @@
       "空格",
     ],
     en: [
-      "Tile Link",
+      "Link",
       "Connect matching animals and find your rhythm on a 240-tile board.",
       "Zen",
       "Quest",

@@ -116,7 +116,7 @@ WorkTimeApp.games.register({
     const hud = node("div", "sudoku-hud game-hud", root);
     const title = node("h3", "game-title", hud);
     const sessionMeta = node("div", "sudoku-session-meta", hud);
-    const timerBox = node("div", "sudoku-time", sessionMeta);
+    const timerBox = node("span", "sudoku-time");
     const timerLabel = node("span", "game-sr-only", timerBox);
     const timerValue = node("strong", "", timerBox);
     function button(parent, action, callback) {
@@ -201,6 +201,7 @@ WorkTimeApp.games.register({
         ),
     );
     const play = node("div", "sudoku-play", root);
+    play.append(hud);
     const tools = node("div", "sudoku-tools", play);
     const ruleText = node("p", "sudoku-rule", tools);
     const stage = node("div", "sudoku-stage", play);
@@ -286,7 +287,7 @@ WorkTimeApp.games.register({
       render();
     });
     const erase = button(actions, "erase", () => input(0));
-    const keypad = node("div", "sudoku-keypad", play);
+    const keypad = node("div", "sudoku-keypad", tools);
     const digits = Array.from({ length: 9 }, (_, i) => {
       const b = button(keypad, "digit-" + (i + 1), () => input(i + 1));
       b.textContent = i + 1;
@@ -603,7 +604,9 @@ WorkTimeApp.games.register({
       );
     }
     function paintMeters() {
-      WorkTimeApp.games.paintCounter(timerValue, time(state?.elapsed || 0));
+      const value = time(state?.elapsed || 0);
+      if (timerValue.textContent !== value) timerValue.textContent = value;
+      timerValue.title = value;
     }
     function drawThermos() {
       svg.replaceChildren();
@@ -897,6 +900,7 @@ WorkTimeApp.games.register({
       );
       pause.classList.add("game-icon-button");
       pause.querySelector("span").classList.add("game-sr-only");
+      pause.append(timerBox);
       optionsToggle.setAttribute("aria-label", t("more"));
       optionsToggle.title = t("more");
       labelButton(restart, t("restart"), "restart-alt");
@@ -997,10 +1001,7 @@ WorkTimeApp.games.register({
       const boardWidth = width - columns[1] - gap;
       const rootGap = parseFloat(window.getComputedStyle(root).rowGap) || 0;
       const boardHeight =
-        height -
-        hud.offsetHeight -
-        feedback.offsetHeight -
-        rootGap * (saveFailed ? 2 : 1);
+        height - feedback.offsetHeight - (saveFailed ? rootGap : 0);
       root.style.setProperty(
         "--sudoku-size",
         Math.floor(Math.max(260, Math.min(boardWidth, boardHeight))) + "px",

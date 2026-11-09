@@ -17,7 +17,6 @@
     active = localStorage.getItem(tabStorageKey) || active;
   } catch {}
   function rememberTab() {
-    if (active === "music" || active === "reader") return;
     try {
       localStorage.setItem(tabStorageKey, active);
     } catch {}
@@ -400,7 +399,7 @@
     animateFocusChange(true);
   }
   function onFocusKeydown(event) {
-    if (event.target.closest("#musicDialog")) return;
+    if (event.target.closest?.("#musicDialog")) return;
     if (!countdownFocus) return;
     if (event.key === "Escape") {
       event.preventDefault();
@@ -579,20 +578,26 @@
     panel.classList.toggle("almanac-panel", active === "almanac");
     panel.classList.toggle("festivals-panel", active === "festivals");
     panel.classList.toggle("weather-panel", active === "weather");
+    const needsLunar = ["almanac", "festivals"].includes(active) && !g.Solar;
     if (
-      active === "history" &&
-      !WorkTimeApp.services.dateInfo.historyData()[date.slice(5)]
+      needsLunar ||
+      (active === "history" &&
+        !WorkTimeApp.services.dateInfo.historyData()[date.slice(5)])
     ) {
       const requestedDate = date;
       const requestedLanguage = WorkTimeApp.i18n.language;
+      const requestedView = active;
       panel.replaceChildren(
         node("p", WorkTimeApp.i18n.t("copy.087b32dc6e"), "date-info-empty"),
       );
-      WorkTimeApp.services.dateInfo.loadHistory(date).then(
+      (needsLunar
+        ? WorkTimeApp.services.dateInfo.loadLunar()
+        : WorkTimeApp.services.dateInfo.loadHistory(date)
+      ).then(
         () => {
           if (
             !disposed &&
-            active === "history" &&
+            active === requestedView &&
             date === requestedDate &&
             WorkTimeApp.i18n.language === requestedLanguage
           )
@@ -601,7 +606,7 @@
         (error) => {
           if (
             disposed ||
-            active !== "history" ||
+            active !== requestedView ||
             date !== requestedDate ||
             WorkTimeApp.i18n.language !== requestedLanguage
           )
@@ -796,6 +801,14 @@
           ? link(c.source, c.sourceUrl)
           : node("p", c.source, "date-info-source"),
       );
+    if (active === "festivals")
+      panel.append(
+        node(
+          "p",
+          WorkTimeApp.i18n.t("copy.2fcf9be743").replace(/^[\s|｜・]+/, ""),
+          "date-info-source holiday-calendar-note",
+        ),
+      );
     panel.scrollTop = 0;
   }
   function updateWeatherTabIcon() {
@@ -907,7 +920,7 @@
         music.setAttribute("aria-controls", "musicDialog");
         music.setAttribute("aria-expanded", "false");
         music.innerHTML =
-          '<svg class="ui-icon headphones-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 14v-2a9 9 0 0 1 18 0v2M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm18 0h-3a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-5Z"/></svg>';
+          '<svg class="ui-icon music-entry-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="headphones-icon" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 14v-2a9 9 0 0 1 18 0v2M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm18 0h-3a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-5Z"/><g class="music-equalizer"><rect x="3" y="8" width="2" height="8" rx="1"/><rect x="7" y="5" width="2" height="14" rx="1"/><rect x="11" y="2" width="2" height="20" rx="1"/><rect x="15" y="5" width="2" height="14" rx="1"/><rect x="19" y="8" width="2" height="8" rx="1"/></g></svg>';
         tabEvents.handler(music, "onclick", () => WorkTimeApp.ui.music.open());
         tabEvents.handler(music, "onkeydown", (event) => {
           if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
@@ -965,8 +978,8 @@
     WorkTimeApp.ui.reader.refresh();
     active =
       providers.some((p) => p.id === current) ||
-      (current === "music" && WorkTimeApp.ui.music.isMini) ||
-      (current === "reader" && WorkTimeApp.ui.reader.isMini)
+      current === "music" ||
+      current === "reader"
         ? current
         : "notifications";
     if (date) render();
@@ -1089,6 +1102,13 @@
     rememberTab();
   }
   WorkTimeApp.ui.dateInfo = {
+    rememberMedia(id) {
+      if (!["music", "reader"].includes(id)) return;
+      try {
+        localStorage.setItem(tabStorageKey, id);
+      } catch {}
+    },
+    isActive: (id) => !disposed && active === id,
     hideReaderPanel() {
       if (disposed || active !== "reader") return;
       active = "notifications";
@@ -1097,6 +1117,7 @@
     showReaderPanel() {
       if (disposed) return;
       active = "reader";
+      rememberTab();
       render();
       bar.closest(".editor").dispatchEvent(
         new CustomEvent("worktime:auxiliaryrequest", {
@@ -1107,6 +1128,7 @@
     showMusicPanel() {
       if (disposed) return;
       active = "music";
+      rememberTab();
       render();
       bar.closest(".editor").dispatchEvent(
         new CustomEvent("worktime:auxiliaryrequest", {
@@ -1142,4 +1164,13 @@
   };
   mount();
   refreshLanguage();
+  events.listen(
+    document,
+    "worktime:ready",
+    () => {
+      if (active === "music" || active === "reader")
+        void WorkTimeApp.ui[active].open({ mini: true, restore: true });
+    },
+    { once: true },
+  );
 })(window);

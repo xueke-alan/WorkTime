@@ -421,11 +421,11 @@ async function verify() {
     );
     // Source order updates optimistically. Reload only after the queued archive
     // transaction has completed, including on slower CI storage backends.
-    await view.waitForFunction(
-      () =>
-        document.querySelector("#storageUsage").textContent !==
-        WorkTimeApp.i18n.t("copy.9ca32f988d"),
-    );
+    await view.waitForFunction(() => {
+      const event = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return !event.defaultPrevented;
+    });
     await view.reload();
     await ready(view);
     assert.equal(await toggle.getAttribute("aria-pressed"), "true");

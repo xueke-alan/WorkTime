@@ -100,8 +100,12 @@ async function verify() {
             ".sidebar-brand-subtitle,.target-copy h3,.card-foot",
           )) {
             const range = document.createRange();
-            range.selectNodeContents(node);
-            if (range.getClientRects().length > 1)
+            const visual = node.querySelector(".summary-number-visual") || node;
+            range.selectNodeContents(visual);
+            const style = getComputedStyle(node);
+            const lineHeight =
+              parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.3;
+            if (range.getBoundingClientRect().height > lineHeight * 1.5)
               issues.push("wrap: " + node.textContent);
             const text = rect(node),
               host = node

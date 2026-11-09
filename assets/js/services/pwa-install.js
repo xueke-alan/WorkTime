@@ -72,6 +72,7 @@ WorkTimeApp.services.pwaInstall = (() => {
 (() => {
   const languages = ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"];
   const copy = {
+    heading: ["安装", "安裝", "安裝", "App", "導入", "설치"],
     install: [
       "安装为 APP",
       "安裝為 APP",
@@ -102,24 +103,34 @@ WorkTimeApp.services.pwaInstall = (() => {
   document.addEventListener(
     "worktime:ready",
     () => {
-      const host = document.querySelector(
-        "#pageSettingsPane .page-settings-body",
-      );
+      const host = document.querySelector(".auto-backup-settings");
       if (!host) return;
       const service = WorkTimeApp.services.pwaInstall;
-      const section = document.createElement("div");
-      section.className = "app-install-settings";
+      const heading = document.createElement("label");
+      heading.id = "appInstallLabel";
+      heading.className = "label";
+      heading.htmlFor = "appInstallButton";
       const button = document.createElement("button");
       button.id = "appInstallButton";
       button.type = "button";
-      button.className = "ui-button";
-      section.append(button);
-      host.append(section);
+      button.className = "ui-button icon-only";
+      const icon = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+      );
+      icon.setAttribute("class", "ui-icon");
+      icon.setAttribute("aria-hidden", "true");
+      const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      use.setAttribute("href", "#ms-install-desktop");
+      icon.append(use);
+      button.append(icon);
+      host.append(heading, button);
       let pending = false;
       function render() {
-        button.textContent = t(
-          service.state.installed ? "installed" : "install",
-        );
+        heading.textContent = t("heading");
+        const label = t(service.state.installed ? "installed" : "install");
+        button.title = label;
+        button.setAttribute("aria-label", label);
         button.disabled = pending || service.state.installed;
       }
       button.addEventListener("click", async () => {

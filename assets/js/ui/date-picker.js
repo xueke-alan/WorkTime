@@ -78,6 +78,7 @@ WorkTimeApp.ui.createDatePicker = function ({
           innerHeight - height - 12,
         ),
       ) + "px";
+    WorkTimeApp.ui.popover.point(popup, input);
   }
   function render() {
     const label = range && input.labels?.[0]?.textContent;

@@ -122,6 +122,7 @@ WorkTimeApp.ui.createAnalysis = function ({
         pageBox.top - chartBox.top + 8,
         pointBox.top - chartBox.top - tooltipBox.height - 12,
       ) + "px";
+    WorkTimeApp.ui.popover.point(tooltip, point);
   }
   function selectDate(value) {
     const day = currentData?.chartDays.find(

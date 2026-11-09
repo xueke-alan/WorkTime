@@ -2,7 +2,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { pathToFileURL } = require("node:url");
+const { pathToFileURL, fileURLToPath } = require("node:url");
 const { chromium } = require("playwright");
 const budgets = require("./performance-budgets.json");
 const root = path.resolve(process.argv[2] || ".");
@@ -54,6 +54,11 @@ async function verify() {
       try {
         await context.route(/^https?:/, (route) => route.abort());
         const page = await context.newPage();
+        const requestedScripts = new Set();
+        page.on("request", (request) => {
+          if (/\.js(?:\?|$)/.test(request.url()))
+            requestedScripts.add(request.url());
+        });
         const errors = [];
         page.on("pageerror", (error) => errors.push(error.message));
         const cdp = await context.newCDPSession(page);
@@ -99,6 +104,26 @@ async function verify() {
           };
         });
         samples.push(startup);
+        const loadedJavaScriptBytes = [...requestedScripts].reduce(
+          (sum, url) => sum + fs.statSync(fileURLToPath(url)).size,
+          0,
+        );
+        assert.ok(
+          loadedJavaScriptBytes <= budgets.sourceJavaScriptBytes,
+          "staged startup JavaScript budget exceeded: " + loadedJavaScriptBytes,
+        );
+        console.log({ loadedJavaScriptBytes });
+        console.log({ run, startup });
+        if (startup.largestLongTask >= budgets.largestLongTaskMs)
+          console.log(
+            await page.evaluate(() => ({
+              tasks: window.auditTasks,
+              ready: window.auditReady,
+              url: location.href,
+              scriptCount: [...document.scripts].filter((script) => script.src)
+                .length,
+            })),
+          );
         assert.ok(
           startup.startup < budgets.startupMs,
           "startup time budget exceeded: " + JSON.stringify(startup),

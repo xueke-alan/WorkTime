@@ -169,6 +169,11 @@ WorkTimeApp.services.preferences = (() => {
       saveBackupAt(date) {
         return savePreference({ lastBackupAt: date });
       },
+      saveMotionMode(motionMode) {
+        if (!["system", "full", "reduce"].includes(motionMode))
+          throw Error("Invalid animation preference");
+        return savePreference({ motionMode });
+      },
       saveWeatherDays(days) {
         if (![0, 3, 5, 7].includes(days))
           throw Error("Invalid weather display range");

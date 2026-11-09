@@ -71,6 +71,11 @@ const { chromium } = require("playwright");
           )) {
             if (!visible(e) || e.closest("svg")) continue;
             const b = e.getBoundingClientRect();
+            const ellipsis =
+              getComputedStyle(e).textOverflow === "ellipsis" ||
+              [...e.querySelectorAll("*")].some(
+                (child) => getComputedStyle(child).textOverflow === "ellipsis",
+              );
             const range = document.createRange();
             range.selectNodeContents(e);
             const rects = [];
@@ -89,6 +94,7 @@ const { chromium } = require("playwright");
               );
             }
             if (
+              !ellipsis &&
               rects.some(
                 (r) =>
                   r.left < b.left - 2 ||

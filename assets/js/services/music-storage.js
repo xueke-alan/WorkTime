@@ -5,11 +5,16 @@ WorkTimeApp.services.musicStorage = (() => {
   async function open() {
     if (!database)
       database = new Promise((resolve, reject) => {
+        let failed = false;
         const request = indexedDB.open("worktime-music", 1);
         request.onupgradeneeded = () =>
           request.result.createObjectStore("settings");
         request.onsuccess = () => {
           const db = request.result;
+          if (failed) {
+            db.close();
+            return;
+          }
           db.onversionchange = () => {
             db.close();
             database = null;
@@ -17,13 +22,16 @@ WorkTimeApp.services.musicStorage = (() => {
           resolve(db);
         };
         request.onerror = () => {
-          database = null;
+          failed = true;
           reject(request.error);
         };
         request.onblocked = () => {
-          database = null;
+          failed = true;
           reject(Error("Storage blocked"));
         };
+      }).catch((error) => {
+        database = null;
+        throw error;
       });
     return database;
   }

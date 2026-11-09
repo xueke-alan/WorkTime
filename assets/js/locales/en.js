@@ -343,7 +343,7 @@ WorkTimeApp.data.locales["en"] = {
     'h</span><span title="Average overtime (Weekday OT ÷ attendance)" aria-label="Average overtime">',
   "copy.6d332ee4da": " · ",
   "copy.06ce537cae": " complete days",
-  "copy.cd4a0376cd": "Cancel plan",
+  "copy.cd4a0376cd": "Cancel",
   "copy.0bfc077a0c": " · Week",
   "copy.dbdd3a728e": '<span class="schedule-work" title="Scheduled hours">',
   "copy.55debd2786": '</span><span class="schedule-break" title="Break">',

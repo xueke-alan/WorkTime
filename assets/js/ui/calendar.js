@@ -324,9 +324,6 @@ WorkTimeApp.ui.createCalendar = function (options) {
     document
       .querySelector("#panelContent>.weekdays")
       .classList.toggle("hidden", yearMode);
-    document
-      .querySelector(".calendar-footer>.legend:not(.year-legend)")
-      .classList.toggle("hidden", yearMode);
     $("yearLegend").classList.toggle("hidden", !yearMode);
     $("batchToggle").disabled = yearMode || analysisMode;
     $("analysisToggle").disabled = batchMode;
@@ -352,9 +349,6 @@ WorkTimeApp.ui.createCalendar = function (options) {
       .classList.toggle("is-analysis-mode", !!analysisMode);
     if (analysisMode) {
       document.querySelector("#panelContent>.weekdays").classList.add("hidden");
-      document
-        .querySelector(".calendar-footer>.legend:not(.year-legend)")
-        .classList.add("hidden");
       $("yearLegend").classList.add("hidden");
       $("monthTitle").setAttribute("aria-disabled", "true");
       $("monthTitle").setAttribute("aria-pressed", "false");

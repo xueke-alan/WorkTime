@@ -1,4 +1,8 @@
 "use strict";
+const {
+  downloadBackup,
+  importBackupFile,
+} = require("./lib/backup-test-file.cjs");
 const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -39,6 +43,9 @@ async function verify() {
       )
         await page.locator("#agendaScheduleOpen").click();
     };
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await page.goto(pathToFileURL(path.join(root, "index.html")).href);
     await ready();
     await page.evaluate(() =>
@@ -56,7 +63,7 @@ async function verify() {
       await page.evaluate(() => {
         window.agendaBackup = null;
       });
-      await page.locator("#backup").click();
+      await downloadBackup(page, "agendaBackup");
       await page.waitForFunction(() => !!window.agendaBackup);
       return page.evaluate(async () =>
         WorkTimeApp.services.backup.decode(window.agendaBackup, (v) => v),
@@ -588,9 +595,16 @@ async function verify() {
     assert.equal(agenda.records.length, 3);
     assert.equal(agenda.records[0].data.date, today);
     const attendance = (doc) =>
-      doc.work.modules.filter(
-        (m) => !["worktime.agenda", "worktime.memo"].includes(m.id),
-      );
+      doc.work.modules
+        .filter((m) => !["worktime.agenda", "worktime.memo"].includes(m.id))
+        .map((module) => ({
+          ...module,
+          records: module.records.map((row) => {
+            if (module.id !== "worktime.preferences") return row;
+            const { lastBackupAt, ...data } = row.data;
+            return { ...row, data };
+          }),
+        }));
     assert.equal(
       full.work.modules.find((m) => m.id === "worktime.memo").records[0].data
         .text,
@@ -760,7 +774,7 @@ async function verify() {
         }),
       full,
     );
-    await page.locator("#restore").click();
+    await importBackupFile(page, JSON.stringify(full));
     await page.locator("#restoreDialog").waitFor({ state: "visible" });
     assert.match(
       await page.locator("#restoreSummary").textContent(),
@@ -782,7 +796,7 @@ async function verify() {
         }),
       legacy,
     );
-    await page.locator("#restore").click();
+    await importBackupFile(page, JSON.stringify(legacy));
     await page.locator("#restoreDialog").waitFor({ state: "visible" });
     assert.match(
       await page.locator("#restoreSummary").textContent(),

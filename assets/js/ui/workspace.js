@@ -17,9 +17,14 @@ WorkTimeApp.ui.createWorkspace = function ({
     observer = null;
   const footer = document.querySelector(".calendar-footer"),
     tabs = document.querySelector(".editor>.notification-tabs");
-  function syncFooter() {
-    if (!disposed)
-      tabs.style.height = footer.getBoundingClientRect().height + "px";
+  function syncFooter(entries) {
+    if (disposed) return;
+    const entry = entries?.find((item) => item.target === footer);
+    const height =
+      entry?.borderBoxSize?.[0]?.blockSize ??
+      footer.getBoundingClientRect().height;
+    const value = height + "px";
+    if (tabs.style.height !== value) tabs.style.height = value;
   }
   function render() {
     if (disposed) return;
@@ -49,7 +54,6 @@ WorkTimeApp.ui.createWorkspace = function ({
       observer = new window.ResizeObserver(syncFooter);
       observer.observe(footer);
       render();
-      syncFooter();
     },
     dispose() {
       disposed = true;

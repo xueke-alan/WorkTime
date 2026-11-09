@@ -42,8 +42,6 @@ WorkTimeApp.services.bootstrap.run(
     WorkTimeApp.services.archiveCache = persistence.cache;
     const storageStatus = WorkTimeApp.ui.createStorageStatus({
       element: $,
-      key: D.state.KEY,
-      getStorage: () => localStorage,
       window,
     });
     lifecycle.defer(() => storageStatus.dispose());
@@ -301,14 +299,10 @@ WorkTimeApp.services.bootstrap.run(
       locks: navigator.locks,
       hasDraft: () => controllers.some((controller) => controller.hasDraft?.()),
       onCommit(result) {
-        if (result.pending) {
-          storageStatus.saving();
-          return;
-        }
+        if (result.pending) return;
         if (result.applied)
           WorkTimeApp.services.countdown.setState(model.state);
         storageStatus.commit(result, stateOwner.failed);
-        if (stateOwner.pending) storageStatus.saving();
         if (result.persisted) channel?.postMessage({ updated: true });
         storageStatus.updateRecovery();
         for (const controller of controllers) controller.updateRecovery?.();
@@ -607,7 +601,6 @@ WorkTimeApp.services.bootstrap.run(
         "prevMonth",
         "nextMonth",
         "todayButton",
-        "backup",
         "exportCorruptStorage",
       ]);
       for (const element of document.querySelectorAll(

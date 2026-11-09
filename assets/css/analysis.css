@@ -122,14 +122,12 @@ body .editor.is-analysis-mode #dayEditor { display: none !important; }
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
-@media (prefers-reduced-motion: no-preference) {
-  .analysis-manual input {
+:where(html:where([data-reduced-motion="false"])) .analysis-manual input {
     transition: background-color 0.15s, border-color 0.15s;
   }
-  .analysis-manual input::before {
+:where(html:where([data-reduced-motion="false"])) .analysis-manual input::before {
     transition: transform 0.15s;
   }
-}
 .analysis-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -707,7 +705,6 @@ body .panel-head :is(#analysisToggle.is-active, #agendaMode[aria-pressed="true"]
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .analysis-halo { transition: opacity 140ms ease-out; }
-  .analysis-connector { transition: stroke-width 140ms ease-out, opacity 140ms ease-out; }
-}
+:where(html:where([data-reduced-motion="false"])) .analysis-halo { transition: opacity 140ms ease-out; }
+
+:where(html:where([data-reduced-motion="false"])) .analysis-connector { transition: stroke-width 140ms ease-out, opacity 140ms ease-out; }

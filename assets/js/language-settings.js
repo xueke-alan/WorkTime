@@ -84,7 +84,7 @@
       });
       select.value = config.read();
       valueLabel.textContent = select.selectedOptions[0].textContent;
-      trigger.title = valueLabel.textContent;
+      trigger.title = config.title ? config.title() : valueLabel.textContent;
       [...list.children].forEach((item, index) => {
         item.querySelector(".button-label").textContent =
           select.options[index].textContent;
@@ -184,6 +184,8 @@
           result.persisted || result.pending ? "" : i18n.t(config.failed);
     });
     document.addEventListener("worktime:languagechange", synchronize);
+    if (config.id === "motion")
+      document.addEventListener("worktime:motionchange", synchronize);
     const stopClock = config.help
       ? WorkTimeApp.services.clock
           .create({ dateKey: WorkTimeApp.domain.time.businessDate })
@@ -197,6 +199,8 @@
         unsubscribe();
         stopClock();
         document.removeEventListener("worktime:languagechange", synchronize);
+        if (config.id === "motion")
+          document.removeEventListener("worktime:motionchange", synchronize);
       },
       { once: true },
     );
@@ -263,6 +267,29 @@
       read: () => String(preferences.state.weatherDays ?? 5),
       save: (value) => preferences.saveWeatherDays(Number(value)),
     });
+    const motionRow = document.createElement("div");
+    motionRow.className = "settings-select-row motion-settings-row";
+    document.querySelector(".theme-settings-host").after(motionRow);
+    mountPicker(motionRow, {
+      id: "motion",
+      selectId: "motionMode",
+      label: "motion.label",
+      preference: "motionMode",
+      failed: "motion.failed",
+      title: () =>
+        i18n.t(
+          WorkTimeApp.ui.animationCompat.system.matches
+            ? "motion.systemReduced"
+            : "motion.systemFull",
+        ),
+      options: () =>
+        ["system", "full", "reduce"].map((id) => ({
+          id,
+          name: i18n.t("motion." + id),
+        })),
+      read: () => preferences.state.motionMode || "system",
+      save: (value) => preferences.saveMotionMode(value),
+    });
     mountPicker(row, {
       id: "language",
       selectId: "languageSelect",
@@ -274,5 +301,7 @@
       save: (value) => preferences.saveLanguage(value),
     });
   }
-  document.addEventListener("DOMContentLoaded", mount, { once: true });
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", mount, { once: true });
+  else mount();
 })();

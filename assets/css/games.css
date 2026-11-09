@@ -364,6 +364,13 @@ body .game-menu-archive-actions .ui-icon {
 .game-menu-archive-status:empty {
   display: none;
 }
+.game-menu-archive-status.is-dismissing {
+  animation: game-archive-status-out 180ms ease-in forwards;
+}
+@keyframes game-archive-status-out {
+  to { opacity: 0; transform: translateY(-3px); }
+}
+:where(html:where([data-reduced-motion="true"])) .game-menu-archive-status.is-dismissing { animation: none; }
 .game-content:has(> .game-library) > .game-menu-header {
   padding: 0 0 0.5rem;
 }
@@ -668,45 +675,65 @@ body button.ui-button.game-menu-entry:is([aria-pressed="true"], :active) {
 .game-shell-compact {
   position: fixed;
 }
-.game-toolbar {
+/* Games, music and reading share workspace navigation and toolbar controls. */
+body .game-shell .workspace-toolbar {
   position: relative;
   display: flex;
   flex: none;
+  min-height: 0;
   align-items: center;
   gap: 1.25rem;
   padding: 1rem;
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
 }
-.game-toolbar h2 {
+body .game-shell .workspace-toolbar h2 {
   flex: 1;
   min-width: 0;
   margin: 0;
   font-size: 1.428571rem;
+  font-weight: 700;
+  letter-spacing: normal;
   line-height: 1.3;
   overflow-wrap: anywhere;
 }
 .game-toolbar .ui-button {
   flex: none;
 }
-body #gameShell #gameExitButton {
+body .game-shell .workspace-toolbar .workspace-toolbar-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--control-height);
+  min-width: var(--control-height);
+  height: var(--control-height);
+  min-height: var(--control-height);
+  padding: 0;
   border: 0;
+  border-radius: var(--control-radius);
+  color: var(--toolbar-icon-color);
   background: transparent;
   box-shadow: none;
+  cursor: pointer;
 }
-body #gameShell #gameExitButton:is(:hover, :active) {
+body .game-shell .workspace-toolbar .workspace-toolbar-action:is(:hover, :active):not(:disabled) {
   background: color-mix(in srgb, var(--accent) 5%, var(--paper));
 }
-body #gameShell #gameExitButton:focus-visible {
+body .game-shell .workspace-toolbar .workspace-toolbar-action:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 /* Match the calendar's previous-month chevron and theme color. */
-body #gameExitButton > .ui-icon {
+body .game-shell .workspace-toolbar .workspace-toolbar-action :is(.ui-icon, .music-glyph, .reader-glyph) {
   width: var(--icon-size);
   height: var(--icon-size);
   color: var(--toolbar-icon-color);
   shape-rendering: geometricPrecision;
+}
+body .game-shell .workspace-toolbar .workspace-toolbar-action:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 .game-content {
   position: relative;
@@ -772,7 +799,7 @@ body #gameExitButton > .ui-icon {
   outline-offset: -3px;
 }
 @media (max-width: 540px) {
-  .game-toolbar {
+  body .game-shell .workspace-toolbar {
     gap: 1rem;
     padding: 0.75rem;
   }
@@ -780,18 +807,14 @@ body #gameExitButton > .ui-icon {
     padding: 1rem;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .game-button,
-  .game-menu-entry,
-  body .game-session .game-select-options > .game-button > .button-label {
+:where(html:where([data-reduced-motion="true"])) .game-button,
+  :where(html:where([data-reduced-motion="true"])) .game-menu-entry,
+  :where(html:where([data-reduced-motion="true"])) body .game-session .game-select-options > .game-button > .button-label {
     transition: none;
   }
-  .game-shell .game-button:is(:hover, :active),
-  .games-panel .game-menu-entry:is(:hover, :active),
-  body .game-session .game-select-options > .game-button:hover > .button-label {
+:where(html:where([data-reduced-motion="true"])) .game-shell .game-button:is(:hover, :active), :where(html:where([data-reduced-motion="true"])) .games-panel .game-menu-entry:is(:hover, :active), :where(html:where([data-reduced-motion="true"])) body .game-session .game-select-options > .game-button:hover > .button-label {
     transform: none;
   }
-}
 
 .game-session:has(> .game-level-page:not([hidden])) {
   height: 100%;
@@ -813,6 +836,10 @@ body #gameExitButton > .ui-icon {
   gap: 0.5rem;
   min-height: var(--control-height);
   flex: none;
+}
+.game-level-page-header,
+.game-level-page-summary {
+  padding-inline: 3px var(--game-level-content-end, 3px);
 }
 .game-level-page-title {
   margin: 0;

@@ -1,45 +1,42 @@
 "use strict";
-/** No book engines, directory access or reading storage on calendar startup. */
+/** Paused feature: show a placeholder in the existing auxiliary panel. */
 WorkTimeApp.ui.reader = (() => {
-  let pending;
-  const loader = {
-    refresh() {},
-    close() {},
+  function refresh() {
+    const panel = document.getElementById("readerPanel");
+    const entry = document.getElementById("readerOpen");
+    if (entry) {
+      entry.setAttribute("role", "tab");
+      entry.setAttribute("aria-controls", "readerPanel");
+      entry.removeAttribute("aria-haspopup");
+      entry.removeAttribute("aria-expanded");
+      const selected = WorkTimeApp.ui.dateInfo?.isActive("reader") || false;
+      entry.setAttribute("aria-selected", String(selected));
+      entry.tabIndex = selected ? 0 : -1;
+    }
+    if (!panel) return;
+    let placeholder = panel.querySelector(".reader-placeholder");
+    if (!placeholder) {
+      placeholder = document.createElement("div");
+      placeholder.className = "reader-placeholder";
+      placeholder.append(document.createElement("h2"));
+      panel.replaceChildren(placeholder);
+    }
+    placeholder.querySelector("h2").textContent =
+      WorkTimeApp.ui.readerText("placeholderTitle");
+  }
+  function open() {
+    WorkTimeApp.ui.dateInfo.showReaderPanel();
+  }
+  return {
+    refresh,
+    close() {
+      WorkTimeApp.ui.dateInfo.hideReaderPanel();
+    },
     get isMini() {
-      return false;
+      return true;
     },
-    async expand() {
-      await this.open();
-      if (WorkTimeApp.ui.reader !== loader)
-        await WorkTimeApp.ui.reader.expand();
-    },
+    open,
+    expand: open,
     minimize() {},
-    async open() {
-      try {
-        pending ||= WorkTimeApp.services.assets
-          .scripts([
-            "assets/js/services/reader-storage.js",
-            "assets/js/services/reader-library.js",
-            "assets/js/services/reader-adapters.js",
-            "assets/js/controllers/reader.js",
-            "assets/js/controllers/workspace-expansion.js",
-            "assets/js/ui/reader.js",
-          ])
-          .catch((error) => {
-            pending = null;
-            throw error;
-          });
-        await pending;
-        if (WorkTimeApp.ui.reader === loader)
-          throw Error("Reader did not initialize");
-        await WorkTimeApp.ui.reader.open();
-      } catch {
-        const entry = document.getElementById("readerOpen");
-        if (entry)
-          entry.title = entry.ariaLabel =
-            WorkTimeApp.ui.readerText("loadFailed");
-      }
-    },
   };
-  return loader;
 })();

@@ -11,11 +11,26 @@ const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 for (const [, file] of html.matchAll(/<script[^>]+src="([^"]+)"/g)) {
   if (
     file === "assets/js/namespace.js" ||
-    file.startsWith("assets/js/domain/") ||
     /assets\/data\/(calendars|major-festivals|struggle-days)\.js/.test(file)
   )
     vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), realm);
 }
+for (const name of [
+  "time",
+  "state",
+  "calendar",
+  "records",
+  "schedule",
+  "batch",
+  "statistics",
+  "observations",
+  "agenda",
+  "validation",
+])
+  vm.runInContext(
+    fs.readFileSync(path.join(root, "assets/js/domain", name + ".js"), "utf8"),
+    realm,
+  );
 vm.runInContext(
   fs.readFileSync(
     path.join(root, "assets/js/services/application.js"),

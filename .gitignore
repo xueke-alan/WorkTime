@@ -69,6 +69,9 @@ __pycache__/
 !/scripts/verify-games.cjs
 !/scripts/verify-game-menu.cjs
 !/scripts/verify-music.cjs
+!/scripts/verify-media-loading.cjs
+!/scripts/verify-runtime-folder.cjs
+!/scripts/runtime-test-helpers.cjs
 !/scripts/verify-reader.cjs
 !/scripts/prepare-reader.cjs
 !/scripts/game-test-helpers.cjs
@@ -180,8 +183,6 @@ Thumbs.db
 
 !/scripts/verify-popover.cjs
 
-!/rescue.html
-!/scripts/verify-rescue.cjs
 !/scripts/verify-analysis-summary.cjs
 !/scripts/verify-analysis-persistence.cjs
 !/scripts/verify-analysis-sidebar.cjs
@@ -200,3 +201,13 @@ Thumbs.db
 !/scripts/verify-sudoku-hover.cjs
 
 !/scripts/verify-auto-backup-folder.cjs
+
+!/scripts/lib/backup-test-file.cjs
+!/scripts/lib/browser-test-setup.cjs
+!/scripts/verify-review-regressions.cjs
+!/scripts/verify-review-browser.cjs
+!/scripts/verify-reader-mini-settings.cjs
+!/scripts/verify-media-refresh.cjs
+!/scripts/verify-reader-minimize.cjs
+
+!/scripts/verify-motion-settings.cjs

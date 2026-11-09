@@ -104,7 +104,7 @@ async function verify() {
         await page.evaluate(() =>
           JSON.parse(localStorage.getItem("worktime.calendarView")),
         ),
-        { mode, weeks, analysis: true, workdaysOnly: false },
+        { mode: "attendance", weeks, analysis: true, workdaysOnly: false },
       );
       await page.locator("#analysisManual").check();
       await page.locator("#nextMonth").click();
@@ -130,7 +130,7 @@ async function verify() {
       await page.waitForTimeout(600);
       assert.equal(
         await page.locator("#agendaMode").getAttribute("aria-pressed"),
-        String(mode === "agenda"),
+        "false",
       );
       if (mode === "agenda")
         assert.equal(
@@ -144,7 +144,7 @@ async function verify() {
       await analysis(page, false);
       assert.equal(
         await page.locator("#agendaMode").getAttribute("aria-pressed"),
-        String(mode === "agenda"),
+        "false",
       );
       await page.locator("#analysisToggle").click();
       await analysis(page, true);
@@ -189,7 +189,7 @@ async function verify() {
     }
     assert.deepEqual(errors, []);
     console.log(
-      "Analysis reload restoration, return to agenda/week views, deduplicated writes, legacy data and unavailable storage verified.",
+      "Analysis reload restoration, return to attendance, explicit agenda entry, deduplicated writes, legacy data and unavailable storage verified.",
     );
   } finally {
     await browser.close();

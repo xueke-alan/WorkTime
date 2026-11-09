@@ -13,6 +13,9 @@ const { launchGame } = require("./game-test-helpers.cjs");
     });
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await page.route(/^https?:/, (route) => route.abort());
     await page.goto(
       pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,

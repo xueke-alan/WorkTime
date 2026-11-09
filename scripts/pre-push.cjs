@@ -8,6 +8,17 @@ function git(args, options = {}) {
   return execFileSync("git", args, { cwd: root, ...options });
 }
 let snapshot;
+function cleanupSnapshot() {
+  if (!snapshot) return;
+  const target = path.resolve(snapshot);
+  if (
+    path.dirname(target) !== path.resolve(os.tmpdir()) ||
+    !path.basename(target).startsWith("worktime-pre-push-")
+  )
+    throw Error("Refusing to remove an unexpected pre-push snapshot path.");
+  fs.rmSync(target, { recursive: true, force: true });
+  snapshot = undefined;
+}
 try {
   const revisions = new Set(
     fs
@@ -46,12 +57,11 @@ try {
     );
     if (result.error) throw result.error;
     if (result.status !== 0) throw Error("Checks failed; push blocked.");
-    fs.rmSync(snapshot, { recursive: true, force: true });
-    snapshot = undefined;
+    cleanupSnapshot();
   }
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;
 } finally {
-  if (snapshot) fs.rmSync(snapshot, { recursive: true, force: true });
+  cleanupSnapshot();
 }

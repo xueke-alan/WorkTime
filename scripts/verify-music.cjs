@@ -1,9 +1,13 @@
 "use strict";
+const {
+  installRuntimeFixture,
+  runtimeServer,
+} = require("./runtime-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const { pathToFileURL } = require("node:url");
+let runtimeEntry;
 const { chromium } = require("playwright");
 const root = path.resolve(
   process.argv.slice(2).find((arg) => !arg.startsWith("--")) || ".",
@@ -357,8 +361,19 @@ async function modelChecks() {
       return { lines: [], text: "" };
     },
   };
+  let runtimeDirectory = { name: "runtime-fixture", files: [] };
   const app = {
     services: {
+      runtimeFolder: {
+        state: { name: "runtime-fixture" },
+        async getDirectory() {
+          return runtimeDirectory;
+        },
+        async importFiles(kind, files) {
+          runtimeDirectory = { name: "runtime-fixture", files: [...files] };
+          return { completed: files.length };
+        },
+      },
       musicLibrary: library,
       musicStorage: {
         async read() {
@@ -511,7 +526,7 @@ async function modelChecks() {
   assert.equal(restored.snapshot().position, 11);
   assert.equal(restored.snapshot().sleep, "off");
   assert.equal(restored.snapshot().paused, true);
-  assert.equal(restored.snapshot().needsAccess, true);
+  assert.equal(restored.snapshot().needsAccess, false);
   restored.importFiles(files);
   await until(
     () =>
@@ -523,8 +538,10 @@ async function modelChecks() {
   assert.equal(restored.snapshot().position, 11);
   assert.equal(restored.isFavorite(restored.snapshot().tracks[0]), true);
   delayScan = true;
-  restored.importFiles([{ name: "stale.wav" }]);
+  const cancelledScan = restored.rescan();
+  await wait(5);
   restored.cancelScan();
+  await cancelledScan;
   await wait(100);
   assert.equal(restored.snapshot().tracks.length, 4);
   restored.importFiles([{ name: "old.wav" }]);
@@ -543,36 +560,13 @@ async function modelChecks() {
   await wait();
   assert.equal(saved.tracks.length, 0);
   assert.equal(saved.handle, null);
-  let permission = "prompt",
-    prompts = 0;
-  const directoryHandle = {
-    name: "Native",
-    files,
-    async queryPermission() {
-      return permission;
-    },
-    async requestPermission() {
-      prompts++;
-      permission = "granted";
-      return permission;
-    },
-  };
-  window.showDirectoryPicker = async (options) => {
-    assert.equal(options.mode, "read");
-    return directoryHandle;
-  };
-  assert.equal(await restored.choose(), true);
-  await until(
-    () =>
-      restored.snapshot().tracks.length === 4 && restored.snapshot().details,
-    "Native directory scan",
+  assert.equal(
+    typeof restored.choose,
+    "undefined",
+    "Media cannot replace its managed directory",
   );
-  assert.equal(await restored.rescan(), true);
-  assert.equal(prompts, 1);
-  await until(
-    () => !restored.snapshot().busy && !restored.snapshot().readingTags,
-    "Native rescan",
-  );
+  runtimeDirectory = { name: "runtime-fixture", files };
+  await restored.rescan();
   restored.seek(9);
   window.dispatchEvent(new Event("pagehide"));
   await wait();
@@ -580,23 +574,8 @@ async function modelChecks() {
   await wait();
   const nativeRestore = app.ui.createMusicController();
   await nativeRestore.ready;
-  await until(
-    () => !nativeRestore.snapshot().busy && nativeRestore.snapshot().details,
-    "Authorized native restore",
-  );
   assert.equal(nativeRestore.snapshot().position, 9);
   assert.equal(nativeRestore.snapshot().paused, true);
-  assert.equal(prompts, 1, "Restore never asks permission automatically");
-  window.showDirectoryPicker = async () => {
-    throw new DOMException("cancel", "AbortError");
-  };
-  assert.equal(await nativeRestore.choose(), true);
-  assert.equal(nativeRestore.snapshot().tracks.length, 4);
-  window.showDirectoryPicker = async () => {
-    throw new DOMException("unavailable", "SecurityError");
-  };
-  assert.equal(await nativeRestore.choose(), false);
-  nativeRestore.forget();
   nativeRestore.dispose();
   console.log(
     "Music state: playback, shuffle history, repeat, failures, timers, persistence, cancellation and URL cleanup passed.",
@@ -611,9 +590,30 @@ async function miniChecks(browser) {
   });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.route(/^https?:/, (route) => route.abort());
+  await page.route(/^https?:\/\/(?!127\.0\.0\.1:)/, (route) => route.abort());
   await page.addInitScript(() => {
-    window.showDirectoryPicker = undefined;
+    (function () {
+      window.showDirectoryPicker = async () =>
+        (await navigator.storage.getDirectory()).getDirectoryHandle(
+          "runtime-fixture",
+          { create: true },
+        );
+      FileSystemDirectoryHandle.prototype.queryPermission = async () =>
+        "granted";
+      FileSystemDirectoryHandle.prototype.requestPermission = async () =>
+        "granted";
+      localStorage.setItem("worktime.onboarding.v1", "dismissed");
+      document.addEventListener(
+        "worktime:ready",
+        () => {
+          void WorkTimeApp.services.runtimeFolder.initialize().then(() => {
+            if (WorkTimeApp.services.runtimeFolder.state.status !== "available")
+              return WorkTimeApp.services.runtimeFolder.choose();
+          });
+        },
+        { once: true },
+      );
+    })();
     const NativeAudio = window.Audio;
     window.musicTestAudio = [];
     window.Audio = function (...args) {
@@ -625,9 +625,9 @@ async function miniChecks(browser) {
   });
   try {
     await page.addInitScript(() =>
-      localStorage.setItem("worktime.onboarding.v1", "done"),
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
     );
-    await page.goto(pathToFileURL(path.join(root, "index.html")).href);
+    await page.goto(runtimeEntry);
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
@@ -641,11 +641,19 @@ async function miniChecks(browser) {
     assert.equal(await page.locator("#musicMiniPlay").isDisabled(), true);
     assert.equal(
       await page.locator("#musicPanel input, #musicPanel select").count(),
-      0,
+      1,
+    );
+    assert.equal(await page.locator("#musicMiniProgress").isDisabled(), true);
+    assert.equal(
+      await page
+        .locator(".music-mini-progress .music-time")
+        .first()
+        .textContent(),
+      "0:00",
     );
     await page.locator("#musicMiniExpand").click();
     await page
-      .locator('#musicDialog input[type="file"]')
+      .locator('#musicDialog [data-runtime-import="folder"]')
       .setInputFiles(fixtures);
     await page.waitForFunction(
       () =>
@@ -660,6 +668,58 @@ async function miniChecks(browser) {
     await page.waitForFunction(
       () => document.querySelector("#musicMiniPlay")?.disabled === false,
     );
+    await page.waitForFunction(
+      () => document.querySelector("#musicMiniProgress").value === "9",
+    );
+    assert.equal(
+      await page
+        .locator(".music-mini-progress .music-time")
+        .last()
+        .textContent(),
+      "0:30",
+    );
+    await page.locator("#musicMiniProgress").focus();
+    await page.keyboard.press("End");
+    await page.waitForFunction(
+      () => window.musicTestAudio[0].currentTime === 30,
+    );
+    await page.keyboard.press("Home");
+    await page.waitForFunction(
+      () => window.musicTestAudio[0].currentTime === 0,
+    );
+    // Pointer preview survives controller refreshes until the gesture commits.
+    await page.locator("#musicMiniProgress").evaluate((input) => {
+      input.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      input.value = "12";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      WorkTimeApp.ui.music.refresh();
+    });
+    assert.equal(await page.locator("#musicMiniProgress").inputValue(), "12");
+    assert.equal(
+      await page
+        .locator(".music-mini-progress .music-time")
+        .first()
+        .textContent(),
+      "0:12",
+    );
+    await page.locator("#musicMiniProgress").dispatchEvent("pointercancel");
+    await page.waitForFunction(
+      () => document.querySelector("#musicMiniProgress").value === "0",
+    );
+    await page.locator("#musicMiniProgress").evaluate((input) => {
+      input.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      input.value = "9";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      window.dispatchEvent(new PointerEvent("pointerup"));
+    });
+    await page.waitForFunction(
+      () => window.musicTestAudio[0].currentTime === 9,
+    );
+    await page.locator("#musicMiniExpand").click();
+    await page.waitForFunction(
+      () => document.querySelector(".music-progress").value === "9",
+    );
+    await page.locator("#musicMinimize").click();
     const height = () =>
       page
         .locator(".date-info-area")
@@ -745,10 +805,16 @@ async function miniChecks(browser) {
               .getBoundingClientRect(),
             bounds = panel.getBoundingClientRect();
           return (
+            getComputedStyle(panel.querySelector("#musicMiniProgress"))
+              .appearance === "none" &&
             panel.scrollWidth <= panel.clientWidth &&
             panel.scrollHeight <= panel.clientHeight &&
             controls.top >= bounds.top &&
-            controls.bottom <= bounds.bottom
+            controls.bottom <= bounds.bottom &&
+            panel.querySelector("#musicMiniProgress").getBoundingClientRect()
+              .width > 50 &&
+            panel.querySelector(".music-mini-progress").getBoundingClientRect()
+              .bottom <= controls.top
           );
         });
         assert.equal(fit, true, JSON.stringify({ viewport, language }));
@@ -799,9 +865,22 @@ async function miniChecks(browser) {
         .trim();
     fs.mkdirSync(longFolder, { recursive: true });
     fs.writeFileSync(path.join(longFolder, longTitle + ".wav"), wav());
+    await page.locator("#musicMiniExpand").click();
     await page
-      .locator('#musicDialog input[type="file"]')
+      .locator('#musicDialog [data-runtime-import="folder"]')
       .setInputFiles(longFolder);
+    await page.waitForFunction(
+      (title) =>
+        [...document.querySelectorAll(".music-track-select")].some((button) =>
+          button.textContent.includes(title),
+        ),
+      longTitle,
+    );
+    await page
+      .locator(".music-track-select")
+      .filter({ hasText: longTitle })
+      .evaluate((button) => button.click());
+    await page.locator("#musicMinimize").click();
     await page.waitForFunction(
       (title) =>
         document.querySelector(".music-mini-song").textContent === title,
@@ -872,6 +951,8 @@ async function miniChecks(browser) {
       () => document.documentElement.dataset.appState === "ready",
     );
     await page.locator("#musicOpen").click();
+    // A fresh session restores the compact presentation, including saved full mode.
+    await page.locator("#musicMiniExpand").click();
     await page.waitForFunction(
       () => document.querySelector("#musicDialog")?.dataset.state === "open",
     );
@@ -901,9 +982,10 @@ async function animationChecks(browser) {
     reducedMotion: "no-preference",
     locale: "zh-CN",
   });
+  await page.addInitScript(installRuntimeFixture);
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.route(/^https?:/, (route) => route.abort());
+  await page.route(/^https?:\/\/(?!127\.0\.0\.1:)/, (route) => route.abort());
   const capture = async (kind, exit) =>
     page.evaluate(
       ({ kind, exit }) => {
@@ -966,9 +1048,11 @@ async function animationChecks(browser) {
     );
   try {
     await page.addInitScript(() =>
-      localStorage.setItem("worktime.onboarding.v1", "done"),
+      // A completed setup can be reopened when folder access is missing.
+      // These animation checks explicitly dismiss setup instead.
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
     );
-    await page.goto(pathToFileURL(path.join(root, "index.html")).href);
+    await page.goto(runtimeEntry);
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
@@ -1038,12 +1122,19 @@ async function animationChecks(browser) {
       false,
     );
     await page.locator("#readerOpen").click();
+    if (await page.locator(".reader-placeholder").count()) {
+      assert.equal(await page.locator(".reader-placeholder").isVisible(), true);
+      assert.deepEqual(errors, []);
+      console.log(
+        "Workspace motion: music/game timing and reversal passed; paused reader shows its placeholder (reader workspace checks skipped).",
+      );
+      return;
+    }
     await page.waitForFunction(
       () => document.querySelector("#readerDialog")?.dataset.state === "open",
     );
     await page
-      .locator('#readerDialog > input[type="file"]')
-      .first()
+      .locator('#readerDialog [data-runtime-import="folder"]')
       .setInputFiles(fixtures);
     await page.waitForSelector(".reader-book-open");
     await page.locator(".reader-book-open").first().click();
@@ -1179,7 +1270,269 @@ async function animationChecks(browser) {
     await page.close();
   }
 }
+async function offlineMusicEntryChecks(browser) {
+  const page = await browser.newPage({ reducedMotion: "reduce" });
+  const errors = [],
+    remote = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route(/^https?:/, (route) => {
+    remote.push(route.request().url());
+    return route.abort();
+  });
+  await page.addInitScript(() =>
+    localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+  );
+  try {
+    await page.goto(
+      require("node:url").pathToFileURL(path.join(root, "index.html")).href,
+    );
+    await page.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+    await page.locator("#musicOpen").click();
+    await page.waitForFunction(
+      () => document.querySelector("#musicDialog")?.dataset.state === "open",
+    );
+    assert.equal(await page.locator("#musicChoose").isVisible(), true);
+    assert.equal(
+      await page
+        .locator(".music-body")
+        .evaluate((element) => getComputedStyle(element).display),
+      "grid",
+    );
+    await page.locator("#musicExitButton").click();
+    await page.waitForFunction(
+      () => document.querySelector("#musicDialog").hidden,
+    );
+    assert.deepEqual(errors, []);
+    assert.deepEqual(remote, []);
+    console.log(
+      "Music offline entry: local runtime/styles, empty state and return passed.",
+    );
+  } finally {
+    await page.close();
+  }
+}
+
+async function internalMotionChecks(browser) {
+  const page = await browser.newPage({
+    viewport: { width: 1440, height: 900 },
+    reducedMotion: "no-preference",
+  });
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route(/^https?:\/\/(?!127\.0\.0\.1:)/, (route) => route.abort());
+  await page.addInitScript(installRuntimeFixture);
+  await page.addInitScript(() => {
+    window.musicMotionLog = [];
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (frames, options) {
+      if (this.closest(".music-dialog, .music-mini-player"))
+        window.musicMotionLog.push({
+          className: this.className,
+          frames,
+          options,
+        });
+      return animate.call(this, frames, options);
+    };
+  });
+  const settle = () => page.waitForTimeout(420);
+  const clearLog = () =>
+    page.evaluate(() => {
+      window.musicMotionLog = [];
+    });
+  const logged = (name) =>
+    page.evaluate(
+      (name) =>
+        window.musicMotionLog.some((entry) => entry.className.includes(name)),
+      name,
+    );
+  try {
+    await page.goto(runtimeEntry);
+    await page.waitForFunction(
+      () => document.documentElement.dataset.appState === "ready",
+    );
+    await page.locator("#musicOpen").click();
+    await page.waitForFunction(
+      () => document.querySelector("#musicDialog")?.dataset.state === "open",
+    );
+    await page
+      .locator('#musicDialog [data-runtime-import="folder"]')
+      .setInputFiles(fixtures);
+    await page.waitForFunction(
+      () => document.querySelectorAll(".music-track").length === 4,
+    );
+    await settle();
+    await clearLog();
+    await page.locator(".music-search").fill("Beta");
+    assert.equal(await logged("music-tracks"), true, "Search reveals the list");
+    await page.locator(".music-search").fill("");
+    await settle();
+    await clearLog();
+    await page.locator(".music-filter-row select").selectOption("desc");
+    assert.equal(
+      await logged("music-track"),
+      true,
+      "Sorting animates visible positions",
+    );
+    await settle();
+    await clearLog();
+    await page
+      .locator('.music-track-select[data-music-path$="/Beta.wav"]')
+      .click();
+    await page.waitForFunction(
+      () => document.querySelector(".music-song-title").textContent === "Beta",
+    );
+    assert.equal(
+      await logged("music-now-info"),
+      true,
+      "Song changes reveal metadata",
+    );
+    await settle();
+    await clearLog();
+    await page.locator("#musicCurrentFavorite").click();
+    await settle();
+    assert.equal(
+      await logged("music-tracks"),
+      false,
+      "Favorite changes do not reveal the entire list",
+    );
+    await clearLog();
+    await settle();
+    assert.equal(
+      await logged("music-now-info"),
+      false,
+      "Playback ticks leave metadata still",
+    );
+    await page.locator(".music-settings > summary").click();
+    await settle();
+    await page.keyboard.press("Escape");
+    assert.equal(
+      await page.locator(".music-settings").evaluate((element) => element.open),
+      false,
+    );
+    assert.equal(await page.locator(".music-menu-leaving").count(), 1);
+    await settle();
+    assert.equal(await page.locator(".music-menu-leaving").count(), 0);
+    await clearLog();
+    await page.locator("#musicLyricsToggle").click();
+    assert.equal(await logged("music-lyrics-pane"), true);
+    await page
+      .locator('.music-track-select[data-music-path$="/Alpha.wav"]')
+      .first()
+      .click();
+    await page.waitForFunction(
+      () => document.querySelectorAll(".music-lyric-line").length === 4,
+    );
+    await page.evaluate(() => {
+      window.musicLyricScrolls = [];
+      const view = document.querySelector(".music-lyrics");
+      const scrollTo = view.scrollTo.bind(view);
+      view.scrollTo = (options) => {
+        window.musicLyricScrolls.push(options.behavior);
+        scrollTo(options);
+      };
+    });
+    await page.locator(".music-lyric-line").nth(2).focus();
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() =>
+      window.musicLyricScrolls.includes("smooth"),
+    );
+    await page.locator(".music-lyrics").dispatchEvent("wheel");
+    await page.evaluate(() => {
+      window.musicLyricScrolls = [];
+    });
+    await page.locator(".music-lyric-line").nth(1).click();
+    await settle();
+    assert.equal(
+      await page.evaluate(() => window.musicLyricScrolls.includes("smooth")),
+      false,
+      "Manual lyric scrolling suspends automatic follow",
+    );
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator(".music-mobile-tabs button").first().click();
+    await page.locator(".music-mobile-tabs button").last().click();
+    await page.locator(".music-mobile-tabs button").first().click();
+    await settle();
+    assert.equal(await page.locator(".music-library").isVisible(), true);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await clearLog();
+    await page.locator(".music-search").fill("Beta");
+    await page.locator(".music-search").fill("");
+    assert.equal(
+      await logged("music-tracks"),
+      false,
+      "Reduced motion skips content effects",
+    );
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.locator("#musicMinimize").click();
+    await page.waitForFunction(
+      () => document.querySelector("#musicDialog").hidden,
+    );
+    await settle();
+    await clearLog();
+    const miniTitle = await page.locator(".music-mini-song").textContent();
+    await page.locator("#musicMiniNext").click();
+    await page.waitForFunction(
+      (title) =>
+        document.querySelector(".music-mini-song").textContent !== title,
+      miniTitle,
+    );
+    assert.equal(await logged("music-mini-info"), true);
+    await page.locator("#musicMiniExpand").click();
+    await page.waitForFunction(
+      () => document.querySelector("#musicDialog").dataset.state === "open",
+    );
+    await page
+      .locator('#musicDialog [data-runtime-import="files"]')
+      .setInputFiles(
+        Array.from({ length: 120 }, (_, index) => ({
+          name: `Motion-${String(index).padStart(3, "0")}.wav`,
+          mimeType: "audio/wav",
+          buffer: wav(1),
+        })),
+      );
+    await page.waitForFunction(
+      () => document.querySelectorAll(".music-track").length >= 120,
+    );
+    await settle();
+    await clearLog();
+    await page.locator(".music-filter-row select").selectOption("asc");
+    const rowEffects = await page.evaluate(
+      () =>
+        window.musicMotionLog.filter((entry) =>
+          entry.className.split(" ").includes("music-track"),
+        ).length,
+    );
+    assert.ok(
+      rowEffects < 20,
+      "Large-library sorting limits motion to visible rows",
+    );
+    await page.evaluate(() => {
+      Element.prototype.animate = undefined;
+    });
+    await page.locator(".music-search").fill("Beta");
+    await page.locator(".music-search").fill("");
+    await page.locator(".music-settings > summary").click();
+    await page.keyboard.press("Escape");
+    await settle();
+    assert.equal(await page.locator(".music-menu-leaving").count(), 0);
+    await page.locator("#musicExitButton").click();
+    await page.waitForFunction(
+      () => document.querySelector("#musicDialog").hidden,
+    );
+    assert.deepEqual(errors, []);
+    console.log(
+      "Music internal motion: search, sorting, song changes, favorites, ticks, menus, mobile, mini, reduced motion and missing animation API passed.",
+    );
+  } finally {
+    await page.close();
+  }
+}
+
 async function browserChecks() {
+  const server = await runtimeServer(root);
+  runtimeEntry = server.url;
   const browser = await chromium.launch({
     channel: process.env.WORKTIME_BROWSER_CHANNEL || "msedge",
     headless: true,
@@ -1194,16 +1547,40 @@ async function browserChecks() {
       remote = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("request", (request) => {
-      if (/^https?:/.test(request.url())) remote.push(request.url());
+      if (/^https?:\/\/(?!127\.0\.0\.1:)/.test(request.url()))
+        remote.push(request.url());
     });
-    await page.route(/^https?:/, (route) => route.abort());
+    await page.route(/^https?:\/\/(?!127\.0\.0\.1:)/, (route) => route.abort());
     await page.addInitScript(() => {
-      window.showDirectoryPicker = undefined;
+      (function () {
+        window.showDirectoryPicker = async () =>
+          (await navigator.storage.getDirectory()).getDirectoryHandle(
+            "runtime-fixture",
+            { create: true },
+          );
+        FileSystemDirectoryHandle.prototype.queryPermission = async () =>
+          "granted";
+        FileSystemDirectoryHandle.prototype.requestPermission = async () =>
+          "granted";
+        localStorage.setItem("worktime.onboarding.v1", "dismissed");
+        document.addEventListener(
+          "worktime:ready",
+          () => {
+            void WorkTimeApp.services.runtimeFolder.initialize().then(() => {
+              if (
+                WorkTimeApp.services.runtimeFolder.state.status !== "available"
+              )
+                return WorkTimeApp.services.runtimeFolder.choose();
+            });
+          },
+          { once: true },
+        );
+      })();
     });
     await page.addInitScript(() =>
-      localStorage.setItem("worktime.onboarding.v1", "done"),
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
     );
-    await page.goto(pathToFileURL(path.join(root, "index.html")).href);
+    await page.goto(runtimeEntry);
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
@@ -1225,7 +1602,7 @@ async function browserChecks() {
         ),
         "0",
       );
-      assert.equal(await entry.locator("svg.headphones-icon").count(), 1);
+      assert.equal(await entry.locator("svg").count(), 1);
       await entry.hover();
       assert.equal(
         await entry.evaluate(
@@ -1314,7 +1691,7 @@ async function browserChecks() {
     }
     await page.setViewportSize({ width: 1440, height: 900 });
     await page
-      .locator('#musicDialog input[type="file"]')
+      .locator('#musicDialog [data-runtime-import="folder"]')
       .setInputFiles(fixtures);
     await page.waitForFunction(
       () => document.querySelectorAll(".music-track").length === 4,
@@ -1395,13 +1772,14 @@ async function browserChecks() {
     );
     await page.locator(".music-search").fill("");
     await page
-      .locator('.music-track-select[data-music-path="Broken.mp3"]')
+      .locator('.music-track-select[data-music-path$="/Broken.mp3"]')
       .click();
     await page.waitForFunction(() =>
       document.querySelector(".music-track-error"),
     );
     await page
-      .locator('.music-track-select[data-music-path="Alpha.wav"]')
+      .locator('.music-track-select[data-music-path$="/Alpha.wav"]')
+      .first()
       .click();
     await page.waitForFunction(
       () => document.querySelectorAll(".music-lyric-line").length === 4,
@@ -1457,8 +1835,13 @@ async function browserChecks() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await page.locator("#musicOpen").click();
+    await page.waitForFunction(() =>
+      document.querySelector("#musicMiniExpand"),
+    );
+    if (!(await page.locator("#musicDialog").isVisible()))
+      await page.locator("#musicMiniExpand").click();
     await page.waitForFunction(
-      () => document.querySelector("#musicReconnect")?.hidden === false,
+      () => document.querySelector("#musicReconnect")?.hidden === true,
     );
     assert.equal(
       await page
@@ -1467,7 +1850,7 @@ async function browserChecks() {
       false,
     );
     await page
-      .locator('#musicDialog input[type="file"]')
+      .locator('#musicDialog [data-runtime-import="folder"]')
       .setInputFiles(fixtures);
     await page.waitForFunction(
       () => Number(document.querySelector(".music-progress").value) >= 15,
@@ -1674,6 +2057,8 @@ async function browserChecks() {
     );
     assert.deepEqual(errors, []);
     await page.close();
+    await offlineMusicEntryChecks(browser);
+    await internalMotionChecks(browser);
     await miniChecks(browser);
     await animationChecks(browser);
     console.log(
@@ -1681,6 +2066,7 @@ async function browserChecks() {
     );
   } finally {
     await browser.close();
+    await server.close();
   }
 }
 (async () => {

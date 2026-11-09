@@ -498,7 +498,13 @@ async function verify() {
       "http://127.0.0.1:" + server.address().port + "/index.html",
       pathToFileURL(path.join(root, "index.html")).href,
     ]) {
-      const context = await browser.newContext({ locale: "zh-CN" });
+      const context = await browser.newContext({
+        locale: "zh-CN",
+        serviceWorkers: "block",
+      });
+      await context.addInitScript(() =>
+        localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+      );
       const page = await context.newPage();
       await page.clock.setFixedTime(new Date("2026-10-10T04:00:00Z"));
       const errors = [],
@@ -535,15 +541,20 @@ async function verify() {
             "2026-01-01" && document.querySelector(".history-event"),
       );
       // A failed month request must be retryable without reloading the app.
-      await page.route(/\/history\/02\.js/, (route) => route.abort(), {
-        times: 1,
-      });
+      await page.route(/\/history\/02\.js/, (route) => route.abort());
       await page.evaluate(() => WorkTimeApp.ui.dateInfo.setDate("2026-02-01"));
-      await page.getByRole("button", { name: "重试", exact: true }).click();
+      await page.getByRole("button", { name: "重试", exact: true }).waitFor();
+      const failedHistoryRequests = historyRequests.filter((url) =>
+        /\/02\.js/.test(url),
+      ).length;
+      await page.unroute(/\/history\/02\.js/);
+      await page
+        .getByRole("button", { name: /重试|Retry|Try again/, exact: false })
+        .click();
       await page.waitForSelector(".history-event");
       assert.equal(
         historyRequests.filter((url) => /\/02\.js/.test(url)).length,
-        2,
+        failedHistoryRequests + 1,
       );
       // A slow previous selection cannot replace the current date's panel.
       await page.route(/\/history\/05\.js/, async (route) => {

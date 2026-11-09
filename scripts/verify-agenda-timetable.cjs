@@ -126,6 +126,9 @@ async function verifyBrowser() {
       return dialog.accept();
     });
     await page.route(/^https?:/, (route) => route.abort());
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await page.clock.setFixedTime(new Date("2026-10-28T04:00:00Z"));
     await page.goto(pathToFileURL(path.join(root, "index.html")).href);
     await page.waitForFunction(
@@ -530,6 +533,27 @@ async function verifyBrowser() {
     assert.equal(await page.locator("#agendaStart").inputValue(), "15:00");
     assert.equal(await page.locator("#agendaEnd").inputValue(), "16:00");
     await page.locator("#agendaCancel").click();
+    for (const [from, to] of [
+      [await point(1, 900), await point(3, 960)],
+      [await point(3, 960), await point(1, 900)],
+      [await point(1, 900), { x: gap.x, y: (await point(1, 960)).y }],
+    ]) {
+      await drag(from, to);
+      const expectedDate =
+        from.x === (await point(3, 960)).x ? dates[3] : dates[1];
+      assert.equal(
+        await page.locator("#agendaDateInput").inputValue(),
+        expectedDate,
+      );
+      assert.equal(
+        await page.locator("#agendaEndDateInput").inputValue(),
+        expectedDate,
+      );
+      assert.equal(await page.locator("#agendaStart").inputValue(), "15:00");
+      assert.equal(await page.locator("#agendaEnd").inputValue(), "16:00");
+      assert.equal(await page.locator(".timetable-draft").count(), 1);
+      await page.locator("#agendaCancel").click();
+    }
     const origin = await event("精确分钟").boundingBox();
     const target = await point(3, 600);
     const hour = (await point(2, 600)).y - (await point(2, 540)).y;

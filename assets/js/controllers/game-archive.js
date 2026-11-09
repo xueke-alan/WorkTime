@@ -14,6 +14,8 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
   const controls = new Map();
   const t = (key, params) => WorkTimeApp.i18n.t("gameArchive." + key, params);
   let generation = 0;
+  let noticeTimer = null,
+    dismissTimer = null;
   let disposed = false,
     busy = false,
     committing = false,
@@ -55,8 +57,35 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
         : "")
     );
   }
-  function announce(text) {
-    for (const status of controls.values()) status.textContent = text;
+  function clearNoticeTimers() {
+    window.clearTimeout(noticeTimer);
+    window.clearTimeout(dismissTimer);
+    noticeTimer = dismissTimer = null;
+  }
+  function announce(text, temporary = false) {
+    clearNoticeTimers();
+    for (const status of controls.values()) {
+      status.classList.remove("is-dismissing");
+      status.textContent = text;
+    }
+    if (!temporary) return;
+    noticeTimer = window.setTimeout(() => {
+      noticeTimer = null;
+      const clear = () => {
+        dismissTimer = null;
+        for (const status of controls.values()) {
+          status.textContent = "";
+          status.classList.remove("is-dismissing");
+        }
+      };
+      if (WorkTimeApp.ui.animationCompat.preference().matches) {
+        clear();
+        return;
+      }
+      for (const status of controls.values())
+        status.classList.add("is-dismissing");
+      dismissTimer = window.setTimeout(clear, 180);
+    }, 3000);
   }
   const dialog = node("dialog", "game-archive-dialog", document.body);
   dialog.id = "gameArchiveDialog";
@@ -319,6 +348,7 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
     const status = controls.get(container);
     status?.hold?.dispose();
     controls.delete(container);
+    if (!controls.size) clearNoticeTimers();
   }
   function decorate(container, header) {
     detach(container);
@@ -353,7 +383,7 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
         const value = service.exportArchive();
         if (toFile) download(value);
         else await clipboard.writeText(await service.encode(value));
-        if (!disposed) announce(t(toFile ? "downloaded" : "copied"));
+        if (!disposed) announce(t(toFile ? "downloaded" : "copied"), true);
       } catch (error) {
         if (!disposed) announce(message(error));
       } finally {
@@ -375,6 +405,7 @@ WorkTimeApp.ui.createGameArchiveController = function ({ document, window }) {
     report: (error) => announce(message(error)),
     dispose() {
       disposed = true;
+      clearNoticeTimers();
       for (const container of controls.keys()) detach(container);
       events.dispose();
       downloads.dispose();

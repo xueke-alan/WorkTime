@@ -2,9 +2,36 @@
 /** First-run setup for a new browser profile. */
 WorkTimeApp.ui.onboarding = (() => {
   const KEY = "worktime.onboarding.v1";
+  const INSTALL_REMINDER_KEY = "worktime.installReminder.dismissed.v1";
+  let installReminderDismissed = false;
+  let closed = false;
+  window.addEventListener(
+    "pagehide",
+    () => {
+      closed = true;
+    },
+    { once: true },
+  );
+  const skipInstallReminder = () => {
+    try {
+      return localStorage.getItem(INSTALL_REMINDER_KEY) === "true";
+    } catch {
+      return installReminderDismissed;
+    }
+  };
+  const setSkipInstallReminder = (value) => {
+    installReminderDismissed = value;
+    try {
+      if (value) localStorage.setItem(INSTALL_REMINDER_KEY, "true");
+      else localStorage.removeItem(INSTALL_REMINDER_KEY);
+    } catch {}
+  };
   const copy = {
     title: ["欢迎使用 HWorkTime", "Welcome to HWorkTime"],
-    folderTitle: ["先选择存档文件夹", "Choose an archive folder"],
+    folderTitle: [
+      "选择一个运行文件夹以保存数据",
+      "Choose a workspace folder to save your data",
+    ],
     folderText: [
       "选择一个文件夹后，网站可以自动把备份保存到这里。文件只保存在你的设备上。",
       "Choose a folder so backups can be saved there automatically. Files stay on your device.",
@@ -25,8 +52,8 @@ WorkTimeApp.ui.onboarding = (() => {
     ],
     install: ["安装应用", "Install app"],
     manual: [
-      "如果浏览器支持，请打开地址栏或浏览器菜单中的“安装应用”或“添加到主屏幕”。",
-      "If supported, use “Install app” or “Add to home screen” from the address bar or browser menu.",
+      "浏览器暂未提供安装弹窗，可在浏览器菜单中选择“安装应用”或“添加到主屏幕”。本地文件请先打开网站在线地址再安装。",
+      "The browser has not provided an installation prompt. Use Install app or Add to home screen in its menu. For local files, open the online website first.",
     ],
     finish: ["开始使用", "Start using HWorkTime"],
     installed: [
@@ -46,9 +73,9 @@ WorkTimeApp.ui.onboarding = (() => {
       "HWorkTime에 오신 것을 환영합니다",
     ],
     folderTitle: [
-      "先選擇存檔資料夾",
-      "保存先フォルダーを選択",
-      "보관 폴더 선택",
+      "選擇一個執行資料夾以儲存資料",
+      "データを保存する作業フォルダーを選択",
+      "데이터를 저장할 작업 폴더를 선택하세요",
     ],
     folderText: [
       "選擇資料夾後可自動儲存備份，檔案只保存在你的裝置上。",
@@ -90,7 +117,80 @@ WorkTimeApp.ui.onboarding = (() => {
       "폴더 선택에 실패했습니다. 재시도하거나 나중에 설정하세요.",
     ],
   };
+  const timelineCopy = {
+    folderSelected: [
+      "已选择：",
+      "Selected: ",
+      "已選擇：",
+      "已選擇：",
+      "選択済み：",
+      "선택됨: ",
+    ],
+    dontRemindInstall: [
+      "不再提示",
+      "Don't remind me again",
+      "不再提示",
+      "不再提示",
+      "今後表示しない",
+      "다시 알리지 않기",
+    ],
+    folderRequired: [
+      "请选择运行文件夹",
+      "Please choose a workspace folder",
+      "請選擇執行資料夾",
+      "請選擇執行資料夾",
+      "作業フォルダーを選択してください",
+      "작업 폴더를 선택하세요",
+    ],
+    backup: [
+      "自动备份",
+      "Automatic backups",
+      "自動備份",
+      "自動備份",
+      "自動バックアップ",
+      "자동 백업",
+    ],
+    launch: [
+      "推荐创建快捷启动",
+      "Recommended: create quick access",
+      "建議建立快速啟動",
+      "建議建立快速啟動",
+      "クイックアクセスの作成を推奨",
+      "빠른 실행 만들기 권장",
+    ],
+    optional: ["可选", "Optional", "可選", "可選", "任意", "선택 사항"],
+    current: [
+      "当前步骤",
+      "Current step",
+      "目前步驟",
+      "目前步驟",
+      "現在のステップ",
+      "현재 단계",
+    ],
+    completed: ["已完成", "Complete", "已完成", "已完成", "完了", "완료"],
+    later: [
+      "稍后设置",
+      "Set up later",
+      "稍後設定",
+      "稍後設定",
+      "後で設定",
+      "나중에 설정",
+    ],
+    back: ["上一步", "Back", "上一步", "上一步", "前へ", "이전"],
+    busy: [
+      "正在连接…",
+      "Connecting…",
+      "正在連接…",
+      "正在連接…",
+      "接続中…",
+      "연결 중…",
+    ],
+  };
   const t = (key) => {
+    if (timelineCopy[key])
+      return timelineCopy[key][
+        Math.max(0, languages.indexOf(WorkTimeApp.i18n.language))
+      ];
     const values = copy[key] || [key, key];
     const index = languages.indexOf(WorkTimeApp.i18n.language);
     return index < 2
@@ -110,29 +210,39 @@ WorkTimeApp.ui.onboarding = (() => {
     } catch {}
   };
   async function mount() {
-    if (read() === "dismissed") return;
+    if (closed) return;
     await WorkTimeApp.services.autoBackupFolder.initialize();
-    if (read() === "dismissed") return;
     const folderState = WorkTimeApp.services.autoBackupFolder.state;
+    if (closed || document.getElementById("onboardingDialog")) return;
+    // Folder setup is mandatory. Installation reminders recur on each visit
+    // until the user opts out or the browser reports an installed app.
     if (
-      read() === "done" &&
-      folderState.supported &&
-      folderState.status === "download"
-    ) {
-      try {
-        localStorage.setItem(KEY, "pending");
-      } catch {}
-    }
-    if (document.getElementById("onboardingDialog") || read() === "done")
-      return;
-    if (
-      document.documentElement.dataset.firstRun !== "true" &&
-      !["pending", "pending-install"].includes(read())
+      folderState.status === "available" &&
+      (skipInstallReminder() || WorkTimeApp.services.pwaInstall.state.installed)
     ) {
       complete();
       return;
     }
-    const installOnly = read() === "pending-install" && !!folderState.name;
+    // Established profiles never need these styles. Base dialog styles remain
+    // usable if an optional stylesheet fails, so folder setup stays available.
+    await WorkTimeApp.services.assets
+      .style("assets/css/onboarding.css")
+      .catch(() => {});
+    if (
+      closed ||
+      document.getElementById("onboardingDialog") ||
+      ["failed", "initializing"].includes(
+        document.documentElement.dataset.appState,
+      )
+    )
+      return;
+    if (
+      WorkTimeApp.services.autoBackupFolder.state.status === "available" &&
+      (skipInstallReminder() || WorkTimeApp.services.pwaInstall.state.installed)
+    ) {
+      complete();
+      return;
+    }
     try {
       localStorage.setItem(KEY, "pending");
     } catch {}
@@ -140,21 +250,37 @@ WorkTimeApp.ui.onboarding = (() => {
     dialog.id = "onboardingDialog";
     dialog.className = "onboarding-dialog";
     dialog.setAttribute("aria-labelledby", "onboardingTitle");
+    dialog.setAttribute("closedby", "none");
     dialog.innerHTML = `
-      <div class="dialog-head"><h2 id="onboardingTitle"></h2><span class="onboarding-step" aria-live="polite"></span></div>
+      <div class="dialog-head"><div><span class="onboarding-brand">HWorkTime</span><h2 id="onboardingTitle" tabindex="-1"></h2></div></div>
       <div class="dialog-body">
-        <section data-onboarding-step="folder">
+        <ol class="onboarding-timeline">
+        <li class="onboarding-item" data-stage="folder">
+          <span class="onboarding-node" aria-hidden="true"><span class="onboarding-node-text">01</span><svg class="ui-icon onboarding-node-check" aria-hidden="true" hidden><use href="#ms-check"/></svg></span>
+          <div class="onboarding-stage">
+          <h3 class="onboarding-stage-heading" data-onboarding-heading="folder"><span data-stage-title></span><span class="onboarding-stage-status"></span></h3>
+        <section id="onboardingFolder" data-onboarding-step="folder">
           <h3 data-onboarding-title></h3><p data-onboarding-text></p>
           <p class="help" data-onboarding-support></p><p class="warnings" data-onboarding-error role="alert"></p>
         </section>
-        <section data-onboarding-step="install" hidden>
-          <h3 data-onboarding-title></h3><p data-onboarding-text></p><p class="help" data-onboarding-manual></p>
+          </div>
+        </li>
+        <li class="onboarding-item" data-stage="install">
+          <span class="onboarding-node" aria-hidden="true"><span class="onboarding-node-text">02</span><svg class="ui-icon onboarding-node-check" aria-hidden="true" hidden><use href="#ms-check"/></svg></span>
+          <div class="onboarding-stage">
+          <h3 class="onboarding-stage-heading" data-onboarding-heading="install"><span data-stage-title></span><span class="onboarding-stage-status"></span></h3>
+        <section id="onboardingInstall" data-onboarding-step="install">
+          <div class="onboarding-install-head"><h3 data-onboarding-title></h3><label class="onboarding-install-dismiss"><input type="checkbox" data-onboarding-dismiss-install><span></span></label></div><p data-onboarding-text></p><button class="ui-button onboarding-install-button" type="button" data-onboarding-install></button><p class="help" data-onboarding-manual role="status"></p>
         </section>
-        <label class="onboarding-dismiss"><input type="checkbox" id="onboardingDontRemind"><span></span></label>
+          </div>
+        </li>
+        </ol>
       </div>
       <div class="dialog-foot">
-        <button class="ui-button subtle" type="button" data-onboarding-skip></button>
+        <p class="onboarding-folder-required" id="onboardingFolderRequired" role="status"></p>
+        <div class="onboarding-actions">
         <button class="ui-button primary" type="button" data-onboarding-next></button>
+        </div>
       </div>`;
     document.body.append(dialog);
     const service = WorkTimeApp.services.autoBackupFolder;
@@ -167,39 +293,68 @@ WorkTimeApp.ui.onboarding = (() => {
     folder.querySelector("[data-onboarding-text]").after(choose);
     const error = folder.querySelector("[data-onboarding-error]");
     const next = dialog.querySelector("[data-onboarding-next]");
-    const skip = dialog.querySelector("[data-onboarding-skip]");
-    const dontRemind = dialog.querySelector("#onboardingDontRemind");
-    let step = installOnly ? "install" : "folder";
-    folder.hidden = installOnly;
-    install.hidden = !installOnly;
+    const installButton = dialog.querySelector("[data-onboarding-install]");
+    const dismissInstall = dialog.querySelector(
+      "[data-onboarding-dismiss-install]",
+    );
+    dismissInstall.addEventListener("change", () => {
+      setSkipInstallReminder(dismissInstall.checked);
+    });
     let pending = false;
-    let remindNextVisit = false;
+    const folderReady = () => service.state.status === "available";
     function render() {
-      const dismissLabels = [
-        "不再提示",
-        "Don't show again",
-        "不再提示",
-        "不再提示",
-        "今後表示しない",
-        "다시 표시하지 않기",
-      ];
-      dialog.querySelector(".onboarding-dismiss span").textContent =
-        dismissLabels[
-          Math.max(0, languages.indexOf(WorkTimeApp.i18n.language))
-        ];
-      dontRemind.disabled = pending;
       const state = service.state;
       const installState = pwa.state;
       dialog.querySelector("#onboardingTitle").textContent = t("title");
-      dialog.querySelector(".onboarding-step").textContent =
-        step === "folder" ? "1 / 2" : "2 / 2";
+      dialog.setAttribute("aria-busy", String(pending));
+      for (const item of dialog.querySelectorAll("[data-stage]")) {
+        const active =
+          item.dataset.stage ===
+          (state.status === "available" ? "install" : "folder");
+        const done =
+          item.dataset.stage === "folder"
+            ? state.status === "available"
+            : installState.installed;
+        item.dataset.state = done
+          ? "complete"
+          : active
+            ? "current"
+            : "upcoming";
+        if (active) item.setAttribute("aria-current", "step");
+        else item.removeAttribute("aria-current");
+        item.querySelector("[data-stage-title]").textContent =
+          item.dataset.stage === "folder"
+            ? WorkTimeApp.ui.runtimeFolderText("label")
+            : t("launch");
+        item.querySelector(".onboarding-stage-status").textContent = t(
+          done
+            ? "completed"
+            : active
+              ? "current"
+              : item.dataset.stage === "folder"
+                ? "later"
+                : "optional",
+        );
+        const node = item.querySelector(".onboarding-node-text");
+        node.hidden = done;
+        item
+          .querySelector(".onboarding-node-check")
+          .toggleAttribute("hidden", !done);
+      }
       folder.querySelector("[data-onboarding-title]").textContent =
         t("folderTitle");
       folder.querySelector("[data-onboarding-text]").textContent =
-        t("folderText");
+        WorkTimeApp.ui.runtimeFolderText("description");
       folder.querySelector("[data-onboarding-support]").textContent =
-        state.supported ? "" : t("folderUnsupported");
-      choose.textContent = state.name || t("choose");
+        state.supported ? "" : WorkTimeApp.ui.runtimeFolderText("unsupported");
+      choose.textContent = pending
+        ? WorkTimeApp.ui.runtimeFolderText("initializing", {
+            name: state.progress || state.name,
+          })
+        : state.name
+          ? t("folderSelected") + state.name
+          : t("choose");
+      choose.classList.toggle("is-selected", !!state.name);
       choose.disabled = pending || !state.supported;
       choose.hidden = !state.supported;
       install.querySelector("[data-onboarding-title]").textContent =
@@ -209,31 +364,28 @@ WorkTimeApp.ui.onboarding = (() => {
       );
       install.querySelector("[data-onboarding-manual]").textContent =
         installState.installable || installState.installed ? "" : t("manual");
-      next.textContent =
-        step === "install" && installState.installable
-          ? t("install")
-          : step === "folder"
-            ? t("skip")
-            : t("finish");
-      next.disabled = pending;
-      skip.textContent = t("finish");
-      skip.hidden = step === "folder" || !installState.installable;
+      installButton.textContent = t(
+        installState.installed ? "installed" : "install",
+      );
+      installButton.disabled = pending || installState.installed;
+      dismissInstall.checked = skipInstallReminder();
+      dialog.querySelector(".onboarding-install-dismiss span").textContent =
+        t("dontRemindInstall");
+      // Keep the entry visible even before the browser offers its native prompt.
+      installButton.hidden = false;
+      installButton.setAttribute("aria-busy", String(pending));
+      next.textContent = t("finish");
+      next.disabled = pending || !folderReady();
+      const required = dialog.querySelector("#onboardingFolderRequired");
+      required.textContent = t("folderRequired");
+      required.hidden = folderReady();
+      if (folderReady()) next.removeAttribute("aria-describedby");
+      else next.setAttribute("aria-describedby", required.id);
     }
-    async function advance() {
-      if (step === "folder") {
-        step = "install";
-        folder.hidden = true;
-        install.hidden = false;
-        render();
-        return;
-      }
-      if (dontRemind.checked) {
-        try {
-          localStorage.setItem(KEY, "dismissed");
-        } catch {}
-      } else if (!remindNextVisit) complete();
+    function finish() {
+      if (pending || !folderReady()) return;
+      complete();
       dialog.close();
-      dialog.remove();
     }
     choose.addEventListener("click", async () => {
       if (pending) return;
@@ -244,34 +396,47 @@ WorkTimeApp.ui.onboarding = (() => {
         if (await service.choose()) {
           if (service.state.status !== "available") throw Error("permission");
           document.dispatchEvent(new Event("worktime:autobackupretry"));
-          await advance();
         }
-      } catch {
-        error.textContent = t("error");
+      } catch (problem) {
+        error.textContent = WorkTimeApp.ui.runtimeFolderText(
+          problem.folderCode || "failed",
+          { name: service.state.detail || problem.message },
+        );
       } finally {
         pending = false;
         render();
+        choose.focus({ preventScroll: true });
       }
     });
-    next.addEventListener("click", async () => {
-      if (step === "folder") remindNextVisit = true;
-      if (step === "folder" || !pwa.state.installable) return advance();
+    installButton.addEventListener("click", async () => {
+      if (pending || pwa.state.installed) return;
+      if (!pwa.state.installable) {
+        install.querySelector("[data-onboarding-manual]").textContent =
+          t("manual");
+        return;
+      }
       pending = true;
-      render();
-      await pwa.prompt();
-      pending = false;
-      render();
+      try {
+        const result = pwa.prompt();
+        render();
+        await result;
+      } finally {
+        pending = false;
+        render();
+        if (!installButton.disabled)
+          installButton.focus({ preventScroll: true });
+      }
     });
-    skip.addEventListener("click", advance);
+    next.addEventListener("click", () => {
+      finish();
+    });
     const unsubscribeFolder = service.subscribe(render);
     const unsubscribePwa = pwa.subscribe(render);
     document.addEventListener("worktime:languagechange", render);
+    // Only the explicit Start button completes setup, including after selection.
+    // Keep cancel protection for browsers without closedby support.
     dialog.addEventListener("cancel", (event) => {
       event.preventDefault();
-      if (!pending) {
-        remindNextVisit = true;
-        void advance();
-      }
     });
     dialog.addEventListener(
       "close",
@@ -285,6 +450,7 @@ WorkTimeApp.ui.onboarding = (() => {
     );
     render();
     dialog.showModal();
+    dialog.querySelector("#onboardingTitle").focus({ preventScroll: true });
   }
   document.addEventListener(
     "worktime:ready",
@@ -295,13 +461,13 @@ WorkTimeApp.ui.onboarding = (() => {
     { once: true },
   );
   document.addEventListener("worktime:folderreset", () => {
-    if (read() === "dismissed") return;
     try {
       localStorage.setItem(KEY, "pending");
     } catch {}
+    void mount();
   });
   document.addEventListener("worktime:installavailable", () => {
-    if (read() !== "done") return;
+    if (skipInstallReminder() || read() !== "done") return;
     try {
       localStorage.setItem(KEY, "pending-install");
     } catch {}

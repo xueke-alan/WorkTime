@@ -1,4 +1,8 @@
 "use strict";
+const {
+  downloadBackup,
+  importBackupFile,
+} = require("./lib/backup-test-file.cjs");
 const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -36,6 +40,9 @@ async function verify() {
       )
         await page.locator("#agendaScheduleOpen").click();
     };
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await page.goto(pathToFileURL(path.join(root, "index.html")).href);
     await ready();
     await page.locator("#agendaMode").click();
@@ -380,7 +387,7 @@ async function verify() {
         },
       }),
     );
-    await page.locator("#backup").click();
+    await downloadBackup(page, "spanBackupText");
     await page.waitForFunction(() => !!window.spanBackupText);
     const saved = await page.evaluate(async () => {
       const doc = await WorkTimeApp.services.backup.decode(
@@ -466,7 +473,7 @@ async function verify() {
         }),
       backupText,
     );
-    await page.locator("#restore").click();
+    await importBackupFile(page, backupText);
     await page.locator("#restoreDialog").waitFor({ state: "visible" });
     await page.locator("#confirmRestore").click();
     await page.locator("#restoreDialog").waitFor({ state: "hidden" });

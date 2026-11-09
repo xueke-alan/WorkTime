@@ -33,6 +33,19 @@ WorkTimeApp.games.createLevelPage = function (root, id, signal) {
   categories.setAttribute("aria-labelledby", title.id);
   const entries = node(body, "div", "game-level-entries");
   entries.id = id + "-entries";
+  // Match the header to the cards, including native/overlay scrollbar widths.
+  const alignHeader = new ResizeObserver(() => {
+    if (!entries.getClientRects().length) return;
+    const padding = parseFloat(getComputedStyle(entries).paddingInlineEnd) || 0;
+    page.style.setProperty(
+      "--game-level-content-end",
+      entries.offsetWidth - entries.clientWidth + padding + "px",
+    );
+  });
+  alignHeader.observe(entries);
+  signal?.addEventListener("abort", () => alignHeader.disconnect(), {
+    once: true,
+  });
   const compat = WorkTimeApp.ui.animationCompat;
   let selectedCategory, animation;
   signal?.addEventListener("abort", () => animation?.cancel(), { once: true });

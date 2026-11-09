@@ -117,6 +117,7 @@ WorkTimeApp.ui.createAgendaSchedule = function ({ root, prefix = "agenda" }) {
           innerHeight - height - 12,
         ),
       ) + "px";
+    WorkTimeApp.ui.popover.point(popup, trigger);
   }
   function show() {
     if (trigger.closest("fieldset")?.disabled) return;

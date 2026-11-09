@@ -439,7 +439,11 @@ async function main() {
         .count(),
       20,
     );
-    assert.equal(await columnCount(), 4);
+    assert.equal(
+      await columnCount(),
+      2,
+      "Compact chapter picker uses two columns",
+    );
     assert.equal(await chapterProgress.innerText(), "已完成 20 / 20");
     assert.equal(
       await page.locator(".sokoban-progress").innerText(),

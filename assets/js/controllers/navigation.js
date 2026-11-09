@@ -83,7 +83,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       const content = $("panelContent"),
         elements = [
           content,
-          ...document.querySelectorAll(".calendar-footer > *"),
+          ...document.querySelectorAll(".calendar-footer > :not(.site-meta)"),
           ...[
             ...document.querySelectorAll(
               "#dayForm, #analysisSidebar > .analysis-sidebar-section, #agendaDayDetails, #agendaEditor .agenda-editor-body",

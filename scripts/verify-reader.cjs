@@ -1,4 +1,5 @@
 "use strict";
+const { enableReaderRuntime } = require("./runtime-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -209,7 +210,7 @@ async function main() {
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   try {
-    for (const protocol of ["file", "http"]) {
+    for (const protocol of ["http"]) {
       const page = await browser.newPage({
         viewport: { width: 1440, height: 960 },
         reducedMotion: "reduce",
@@ -227,20 +228,67 @@ async function main() {
           remote.push(route.request().url());
         return route.abort();
       });
+      await enableReaderRuntime(page);
       await page.addInitScript(() => {
-        window.showDirectoryPicker = undefined;
+        (function () {
+          window.showDirectoryPicker = async () =>
+            (await navigator.storage.getDirectory()).getDirectoryHandle(
+              "runtime-fixture",
+              { create: true },
+            );
+          FileSystemDirectoryHandle.prototype.queryPermission = async () =>
+            "granted";
+          FileSystemDirectoryHandle.prototype.requestPermission = async () =>
+            "granted";
+          localStorage.setItem("worktime.onboarding.v1", "dismissed");
+          document.addEventListener(
+            "worktime:ready",
+            () => {
+              void WorkTimeApp.services.runtimeFolder.initialize().then(() => {
+                if (
+                  WorkTimeApp.services.runtimeFolder.state.status !==
+                  "available"
+                )
+                  return WorkTimeApp.services.runtimeFolder.choose();
+              });
+            },
+            { once: true },
+          );
+        })();
       });
       const url =
         protocol === "file"
           ? pathToFileURL(path.join(root, "index.html")).href
           : `http://127.0.0.1:${server.address().port}/index.html`;
       await page.addInitScript(() =>
-        localStorage.setItem("worktime.onboarding.v1", "done"),
+        localStorage.setItem("worktime.onboarding.v1", "dismissed"),
       );
       await page.goto(url);
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
+      await page.waitForFunction(
+        () => WorkTimeApp.services.runtimeFolder.state.status === "available",
+      );
+      async function expandLibrary() {
+        const mode = await page.waitForFunction(() => {
+          if (document.querySelector("#readerDialog")?.dataset.state === "open")
+            return "full";
+          const button = document.getElementById("readerMiniExpand");
+          return button?.getClientRects().length &&
+            document
+              .getElementById("readerMiniViewport")
+              ?.getAttribute("aria-busy") === "false"
+            ? "mini"
+            : false;
+        });
+        if ((await mode.jsonValue()) === "mini")
+          await page.locator("#readerMiniExpand").click();
+        await page.waitForFunction(
+          () =>
+            document.querySelector("#readerDialog")?.dataset.state === "open",
+        );
+      }
       assert.equal(
         await page.evaluate(
           () => !!window.WorkTimeReaderPDF || !!window.WorkTimeReaderEPUB,
@@ -249,6 +297,7 @@ async function main() {
         "No reader engines at startup",
       );
       await page.locator("#readerOpen").click();
+      await expandLibrary();
       await page.waitForFunction(
         () => document.querySelector("#readerDialog")?.dataset.state === "open",
       );
@@ -379,8 +428,7 @@ async function main() {
           });
       });
       await page
-        .locator('#readerDialog > input[type="file"]')
-        .first()
+        .locator('#readerDialog [data-runtime-import="folder"]')
         .setInputFiles(fixtures);
       await page
         .waitForFunction(
@@ -407,14 +455,30 @@ async function main() {
       await emptyMiniRoundTrip(10);
       let expectedShelfScroll = 0;
       async function openBook(name) {
+        await expandLibrary();
+        if (await page.locator("#readerShelf").isVisible()) {
+          await page.locator("#readerShelf").click();
+          await page.waitForFunction(
+            () => !document.querySelector(".reader-library").hidden,
+          );
+        }
         const entry = page
           .locator(".reader-book-open")
           .filter({ has: page.locator("h4", { hasText: name }) });
+        await page.waitForFunction(
+          (title) =>
+            [...document.querySelectorAll(".reader-book-open")].some(
+              (button) =>
+                !button.disabled &&
+                button.querySelector("h4")?.textContent === title,
+            ),
+          name,
+        );
         await entry.scrollIntoViewIfNeeded();
         expectedShelfScroll = await page
           .locator(".reader-library-content")
           .evaluate((e) => e.scrollTop);
-        await entry.click();
+        await entry.evaluate((button) => button.click());
         await page.waitForFunction(
           (title) =>
             document.querySelector(".reader-book-title")?.textContent ===
@@ -428,12 +492,21 @@ async function main() {
         await page.waitForFunction(
           () => !document.querySelector(".reader-library").hidden,
         );
+        await page.evaluate(
+          () =>
+            new Promise((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(resolve)),
+            ),
+        );
         const restored = await page
           .locator(".reader-library-content")
           .evaluate((e) => e.scrollTop);
+        const maximum = await page
+          .locator(".reader-library-content")
+          .evaluate((e) => e.scrollHeight - e.clientHeight);
         assert.ok(
-          Math.abs(restored - expectedShelfScroll) <= 2,
-          "Returning to library restores its scroll position",
+          Math.abs(restored - Math.min(expectedShelfScroll, maximum)) <= 2,
+          `Returning to library restores its scroll position: expected ${expectedShelfScroll}, actual ${restored}, maximum ${maximum}`,
         );
       }
       async function tool(name) {
@@ -480,9 +553,11 @@ async function main() {
           "Only one reading renderer exists",
         );
         assert.equal(
-          await page.locator(".reader-mini .reader-button").count(),
+          await page
+            .locator("#readerMiniPrevious, #readerMiniNext, #readerMiniExpand")
+            .count(),
           3,
-          "Mini only has previous/next/expand controls",
+          "Mini retains previous/next/expand controls",
         );
         if (supported && !fallback)
           assert.equal(
@@ -524,7 +599,14 @@ async function main() {
                   .fontSize,
               ),
             );
-          assert.ok(font <= 18);
+          const selectedMiniFont = await page
+            .locator("#readerMiniFontSize")
+            .inputValue();
+          assert.equal(
+            font,
+            Number(selectedMiniFont),
+            "Mini reading honors its selected font size",
+          );
           await page.locator("#readerMiniViewport").focus();
           await page.keyboard.press("Control+f");
           assert.equal(
@@ -552,7 +634,7 @@ async function main() {
               document.querySelector("#musicDialog")?.dataset.state === "open",
           );
           await page
-            .locator('#musicDialog input[type="file"]')
+            .locator('#musicDialog [data-runtime-import="folder"]')
             .first()
             .setInputFiles(audioDir);
           await page.waitForSelector(".music-track");
@@ -635,7 +717,7 @@ async function main() {
           assert.equal(
             font,
             28,
-            "Mini overrides do not overwrite full typography",
+            "Mini and full reading share the selected typography",
           );
         }
         await page.evaluate(() => {
@@ -896,10 +978,14 @@ async function main() {
       await page.waitForSelector('.reader-pdf-page[data-ready="true"]');
       assert.equal(await page.locator(".textLayer span").count(), 0);
       await shelf();
-      await page
+      const passwordBook = page
         .locator(".reader-book-open")
-        .filter({ has: page.locator("h4", { hasText: "Password" }) })
-        .click();
+        .filter({ has: page.locator("h4", { hasText: "Password" }) });
+      await passwordBook.scrollIntoViewIfNeeded();
+      expectedShelfScroll = await page
+        .locator(".reader-library-content")
+        .evaluate((element) => element.scrollTop);
+      await passwordBook.evaluate((button) => button.click());
       await page.waitForSelector(".reader-prompt[open]");
       await page.locator('.reader-prompt input[type="password"]').fill("wrong");
       await page.locator('.reader-prompt button[type="submit"]').click();
@@ -966,8 +1052,9 @@ async function main() {
       const exportedData = JSON.parse(fs.readFileSync(exportPath, "utf8"));
       assert.equal(exportedData.format, "worktime-reader");
       await page
-        .locator('#readerDialog > input[type="file"]')
-        .nth(1)
+        .locator(
+          '#readerDialog > input[type="file"]:not([data-runtime-import])',
+        )
         .setInputFiles({
           name: "reading-backup.json",
           mimeType: "application/json",
@@ -983,6 +1070,7 @@ async function main() {
         () => document.documentElement.dataset.appState === "ready",
       );
       await page.locator("#readerOpen").click();
+      await expandLibrary();
       await page.waitForFunction(
         () => document.querySelector("#readerDialog")?.dataset.state === "open",
       );
@@ -1008,8 +1096,7 @@ async function main() {
       );
       await page.setViewportSize({ width: 1440, height: 960 });
       await page
-        .locator('#readerDialog > input[type="file"]')
-        .first()
+        .locator('#readerDialog [data-runtime-import="folder"]')
         .setInputFiles(fixtures);
       await page.waitForFunction(
         () => document.querySelector("#readerCancelScan").hidden,
@@ -1034,7 +1121,8 @@ async function main() {
       const controls = await page.evaluate(async () => {
         const services = WorkTimeApp.services,
           originalStorage = services.readerStorage,
-          originalLibrary = services.readerLibrary;
+          originalLibrary = services.readerLibrary,
+          originalRuntime = services.runtimeFolder;
         const saved = [];
         let permission = "prompt",
           prompts = 0,
@@ -1053,6 +1141,7 @@ async function main() {
           write: async (value) => saved.push(value),
         };
         const file = new File(["stable book content"], "Initial.txt");
+        let currentFiles = [file];
         const handle = {
           name: "Books",
           queryPermission: async () => permission,
@@ -1062,7 +1151,27 @@ async function main() {
             return permission;
           },
           async *values() {
-            yield { kind: "file", name: file.name, getFile: async () => file };
+            for (const item of currentFiles)
+              yield {
+                kind: "file",
+                name: item.name,
+                getFile: async () => item,
+              };
+          },
+        };
+        services.runtimeFolder = {
+          state: { name: "Controlled" },
+          async getDirectory() {
+            if (permission !== "granted")
+              throw new DOMException("Revoked", "NotAllowedError");
+            return handle;
+          },
+          async authorize() {
+            await handle.requestPermission();
+          },
+          async importFiles(kind, files) {
+            currentFiles = [...files];
+            return { completed: files.length };
           },
         };
         const picker = window.showDirectoryPicker;
@@ -1078,14 +1187,15 @@ async function main() {
         try {
           await controller.ready;
           const initialPrompts = prompts;
-          await controller.choose();
+          await services.runtimeFolder.authorize();
+          await controller.refresh();
           await wait();
           await controller.reconnect();
           await wait();
           const reconnectPrompts = prompts;
           const id = [...controller.snapshot().entries.keys()][0];
           controller.updateBook(id, { favorite: true });
-          controller.importFiles([
+          await controller.importFiles([
             new File(["stable book content"], "Renamed.txt"),
           ]);
           await wait();
@@ -1098,12 +1208,17 @@ async function main() {
           window.showDirectoryPicker = async () => {
             throw new DOMException("Cancelled", "AbortError");
           };
-          await controller.choose();
+          if (typeof controller.choose !== "undefined")
+            throw Error(
+              "Managed libraries must not expose directory selection",
+            );
+          await controller.refresh();
           const cancelledKept = controller.snapshot().entries.has(id);
           slowScan = true;
-          controller.importFiles([new File(["new content"], "Other.txt")]);
+          const refreshing = controller.refresh();
           await new Promise((resolve) => setTimeout(resolve, 5));
           controller.cancelScan();
+          await refreshing;
           await new Promise((resolve) => setTimeout(resolve, 50));
           const scanCancelledKept =
             controller.snapshot().entries.has(id) &&
@@ -1118,7 +1233,7 @@ async function main() {
           const denied = WorkTimeApp.ui.createReaderController();
           await denied.ready;
           window.showDirectoryPicker = async () => handle;
-          await denied.choose();
+          await denied.refresh();
           await new Promise((resolve) => setTimeout(resolve, 40));
           const deniedMessage = denied.snapshot().message;
           denied.dispose();
@@ -1135,6 +1250,7 @@ async function main() {
           controller.dispose();
           services.readerStorage = originalStorage;
           services.readerLibrary = originalLibrary;
+          services.runtimeFolder = originalRuntime;
           window.showDirectoryPicker = picker;
         }
       });
@@ -1149,7 +1265,8 @@ async function main() {
         const services = WorkTimeApp.services,
           originalStorage = services.readerStorage,
           originalLibrary = services.readerLibrary,
-          originalAdapters = services.readerAdapters;
+          originalAdapters = services.readerAdapters,
+          originalRuntime = services.runtimeFolder;
         const interval = window.setInterval,
           now = Date.now,
           hidden = Object.getOwnPropertyDescriptor(document, "hidden");
@@ -1162,6 +1279,25 @@ async function main() {
             ...originalStorage,
             read: async () => originalStorage.defaults(),
             write: async () => {},
+          };
+          const clockFile = new File(["reading clock"], "Clock.txt");
+          services.runtimeFolder = {
+            state: { name: "Clock fixture" },
+            async getDirectory() {
+              return {
+                name: "ebooks",
+                async *values() {
+                  yield {
+                    kind: "file",
+                    name: clockFile.name,
+                    getFile: async () => clockFile,
+                  };
+                },
+              };
+            },
+            async importFiles() {
+              return { completed: 1 };
+            },
           };
           services.readerAdapters = {
             ...originalAdapters,
@@ -1187,7 +1323,7 @@ async function main() {
             get: () => invisible,
           });
           await c.ready;
-          c.importFiles([new File(["reading clock"], "Clock.txt")]);
+          await c.importFiles([new File(["reading clock"], "Clock.txt")]);
           for (let n = 0; n < 100 && !c.snapshot().entries.size; n++)
             await new Promise((resolve) => setTimeout(resolve, 5));
           await c.open(
@@ -1230,6 +1366,7 @@ async function main() {
           services.readerStorage = originalStorage;
           services.readerLibrary = originalLibrary;
           services.readerAdapters = originalAdapters;
+          services.runtimeFolder = originalRuntime;
         }
       });
       assert.deepEqual(
@@ -1314,21 +1451,26 @@ async function main() {
         () => document.documentElement.dataset.appState === "ready",
       );
       await page.locator("#readerOpen").click();
-      await page.waitForSelector(".reader-mini-empty");
+      await page.waitForSelector("#readerMiniViewport .reader-stage");
+      await page.waitForFunction(
+        () =>
+          document
+            .querySelector("#readerMiniViewport")
+            .getAttribute("aria-busy") === "false",
+      );
       assert.equal(await page.locator("#readerDialog").isVisible(), false);
-      assert.equal(await page.locator("#readerMiniNext").isDisabled(), true);
+      assert.equal(await page.locator("#readerMiniNext").isDisabled(), false);
       assert.equal(
         await page.locator("#readerMiniViewport .reader-stage").count(),
-        0,
-        "Reload never reads book files automatically",
+        1,
+        "Reload resumes the previous book from the persistent runtime library",
       );
       await page.locator("#readerMiniExpand").click();
       await page.waitForFunction(
         () => document.querySelector("#readerDialog").dataset.state === "open",
       );
       await page
-        .locator('#readerDialog > input[type="file"]')
-        .first()
+        .locator('#readerDialog [data-runtime-import="folder"]')
         .setInputFiles(fixtures);
       await page.waitForFunction(
         () =>

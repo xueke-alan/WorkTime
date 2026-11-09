@@ -427,7 +427,11 @@ async function sampleMotion(page, moments) {
 }
 function assertMotion(result, opening) {
   const { timing, samples } = result;
-  assert.equal(timing.length, 10);
+  assert.equal(
+    timing.length,
+    9,
+    "Three background opacity, two slide, shell, surface, toolbar and content tracks",
+  );
   assert.equal(
     new Set(timing.map((track) => track.start)).size,
     1,
@@ -548,10 +552,7 @@ async function verify() {
     page.on("pageerror", (error) => errors.push(error.message));
     await page.route(/^https?:/, (route) => route.abort());
     await ready(page);
-    assert.equal(
-      await page.locator("#date-tab-games + #date-tab-history").count(),
-      1,
-    );
+    assert.equal(await page.locator("#date-tab-games").count(), 1);
     const snapshot = await page.evaluate(() => {
       const input = document.querySelector('#dayForm input[type="text"]');
       if (input) input.value = "09:37";

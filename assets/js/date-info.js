@@ -299,6 +299,8 @@
           ),
         })),
     historyData,
+    loadLunar: () =>
+      WorkTimeApp.services.assets.script("assets/vendor/lunar.min.js"),
     lunar,
   };
 })(typeof window === "undefined" ? globalThis : window);

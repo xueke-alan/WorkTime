@@ -7,6 +7,9 @@ const postcss = require("postcss");
 const { versionHtml } = require("./version-site.cjs");
 require("./prepare-assets.cjs").prepareAssets({ check: true });
 const root = path.resolve(__dirname, "..");
+acorn.parse(fs.readFileSync(path.join(root, "service-worker.js"), "utf8"), {
+  ecmaVersion: "latest",
+});
 function files(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(directory, entry.name);
@@ -38,18 +41,14 @@ assert.ok(
     .includes('<span id="siteVersion">v' + manifest.version + "</span>"),
   "Offline entry version must match package.json",
 );
-for (const entryPath of [
-  "index.html",
-  "rescue.html",
-  "tools/convert-backup.html",
-])
+for (const entryPath of ["index.html", "tools/convert-backup.html"])
   versionHtml(fs.readFileSync(path.join(root, entryPath), "utf8"), root, {
     entryPath,
   });
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 assert.ok(
-  html.includes('src="assets/js/ui/agenda-runtime.min.js"'),
-  "Offline entry must load the generated agenda runtime",
+  html.includes('src="assets/js/boot.js"'),
+  "Offline entry must use the staged classic-script loader",
 );
 const agendaRuntime = fs.readFileSync(
   path.join(root, "assets/js/ui/agenda-runtime.min.js"),
@@ -70,11 +69,3 @@ console.log(
   "JavaScript/CSS syntax, release versions and offline page dependencies verified.",
 );
 require("./check-i18n.cjs").checkI18n();
-
-const rescue = fs.readFileSync(path.join(root, "rescue.html"), "utf8");
-for (const match of rescue.matchAll(/<script>([\s\S]*?)<\/script>/g))
-  acorn.parse(match[1], { ecmaVersion: "latest" });
-assert.ok(
-  !/<script[^>]+src=|<link[^>]+(?:href=)/i.test(rescue),
-  "Rescue page must be self-contained",
-);

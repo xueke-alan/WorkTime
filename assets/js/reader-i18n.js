@@ -2,6 +2,10 @@
 WorkTimeApp.ui.readerText = (() => {
   // Keep this small entry-point catalog independent from the lazy reader engines.
   const rows = {
+    placeholderTitle: "电子书|電子書|電子書|Ebooks|電子書籍|전자책",
+    placeholderMessage:
+      "电子书功能暂缓开发，敬请期待。|電子書功能暫緩開發，敬請期待。|電子書功能暫緩開發，敬請期待。|Ebook development is on hold. Stay tuned.|電子書籍機能の開発は一時休止中です。|전자책 기능 개발은 잠시 보류 중입니다.",
+    placeholderClose: "关闭|關閉|關閉|Close|閉じる|닫기",
     minimize:
       "最小化阅读|最小化閱讀|最小化閱讀|Minimize reader|読書を最小化|독서 최소화",
     expand:
@@ -166,7 +170,9 @@ WorkTimeApp.ui.readerText = (() => {
   };
   const languages = ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"];
   return (key) =>
-    rows[key]?.split("|")[
-      Math.max(0, languages.indexOf(WorkTimeApp.i18n.language))
-    ] || key;
+    key === "exit"
+      ? WorkTimeApp.i18n.t("copy.11d0241540")
+      : rows[key]?.split("|")[
+          Math.max(0, languages.indexOf(WorkTimeApp.i18n.language))
+        ] || key;
 })();

@@ -1,11 +1,38 @@
 "use strict";
 /** Optional animation APIs must never prevent a view from reaching its final state. */
 (() => {
-  function preference() {
-    return typeof window.matchMedia === "function"
+  const system =
+    typeof window.matchMedia === "function"
       ? window.matchMedia("(prefers-reduced-motion: reduce)")
       : { matches: false };
+  const effective = new EventTarget();
+  Object.defineProperty(effective, "matches", { get: () => reduced() });
+  function mode() {
+    return WorkTimeApp.services.preferences.page.state.motionMode || "system";
   }
+  function reduced() {
+    return mode() === "reduce" || (mode() === "system" && system.matches);
+  }
+  function preference() {
+    return effective;
+  }
+  function sourceMedia() {
+    return reduced() ? "all" : "not all";
+  }
+  function synchronize() {
+    const value = String(reduced());
+    const changed = document.documentElement.dataset.reducedMotion !== value;
+    document.documentElement.dataset.reducedMotion = value;
+    for (const source of document.querySelectorAll(
+      "source[data-motion-source]",
+    ))
+      source.media = sourceMedia();
+    if (changed) effective.dispatchEvent(new Event("change"));
+    document.dispatchEvent(new Event("worktime:motionchange"));
+  }
+  listen(system, synchronize);
+  WorkTimeApp.services.preferences.page.subscribe(synchronize);
+  synchronize();
   function listen(query, callback) {
     if (typeof query.addEventListener === "function") {
       query.addEventListener("change", callback);
@@ -101,6 +128,8 @@
   };
   WorkTimeApp.ui.animationCompat = {
     preference,
+    system,
+    sourceMedia,
     listen,
     animate,
     decode,

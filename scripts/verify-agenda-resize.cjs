@@ -1,4 +1,8 @@
 "use strict";
+const {
+  downloadBackup,
+  importBackupFile,
+} = require("./lib/backup-test-file.cjs");
 const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
@@ -22,6 +26,9 @@ async function verify() {
     page.on("dialog", (dialog) => dialog.accept());
     await page.route(/^https?:/, (route) => route.abort());
     await page.clock.setFixedTime(new Date("2026-10-29T04:00:00Z"));
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await page.goto(pathToFileURL(path.join(root, "index.html")).href);
     await page.waitForFunction(
       () =>
@@ -445,7 +452,7 @@ async function verify() {
         });
       }, text);
     await clipboard();
-    await page.locator("#backup").click();
+    await downloadBackup(page, "resizeBackup");
     await page.waitForFunction(() => !!window.resizeBackup);
     const backup = await page.evaluate(() => window.resizeBackup);
     await page.reload();
@@ -467,7 +474,7 @@ async function verify() {
       "Off-screen real end must not expose a continuation resize handle",
     );
     await clipboard(backup);
-    await page.locator("#restore").click();
+    await importBackupFile(page, backup);
     await page.locator("#restoreDialog").waitFor({ state: "visible" });
     await page.locator("#confirmRestore").click();
     await page.locator("#restoreDialog").waitFor({ state: "hidden" });

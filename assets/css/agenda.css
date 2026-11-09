@@ -55,10 +55,8 @@ body .agenda-mode .editor .agenda-drawer-grip::after { left: 50%; margin-left: -
 body .agenda-mode .editor .agenda-drawer-grip:is(:hover, :focus-visible)::before { transform: translateY(3px) rotate(20deg); }
 body .agenda-mode .editor .agenda-drawer-grip:is(:hover, :focus-visible)::after { transform: translateY(3px) rotate(-20deg); }
 body .agenda-mode .editor .agenda-drawer-grip:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-@media (prefers-reduced-motion: reduce) {
-  body .agenda-mode .editor .agenda-drawer-grip::before,
-  body .agenda-mode .editor .agenda-drawer-grip::after { transition: none; }
-}
+:where(html:where([data-reduced-motion="true"])) body .agenda-mode .editor .agenda-drawer-grip::before,
+  :where(html:where([data-reduced-motion="true"])) body .agenda-mode .editor .agenda-drawer-grip::after { transition: none; }
 /* Settings keep the multifunction area docked below the form, like attendance. */
 body .agenda-mode .editor:is(.is-settings-open, .is-page-settings-open) > .date-info-area { display: flex; position: static; inset: auto; z-index: auto; flex: 0 0 var(--date-info-height); height: var(--date-info-height); min-height: var(--date-info-min-height); max-height: none; border-radius: 0; box-shadow: none; pointer-events: auto; }
 body .agenda-mode .editor:is(.is-settings-open, .is-page-settings-open) .agenda-drawer-grip { display: none; }
@@ -313,9 +311,7 @@ body .agenda-chip-time.ui-aligned-text { display: block; }
   }
   .agenda-chip:is(:hover, :focus-visible) .agenda-resize-handle::after { opacity: 0.55; transform: translateY(-50%) scaleY(1); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .agenda-resize-handle::after { transition: none; }
-}
+:where(html:where([data-reduced-motion="true"])) .agenda-resize-handle::after { transition: none; }
 body.agenda-is-dragging.agenda-is-resizing, body.agenda-is-dragging.agenda-is-resizing * { cursor: ew-resize !important; }
 .agenda-drag-preview.agenda-resize-preview { position: fixed; inset: 0; width: auto; height: auto; background: none; box-shadow: none; opacity: 1; }
 .agenda-resize-preview > .agenda-resize-segment { position: fixed; pointer-events: none; opacity: 1; transition: none; }
@@ -1283,13 +1279,11 @@ body .agenda-editor .agenda-editor-footer #agendaDraft {
   font-weight: 500;
   line-height: 1.6;
 }
-@media (prefers-reduced-motion: reduce) {
-  .agenda-item,
-  .agenda-form input,
-  .agenda-form textarea {
+:where(html:where([data-reduced-motion="true"])) .agenda-item,
+  :where(html:where([data-reduced-motion="true"])) .agenda-form input,
+  :where(html:where([data-reduced-motion="true"])) .agenda-form textarea {
     transition: none;
   }
-}
 @media (max-width: 540px) {
   :is(.agenda-chip, .agenda-more) { font-size: 10px; }
   .agenda-chip {
@@ -1331,7 +1325,7 @@ body .calendar.agenda-week-view[data-agenda-filtered] > .day[data-agenda-week] {
 }
 .agenda-workday-switch .ui-icon { width: 20px; height: 20px; transition: transform 360ms var(--motion-ease); transform-origin: center; }
 .agenda-workday-switch[aria-checked="true"] .ui-icon { transform: rotate(180deg); }
-@media (prefers-reduced-motion: reduce) { .agenda-workday-switch .ui-icon { transition: none; } }
+:where(html:where([data-reduced-motion="true"])) .agenda-workday-switch .ui-icon { transition: none; }
 @container calendar-panel (max-width: 549px) {
   .weekdays.agenda-single-weekdays > .is-last-visible-weekday { transform: translateX(-12px); }
 }
@@ -1433,11 +1427,9 @@ body .calendar.agenda-dual-card-view > .day > .day-select {
   z-index: 1;
   transform-origin: left center;
 }
-@media (prefers-reduced-motion: no-preference) {
-  .timetable-divider {
+:where(html:where([data-reduced-motion="false"])) .timetable-divider {
     animation: timetable-divider-reveal 520ms var(--motion-ease);
   }
-}
 .timetable-divider.is-content-hidden { visibility: hidden; animation: none; }
 @keyframes timetable-divider-reveal {
   from { opacity: 0; transform: scaleX(0); }
@@ -1492,7 +1484,7 @@ body.agenda-timetable-resizing, body.agenda-timetable-resizing * { cursor: ns-re
 .agenda-timetable .timetable-event.timetable-preview { transition: top 140ms ease, height 140ms ease, left 140ms ease, width 140ms ease; }
 .agenda-timetable .timetable-event.is-moving-preview { transition: top 90ms ease-out, left 90ms ease-out, height 140ms ease, width 140ms ease; }
 .agenda-timetable:is(.is-axis-morphing, .is-settling) .timetable-event { transition: none; }
-@media (prefers-reduced-motion: reduce) { .agenda-timetable .timetable-event, .agenda-timetable .timetable-event.timetable-preview, .agenda-timetable .timetable-event.is-moving-preview { transition: none; } }
+:where(html:where([data-reduced-motion="true"])) .agenda-timetable .timetable-event, :where(html:where([data-reduced-motion="true"])) .agenda-timetable .timetable-event.timetable-preview, :where(html:where([data-reduced-motion="true"])) .agenda-timetable .timetable-event.is-moving-preview { transition: none; }
 .agenda-timetable.is-dragging { user-select: none; }
 .timetable-hint { position: fixed; z-index: 10000; max-width: 280px; pointer-events: none; border: 1px solid var(--accent); border-radius: 6px; padding: 6px 9px; font-size: 12px; color: var(--ink); background: var(--paper); box-shadow: var(--shadow); }
 /* Agenda month/week/fortnight views temporarily hide both weather layers. */
@@ -1523,9 +1515,7 @@ body .agenda-mode .month-controls .month-title {
   transition: width 360ms var(--motion-ease), background-color 150ms ease;
 }
 /* Keep the shared year/month transitions when entering from the year view. */
-@media (prefers-reduced-motion: reduce) {
-  body .workspace.agenda-mode .month-controls .month-title { transition: none; }
-}
+:where(html:where([data-reduced-motion="true"])) body .workspace.agenda-mode .month-controls .month-title { transition: none; }
 body .month-controls .month-title.has-week-label {
   width: calc(
     4ch + var(--month-label-width, 2ch) + 1em + var(--week-label-width, 2.8ch) +
@@ -1767,25 +1757,24 @@ body .agenda-editor :is(#agendaTitle, #agendaNote):focus-visible,
 .agenda-sliced:is(.is-selected, .agenda-reorder-moving, .agenda-preview-peer).continues-after::after { opacity: 1; }
 
 /* Continuation dashes crossfade with the closed edge instead of switching paint. */
-@media (prefers-reduced-motion: no-preference) {
-  .agenda-week-lane .agenda-chip,
-  .agenda-chip .agenda-chip-face {
+:where(html:where([data-reduced-motion="false"])) .agenda-week-lane .agenda-chip,
+  :where(html:where([data-reduced-motion="false"])) .agenda-chip .agenda-chip-face {
     transition: background-color 220ms ease-out, box-shadow 220ms ease-out,
       border-left-color 220ms ease-out, border-radius 220ms ease-out;
   }
-  .agenda-chip::before, .agenda-chip::after,
-  .agenda-chip .agenda-chip-face::before, .agenda-chip .agenda-chip-face::after {
+:where(html:where([data-reduced-motion="false"])) .agenda-chip::before, :where(html:where([data-reduced-motion="false"])) .agenda-chip::after, :where(html:where([data-reduced-motion="false"])) .agenda-chip .agenda-chip-face::before, :where(html:where([data-reduced-motion="false"])) .agenda-chip .agenda-chip-face::after {
     transition: opacity 220ms ease-out, width 220ms ease-out;
   }
-  .agenda-chip > .agenda-slice { transition: opacity 220ms ease-out; }
-  .agenda-measuring .agenda-chip,
-  .agenda-measuring .agenda-chip-face,
-  .agenda-measuring .agenda-slice,
-  .agenda-measuring .agenda-chip::before, .agenda-measuring .agenda-chip::after,
-  .agenda-measuring .agenda-chip-face::before, .agenda-measuring .agenda-chip-face::after {
+:where(html:where([data-reduced-motion="false"])) .agenda-chip > .agenda-slice { transition: opacity 220ms ease-out; }
+:where(html:where([data-reduced-motion="false"])) .agenda-measuring .agenda-chip,
+  :where(html:where([data-reduced-motion="false"])) .agenda-measuring .agenda-chip-face,
+  :where(html:where([data-reduced-motion="false"])) .agenda-measuring .agenda-slice,
+  :where(html:where([data-reduced-motion="false"])) .agenda-measuring .agenda-chip::before,
+  :where(html:where([data-reduced-motion="false"])) .agenda-measuring .agenda-chip::after,
+  :where(html:where([data-reduced-motion="false"])) .agenda-measuring .agenda-chip-face::before,
+  :where(html:where([data-reduced-motion="false"])) .agenda-measuring .agenda-chip-face::after {
     transition: none;
   }
-}
 
 /* Move only text into the explicitly selected date; ribbon controls stay put. */
 .agenda-week-lane .agenda-chip .agenda-chip-title-text,
@@ -1795,12 +1784,10 @@ body .agenda-editor :is(#agendaTitle, #agendaNote):focus-visible,
 }
 .agenda-week-lane.agenda-text-shifting .agenda-chip .agenda-chip-title-text,
 .agenda-week-lane.agenda-text-shifting .agenda-chip > :is(.agenda-chip-time, .agenda-chip-note) { transition: translate 360ms var(--motion-ease); }
-@media (prefers-reduced-motion: reduce) {
-  .agenda-week-lane .agenda-chip .agenda-chip-title-text,
-  .agenda-week-lane .agenda-chip > :is(.agenda-chip-time, .agenda-chip-note) {
+:where(html:where([data-reduced-motion="true"])) .agenda-week-lane .agenda-chip .agenda-chip-title-text,
+  :where(html:where([data-reduced-motion="true"])) .agenda-week-lane .agenda-chip > :is(.agenda-chip-time, .agenda-chip-note) {
     transition: none;
   }
-}
 .agenda-week-lane .agenda-chip > :is(.agenda-chip-time, .agenda-chip-note) {
   clip-path: inset(0 max(0px, calc(100% - var(--agenda-text-width, 100%))) 0 0);
 }

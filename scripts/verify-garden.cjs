@@ -365,6 +365,10 @@ async function main() {
           );
           assert.equal(await action("level-17").isVisible(), true);
           if (level > 0) {
+            await page
+              .locator("#garden-level-page .game-level-categories button")
+              .first()
+              .click();
             const firstCard = action("level-0");
             const badge = firstCard.locator(".game-level-badge");
             assert.equal(await badge.textContent(), "★★★");
@@ -376,6 +380,7 @@ async function main() {
             );
           }
           await action("close-levels").click();
+          await page.locator(".garden-stage").waitFor({ state: "visible" });
           const bounds = await page.locator(".garden-stage").boundingBox();
           assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width);
           assert.ok(await page.locator(".garden-tile:enabled").count());
@@ -415,6 +420,10 @@ async function main() {
       await page.locator(".garden-level-grid button:enabled").count(),
       18,
     );
+    await page
+      .locator("#garden-level-page .game-level-categories button")
+      .first()
+      .click();
     await action("level-6").click();
     assert.equal((await load()).state.level, 6);
     assert.equal((await load()).state.hintsLeft, 2);

@@ -53,11 +53,13 @@
   min-width: 0;
   margin: 0;
   letter-spacing: normal;
-  font-size: 1.05rem;
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
   line-height: 1.3;
   overflow-wrap: anywhere;
 }
 .sudoku-hud {
+  order: -1;
+  margin-bottom: 1rem;
   min-height: var(--control-height);
   flex-wrap: nowrap;
   justify-content: space-between;
@@ -68,15 +70,32 @@
   flex: none;
   gap: 0.5rem;
 }
+.sudoku-session-meta > [data-sudoku-action="pause"] {
+  width: auto;
+  min-height: 2.75rem;
+  height: auto;
+  padding: 0.5rem 0.75rem;
+  padding-inline-end: 1.25rem;
+  gap: 0.6rem;
+}
+.sudoku-session-meta > .sudoku-options > summary {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+.sudoku-session-meta > [data-sudoku-action="pause"] > .ui-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+}
 .sudoku-time {
   display: flex;
   align-items: center;
-  margin-inline-end: 0.25rem;
 }
 .sudoku-time > strong {
-  font: 600 1rem / 1 var(--font-numeric);
+  display: block;
+  font: 650 1.4rem / 1 var(--font-numeric);
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
+  text-box: trim-both cap alphabetic;
+  color: inherit;
 }
 .sudoku-options {
   position: relative;
@@ -342,12 +361,12 @@ body .sudoku-cell:focus-visible {
   stroke-width: 1.1;
 }
 .sudoku-thermos .sudoku-whispers {
-  stroke: color-mix(in srgb, #16854d 65%, var(--paper));
-  stroke-width: 2.5;
+  stroke: color-mix(in srgb, #16854d 32%, var(--paper));
+  stroke-width: 2;
 }
 .sudoku-thermos .sudoku-renban {
-  stroke: color-mix(in srgb, #ae43be 65%, var(--paper));
-  stroke-width: 2.5;
+  stroke: color-mix(in srgb, #ae43be 32%, var(--paper));
+  stroke-width: 2;
 }
 .sudoku-thermos .sudoku-arrow,
 .sudoku-thermos .sudoku-arrow-circle {
@@ -496,15 +515,25 @@ body .sudoku-cell:focus-visible {
   max-width: calc(var(--sudoku-size) + 18rem);
 }
 .game-sudoku[data-playing="true"][data-layout="wide"] .sudoku-hud {
-  max-width: var(--sudoku-size);
+  grid-column: 2;
+  grid-row: 1;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+.game-sudoku[data-layout="wide"] .sudoku-session-meta {
+  justify-content: flex-start;
 }
 .game-sudoku[data-layout="wide"] .sudoku-play {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 16rem;
-  grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   height: var(--sudoku-size);
   align-items: center;
   column-gap: 2rem;
+  row-gap: 1rem;
   width: 100%;
 }
 .game-sudoku[data-layout="wide"] .sudoku-tools {
@@ -512,25 +541,25 @@ body .sudoku-cell:focus-visible {
   flex-direction: column;
   grid-column: 2;
   grid-row: 2;
+  justify-content: safe center;
   gap: 1rem;
   min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
 }
 .game-sudoku[data-layout="wide"] .sudoku-actions {
   margin: 0;
 }
 .game-sudoku[data-layout="wide"] .sudoku-rule {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: start;
   order: -1;
   min-height: 0;
-  max-height: calc(100% - 1rem);
-  overflow: auto;
-  margin: 0 0 1rem;
+  flex: none;
+  margin: 0;
 }
 .game-sudoku[data-layout="wide"] .sudoku-stage {
   grid-column: 1;
-  grid-row: 1 / 4;
+  grid-row: 1 / 3;
   align-self: start;
   width: var(--sudoku-size, 100%);
   max-width: 100%;
@@ -539,6 +568,7 @@ body .sudoku-cell:focus-visible {
   container-type: inline-size;
 }
 .game-sudoku[data-layout="wide"] .sudoku-keypad {
+  flex: none;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
   margin: 0;

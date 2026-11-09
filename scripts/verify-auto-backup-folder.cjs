@@ -36,6 +36,7 @@ async function main() {
       acceptDownloads: true,
     });
     await context.addInitScript(() => {
+      localStorage.setItem("worktime.onboarding.v1", "dismissed");
       window.folderTest = {
         permission: "granted",
         failWrite: false,
@@ -121,15 +122,35 @@ async function main() {
         const dir = await (
           await navigator.storage.getDirectory()
         ).getDirectoryHandle("archive-A");
+        const backupDir = await dir.getDirectoryHandle("backups");
         const result = [];
-        for await (const [name, file] of dir.entries())
-          result.push({ name, text: await (await file.getFile()).text() });
+        async function collect(directory, prefix = "") {
+          for await (const [name, file] of directory.entries()) {
+            if (file.kind === "directory")
+              await collect(file, prefix + name + "/");
+            else if (name.endsWith(".txt"))
+              result.push({
+                name: prefix + name,
+                text: await (await file.getFile()).text(),
+              });
+          }
+        }
+        await collect(backupDir);
         return result;
       });
     await page.goto(`http://127.0.0.1:${server.address().port}/index.html`);
     await ready();
+    await page.locator("#onboardingDialog[open]").waitFor();
+    assert.equal(downloads.length, 0, "missing root never downloads");
+    assert.equal(
+      await page.evaluate(
+        () => WorkTimeApp.services.preferences.page.state.lastAutoBackupDate,
+      ),
+      null,
+    );
+    await page.locator(".onboarding-folder-button").click();
     await saved();
-    assert.equal(downloads.length, 1, "default still downloads");
+    await page.locator("[data-onboarding-next]").click();
     await clickSettingsControl(page, "#pageSettingsOpen");
     await page.locator("#autoBackupFolderChoose").waitFor({ state: "visible" });
     const layout = await page.evaluate(() => {
@@ -149,24 +170,15 @@ async function main() {
       "frequency and folder must share a row",
     );
     assert.ok(
-      Math.abs(layout.ratio - 1.5) < 0.02,
-      "frequency/folder widths must be 2:3",
+      Math.abs(layout.ratio - 1) < 0.02,
+      "frequency/folder widths must share equal columns beside installation",
     );
-    await due();
-    await page.locator("#autoBackupFolderChoose").click();
-    await saved();
-    assert.equal(downloads.length, 1, "folder archive must not download");
+    assert.equal(downloads.length, 0, "folder archive must not download");
     assert.equal(
       await page.locator("#autoBackupFolderLabel").innerText(),
-      "存档文件夹",
+      await page.evaluate(() => WorkTimeApp.ui.autoBackupFolderText("label")),
     );
-    assert.equal(
-      await page
-        .locator(".auto-backup-folder-control #autoBackupFolderReset svg")
-        .count(),
-      1,
-    );
-    assert.equal(await page.locator("#autoBackupFolderReset").innerText(), "");
+    assert.equal(await page.locator("#autoBackupFolderReset").count(), 0);
     assert.equal(
       await page
         .locator("#autoBackupFolderChoose")
@@ -219,6 +231,8 @@ async function main() {
       "archive-A",
       "directory persists through real IndexedDB",
     );
+    if (await page.locator("#onboardingDialog[open]").count())
+      await page.locator("[data-onboarding-next]").click();
     await clickSettingsControl(page, "#pageSettingsOpen");
     await page.evaluate(() => {
       window.folderTest.cancel = true;
@@ -266,7 +280,7 @@ async function main() {
     await status("failed");
     assert.equal(
       downloads.length,
-      1,
+      0,
       "write failure must not fall back to downloads",
     );
     assert.equal(
@@ -286,6 +300,20 @@ async function main() {
     });
     await page.locator("#autoBackupFolderRetry").click();
     await saved();
+    assert.ok(
+      (await files()).every((file) => file.name.startsWith("automatic/")),
+    );
+    await page.evaluate(() =>
+      document.getElementById("backupBeforeRestore").click(),
+    );
+    await page.waitForFunction(
+      () => !document.querySelector("#backupBeforeRestore").disabled,
+    );
+    assert.equal(downloads.length, 0);
+    assert.equal(
+      (await files()).filter((file) => file.name.startsWith("manual/")).length,
+      1,
+    );
     await page.evaluate(() => {
       window.folderTest.failSave = true;
       window.folderTest.folder = "archive-B";
@@ -310,26 +338,7 @@ async function main() {
       ),
       "archive-B",
     );
-    // Manual backups continue to use browser downloads with a folder configured.
-    const manual = page.waitForEvent("download");
-    await page.locator("#backup").focus();
-    await page.keyboard.down("Space");
-    await manual;
-    await page.keyboard.up("Space");
-    await page.waitForFunction(
-      () => !document.querySelector("#backup").disabled,
-    );
-    assert.equal(downloads.length, 2);
-    await page.locator("#autoBackupFolderReset").click();
-    await status("download");
-    await due();
-    const fallback = page.waitForEvent("download");
-    await page.evaluate(() =>
-      document.dispatchEvent(new Event("worktime:autobackupretry")),
-    );
-    await fallback;
-    await saved();
-    // Unsupported environments keep the download route and explain the limitation.
+    // Unsupported environments explain the limitation without a download route.
     await page.evaluate(() => {
       window.showDirectoryPicker = undefined;
       document.dispatchEvent(new Event("worktime:languagechange"));
@@ -362,10 +371,7 @@ async function main() {
       await page.locator("#autoBackupFolderRetry").isVisible(),
       false,
     );
-    assert.equal(
-      await page.locator("#autoBackupFolderReset").isVisible(),
-      false,
-    );
+    assert.equal(await page.locator("#autoBackupFolderReset").count(), 0);
     await due();
     await page.evaluate(() => localStorage.setItem("folder-read-fail", "1"));
     const beforeReadFailure = downloads.length;
@@ -373,7 +379,7 @@ async function main() {
     await ready();
     await status("storageFailed");
     await page.waitForFunction(
-      () => !document.querySelector("#backup").disabled,
+      () => !document.querySelector("#backupBeforeRestore").disabled,
     );
     assert.equal(
       downloads.length,
@@ -386,18 +392,9 @@ async function main() {
       ),
       "2020-01-01",
     );
-    await page.evaluate(() => localStorage.removeItem("folder-read-fail"));
-    await clickSettingsControl(page, "#pageSettingsOpen");
-    await page.locator("#autoBackupFolderReset").click();
-    await saved();
-    await page.locator("#autoBackupFolder").scrollIntoViewIfNeeded();
-    await page.screenshot({
-      path: path.join(root, "test-results", "auto-backup-folder.png"),
-      fullPage: true,
-    });
     assert.deepEqual(errors, []);
     console.log(
-      "Archive folder selection, persistence, permission retry, failure recovery, manual downloads, languages and narrow layout verified.",
+      "Archive folder selection, persistence, permission retry, failure recovery, manual folder writes, no downloads, languages and narrow layout verified.",
     );
     await context.close();
   } finally {

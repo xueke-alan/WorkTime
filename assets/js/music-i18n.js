@@ -521,8 +521,11 @@ WorkTimeApp.ui.musicText = (() => {
   };
   const languages = ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"];
   return (key, n) =>
-    (
-      rows[key]?.[Math.max(0, languages.indexOf(WorkTimeApp.i18n.language))] ||
-      key
-    ).replace("{n}", String(n ?? ""));
+    key === "returnMain"
+      ? WorkTimeApp.i18n.t("copy.11d0241540")
+      : (
+          rows[key]?.[
+            Math.max(0, languages.indexOf(WorkTimeApp.i18n.language))
+          ] || key
+        ).replace("{n}", String(n ?? ""));
 })();

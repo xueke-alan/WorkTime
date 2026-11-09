@@ -79,7 +79,7 @@ for (const [language, labels] of Object.entries({
 
 for (const [language, labels] of Object.entries({
   "zh-CN": [
-    "自动下载备份",
+    "自动备份",
     "关闭",
     "每天",
     "每 3 天",
@@ -89,7 +89,7 @@ for (const [language, labels] of Object.entries({
     "已发起备份下载，但日期未保存，下次打开可能再次下载。",
   ],
   "zh-TW": [
-    "自動下載備份",
+    "自動備份",
     "關閉",
     "每天",
     "每 3 天",
@@ -99,7 +99,7 @@ for (const [language, labels] of Object.entries({
     "已發起備份下載，但日期未儲存，下次開啟可能再次下載。",
   ],
   "zh-HK": [
-    "自動下載備份",
+    "自動備份",
     "關閉",
     "每天",
     "每 3 天",
@@ -109,7 +109,7 @@ for (const [language, labels] of Object.entries({
     "已發起備份下載，但日期未儲存，下次開啟可能再次下載。",
   ],
   en: [
-    "Automatic backup downloads",
+    "Auto backup",
     "Off",
     "Daily",
     "Every 3 days",
@@ -119,7 +119,7 @@ for (const [language, labels] of Object.entries({
     "Backup download requested, but its date was not saved. Opening the page again may download another copy.",
   ],
   ja: [
-    "バックアップの自動ダウンロード",
+    "自動バックアップ",
     "オフ",
     "毎日",
     "3 日ごと",
@@ -129,7 +129,7 @@ for (const [language, labels] of Object.entries({
     "ダウンロードを要求しましたが、日付を保存できませんでした。次回もダウンロードされる可能性があります。",
   ],
   ko: [
-    "백업 자동 다운로드",
+    "자동 백업",
     "끄기",
     "매일",
     "3일마다",
@@ -666,7 +666,7 @@ for (const [language, values] of Object.entries({
       "未開啟",
     ],
     en: [
-      "Minesweeper",
+      "Mines",
       "One square at a time · Safe first move and autosave",
       "One square at a time",
       "Mines left",
@@ -3107,16 +3107,6 @@ for (const [language, label] of Object.entries({
 }))
   WorkTimeApp.data.locales[language]["agenda.unsavedChanges"] = label;
 
-for (const [language, label] of Object.entries({
-  "zh-CN": "应急备份",
-  "zh-TW": "應急備份",
-  "zh-HK": "應急備份",
-  en: "Emergency backup",
-  ja: "緊急バックアップ",
-  ko: "긴급 백업",
-}))
-  WorkTimeApp.data.locales[language]["backup.emergency"] = label;
-
 // Grouped monthly routine summaries; all values share the same record filter.
 for (const [language, labels] of Object.entries({
   "zh-CN": [
@@ -3465,4 +3455,84 @@ for (const [language, labels] of Object.entries({
 })) {
   WorkTimeApp.data.locales[language]["settings.general"] = labels[0];
   WorkTimeApp.data.locales[language]["settings.work"] = labels[1];
+}
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "导入备份文件",
+  "zh-TW": "匯入備份檔案",
+  "zh-HK": "匯入備份檔案",
+  en: "Import backup file",
+  ja: "バックアップファイルをインポート",
+  ko: "백업 파일 가져오기",
+})) {
+  WorkTimeApp.data.locales[language]["backup.importFile"] = label;
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "动画效果",
+    "跟随系统",
+    "始终展示动画",
+    "减少动画",
+    "系统当前要求减少动画；选择“始终展示动画”可恢复本站动效。",
+    "系统当前允许展示动画。",
+    "动画设置未保存，将在本次使用中生效。",
+  ],
+  "zh-TW": [
+    "動畫效果",
+    "跟隨系統",
+    "一律顯示動畫",
+    "減少動畫",
+    "系統目前要求減少動畫；選擇「一律顯示動畫」可恢復本站動態效果。",
+    "系統目前允許顯示動畫。",
+    "動畫設定未儲存，僅於本次使用生效。",
+  ],
+  "zh-HK": [
+    "動畫效果",
+    "跟隨系統",
+    "一律顯示動畫",
+    "減少動畫",
+    "系統目前要求減少動畫；選擇「一律顯示動畫」可恢復本站動態效果。",
+    "系統目前允許顯示動畫。",
+    "動畫設定未儲存，僅於本次使用生效。",
+  ],
+  en: [
+    "Animation effects",
+    "Follow system",
+    "Always show animations",
+    "Reduce motion",
+    "The system currently requests reduced motion. Choose “Always show animations” to restore this site’s effects.",
+    "The system currently allows animations.",
+    "Animation preference could not be saved; it applies for this session.",
+  ],
+  ja: [
+    "アニメーション",
+    "システムに従う",
+    "常に表示",
+    "動きを減らす",
+    "システムは動きを減らす設定です。「常に表示」でこのサイトのアニメーションを有効にできます。",
+    "システムはアニメーションを許可しています。",
+    "設定を保存できませんでした。このセッションでのみ適用されます。",
+  ],
+  ko: [
+    "애니메이션 효과",
+    "시스템 설정 따르기",
+    "항상 애니메이션 표시",
+    "동작 줄이기",
+    "시스템이 동작 줄이기를 요청하고 있습니다. 항상 애니메이션 표시를 선택하면 이 사이트의 효과를 복원합니다.",
+    "시스템이 애니메이션을 허용하고 있습니다.",
+    "설정을 저장하지 못했습니다. 이번 세션에만 적용됩니다.",
+  ],
+})) {
+  [
+    "label",
+    "system",
+    "full",
+    "reduce",
+    "systemReduced",
+    "systemFull",
+    "failed",
+  ].forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["motion." + key] = labels[index];
+  });
 }

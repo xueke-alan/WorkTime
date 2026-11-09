@@ -42,13 +42,13 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   surface.className = "game-surface";
   surface.setAttribute("aria-hidden", "true");
   const toolbar = document.createElement("header");
-  toolbar.className = "game-toolbar";
+  toolbar.className = "game-toolbar workspace-toolbar";
   const title = document.createElement("h2");
   title.id = "gameTitle";
   const exitButton = document.createElement("button");
   exitButton.type = "button";
   exitButton.id = "gameExitButton";
-  exitButton.className = "ui-button icon-only";
+  exitButton.className = "ui-button icon-only workspace-toolbar-action";
   exitButton.innerHTML =
     '<svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-left"/></svg>';
   toolbar.append(exitButton, title);

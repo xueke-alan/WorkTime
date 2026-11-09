@@ -136,7 +136,8 @@ WorkTimeApp.ui.createCalendarWeather = function ({
         picture.classList.add("calendar-weather-icon");
         picture.setAttribute("aria-hidden", "true");
         const still = document.createElement("source");
-        still.media = "(prefers-reduced-motion: reduce)";
+        still.dataset.motionSource = "";
+        still.media = WorkTimeApp.ui.animationCompat.sourceMedia();
         const image = document.createElement("img");
         image.alt = "";
         image.draggable = false;

@@ -1,8 +1,35 @@
 "use strict";
 /** Local library and reading desk, sharing the calendar workspace transition. */
 WorkTimeApp.ui.reader = (() => {
-  const t = WorkTimeApp.ui.readerText,
-    controller = WorkTimeApp.ui.createReaderController();
+  const t = (key, n) => {
+    if (key === "choose")
+      return WorkTimeApp.ui.runtimeFolderText("importFiles");
+    if (key === "importFolder")
+      return WorkTimeApp.ui.runtimeFolderText("importFolder");
+    if (["folder", "manage"].includes(key))
+      return WorkTimeApp.ui.runtimeFolderText("folderLabel");
+    if (["accessHint", "chooseHint"].includes(key))
+      return WorkTimeApp.services.runtimeFolder.state.status !== "available"
+        ? ""
+        : WorkTimeApp.ui.runtimeFolderText(
+            key === "chooseHint" ? "emptyLibrary" : "mediaUnavailable",
+          );
+    if (["emptyText", "empty", "emptyFolder", "folderHint"].includes(key))
+      return (
+        WorkTimeApp.ui.runtimeFolderText("location", { name: "ebooks/" }) +
+        " · " +
+        WorkTimeApp.ui.runtimeFolderText("importFiles")
+      );
+    return WorkTimeApp.ui.readerText(key, n);
+  };
+  function updateRange(input) {
+    input.style.setProperty("--range-fill", Number(input.value) / 10 + "%");
+    input.setAttribute(
+      "aria-valuetext",
+      Math.round(Number(input.value) / 10) + "%",
+    );
+  }
+  const controller = WorkTimeApp.ui.createReaderController();
   const bindings = [];
   let registerBindings = true;
   function node(tag, cls, parent, text) {
@@ -34,6 +61,7 @@ WorkTimeApp.ui.reader = (() => {
         "M12 5v16M3 3h3a9 9 0 0 1 6 2 9 9 0 0 1 6-2h3v16h-3a9 9 0 0 0-6 2 9 9 0 0 0-6-2H3Z",
       finished: "M5 12l4 4L19 6",
       choose: "M3 7V4h6l2 3h10v13H3ZM12 10v7M8.5 13.5h7",
+      importFolder: "M3 7V4h6l2 3h10v13H3ZM12 10v7m-3-3 3 3 3-3",
       reconnect: "M9 8H6a4 4 0 0 0 0 8h3M15 8h3a4 4 0 0 1 0 8h-3M8 12h8",
       refresh: "M20 7a9 9 0 1 0 1 8M21 2v6h-6",
       cancel: "m6 6 12 12M18 6 6 18",
@@ -75,6 +103,8 @@ WorkTimeApp.ui.reader = (() => {
     accessible();
     if (registerBindings) bindings.push(accessible);
     e.type = "button";
+    if (["choose", "importFolder"].includes(key))
+      e.dataset.runtimeAction = "import";
     if (id) e.id = id;
     e.addEventListener("click", () => {
       controller.activity();
@@ -123,10 +153,10 @@ WorkTimeApp.ui.reader = (() => {
   shell.setAttribute("aria-labelledby", "readerTitle");
   const surface = node("div", "game-surface", shell);
   surface.ariaHidden = "true";
-  const header = node("header", "reader-header", shell);
-  button(header, "exit", close, "readerExit").classList.add(
-    "reader-icon-button",
-  );
+  const header = node("header", "reader-header workspace-toolbar", shell);
+  const exitButton = button(header, "exit", close, "readerExit");
+  exitButton.classList.add("reader-icon-button");
+  exitButton.replaceChildren(WorkTimeApp.games.createIcon("chevron-left"));
   const sidebarToggle = button(
     header,
     "sidebar",
@@ -180,6 +210,12 @@ WorkTimeApp.ui.reader = (() => {
     },
     "readerFullscreen",
   ).classList.add("reader-icon-button");
+  for (const control of header.querySelectorAll(":scope > button"))
+    control.classList.add("ui-button", "icon-only", "workspace-toolbar-action");
+  minimizeButton.replaceChildren(
+    WorkTimeApp.games.createIcon("horizontal-rule"),
+  );
+  bookActionsSummary.classList.add("workspace-toolbar-action");
   const main = node("div", "reader-main", shell);
   const notices = node("div", "reader-notices", main);
   const status = node("p", "reader-status", notices);
@@ -247,13 +283,11 @@ WorkTimeApp.ui.reader = (() => {
   label(node("summary", "", sourceBar), "folder");
   const directory = node("p", "reader-directory", sourceBar);
   button(sourceBar, "choose", choose, "readerChoose");
-  const reconnectButton = button(
+  button(
     sourceBar,
-    "reconnect",
-    async () => {
-      if (!(await controller.reconnect())) await choose();
-    },
-    "readerReconnect",
+    "importFolder",
+    () => importer.open(true),
+    "readerImportFolder",
   );
   button(
     sourceBar,
@@ -411,6 +445,8 @@ WorkTimeApp.ui.reader = (() => {
   progress.min = "0";
   progress.max = "1000";
   progress.step = "1";
+  progress.classList.add("media-range");
+  progress.oninput = () => updateRange(progress);
   progress.onchange = () => controller.go(Number(progress.value) / 1000);
   const percent = node("output", "reader-percent", navigation);
   button(
@@ -431,9 +467,91 @@ WorkTimeApp.ui.reader = (() => {
   const mini = node("div", "reader-mini", miniHost);
   const miniHeader = node("header", "reader-mini-header", mini);
   const miniTitle = node("h3", "reader-mini-title", miniHeader);
+  const miniSettingsToggle = button(
+    miniHeader,
+    "settings",
+    () => setMiniSettings(miniSettings.hidden),
+    "readerMiniSettingsToggle",
+  );
+  miniSettingsToggle.classList.add("reader-icon-button");
+  miniSettingsToggle.setAttribute("aria-expanded", "false");
+  miniSettingsToggle.setAttribute("aria-controls", "readerMiniSettings");
   button(miniHeader, "expand", expand, "readerMiniExpand").classList.add(
     "reader-icon-button",
   );
+  const miniSettings = node("section", "reader-mini-settings", mini);
+  miniSettings.id = "readerMiniSettings";
+  miniSettings.hidden = true;
+  miniSettings.setAttribute("role", "region");
+  const miniSettingsHeader = node(
+    "div",
+    "reader-mini-settings-header",
+    miniSettings,
+  );
+  const miniSettingsTitle = label(
+    node("h4", "", miniSettingsHeader),
+    "settings",
+  );
+  miniSettingsTitle.id = "readerMiniSettingsTitle";
+  miniSettings.setAttribute("aria-labelledby", miniSettingsTitle.id);
+  button(miniSettingsHeader, "cancel", () =>
+    setMiniSettings(false, true),
+  ).classList.add("reader-icon-button");
+  const miniSettingsFields = node(
+    "div",
+    "reader-mini-settings-fields",
+    miniSettings,
+  );
+  const miniFontSize = field(miniSettingsFields, "fontSize", "number");
+  miniFontSize.id = "readerMiniFontSize";
+  miniFontSize.min = "12";
+  miniFontSize.max = "48";
+  miniFontSize.step = "1";
+  miniFontSize.onchange = () => {
+    if (miniFontSize.checkValidity())
+      changeMiniSetting("fontSize", Number(miniFontSize.value));
+  };
+  const miniFont = select(
+    miniSettingsFields,
+    "font",
+    ["serif", "sans", "mono"].map((key) => [key, key]),
+    (value) => changeMiniSetting("font", value),
+  );
+  miniFont.id = "readerMiniFont";
+  const miniFlow = select(
+    miniSettingsFields,
+    "flow",
+    [
+      ["pages", "pages"],
+      ["scroll", "scroll"],
+    ],
+    (value) => changeMiniSetting("flow", value),
+  );
+  miniFlow.id = "readerMiniFlow";
+  const miniTheme = select(
+    miniSettingsFields,
+    "theme",
+    ["light", "sepia", "dark", "custom"].map((key) => [key, key]),
+    (value) => changeMiniSetting("theme", value),
+  );
+  miniTheme.id = "readerMiniTheme";
+  function changeMiniSetting(key, value) {
+    panelSignature = "";
+    void controller.settings({ [key]: value });
+  }
+  function setMiniSettings(open, restoreFocus = false) {
+    miniSettings.hidden = !open;
+    mini.classList.toggle("is-settings-open", open);
+    miniViewport.inert = open;
+    miniViewport.setAttribute("aria-hidden", String(open));
+    miniSettingsToggle.setAttribute("aria-expanded", String(open));
+    renderMini(controller.snapshot());
+    if (open) {
+      miniSettings
+        .querySelector("input:not(:disabled),select:not(:disabled)")
+        ?.focus({ preventScroll: true });
+    } else if (restoreFocus) miniSettingsToggle.focus({ preventScroll: true });
+  }
   const miniViewport = node(
     "div",
     "reader-viewport reader-mini-viewport",
@@ -455,6 +573,8 @@ WorkTimeApp.ui.reader = (() => {
   miniProgress.min = "0";
   miniProgress.max = "1000";
   miniProgress.step = "1";
+  miniProgress.classList.add("media-range");
+  miniProgress.oninput = () => updateRange(miniProgress);
   miniProgress.onchange = () =>
     controller.go(Number(miniProgress.value) / 1000, false);
   const miniPercent = node("output", "reader-mini-percent", miniNavigation);
@@ -467,16 +587,12 @@ WorkTimeApp.ui.reader = (() => {
   miniNext.classList.add("reader-icon-button");
   const miniStatus = node("p", "reader-mini-status", mini);
   miniStatus.setAttribute("role", "status");
-  const input = node("input", "", shell);
-  input.type = "file";
-  input.multiple = true;
-  input.hidden = true;
-  if ("webkitdirectory" in input) input.webkitdirectory = true;
-  input.accept = input.webkitdirectory ? "" : ".epub,.txt,.pdf";
-  input.onchange = () => {
-    controller.importFiles(input.files);
-    input.value = "";
-  };
+  const importer = WorkTimeApp.ui.createRuntimeImport({
+    host: shell,
+    statusHost: notices,
+    kind: "ebooks",
+    refresh: (result) => controller.refresh(result),
+  });
   const backupInput = node("input", "", shell);
   backupInput.type = "file";
   backupInput.accept = ".json,application/json";
@@ -508,10 +624,11 @@ WorkTimeApp.ui.reader = (() => {
     presentationRevision = 0,
     mounting = false;
   let presentationWrites = Promise.resolve();
+  let resumePending = true;
   const presentationReady = WorkTimeApp.services.readerStorage
     .readPresentation()
     .then((value) => {
-      presentation = value === "mini" ? "mini" : "full";
+      presentation = value === "mini" || value === "full" ? "mini" : "full";
     })
     .catch(() => {
       presentationIssue = true;
@@ -554,6 +671,7 @@ WorkTimeApp.ui.reader = (() => {
   function renderEntry() {
     const entry = document.getElementById("readerOpen");
     if (!entry) return;
+    delete entry.dataset.hint;
     entry.title = entry.ariaLabel = t("title");
     if (presentation === "mini") {
       entry.setAttribute("role", "tab");
@@ -572,6 +690,23 @@ WorkTimeApp.ui.reader = (() => {
     }
   }
   function renderMini(snap) {
+    if (miniHost.hidden && !miniSettings.hidden) setMiniSettings(false);
+    for (const [input, key] of [
+      [miniFontSize, "fontSize"],
+      [miniFont, "font"],
+      [miniFlow, "flow"],
+      [miniTheme, "theme"],
+    ]) {
+      if (document.activeElement !== input)
+        input.value = String(snap.settings[key]);
+      input.disabled =
+        snap.loading ||
+        mounting ||
+        (!!snap.current && !snap.adapter) ||
+        ((key === "fontSize" || key === "font") &&
+          !!snap.adapter &&
+          !snap.adapter.capabilities.reflow);
+    }
     miniViewport.setAttribute("aria-busy", String(mounting || snap.loading));
     const recent =
       snap.current ||
@@ -580,13 +715,15 @@ WorkTimeApp.ui.reader = (() => {
       )[0];
     miniTitle.textContent = recent?.title || t("title");
     miniTitle.title = miniTitle.textContent;
-    miniEmpty.hidden = !!snap.current || snap.loading || mounting;
+    miniEmpty.hidden =
+      !miniSettings.hidden || !!snap.current || snap.loading || mounting;
     miniViewport.hidden = !snap.current && !snap.loading && !mounting;
     const disabled = !snap.current || !snap.adapter || snap.loading || mounting;
     for (const element of [miniPrevious, miniNext, miniProgress])
       element.disabled = disabled;
     if (document.activeElement !== miniProgress)
       miniProgress.value = Math.round((recent?.progress || 0) * 1000);
+    updateRange(miniProgress);
     miniPercent.textContent = Math.round((recent?.progress || 0) * 100) + "%";
     miniStatus.textContent =
       snap.storageIssue || presentationIssue
@@ -603,7 +740,7 @@ WorkTimeApp.ui.reader = (() => {
     miniViewport.ariaLabel = t("title");
     syncActivity();
   }
-  async function activateMini(revision) {
+  async function activateMini(revision, focus = true) {
     if (revision !== presentationRevision || presentation !== "mini") return;
     mounting = !!controller.snapshot().current;
     WorkTimeApp.ui.dateInfo.showReaderPanel();
@@ -616,6 +753,7 @@ WorkTimeApp.ui.reader = (() => {
     if (!miniHost.hidden && (bounds.top >= innerHeight || bounds.bottom <= 0))
       miniHost.scrollIntoView({ block: "nearest", behavior: "instant" });
     if (
+      focus &&
       !miniHost.hidden &&
       !miniHost.closest("[inert]") &&
       miniHost.getClientRects().length
@@ -660,6 +798,7 @@ WorkTimeApp.ui.reader = (() => {
       return;
     }
     rememberPresentation("full");
+    WorkTimeApp.ui.dateInfo.rememberMedia("reader");
     WorkTimeApp.ui.dateInfo.hideReaderPanel();
     render();
     await controller.remount(viewport, { mini: false });
@@ -711,7 +850,7 @@ WorkTimeApp.ui.reader = (() => {
     drawerOpen = false;
     panelName = "";
     panelSignature = "";
-    await controller.closeBook();
+    await controller.closeBook({ forget: true });
     libraryScroll.scrollTop = shelfScroll;
     requestAnimationFrame(() => (libraryScroll.scrollTop = shelfScroll));
   }
@@ -793,7 +932,7 @@ WorkTimeApp.ui.reader = (() => {
     ask(reason === 2 ? "passwordWrong" : "password", "", "password");
   async function choose() {
     localStatus = "";
-    if (!(await controller.choose())) input.click();
+    importer.open();
   }
   async function open(id) {
     thumbnailObserver?.disconnect();
@@ -992,6 +1131,7 @@ WorkTimeApp.ui.reader = (() => {
       card.dataset.bookId = book.id;
       const coverButton = node("button", "reader-book-open", card);
       coverButton.type = "button";
+      coverButton.disabled = !snap.entries.has(book.id);
       coverButton.ariaLabel = book.title;
       coverButton.onclick = () => void open(book.id);
       const cover = node("div", "reader-cover", coverButton);
@@ -1391,10 +1531,13 @@ WorkTimeApp.ui.reader = (() => {
         : "");
     status.hidden = !status.textContent;
     notices.hidden =
-      !status.textContent && !snap.storageIssue && !snap.scanning;
+      !status.textContent &&
+      !snap.storageIssue &&
+      !snap.scanning &&
+      !importer.hasFeedback;
     warning.hidden = !snap.storageIssue && !presentationIssue;
     cancelScan.hidden = !snap.scanning;
-    reconnectButton.hidden = !Object.keys(snap.state.books).length;
+
     continueButton.disabled = !snap.entries.size;
     directory.textContent = snap.state.directory || "EPUB · TXT · PDF";
     sort.value = snap.settings.sort;
@@ -1415,6 +1558,7 @@ WorkTimeApp.ui.reader = (() => {
     progress.disabled = !snap.current;
     if (document.activeElement !== progress)
       progress.value = Math.round((snap.current?.progress || 0) * 1000);
+    updateRange(progress);
     percent.textContent = Math.round((snap.current?.progress || 0) * 100) + "%";
     pageInput.parentElement.hidden = !snap.adapter?.capabilities.pdf;
     if (snap.adapter?.capabilities.pdf) {
@@ -1436,6 +1580,12 @@ WorkTimeApp.ui.reader = (() => {
     content: main,
     returnFocus: () => document.getElementById("readerOpen"),
     onChange() {
+      // Prepare the revealed sidebar before the closing animation fades it in.
+      // Keep the book in the full workspace until that animation has finished.
+      if (shell.dataset.state === "closing" && pendingMini !== null) {
+        mounting = !!controller.snapshot().current;
+        WorkTimeApp.ui.dateInfo.showReaderPanel();
+      }
       if (!expansion.isOpen && pendingMini !== null) {
         const revision = pendingMini;
         pendingMini = null;
@@ -1460,12 +1610,18 @@ WorkTimeApp.ui.reader = (() => {
     mini.addEventListener(name, () => controller.activity(), { passive: true });
   mini.addEventListener("keydown", (event) => {
     controller.activity();
+    if (event.key === "Escape" && !miniSettings.hidden) {
+      event.preventDefault();
+      setMiniSettings(false, true);
+      return;
+    }
     if (
       event.ctrlKey ||
       event.metaKey ||
       event.altKey ||
       event.shiftKey ||
-      event.target.matches("input,button")
+      event.target.matches("input,button,select,textarea") ||
+      event.target.closest(".reader-mini-settings")
     )
       return;
     if (["ArrowRight", "PageDown", " "].includes(event.key)) {
@@ -1577,14 +1733,41 @@ WorkTimeApp.ui.reader = (() => {
     get isMini() {
       return presentation === "mini";
     },
-    async open() {
+    async open({ mini: compact = false, restore = false } = {}) {
       await presentationReady;
       await WorkTimeApp.services.assets.style("assets/css/reader.css");
       await controller.ready;
+      if (restore && !WorkTimeApp.ui.dateInfo.isActive("reader")) return;
+      if (compact) rememberPresentation("mini");
       this.refresh();
       if (presentation === "mini") {
         if (expansion.isOpen) await minimize();
-        else await activateMini(++presentationRevision);
+        else {
+          const revision = ++presentationRevision;
+          await activateMini(revision, !restore);
+          if (resumePending && revision === presentationRevision) {
+            await controller.libraryReady;
+            if (
+              revision !== presentationRevision ||
+              (restore && !WorkTimeApp.ui.dateInfo.isActive("reader"))
+            )
+              return;
+            const snap = controller.snapshot();
+            const id =
+              snap.state.resumeBookId === undefined
+                ? Object.values(snap.state.books)
+                    .filter((book) => book.lastRead > 0)
+                    .sort((a, b) => b.lastRead - a.lastRead)[0]?.id
+                : snap.state.resumeBookId;
+            if (!snap.current && id && snap.entries.has(id)) {
+              resumePending = !(await controller.open(
+                id,
+                miniViewport,
+                password,
+              ));
+            } else if (snap.current || !id) resumePending = false;
+          }
+        }
       } else await expand();
     },
     close,

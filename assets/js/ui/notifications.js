@@ -85,9 +85,14 @@ WorkTimeApp.ui.createNotifications = function (options) {
       (tone === "error" ? " tone-error" : "");
     item.innerHTML =
       notificationIcon("countdown") + '<div class="notification-body"></div>';
-    const source = WorkTimeApp.i18n.canonical(message);
+    const source =
+      typeof message === "function"
+        ? message
+        : WorkTimeApp.i18n.canonical(message);
     item.querySelector(".notification-body").textContent =
-      WorkTimeApp.i18n.message(source);
+      typeof source === "function"
+        ? source()
+        : WorkTimeApp.i18n.message(source);
     $("feedbackList").prepend(item);
     feedback.set(item, source);
     const count = item.querySelector(".ring-count");
@@ -166,7 +171,9 @@ WorkTimeApp.ui.createNotifications = function (options) {
     renderTimeAnomalyNotice();
     for (const [item, source] of feedback)
       item.querySelector(".notification-body").textContent =
-        WorkTimeApp.i18n.message(source);
+        typeof source === "function"
+          ? source()
+          : WorkTimeApp.i18n.message(source);
     updateNotificationEmptyState();
   }
   return {

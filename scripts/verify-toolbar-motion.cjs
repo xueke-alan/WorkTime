@@ -12,6 +12,9 @@ async function verifyWorkdaySwitch(browser) {
       locale: "zh-CN",
     });
     await page.route(/^https?:/, (route) => route.abort());
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await page.goto(
       pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
     );
@@ -139,6 +142,9 @@ async function verify() {
     });
     page.on("pageerror", (error) => errors.push(error.message));
     await page.route(/^https?:/, (route) => route.abort());
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await page.goto(
       pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
     );
@@ -164,7 +170,7 @@ async function verify() {
           const region = document.querySelector(
             ".agenda-toolbar-region:not(.agenda-modes-region)",
           );
-          const backup = document.querySelector("#backup");
+          const backup = document.querySelector("#restore");
           const incoming = document.querySelector(
             forward ? "#agendaViewToggle" : "#batchToggle",
           );
@@ -267,7 +273,7 @@ async function verify() {
           const region = document.querySelector(
             ".agenda-toolbar-region:not(.agenda-modes-region)",
           );
-          const backup = document.querySelector("#backup");
+          const backup = document.querySelector("#restore");
           const baseline = button.getBoundingClientRect();
           const backupX = backup.getBoundingClientRect().x;
           const before = button.querySelector("use").getAttribute("href");
@@ -363,7 +369,7 @@ async function verify() {
           const region = document.querySelector(
             ".agenda-toolbar-region:not(.agenda-modes-region)",
           );
-          const backup = document.querySelector("#backup");
+          const backup = document.querySelector("#restore");
           const initial = region.getBoundingClientRect().width;
           const baseline = backup.getBoundingClientRect().x;
           document.querySelector("#analysisToggle").click();
@@ -480,8 +486,8 @@ async function verify() {
     await settle();
     assert.equal(
       await page.locator("#agendaViewToggle").isVisible(),
-      true,
-      "Leaving analysis restores the agenda toolbar it was opened from",
+      false,
+      "Leaving analysis always returns to the attendance toolbar",
     );
     await click("agendaMode");
     await page.evaluate(() => {
@@ -497,6 +503,13 @@ async function verify() {
       delete document.hidden;
       document.dispatchEvent(new Event("visibilitychange"));
     });
+    if (
+      (await page.locator("#agendaMode").getAttribute("aria-pressed")) ===
+      "true"
+    ) {
+      await click("agendaMode");
+      await settle();
+    }
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.evaluate(() => {
       Element.prototype.animate = undefined;

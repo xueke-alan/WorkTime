@@ -11,6 +11,9 @@ async function verify() {
   });
   try {
     const context = await browser.newContext({ locale: "zh-CN" });
+    await context.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await context.route(/^https?:/, (route) => route.abort());
     const page = await context.newPage();
     const errors = [];
@@ -51,6 +54,7 @@ async function verify() {
     const seeded = await browser.newContext({ locale: "zh-CN" });
     await seeded.route(/^https?:/, (route) => route.abort());
     await seeded.addInitScript((state) => {
+      localStorage.setItem("worktime.onboarding.v1", "dismissed");
       localStorage.setItem("worktime-local-v1", JSON.stringify(state));
     }, fixture);
     const view = await seeded.newPage();
@@ -94,6 +98,35 @@ async function verify() {
       1,
     );
     const button = view.locator("#plannedOvertimeToggle");
+    const preview = view.locator("#dayPreview .preview-day");
+    for (const date of [
+      "2026-10-11",
+      "2026-10-01",
+      "2026-10-25",
+      "2026-10-24",
+    ]) {
+      await card(date).click();
+      assert.equal(
+        await preview.textContent(),
+        "加班",
+        date + " overtime preview",
+      );
+    }
+    await card("2026-10-24").click();
+    await button.click();
+    await view.waitForFunction(
+      () =>
+        document.querySelector("#dayPreview .preview-day").textContent ===
+        "休息日",
+    );
+    assert.equal(await preview.textContent(), "休息日");
+    await button.click();
+    await view.waitForFunction(
+      () =>
+        document.querySelector("#dayPreview .preview-day").textContent ===
+        "加班",
+    );
+    assert.equal(await preview.textContent(), "加班");
     for (const date of ["2026-10-11", "2026-10-01"]) {
       await card(date).click();
       assert.equal(await button.isDisabled(), true);

@@ -488,16 +488,20 @@ async function verifyNotificationLanguage(browser) {
     await page.evaluate(() =>
       document.getElementById("newWarningRegression").remove(),
     );
-    await page.evaluate(() =>
-      document.querySelector("#backupBeforeRestore").click(),
-    );
+    await page.evaluate(() => {
+      WorkTimeApp.services.autoBackupFolder.write = async () => true;
+      document.querySelector("#backupBeforeRestore").click();
+    });
     await page.waitForFunction(() => {
       const feedback = document.querySelector(
         "#feedbackList .notification-body",
       );
       return (
         document.querySelector("#feedbackList").childElementCount === 1 &&
-        feedback?.textContent === WorkTimeApp.i18n.t("copy.5091362c8b")
+        feedback?.textContent ===
+          WorkTimeApp.ui.runtimeFolderText("backupSaved", {
+            name: "backups/manual/",
+          })
       );
     });
     const result = await page.evaluate(async () => {
@@ -512,7 +516,9 @@ async function verifyNotificationLanguage(browser) {
           text: notice.querySelector(".notification-body").textContent,
           title: notice.title,
           feedback: feedback.querySelector(".notification-body").textContent,
-          expectedFeedback: WorkTimeApp.i18n.t("copy.5091362c8b"),
+          expectedFeedback: WorkTimeApp.ui.runtimeFolderText("backupSaved", {
+            name: "backups/manual/",
+          }),
           sameFeedback:
             document.querySelector("#feedbackList .feedback-notice") ===
             feedback,

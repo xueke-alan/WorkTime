@@ -2,20 +2,12 @@
 /** Folder settings copy stays available in all offline languages. */
 WorkTimeApp.ui.autoBackupFolderText = (() => {
   const rows = {
-    confirmReset: [
-      "确定恢复默认文件夹？后续备份将改用浏览器下载，已有备份文件不会删除。下次打开页面时会重新提示选择存档文件夹。",
-      "確定恢復預設資料夾？之後備份將改用瀏覽器下載，現有備份檔案不會刪除。下次開啟頁面時會再次提示選擇存檔資料夾。",
-      "確定恢復預設資料夾？之後備份將改用瀏覽器下載，現有備份檔案不會刪除。下次開啟頁面時會再次提示選擇存檔資料夾。",
-      "Restore the default folder? Future backups will use browser downloads. Existing backup files will be kept. You will be reminded to choose an archive folder on your next visit.",
-      "既定の保存先に戻しますか？今後のバックアップはブラウザーでダウンロードされます。既存のファイルは削除されません。次回ページを開くと保存先の選択が再び表示されます。",
-      "기본 폴더로 복원할까요? 이후 백업은 브라우저로 다운로드됩니다. 기존 백업 파일은 삭제되지 않습니다. 다음에 페이지를 열면 보관 폴더 선택 안내가 다시 표시됩니다.",
-    ],
     label: [
       "存档文件夹",
       "存檔資料夾",
       "存檔資料夾",
-      "Archive folder",
-      "保存先フォルダー",
+      "Backup folder",
+      "保存先",
       "보관 폴더",
     ],
     choose: [
@@ -43,22 +35,6 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
       "許可して再試行",
       "권한 허용 및 재시도",
     ],
-    reset: [
-      "使用浏览器下载",
-      "使用瀏覽器下載",
-      "使用瀏覽器下載",
-      "Use browser downloads",
-      "ブラウザーでダウンロード",
-      "브라우저 다운로드 사용",
-    ],
-    download: [
-      "当前使用浏览器下载",
-      "目前使用瀏覽器下載",
-      "目前使用瀏覽器下載",
-      "Using browser downloads",
-      "ブラウザーでダウンロード中",
-      "브라우저 다운로드 사용 중",
-    ],
     loading: [
       "正在读取文件夹设置…",
       "正在讀取資料夾設定…",
@@ -84,22 +60,6 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
       "書き込みに失敗しました。フォルダーを確認して再試行するか、変更してください。",
       "폴더 쓰기에 실패했습니다. 폴더를 확인하고 재시도하거나 변경하세요.",
     ],
-    storageFailed: [
-      "文件夹设置读写失败，请重新选择文件夹或使用浏览器下载",
-      "資料夾設定讀寫失敗，請重新選擇資料夾或使用瀏覽器下載",
-      "資料夾設定讀寫失敗，請重新選擇資料夾或使用瀏覽器下載",
-      "Folder settings could not be saved or loaded. Choose the folder again or use browser downloads.",
-      "フォルダー設定を保存または読み込めません。再選択するか、ブラウザーでダウンロードしてください。",
-      "폴더 설정을 저장하거나 불러오지 못했습니다. 다시 선택하거나 브라우저 다운로드를 사용하세요.",
-    ],
-    unsupported: [
-      "当前环境不支持选择文件夹；可使用浏览器下载",
-      "目前環境不支援選擇資料夾；可使用瀏覽器下載",
-      "目前環境不支援選擇資料夾；可使用瀏覽器下載",
-      "Folder selection is unavailable here. Browser downloads are available.",
-      "この環境ではフォルダーを選択できません。ブラウザーでダウンロードできます。",
-      "이 환경에서는 폴더를 선택할 수 없습니다. 브라우저 다운로드를 사용할 수 있습니다.",
-    ],
     busy: [
       "正在处理存档，请稍后重试",
       "正在處理存檔，請稍後重試",
@@ -118,9 +78,37 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
     ],
   };
   const languages = ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"];
-  return (key) =>
-    rows[key]?.[Math.max(0, languages.indexOf(WorkTimeApp.i18n.language))] ||
-    key;
+  return (key) => {
+    if (
+      [
+        "busy",
+        "loading",
+        "unsupported",
+        "storageFailed",
+        "permission",
+        "failed",
+      ].includes(key)
+    )
+      return WorkTimeApp.ui.runtimeFolderText(key, {
+        name: WorkTimeApp.services.runtimeFolder.state.detail,
+      });
+    if (key === "defaultAddress")
+      return WorkTimeApp.ui.runtimeFolderText("label");
+    if (key === "label") return WorkTimeApp.ui.runtimeFolderText("folderLabel");
+    if (["needsInitialization", "initializing", "conflict"].includes(key))
+      return WorkTimeApp.ui.runtimeFolderText(key, {
+        name:
+          WorkTimeApp.services.runtimeFolder.state.detail ||
+          WorkTimeApp.services.runtimeFolder.state.progress,
+      });
+    const value =
+      rows[key]?.[Math.max(0, languages.indexOf(WorkTimeApp.i18n.language))] ||
+      key;
+    return value
+      .replaceAll("存档文件夹", "运行文件夹")
+      .replaceAll("存檔資料夾", "執行資料夾")
+      .replaceAll("archive folder", "workspace folder");
+  };
 })();
 (() => {
   function mount() {
@@ -167,7 +155,6 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
     for (const [key, action] of Object.entries({
       choose: service.choose,
       retry: service.authorize,
-      reset: service.reset,
     })) {
       const button = document.createElement("button");
       button.type = "button";
@@ -177,40 +164,28 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
       button.setAttribute("aria-describedby", status.id);
       button.addEventListener("click", () => {
         if (pending || service.state.busy) return;
-        if (key === "reset" && !window.confirm(t("confirmReset"))) return;
         void act(action);
       });
       controls[key] = button;
       if (key === "retry") buttons.append(button);
     }
-    const resetIcon = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    resetIcon.setAttribute("class", "ui-icon");
-    resetIcon.setAttribute("aria-hidden", "true");
-    const resetUse = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "use",
-    );
-    resetUse.setAttribute("href", "#ms-restart-alt");
-    resetIcon.append(resetUse);
-    controls.reset.append(resetIcon);
-    control.append(controls.choose, controls.reset);
+    control.append(controls.choose);
+    const chosenName = document.createElement("span");
+    chosenName.className = "auto-backup-folder-name";
+    controls.choose.append(chosenName);
     function render() {
       const state = service.state;
       label.textContent = t("label");
       const message =
         notice ||
-        (state.status === "download" && !state.supported
-          ? "unsupported"
-          : state.status);
-      status.textContent = t(message);
-      status.hidden =
-        !notice &&
-        (state.status === "available" ||
-          (state.status === "download" && state.supported));
-      controls.choose.textContent = state.name || t("defaultAddress");
+        (state.busy && state.status !== "initializing"
+          ? "busy"
+          : !state.supported
+            ? "unsupported"
+            : state.status);
+      status.textContent = message === "available" ? "" : t(message);
+      status.hidden = !status.textContent;
+      chosenName.textContent = state.name || t("defaultAddress");
       controls.choose.title = state.name
         ? t("change") + " · " + state.name
         : t("choose");
@@ -219,15 +194,11 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
         state.name ? t("change") + " · " + state.name : t("choose"),
       );
       controls.retry.textContent = t("retry");
-      controls.reset.title = t("reset");
-      controls.reset.setAttribute("aria-label", t("reset"));
       controls.choose.disabled =
         !state.supported || state.busy || pending || state.status === "loading";
       controls.retry.hidden =
         !state.name || !state.supported || state.status === "available";
       controls.retry.disabled = state.busy || pending;
-      controls.reset.hidden = !state.name && state.status !== "storageFailed";
-      controls.reset.disabled = state.busy || pending;
       buttons.hidden = controls.retry.hidden;
     }
     field.append(label, control, status, buttons);

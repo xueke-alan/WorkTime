@@ -144,6 +144,7 @@ async function checkLayout(menu, context) {
         await entries.first().click();
       }
 
+      await page.locator("#date-tab-games").click();
       await entries.first().focus();
       await page.keyboard.press("ArrowDown");
       assert.equal(

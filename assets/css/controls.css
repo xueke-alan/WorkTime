@@ -158,7 +158,7 @@ body button.ui-button:not(.notification-tab):not(#importOpen):not(.game-menu-ent
 body
   button.ui-button:not(.notification-tab):not(#importOpen):not(
     .template-fill
-  ):not(.template-edit):not(.primary):not(.game-menu-entry):not([aria-pressed="true"]) {
+  ):not(.template-edit):not(.primary):not(.game-menu-entry):not([aria-pressed="true"]):not(:where(.workspace-toolbar-action)) {
   border: 1px solid var(--control-border);
   background: #fff;
   box-shadow: var(--control-shadow);
@@ -166,7 +166,7 @@ body
 body
   button.ui-button:not(.notification-tab):not(#importOpen):not(
     .template-fill
-  ):not(.template-edit):not(.primary):not([aria-pressed="true"]):hover:not(
+  ):not(.template-edit):not(.primary):not([aria-pressed="true"]):not(:where(.workspace-toolbar-action)):hover:not(
     :disabled
   ) {
   background: var(--control-hover);
@@ -201,11 +201,11 @@ body #batchAddTimeTemplate {
   padding: 0 !important;
 }
 /* Joined button groups share one outside border and a single inner divider. */
-body :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button.ui-button {
+body :is(.settings-button-group, .calendar-view-button-group) button.ui-button {
   border: 0 !important;
   box-shadow: none !important;
 }
-body :is(.backup-button-group, .settings-button-group, .calendar-view-button-group) button.ui-button + button {
+body :is(.settings-button-group, .calendar-view-button-group) button.ui-button + button {
   border-left: 1px solid var(--control-border) !important;
 }
 /* Keep OA text and symbols on stable raster sizes at desktop scaling. */
@@ -235,6 +235,83 @@ body .sidebar-actions #importOASite .ui-icon {
   }
 }
 
+/* Shared music and reading sliders: slim visible rail, generous hit area. */
+body :is(#musicDialog, #musicPanel, #readerDialog, #readerPanel) input.media-range[type="range"] {
+  --range-rail: color-mix(in srgb, var(--accent) 15%, var(--paper));
+  appearance: none;
+  display: block;
+  height: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  margin: 0;
+  padding: 0 !important;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent);
+  cursor: pointer;
+  outline: none;
+}
+body input.media-range[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--accent) var(--range-fill, 0%), var(--range-rail) var(--range-fill, 0%));
+}
+body input.media-range[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -3px;
+  border: 2px solid var(--paper);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: box-shadow 140ms ease, transform 140ms ease;
+}
+body input.media-range[type="range"]::-moz-range-track {
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--range-rail);
+}
+body input.media-range[type="range"]::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+body input.media-range[type="range"]::-moz-range-thumb {
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--paper);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: box-shadow 140ms ease, transform 140ms ease;
+}
+body input.media-range:is(:hover, :active, :focus-visible):not(:disabled)::-webkit-slider-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+body input.media-range:is(:hover, :active, :focus-visible):not(:disabled)::-moz-range-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+body :is(#musicDialog, #musicPanel, #readerDialog, #readerPanel) input.media-range:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+body input.media-range:disabled {
+  opacity: .4;
+  cursor: default;
+}
+body #readerDialog input.media-range,
+body #readerPanel input.media-range { width: 100%; }
+:where(html:where([data-reduced-motion="true"])) body input.media-range::-webkit-slider-thumb { transition: none; }
+:where(html:where([data-reduced-motion="true"])) body input.media-range::-moz-range-thumb { transition: none; }
+
 /* Overnight toggles retain a clear selected state in editors and dialogs. */
 body button.ui-button.nextday-toggle[aria-pressed="true"] {
   color: #fff;
@@ -248,4 +325,26 @@ body button.ui-button.nextday-toggle[aria-pressed="true"]:active:not(:disabled) 
   color: #fff;
   background: var(--theme-accent-deep, var(--accent));
   border-color: var(--theme-accent-deep, var(--accent));
+}
+
+/* Placeholder in the existing ebook auxiliary panel. */
+.reader-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.reader-placeholder {
+  box-sizing: border-box;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--ink);
+}
+.reader-placeholder h2 {
+  margin: 0;
+  font-size: 18px;
 }

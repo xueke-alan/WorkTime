@@ -10,7 +10,6 @@ fs.rmSync(site, { recursive: true, force: true });
 fs.mkdirSync(site);
 for (const entry of [
   "index.html",
-  "rescue.html",
   "manifest.webmanifest",
   "service-worker.js",
   "assets",

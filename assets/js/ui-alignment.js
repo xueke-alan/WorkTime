@@ -36,6 +36,10 @@
     ".analysis-chart-legend > span > span",
     ".analysis-legend-label",
     "#gameTitle",
+    "#musicTitle",
+    "#readerTitle",
+    ".onboarding-node-text",
+    ".onboarding-install-dismiss span",
   ];
   const targetSelector = selectors.join(",");
   const scopeSelector =
@@ -178,7 +182,13 @@
         element.parentElement
           .querySelector(".trend-icon")
           ?.style.setProperty("--average-trend-offset", "0px");
-      if (element.matches(".year-day>span,.day-date .daynum-text"))
+      // Clear both axes before measuring; retaining a previous translation
+      // makes parent-centered labels alternate offsets on each refresh.
+      if (
+        element.matches(
+          ".year-day>span,.day-date .daynum-text,.onboarding-node-text",
+        )
+      )
         element.style.setProperty("--ui-ink-offset-x", "0px");
     }
     const measurements = [];
@@ -229,7 +239,7 @@
         metrics: cachedMetrics(style, text),
         // Mixed Latin/CJK legends also need hinted pixel bounds, not outline metrics.
         dateBounds: element.matches(
-          ".day-date .daynum-text,.calendar .daykind,.agenda-chip-title-text,.agenda-chip-time,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span",
+          ".day-date .daynum-text,.calendar .daykind,.agenda-chip-title-text,.agenda-chip-time,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span,.onboarding-node-text,.onboarding-install-dismiss span",
         )
           ? dateInkHeight(style, text)
           : null,
@@ -279,7 +289,10 @@
           : (metrics.actualBoundingBoxDescent -
               metrics.actualBoundingBoxAscent) /
             2);
-      const offset = box.top + box.height / 2 - inkCenter;
+      const centerBox = element.matches(".onboarding-node-text")
+        ? element.parentElement.getBoundingClientRect()
+        : box;
+      const offset = centerBox.top + centerBox.height / 2 - inkCenter;
       if (trendBox) {
         const sameLine = trendBox.bottom > box.top && trendBox.top < box.bottom;
         trendIcon.style.setProperty(
@@ -292,15 +305,19 @@
       }
       if (element.matches(".year-day>span")) {
         const x =
-          (box.width +
-            metrics.actualBoundingBoxLeft -
-            metrics.actualBoundingBoxRight) /
-          2;
+          centerBox.left +
+          centerBox.width / 2 -
+          box.left +
+          (metrics.actualBoundingBoxLeft - metrics.actualBoundingBoxRight) / 2;
         if (Number.isFinite(x))
           element.style.setProperty("--ui-ink-offset-x", x.toFixed(3) + "px");
       }
-      if (element.matches(".day-date .daynum-text") && dateBounds) {
-        const x = box.width / 2 - dateBounds.centerX;
+      if (
+        element.matches(".day-date .daynum-text,.onboarding-node-text") &&
+        dateBounds
+      ) {
+        const x =
+          centerBox.left + centerBox.width / 2 - box.left - dateBounds.centerX;
         if (Number.isFinite(x))
           element.style.setProperty("--ui-ink-offset-x", x.toFixed(3) + "px");
       }

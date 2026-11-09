@@ -94,7 +94,7 @@
       "点击未被上层遮挡的牌放入七格托盘，同类三张自动消除。托盘满时暂停取牌，仍可通过暂存或撤回解围。\n两格暂存区可反复使用：点击托盘里的牌移入暂存，再点击暂存牌放回；暂存牌不会参与消除，必须放回托盘。\n三关依次有 24、60、90 张牌，每关提供 3 次撤回和 3 次提示。撤回仅回退上一步，提示与已用撤回次数不会返还。提示优先推荐凑三与打开下层，不保证余局可解。\n每局生成时保留一条无需道具的通关路线。原局重试保留布局，新旅程更换布局。无倒计时，自动保存当前关卡。方向键移动焦点，回车或空格取牌。",
     ],
     en: [
-      "Hua Le Ge Hua",
+      "Triples",
       "Uncover layered tiles and match three. Plan your route with seven tray slots and two reserve spaces.",
       "LAYERED TRIPLES · Take your time",
       "01 · Sprout",

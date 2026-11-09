@@ -12,6 +12,119 @@ WorkTimeApp.ui.popover = (() => {
   }
   const instances = new Set();
   const stack = [];
+  // Arrows live outside scrolling surfaces, so long menus never clip them.
+  const pointers = new Map();
+  let pointerFrame = 0;
+  function point(element, anchor) {
+    if (!element || !anchor) return;
+    element.setAttribute("data-pop-surface", "");
+    let entry = pointers.get(element);
+    if (!entry) {
+      const arrow = document.createElement("div");
+      arrow.className = "pop-arrow";
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.innerHTML =
+        '<svg viewBox="0 0 14 8" aria-hidden="true"><path d="M0 8 7 1 14 8"/></svg>';
+      const topLayer = typeof arrow.showPopover === "function";
+      if (topLayer) arrow.setAttribute("popover", "manual");
+      (element.closest("dialog[open]") || document.body).append(arrow);
+      entry = { arrow, anchor, topLayer };
+      pointers.set(element, entry);
+      if (topLayer) arrow.showPopover();
+    }
+    entry.anchor = anchor;
+    updatePointers();
+  }
+  function updatePointers() {
+    pointerFrame = 0;
+    for (const [element, entry] of pointers) {
+      const { arrow, anchor } = entry;
+      const bounds = element.getBoundingClientRect();
+      if (
+        !element.isConnected ||
+        !element.getClientRects().length ||
+        getComputedStyle(element).visibility === "hidden" ||
+        !bounds.width ||
+        !bounds.height ||
+        (anchor instanceof Element &&
+          (!anchor.isConnected || !anchor.getClientRects().length))
+      ) {
+        arrow.remove();
+        pointers.delete(element);
+        continue;
+      }
+      const origin =
+        anchor instanceof Element ? anchor.getBoundingClientRect() : anchor;
+      const x = (origin.left + origin.right) / 2;
+      const y = (origin.top + origin.bottom) / 2;
+      const side =
+        y < bounds.top
+          ? "top"
+          : y > bounds.bottom
+            ? "bottom"
+            : x < bounds.left
+              ? "left"
+              : x > bounds.right
+                ? "right"
+                : y < bounds.top + bounds.height / 2
+                  ? "top"
+                  : "bottom";
+      const clamp = (value, start, end) =>
+        Math.max(start, Math.min(value, Math.max(start, end)));
+      const horizontal = side === "top" || side === "bottom";
+      const left = horizontal
+        ? clamp(x, bounds.left + 12, bounds.right - 12) - 7
+        : side === "left"
+          ? bounds.left - 10
+          : bounds.right - 4;
+      const top = horizontal
+        ? side === "top"
+          ? bounds.top - 7
+          : bounds.bottom - 1
+        : clamp(y, bounds.top + 12, bounds.bottom - 12) - 4;
+      const style = getComputedStyle(element);
+      const css = `left:${left}px;top:${top}px;--pop-fill:${style.backgroundColor};--pop-edge:${style.borderTopColor};z-index:${Math.max(20000, Number(style.zIndex) || 0) + 1};`;
+      if (entry.css !== css) {
+        arrow.style.cssText = css;
+        entry.css = css;
+      }
+      if (arrow.dataset.side !== side) arrow.dataset.side = side;
+    }
+  }
+  function schedulePointers() {
+    if (pointers.size && !pointerFrame)
+      pointerFrame = requestAnimationFrame(updatePointers);
+  }
+  new MutationObserver((records) => {
+    if (!pointers.size) return;
+    if (records.some((record) => !record.target.closest?.(".pop-arrow")))
+      schedulePointers();
+  }).observe(document.body, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["hidden", "open", "style", "class"],
+  });
+  window.addEventListener("resize", schedulePointers);
+  document.addEventListener("worktime:themechange", schedulePointers);
+  document.addEventListener("scroll", schedulePointers, {
+    capture: true,
+    passive: true,
+  });
+  document.addEventListener(
+    "toggle",
+    (event) => {
+      const details = event.target;
+      if (details instanceof HTMLDetailsElement && details.open) {
+        const menu = details.querySelector(
+          ":scope > .music-menu-panel, :scope > .reader-menu",
+        );
+        if (menu) point(menu, details.querySelector("summary"));
+      }
+      schedulePointers();
+    },
+    true,
+  );
   function create(element, { trigger = () => null } = {}) {
     const scope = new AbortController();
     let opened = false,
@@ -60,6 +173,9 @@ WorkTimeApp.ui.popover = (() => {
       previousFocus = trigger() || document.activeElement;
       if (native) {
         element.showPopover();
+        requestAnimationFrame(() => {
+          if (isOpen()) point(element, trigger());
+        });
         return;
       }
       parent = [...stack]
@@ -100,6 +216,9 @@ WorkTimeApp.ui.popover = (() => {
       stack.push(api);
       host.style.zIndex = String(10000 + stack.length);
       notify();
+      requestAnimationFrame(() => {
+        if (isOpen()) point(element, trigger());
+      });
     }
     const api = {
       trigger,
@@ -154,11 +273,12 @@ WorkTimeApp.ui.popover = (() => {
   }
   return {
     create,
+    point,
     anyOpen: () => [...instances].some((item) => item.isOpen()),
   };
 })();
 
-/** One themed hint surface replaces browser title bubbles, including lazy UI. */
+/** Only detailed or clipped content gets a hint, including in lazy UI. */
 (() => {
   const hint = document.createElement("div");
   hint.id = "siteHint";
@@ -218,6 +338,7 @@ WorkTimeApp.ui.popover = (() => {
               window.innerHeight - box.height - inset,
             ),
       ) + "px";
+    WorkTimeApp.ui.popover.point(hint, target);
     if (!WorkTimeApp.ui.animationCompat.preference().matches)
       motion = WorkTimeApp.ui.animationCompat.animate(
         hint,
@@ -242,25 +363,23 @@ WorkTimeApp.ui.popover = (() => {
     description = target.getAttribute("aria-describedby");
     // Suppress native bubbles even when a visible label makes the hint redundant.
     target.setAttribute("title", "");
-    const normalize = (value) =>
-      value.normalize("NFKC").replace(/[^\p{L}\p{N}]/gu, "");
-    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-    const visible = [];
-    while (walker.nextNode()) {
-      const parent = walker.currentNode.parentElement;
-      if (parent.closest("svg,[aria-hidden='true'],.game-sr-only,.sr-only"))
-        continue;
-      const style = getComputedStyle(parent);
-      if (style.visibility !== "hidden" && parent.getClientRects().length)
-        visible.push(walker.currentNode.textContent);
-    }
+    // Bottom navigation never opens hints, including clipped or status labels.
+    if (element.closest(".editor > .notification-tabs")) return;
     const clipped = [
       element,
       ...element.querySelectorAll(".button-label,.game-menu-name"),
     ].some(
       (node) => node.clientWidth > 0 && node.scrollWidth > node.clientWidth + 1,
     );
-    if (!clipped && normalize(visible.join("")) === normalize(title)) return;
+    // Labels and routine action descriptions should never float over the layout,
+    // even when their wording differs from the visible or accessible name.
+    // Date markers contain details that otherwise have no visible text.
+    if (
+      !clipped &&
+      element.dataset.hint !== "detail" &&
+      !element.matches(".date-markers")
+    )
+      return;
     target.setAttribute(
       "aria-describedby",
       [description, hint.id].filter(Boolean).join(" "),

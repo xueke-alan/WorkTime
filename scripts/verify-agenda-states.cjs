@@ -1,4 +1,5 @@
 "use strict";
+const { downloadBackup } = require("./lib/backup-test-file.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -25,6 +26,9 @@ const setScheduleRange = require("./lib/agenda-test-range.cjs");
           document.documentElement.dataset.appState === "ready" &&
           !document.documentElement.classList.contains("app-loading"),
       );
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await page.goto(
       pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
     );
@@ -157,7 +161,7 @@ const setScheduleRange = require("./lib/agenda-test-range.cjs");
         },
       }),
     );
-    await page.locator("#backup").click();
+    await downloadBackup(page, "agendaStatusBackup");
     await page.waitForFunction(() => !!window.agendaStatusBackup);
     const result = await page.evaluate(async () => {
       await Promise.all(

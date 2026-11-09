@@ -53,10 +53,8 @@ WorkTimeApp.ui.createReaderController = function () {
     compact
       ? {
           ...settings(),
-          flow: "pages",
           spread: "single",
           margin: 12,
-          fontSize: Math.min(settings().fontSize, 18),
           lineHeight: 1.6,
           zoom: "width",
         }
@@ -96,11 +94,15 @@ WorkTimeApp.ui.createReaderController = function () {
       state = { ...storage.defaults(), ...value };
       state.settings = storage.cleanSettings(state.settings);
       if (Object.keys(state.books).length) message = "accessHint";
+      state.handle = null;
     })
     .catch(() => {
       storageIssue = true;
     })
-    .then(emit);
+    .then(() => {
+      emit();
+    });
+  const libraryReady = ready.then(loadRuntime);
   const record = (entry) =>
     (state.books[entry.id] ||= {
       id: entry.id,
@@ -116,7 +118,8 @@ WorkTimeApp.ui.createReaderController = function () {
       bookmarks: [],
       updated: Date.now(),
     });
-  async function closeBook() {
+  async function closeBook({ forget = false } = {}) {
+    if (forget) state.resumeBookId = null;
     ++mountRevision;
     pendingOpen?.abort();
     pendingOpen = null;
@@ -150,7 +153,8 @@ WorkTimeApp.ui.createReaderController = function () {
         },
       });
       if (token !== scanRevision) return;
-      await closeBook();
+      if (!current || !result.books.some((entry) => entry.id === current.id))
+        await closeBook();
       if (token !== scanRevision) return;
       entries = new Map(result.books.map((entry) => [entry.id, entry]));
       state.handle = handle || null;
@@ -210,49 +214,33 @@ WorkTimeApp.ui.createReaderController = function () {
       }
     }
   }
-  async function choose() {
-    await ready;
-    if (!window.showDirectoryPicker) return false;
+  async function loadRuntime() {
     try {
-      const handle = await window.showDirectoryPicker({
-        mode: "read",
-        id: "worktime-reader",
-        startIn: "documents",
-      });
-      void scan(handle);
-      return true;
-    } catch (error) {
-      if (error.name === "AbortError") return true;
-      if (
-        ["SecurityError", "TypeError", "NotSupportedError"].includes(error.name)
-      )
-        return false;
-      message = "accessHint";
+      const runtime = WorkTimeApp.services.runtimeFolder;
+      const handle = await runtime.getDirectory("ebooks");
+      await scan(handle);
+      state.directory = runtime.state.name + "/ebooks";
       emit();
-      return true;
-    }
-  }
-  async function reconnect() {
-    await ready;
-    const handle = state.handle;
-    if (!handle) return false;
-    try {
-      if (
-        (await handle.queryPermission({ mode: "read" })) !== "granted" &&
-        (await handle.requestPermission({ mode: "read" })) !== "granted"
-      ) {
-        message = "accessHint";
-        emit();
-        return true;
-      }
-      void scan(handle);
       return true;
     } catch {
+      ++scanRevision;
+      scanning = false;
+      entries.clear();
+      state.handle = null;
+      state.directory = "";
+      await closeBook();
       message = "accessHint";
       emit();
-      return true;
+      return false;
     }
   }
+  const runtimeChanged = () => {
+    void ready.then(async () => {
+      await closeBook();
+      await loadRuntime();
+    });
+  };
+  document.addEventListener("worktime:runtimefolderchange", runtimeChanged);
   async function open(id, host, password, file = null, keepNavigation = false) {
     await ready;
     if (!keepNavigation) ++mountRevision;
@@ -321,6 +309,7 @@ WorkTimeApp.ui.createReaderController = function () {
       openedFile = sourceFile;
       passwordPrompt = password;
       current = book;
+      state.resumeBookId = book.id;
       current.lastRead = Date.now();
       if (current.status === "unread") current.status = "reading";
       staging.style.visibility = "";
@@ -359,12 +348,19 @@ WorkTimeApp.ui.createReaderController = function () {
     }
   }
   function remount(host, { mini = false } = {}) {
+    const wasCompact = compact;
     compact = mini;
     const revision = ++mountRevision;
     mountQueue = mountQueue
       .catch(() => {})
       .then(async () => {
         if (revision !== mountRevision || !adapter || !current) return false;
+        // Re-entering the same auxiliary tab does not move or re-render its
+        // iframe. The resize observer handles any actual geometry change.
+        if (stage?.parentElement === host && wasCompact === mini) {
+          emit();
+          return true;
+        }
         const id = current.id,
           file = openedFile,
           renderer = adapter;
@@ -433,6 +429,7 @@ WorkTimeApp.ui.createReaderController = function () {
   }, 5000);
   return {
     ready,
+    libraryReady,
     subscribe(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);
@@ -454,11 +451,16 @@ WorkTimeApp.ui.createReaderController = function () {
       canBack: !!navigation.length,
       compact,
     }),
-    choose,
-    reconnect,
-    importFiles(files) {
-      const selected = [...(files || [])];
-      if (selected.length) void ready.then(() => scan(null, selected));
+    reconnect: () => ready.then(loadRuntime),
+    async importFiles(files, options) {
+      await ready;
+      const result = await WorkTimeApp.services.runtimeFolder.importFiles(
+        "ebooks",
+        files,
+        options,
+      );
+      await loadRuntime();
+      return result;
     },
     cancelScan() {
       ++scanRevision;
@@ -466,14 +468,7 @@ WorkTimeApp.ui.createReaderController = function () {
       message = "cancelled";
       emit();
     },
-    async refresh() {
-      if (state.handle) return reconnect();
-      const files = [];
-      for (const entry of entries.values()) files.push(await entry.getFile());
-      if (!files.length) return false;
-      void scan(null, files);
-      return true;
-    },
+    refresh: () => ready.then(loadRuntime),
     open,
     remount,
     resize,
@@ -630,6 +625,10 @@ WorkTimeApp.ui.createReaderController = function () {
     },
     flush: () => persist(true),
     dispose() {
+      document.removeEventListener(
+        "worktime:runtimefolderchange",
+        runtimeChanged,
+      );
       ++mountRevision;
       pendingOpen?.abort();
       clearInterval(timer);

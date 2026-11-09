@@ -22,6 +22,7 @@ async function verify() {
         page.on("pageerror", (error) => errors.push(error.message));
         await page.route(/^https?:/, (route) => route.abort());
         await page.addInitScript((mode) => {
+          localStorage.setItem("worktime.onboarding.v1", "dismissed");
           if (mode === "missing-api") {
             HTMLElement.prototype.showPopover = undefined;
             HTMLElement.prototype.hidePopover = undefined;
@@ -55,10 +56,25 @@ async function verify() {
         );
 
         const marker = page.locator("#calendar .date-markers").first();
+        // Finish the narrow layout's scroll before opening a scroll-dismissed hint.
+        await marker.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(100);
         const hintText = await marker.getAttribute("title");
         await marker.hover();
         await page.locator("#siteHint").waitFor({ state: "visible" });
         assert.equal(await page.locator("#siteHint").textContent(), hintText);
+        assert.equal(
+          await page
+            .locator("#siteHint")
+            .evaluate((node) => getComputedStyle(node).textAlign),
+          "center",
+        );
+        await page.locator(".pop-arrow").waitFor({ state: "visible" });
+        assert.ok(
+          ["top", "bottom"].includes(
+            await page.locator(".pop-arrow").getAttribute("data-side"),
+          ),
+        );
         assert.equal(
           await marker.getAttribute("title"),
           "",
@@ -68,6 +84,7 @@ async function verify() {
         assert.ok(hintBox.x >= 0 && hintBox.x + hintBox.width <= width);
         await page.mouse.move(0, 0);
         await page.locator("#siteHint").waitFor({ state: "hidden" });
+        await page.waitForFunction(() => !document.querySelector(".pop-arrow"));
         assert.equal(await marker.getAttribute("title"), hintText);
         await marker.focus();
         await page.locator("#siteHint").waitFor({ state: "visible" });
@@ -78,7 +95,7 @@ async function verify() {
           fixture.id = "hintFixture";
           fixture.style.cssText = "position:fixed;top:0;left:0;z-index:9999";
           fixture.innerHTML =
-            '<button id="redundantHint" title="擦除">擦除</button><button id="usefulHint" title="擦除所选单元格，保留题目数字">擦除</button><button id="iconHint" title="更多操作" aria-label="更多操作">⋯</button>';
+            '<button id="redundantHint" title="擦除">擦除</button><button id="usefulHint" data-hint="detail" title="擦除所选单元格，保留题目数字">擦除</button><button id="iconHint" title="更多操作" aria-label="更多操作">⋯</button><button id="errorHint" data-hint="detail" title="加载失败，点击重试" aria-label="加载失败，点击重试">!</button><button id="clippedHint" style="width:50px;overflow:hidden;white-space:nowrap" title="非常长的完整文件名称" aria-label="非常长的完整文件名称">非常长的完整文件名称</button><button id="oaHint" title="打开 OA 导入" aria-label="OA记录">OA记录</button><span id="musicHint" tabindex="0" title="本地音乐" aria-label="本地音乐">♫</span><h2 id="libraryHint" tabindex="0" title="你的音乐库">音乐库</h2><button id="songsHint" title="歌曲列表"><span>♫</span></button>';
           document.body.append(fixture);
         });
         await page.locator("#redundantHint").hover();
@@ -87,7 +104,27 @@ async function verify() {
           await page.locator("#redundantHint").getAttribute("title"),
           "",
         );
-        for (const id of ["usefulHint", "iconHint"]) {
+        await page.locator("#iconHint").hover();
+        await page.waitForTimeout(300);
+        assert.equal(await page.locator("#siteHint").isVisible(), false);
+        await page.locator("#iconHint").focus();
+        await page.waitForTimeout(50);
+        assert.equal(await page.locator("#siteHint").isVisible(), false);
+        assert.equal(
+          await page.locator("#iconHint").getAttribute("aria-label"),
+          "更多操作",
+        );
+        for (const id of ["oaHint", "musicHint", "libraryHint", "songsHint"]) {
+          const control = page.locator("#" + id);
+          await control.hover();
+          await page.waitForTimeout(300);
+          assert.equal(await page.locator("#siteHint").isVisible(), false, id);
+          assert.equal(await control.getAttribute("title"), "", id);
+          await control.focus();
+          await page.waitForTimeout(50);
+          assert.equal(await page.locator("#siteHint").isVisible(), false, id);
+        }
+        for (const id of ["usefulHint", "errorHint", "clippedHint"]) {
           await page.locator("#" + id).hover();
           await page.locator("#siteHint").waitFor({ state: "visible" });
         }
@@ -95,6 +132,28 @@ async function verify() {
         await page.evaluate(() =>
           document.getElementById("hintFixture").remove(),
         );
+
+        const bottomTabs = page.locator(
+          ".editor > .notification-tabs .notification-tab",
+        );
+        assert.ok((await bottomTabs.count()) >= 7);
+        for (const tab of await bottomTabs.all()) {
+          const name = await tab.getAttribute("aria-label");
+          await tab.scrollIntoViewIfNeeded();
+          await page.waitForTimeout(100);
+          // Status details must also obey the navigation's no-hint rule.
+          await tab.evaluate((node) => (node.dataset.hint = "detail"));
+          await tab.hover();
+          await page.waitForTimeout(300);
+          assert.equal(await page.locator("#siteHint").isVisible(), false);
+          assert.equal(await tab.getAttribute("title"), "");
+          await tab.focus();
+          await page.waitForTimeout(50);
+          assert.equal(await page.locator("#siteHint").isVisible(), false);
+          assert.equal(await tab.getAttribute("aria-label"), name);
+          await tab.evaluate((node) => delete node.dataset.hint);
+        }
+        await page.mouse.move(0, 200);
 
         // Exercise the standalone picker inside a modal and a clipped container.
         await page.evaluate(() => {

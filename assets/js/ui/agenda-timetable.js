@@ -833,11 +833,11 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
           if (!current.item) {
             const origin =
               math.day(current.origin.date) * 1440 + current.startMinute;
-            const endpoint = base + snapped;
+            const endpoint = base + Math.min(1439, snapped);
             const start = Math.min(origin, endpoint);
             current.fields = fields(
               start,
-              Math.max(start + 15, origin, endpoint),
+              Math.min(base + 1439, Math.max(start + 15, origin, endpoint)),
             );
             current.candidate = {
               ...current.fields,
@@ -897,6 +897,12 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
       Math.max(8, Math.min(event.clientX + 12, innerWidth - 290)) + "px";
     current.hint.style.top =
       Math.max(8, Math.min(event.clientY + 18, innerHeight - 50)) + "px";
+    WorkTimeApp.ui.popover.point(current.hint, {
+      left: event.clientX,
+      right: event.clientX,
+      top: event.clientY,
+      bottom: event.clientY,
+    });
     // Crossing the narrow gutters must not expose the source or discard the
     // preview. A release here still cancels because candidate remains null.
     if (!target && current.item && !current.allDay && !current.edge) return;
@@ -1065,10 +1071,10 @@ WorkTimeApp.ui.createAgendaTimetable = function ({
     { passive: false },
   );
   function gestureTarget(event, current) {
-    // Time handles resize vertically within their original endpoint's column.
-    // Horizontal pointer drift must not turn a same-day event into an overnight.
+    // Creation and time handles stay in their original date column.
+    // Horizontal pointer drift must not create an overnight event.
     const pointer =
-      current.edge === "start" || current.edge === "end"
+      !current.item || current.edge === "start" || current.edge === "end"
         ? { clientX: current.x, clientY: event.clientY }
         : event;
     return hit(pointer, current.allDay);

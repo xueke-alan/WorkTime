@@ -1,14 +1,8 @@
 "use strict";
-/** Own storage usage and failure text; never reads or modifies business state. */
-WorkTimeApp.ui.createStorageStatus = function ({
-  element: $,
-  key,
-  getStorage,
-  window,
-}) {
+/** Own storage failure text; never reads or modifies business state. */
+WorkTimeApp.ui.createStorageStatus = function ({ element: $, window }) {
   let mounted = false,
     generation = 0,
-    usageGeneration = 0,
     retryButton = null,
     recoveryOptions = null;
   let noticeRenderer = null;
@@ -17,7 +11,6 @@ WorkTimeApp.ui.createStorageStatus = function ({
     $("storageNoticeText").textContent = render();
   }
   function languageChanged() {
-    updateUsage();
     if (noticeRenderer) $("storageNoticeText").textContent = noticeRenderer();
   }
   function updateRecovery() {
@@ -29,33 +22,6 @@ WorkTimeApp.ui.createStorageStatus = function ({
         ? issue === "corrupt" || issue === "unsupported"
         : recoveryOptions.corrupt);
   }
-  function updateUsage() {
-    const requestVersion = ++usageGeneration;
-    if (typeof window.navigator.storage?.estimate !== "function") {
-      $("storageUsage").textContent = WorkTimeApp.i18n.t("copy.5995444c57");
-      return;
-    }
-    void window.navigator.storage
-      .estimate()
-      .then(({ usage: bytes }) => {
-        if (requestVersion !== usageGeneration) return;
-        const size =
-          bytes < 1024
-            ? bytes + " B"
-            : bytes < 1024 * 1024
-              ? (bytes / 1024).toFixed(2) + " KB"
-              : (bytes / (1024 * 1024)).toFixed(2) + " MB";
-        $("storageUsage").textContent =
-          WorkTimeApp.i18n.t("copy.78ad5b8e55") + size;
-      })
-      .catch(() => {
-        if (requestVersion !== usageGeneration) return;
-        $("storageUsage").textContent = WorkTimeApp.i18n.t("copy.80793445c6");
-      });
-  }
-  function storageChanged(event) {
-    if (event.key === key || event.key === null) updateUsage();
-  }
   function mount({
     readError = null,
     accessError = null,
@@ -63,7 +29,6 @@ WorkTimeApp.ui.createStorageStatus = function ({
   } = {}) {
     if (mounted) return;
     mounted = true;
-    updateUsage();
     if (readError)
       setNotice(
         () =>
@@ -84,17 +49,12 @@ WorkTimeApp.ui.createStorageStatus = function ({
           WorkTimeApp.i18n.message(accessError.message) +
           "。",
       );
-    window.addEventListener("storage", storageChanged);
     window.document.addEventListener(
       "worktime:languagechange",
       languageChanged,
     );
   }
   return {
-    saving() {
-      usageGeneration++;
-      $("storageUsage").textContent = WorkTimeApp.i18n.t("copy.9ca32f988d");
-    },
     externalUpdate() {
       $("storageNotice").classList.remove("hidden");
       setNotice(() => WorkTimeApp.i18n.t("copy.dfbddf642a"));
@@ -115,7 +75,6 @@ WorkTimeApp.ui.createStorageStatus = function ({
       };
     },
     commit(result, failed) {
-      updateUsage();
       $("storageNotice").classList.toggle("hidden", !failed);
       if (!result.persisted)
         setNotice(
@@ -149,7 +108,6 @@ WorkTimeApp.ui.createStorageStatus = function ({
       generation++;
       if (retryButton) retryButton.onclick = null;
       retryButton = null;
-      window.removeEventListener("storage", storageChanged);
       window.document.removeEventListener(
         "worktime:languagechange",
         languageChanged,

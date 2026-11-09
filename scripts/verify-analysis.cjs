@@ -245,7 +245,14 @@ async function verifyViewMotion(browser, url, state) {
       motions.filter((motion) => motion.id === "panelContent").length,
       1,
     );
-    assert.equal(motions.length, 4, "One body movement and three footer fades");
+    const footerParts = await page
+      .locator(".calendar-footer > :not(.site-meta)")
+      .count();
+    assert.equal(
+      motions.length,
+      1 + footerParts,
+      "One body movement and a fade per footer part",
+    );
     for (const motion of motions) {
       assert.ok(motion.frames.every((frame) => !("clipPath" in frame)));
       assert.equal(motion.options.duration, duration);
@@ -372,6 +379,32 @@ async function verifyViewMotion(browser, url, state) {
       await page.locator("#agendaMode").getAttribute("aria-pressed"),
       "false",
     );
+    // Exiting analysis always returns to attendance, including agenda entry.
+    await page.locator("#analysisToggle").click();
+    await phase(180, 24);
+    await finish();
+    await phase(280, -24);
+    await finish();
+    await settled();
+    assert.equal(await page.locator("#analysisPage").isVisible(), false);
+    assert.equal(
+      await page.locator("#agendaMode").getAttribute("aria-pressed"),
+      "false",
+    );
+    assert.equal(await page.locator("#dayForm").isVisible(), true);
+    assert.equal(
+      await page.evaluate(
+        () => JSON.parse(localStorage.getItem("worktime.calendarView")).mode,
+      ),
+      "attendance",
+    );
+    // The agenda button still explicitly opens the retained agenda view.
+    await page.locator("#analysisToggle").click();
+    await phase(180, -24);
+    await finish();
+    await phase(280, 24);
+    await finish();
+    await settled();
     await page.locator("#agendaMode").click();
     await phase(180, 24);
     await finish();

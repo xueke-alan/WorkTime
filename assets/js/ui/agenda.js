@@ -27,7 +27,6 @@ WorkTimeApp.ui.createAgenda = function ({
   const oaActions = document.querySelector(".sidebar-actions");
   const t = (key, values) => WorkTimeApp.i18n.t("agenda." + key, values);
   let active = false,
-    analysisReturnAgenda = false,
     formOpen = false,
     auxiliaryOpen = false,
     listScroll = 0,
@@ -64,20 +63,14 @@ WorkTimeApp.ui.createAgenda = function ({
       weekView = saved.weeks;
       workdaysOnly = saved.workdaysOnly === true;
       model.analysisMode = saved.analysis === true;
-      if (model.analysisMode) {
-        analysisReturnAgenda = active;
-        active = false;
-      }
+      if (model.analysisMode) active = false;
       lastSavedView = raw;
     }
   } catch {}
   function rememberView() {
     try {
       const saved = JSON.stringify({
-        mode:
-          active || (model.analysisMode && analysisReturnAgenda)
-            ? "agenda"
-            : "attendance",
+        mode: active ? "agenda" : "attendance",
         weeks: weekView,
         analysis: model.analysisMode,
         workdaysOnly,
@@ -803,10 +796,14 @@ WorkTimeApp.ui.createAgenda = function ({
       String(Math.max(1, columns)),
     );
     weekdays.classList.toggle("agenda-single-weekdays", single);
-    calendar.style.setProperty(
-      "--agenda-column-gap",
-      getComputedStyle(calendar).columnGap,
-    );
+    // Attendance does not use the lane gap. Reading it after mounting the page
+    // forces an otherwise unnecessary synchronous first layout.
+    if (enabled)
+      calendar.style.setProperty(
+        "--agenda-column-gap",
+        getComputedStyle(calendar).columnGap,
+      );
+    else calendar.style.removeProperty("--agenda-column-gap");
     weekdayLabels.forEach((label, index) => {
       label.hidden = single && !weekdayIndices.has(index);
       label.classList.toggle(
@@ -3392,7 +3389,6 @@ WorkTimeApp.ui.createAgenda = function ({
   }
   function render() {
     if (disposed) return;
-    if (!model.analysisMode) analysisReturnAgenda = false;
     rememberView();
     renderToolbar();
     updateOaActions();
@@ -4060,20 +4056,6 @@ WorkTimeApp.ui.createAgenda = function ({
       "click",
       (event) => {
         const id = event.target.closest("button,[role=button]")?.id;
-        if (
-          model.analysisMode &&
-          analysisReturnAgenda &&
-          id === "analysisToggle"
-        ) {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          actions.transitionAnalysis(
-            false,
-            () => setActive(true),
-            revealAgendaPage,
-          );
-          return;
-        }
         if (!active) return;
         if (
           ![
@@ -4093,10 +4075,7 @@ WorkTimeApp.ui.createAgenda = function ({
           finishTransitions();
           actions.transitionAnalysis(
             true,
-            () => {
-              analysisReturnAgenda = true;
-              setActive(false);
-            },
+            () => setActive(false),
             revealSidebars,
           );
           return;

@@ -1,19 +1,31 @@
 "use strict";
 const assert = require("node:assert/strict");
-const fs = require("node:fs/promises");
 const path = require("node:path");
-const { pathToFileURL } = require("node:url");
+const { runtimeServer } = require("./runtime-test-helpers.cjs");
+const { observeBackupWrites } = require("./lib/backup-test-file.cjs");
 const { chromium } = require("playwright");
 
 (async () => {
+  const server = await runtimeServer(path.resolve(process.argv[2] || "."));
   const browser = await chromium.launch({ channel: "msedge", headless: true });
   try {
-    const page = await browser.newPage();
-    await page.route(/^https?:/, (route) => route.abort());
-    const siteRoot = process.argv[2] || path.resolve(__dirname, "..");
-    await page.goto(pathToFileURL(path.resolve(siteRoot, "index.html")).href);
+    const page = await browser.newPage({ serviceWorkers: "block" });
+    const capture = await observeBackupWrites(page);
+    page.on("download", () => assert.fail("Backup triggered browser download"));
+    await page.addInitScript(() => {
+      localStorage.setItem("worktime.onboarding.v1", "dismissed");
+      window.showOpenFilePicker = undefined;
+    });
+    await page.route(/^https?:\/\/(?!127\.0\.0\.1:)/, (route) => route.abort());
+    await page.goto(server.url);
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
+    );
+    await page.waitForFunction(
+      () =>
+        WorkTimeApp.services.preferences.page.state.lastAutoBackupDate ===
+          WorkTimeApp.domain.time.businessDate(new Date()) &&
+        !document.getElementById("backupBeforeRestore").disabled,
     );
     const xiangqi = await page.evaluate(async () => {
       localStorage.setItem("worktime.games.jump.best.v1", "42");
@@ -41,24 +53,12 @@ const { chromium } = require("playwright");
       Object.defineProperty(navigator, "clipboard", {
         configurable: true,
         value: {
-          writeText: async (text) => {
-            window.testBackupText = text;
+          writeText: async () => {
+            throw Error("Unexpected clipboard write");
           },
           readText: async () => {
             window.testReadCount = (window.testReadCount || 0) + 1;
-            if (window.testFocusFailures > 0) {
-              window.testFocusFailures--;
-              throw new DOMException(
-                "Document is not focused.",
-                "NotAllowedError",
-              );
-            }
-            if (window.testReadDenied)
-              throw new DOMException(
-                "Clipboard read denied",
-                "NotAllowedError",
-              );
-            return window.testBackupText;
+            throw Error("Unexpected clipboard read");
           },
         },
       });
@@ -67,8 +67,84 @@ const { chromium } = require("playwright");
     const xiangqiKey = "worktime.games.xiangqi.v1";
     const savedXiangqi = () =>
       page.evaluate((key) => JSON.parse(localStorage.getItem(key)), xiangqiKey);
-    await page.locator("#backup").click();
-    await page.waitForFunction(() => !!window.testBackupText);
+    assert.equal(await page.locator("#backup").count(), 0);
+    const exportFile = async () => {
+      const downloading = capture.next();
+      await page.evaluate(() =>
+        document.getElementById("backupBeforeRestore").click(),
+      );
+      const file = await downloading;
+      const text = file.text;
+      await page.waitForFunction(
+        () => !document.getElementById("backupBeforeRestore").disabled,
+      );
+      await page.evaluate((value) => {
+        window.testBackupText = value;
+      }, text);
+      return text;
+    };
+    const importFile = async () => {
+      const choosing = page.waitForEvent("filechooser");
+      await page.locator("#restore").click();
+      const chooser = await choosing;
+      await chooser.setFiles({
+        name: "backup.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from(await page.evaluate(() => window.testBackupText)),
+      });
+    };
+    await exportFile();
+    // Native import must start in this runtime root's backups directory.
+    await page.evaluate(() => {
+      window.testPickerCalls = 0;
+      window.showOpenFilePicker = async (options) => {
+        const expected =
+          await WorkTimeApp.services.runtimeFolder.getDirectory("backups");
+        if (!(await expected.isSameEntry(options.startIn)))
+          throw Error("Picker did not start in the backup directory");
+        if (options.multiple || options.id)
+          throw Error("Picker must select one file from the specified folder");
+        window.testPickerCalls++;
+        return [
+          {
+            getFile: async () =>
+              new File([window.testBackupText], "backup.txt"),
+          },
+        ];
+      };
+    });
+    await page.locator("#restore").click();
+    await page.locator("#restoreDialog[open]").waitFor();
+    assert.equal(await page.evaluate(() => window.testPickerCalls), 1);
+    await page
+      .locator('#restoreDialog [data-close="restoreDialog"]')
+      .first()
+      .click();
+    await page.evaluate(() => {
+      window.showOpenFilePicker = async () => {
+        throw new DOMException("Cancelled", "AbortError");
+      };
+    });
+    await page.locator("#restore").click();
+    await page.waitForFunction(
+      () => !document.getElementById("restore").disabled,
+    );
+    assert.equal(await page.locator("#restoreDialog").isVisible(), false);
+    // An exposed but unavailable native picker falls back to the file input.
+    await page.evaluate(() => {
+      window.showOpenFilePicker = async () => {
+        throw new DOMException("Unavailable", "SecurityError");
+      };
+    });
+    await importFile();
+    await page.locator("#restoreDialog[open]").waitFor();
+    await page
+      .locator('#restoreDialog [data-close="restoreDialog"]')
+      .first()
+      .click();
+    await page.evaluate(() => {
+      window.showOpenFilePicker = undefined;
+    });
     assert.ok(
       await page.evaluate(() =>
         /^WORKTIME:(GZIP|DEFLATE|CHUNKS):1:/.test(window.testBackupText),
@@ -98,7 +174,7 @@ const { chromium } = require("playwright");
       localStorage.setItem("worktime.games.jump.best.v1", "99");
       localStorage.removeItem(key);
     }, xiangqiKey);
-    await page.locator("#restore").click();
+    await importFile();
     await page.waitForFunction(
       () => document.querySelector("#restoreDialog").open,
     );
@@ -114,7 +190,7 @@ const { chromium } = require("playwright");
       ),
       "99",
     );
-    await page.locator("#restore").click();
+    await importFile();
     await page.locator("#restoreDialog").waitFor({ state: "visible" });
     await page.locator("#confirmRestore").click();
     await page.locator("#restoreDialog").waitFor({ state: "hidden" });
@@ -128,8 +204,7 @@ const { chromium } = require("playwright");
     await page.evaluate(() => {
       window.testBackupText = null;
     });
-    await page.locator("#backup").click();
-    await page.waitForFunction(() => !!window.testBackupText);
+    await exportFile();
     assert.equal(
       await page.evaluate(async () => {
         const value = await WorkTimeApp.services.backup.decode(
@@ -147,7 +222,7 @@ const { chromium } = require("playwright");
       window.testBackupText = window.legacyBackup;
       localStorage.setItem("worktime.games.jump.best.v1", "77");
     });
-    await page.locator("#restore").click();
+    await importFile();
     await page.locator("#restoreDialog").waitFor({ state: "visible" });
     await page.locator("#confirmRestore").click();
     await page.locator("#restoreDialog").waitFor({ state: "hidden" });
@@ -159,13 +234,7 @@ const { chromium } = require("playwright");
     );
     assert.deepEqual(await savedXiangqi(), xiangqi);
 
-    const downloading = page.waitForEvent("download");
-    await page.locator("#backup").focus();
-    await page.keyboard.down("Space");
-    const downloaded = await downloading;
-    await page.keyboard.up("Space");
-    assert.match(downloaded.suggestedFilename(), /\.txt$/);
-    const fileText = await fs.readFile(await downloaded.path(), "utf8");
+    const fileText = await exportFile();
     const fileGames = await page.evaluate(
       async (text) =>
         (await WorkTimeApp.services.backup.decode(text, (v) => v)).games.games,
@@ -198,7 +267,7 @@ const { chromium } = require("playwright");
       value.games.games = {};
       window.testBackupText = JSON.stringify(value);
     });
-    await page.locator("#restore").click();
+    await importFile();
     await page.locator("#restoreDialog").waitFor({ state: "visible" });
     await page.locator("#confirmRestore").click();
     await page.locator("#restoreDialog").waitFor({ state: "hidden" });
@@ -210,54 +279,149 @@ const { chromium } = require("playwright");
     );
     assert.equal(await savedXiangqi(), null);
     console.log(
-      `Full backup copy/file restore, legacy compatibility, cancellation and empty games: PASS (${original.rawLength} -> ${original.compressedLength} characters)`,
+      `Full backup folder save/file restore, legacy compatibility, cancellation and empty games: PASS (${original.rawLength} -> ${original.compressedLength} characters)`,
     );
 
-    await page.evaluate(() => {
-      window.testReadDenied = true;
-      window.testReadCount = 0;
-    });
-    const deniedPicker = page.waitForEvent("filechooser");
+    // Cancelling a picker leaves storage untouched and does not access clipboard.
+    const beforeCancel = await savedXiangqi();
+    const choosing = page.waitForEvent("filechooser");
     await page.locator("#restore").click();
-    await deniedPicker;
-    const permissionMessage = "NotAllowedError: Clipboard read denied";
-    await page.waitForFunction(
-      (message) =>
-        document.querySelector("#feedbackList").textContent.includes(message),
-      permissionMessage,
-    );
-    assert.equal(await page.evaluate(() => window.testReadCount), 1);
-    console.log("Denied clipboard read displays permission reason: PASS");
-
+    await (await choosing).setFiles([]);
+    assert.deepEqual(await savedXiangqi(), beforeCancel);
+    assert.equal(await page.locator("#restoreDialog").isVisible(), false);
     await page.evaluate(() => {
-      window.testReadDenied = false;
       window.testBackupText = "{invalid backup";
     });
-    const invalidPicker = page.waitForEvent("filechooser");
-    await page.locator("#restore").click();
-    await invalidPicker;
+    await importFile();
     await page.waitForFunction(() =>
       document.querySelector("#feedbackList").textContent.includes("JSON"),
     );
-    console.log("Invalid backup displays JSON parse reason: PASS");
-
+    assert.equal(await page.locator("#restoreDialog").isVisible(), false);
     await page.evaluate(() => {
-      window.testFocusFailures = 99;
-      window.testReadCount = 0;
+      window.testBackupText = JSON.stringify({
+        format: "worktime-full-backup",
+        version: 999,
+      });
     });
-    const unfocusedPicker = page.waitForEvent("filechooser");
-    await page.locator("#restore").click();
-    await unfocusedPicker;
-    const attempts = await page.evaluate(() => window.testReadCount);
-    assert.equal(attempts, 1);
+    await importFile();
+    assert.equal(await page.locator("#restoreDialog").isVisible(), false);
+    const lifecycle = await page.evaluate(() => {
+      const nodes = new Map();
+      const element = (id) => {
+        if (!nodes.has(id))
+          nodes.set(id, document.getElementById(id).cloneNode(true));
+        return nodes.get(id);
+      };
+      let picks = 0;
+      element("backupFile").click = () => picks++;
+      const controller = WorkTimeApp.ui.createBackupController({
+        element,
+        model: { loadIssue: null, loadCorrupt: false },
+        downloads: {},
+        backupSource: { subscribe: () => () => {} },
+      });
+      controller.bind();
+      controller.bind();
+      element("restore").click();
+      element("restoreStorage").click();
+      const first = picks;
+      controller.dispose();
+      element("restore").click();
+      const disposed = picks;
+      controller.bind();
+      element("restore").click();
+      controller.dispose();
+      return { first, disposed, rebound: picks };
+    });
+    assert.deepEqual(lifecycle, { first: 2, disposed: 2, rebound: 3 });
+    for (const language of ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"]) {
+      await page.evaluate(
+        (language) =>
+          WorkTimeApp.services.preferences.page.saveLanguage(language),
+        language,
+      );
+      assert.equal(
+        await page.locator("#restore").getAttribute("aria-label"),
+        await page.evaluate(() => WorkTimeApp.i18n.t("backup.importFile")),
+      );
+    }
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveLanguage("zh-CN"),
+    );
+    for (const width of [1280, 390, 320]) {
+      await page.setViewportSize({ width, height: 900 });
+      const style = await page.locator("#restore").evaluate((button) => {
+        const css = getComputedStyle(button),
+          rect = button.getBoundingClientRect();
+        return {
+          left: rect.left,
+          right: rect.right,
+          viewport: innerWidth,
+          radii: [
+            css.borderTopLeftRadius,
+            css.borderTopRightRadius,
+            css.borderBottomLeftRadius,
+            css.borderBottomRightRadius,
+          ],
+        };
+      });
+      assert.ok(
+        style.left >= 0 && style.right <= style.viewport,
+        JSON.stringify(style),
+      );
+      assert.equal(new Set(style.radii).size, 1);
+    }
+    // Oversized files are rejected before reading their content.
+    await page.evaluate(() => {
+      const file = new File(["x"], "large.txt");
+      Object.defineProperty(file, "size", {
+        value: WorkTimeApp.services.backup.MAX_BYTES + 1,
+      });
+      file.text = () => {
+        throw Error("Oversized file was read");
+      };
+      const input = document.getElementById("backupFile");
+      Object.defineProperty(input, "files", {
+        configurable: true,
+        value: [file],
+      });
+      input.dispatchEvent(new Event("change"));
+    });
     await page.waitForFunction(() =>
       document
         .querySelector("#feedbackList")
-        .textContent.includes("Document is not focused"),
+        .textContent.includes(WorkTimeApp.i18n.t("copy.c3b5086f19")),
     );
-    console.log("Focus failure makes exactly one read request: PASS");
+    assert.equal(await page.evaluate(() => window.testReadCount || 0), 0);
+    const rescue = capture.next();
+    await page.evaluate(() => {
+      const nodes = new Map();
+      const element = (id) => {
+        if (!nodes.has(id))
+          nodes.set(id, document.getElementById(id).cloneNode(true));
+        return nodes.get(id);
+      };
+      const controller = WorkTimeApp.ui.createBackupController({
+        element,
+        originalStorageText: "{unreadable original bytes",
+        model: { loadIssue: "corrupt", loadCorrupt: true, today: "2026-11-09" },
+        actions: { toast() {} },
+        backupSource: { subscribe: () => () => {} },
+      });
+      controller.bind();
+      element("exportCorruptStorage").click();
+      window.rescueTestController = controller;
+    });
+    const raw = await rescue;
+    assert.equal(raw.kind, "manual");
+    assert.equal(raw.text, "{unreadable original bytes");
+    await page.evaluate(() => window.rescueTestController.dispose());
+    console.log(
+      "Direct file picker, repeat import, cancellation, invalid/unsupported/oversized files and zero clipboard access: PASS",
+    );
   } finally {
     await browser.close();
+    await server.close();
   }
 })().catch((error) => {
   console.error(error);

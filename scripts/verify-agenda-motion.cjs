@@ -358,9 +358,51 @@ async function verify() {
               source === "analysis-return" ? "#analysisToggle" : "#agendaMode",
             )
             .click();
-          await page.waitForFunction(
-            () => window.agendaEntranceRecords.length > 0,
-          );
+          if (source === "analysis-return") {
+            await page.waitForFunction(
+              () => !document.getElementById("panelContent").inert,
+            );
+            assert.equal(
+              await page.locator("#agendaMode").getAttribute("aria-pressed"),
+              "false",
+              "Analysis always returns to attendance",
+            );
+            await page.evaluate(() => {
+              Element.prototype.animate = window.originalEntranceAnimate;
+            });
+            await page.emulateMedia({ reducedMotion: "reduce" });
+            await page.waitForFunction(
+              () => document.documentElement.dataset.reducedMotion === "true",
+            );
+            await page.locator("#agendaMode").click();
+            await settled();
+            continue;
+          }
+          await page
+            .waitForFunction(
+              () => window.agendaEntranceRecords.length > 0,
+              null,
+              { timeout: 5000 },
+            )
+            .catch(async () => {
+              throw Error(
+                JSON.stringify({
+                  width,
+                  view,
+                  source,
+                  state: await page.evaluate(() => ({
+                    chips: document.querySelectorAll("#calendar .agenda-chip")
+                      .length,
+                    title: document.getElementById("monthTitle").textContent,
+                    reduced:
+                      WorkTimeApp.ui.animationCompat.preference().matches,
+                    active: document
+                      .getElementById("agendaMode")
+                      .getAttribute("aria-pressed"),
+                  })),
+                }),
+              );
+            });
           const records = await page.evaluate(
             () => window.agendaEntranceRecords,
           );

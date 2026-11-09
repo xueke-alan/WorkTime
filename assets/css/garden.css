@@ -77,9 +77,7 @@ body .game-garden .garden-flight { position: absolute; transform-origin: top lef
   .garden-actions > .game-button { min-width: 60px; height: 54px; }
   .garden-footer { min-height: 70px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .game-garden *, .game-garden *::after { animation: none !important; transition: none !important; }
-}
+:where(html:where([data-reduced-motion="true"])) .game-garden *, :where(html:where([data-reduced-motion="true"])) .game-garden *::after { animation: none !important; transition: none !important; }
 @media (min-width: 600px) and (max-height: 600px) and (min-aspect-ratio: 3/2) {
   .game-garden { width: min(100%, 54rem); grid-template-columns: minmax(0, 1fr) minmax(240px, 20rem); grid-template-rows: auto minmax(0, 1fr) auto; column-gap: 24px; }
   .garden-header { grid-column: 1 / -1; }

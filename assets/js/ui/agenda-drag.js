@@ -1371,6 +1371,12 @@ WorkTimeApp.ui.createAgendaDrag = function ({
           ),
         ) + "px",
     });
+    WorkTimeApp.ui.popover.point(current.hint, {
+      left: event.clientX,
+      right: event.clientX,
+      top: event.clientY,
+      bottom: event.clientY,
+    });
   }
   listen(
     calendar,
@@ -1579,7 +1585,8 @@ WorkTimeApp.ui.createAgendaDrag = function ({
     document,
     "pointerdown",
     (event) => {
-      if (!session && !event.target.closest(".agenda-chip")) blockClick = false;
+      if (!session && !event.target.closest?.(".agenda-chip"))
+        blockClick = false;
     },
     { capture: true },
   );

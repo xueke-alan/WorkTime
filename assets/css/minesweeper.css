@@ -483,19 +483,16 @@ body .mine-cell > .mine-incorrect-icon {
     font-size: 1.1rem;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .mine-cell.mine-just-opened,
-  .mine-cell.mine-just-flagged > .ui-icon,
-  .mine-cell.is-holding::after {
+:where(html:where([data-reduced-motion="true"])) .mine-cell.mine-just-opened,
+  :where(html:where([data-reduced-motion="true"])) .mine-cell.mine-just-flagged > .ui-icon,
+  :where(html:where([data-reduced-motion="true"])) .mine-cell.is-holding::after {
     animation: none;
   }
-  .mine-cell {
+:where(html:where([data-reduced-motion="true"])) .mine-cell {
     transition: none;
   }
-  .game-minesweeper:is([data-status="ready"], [data-status="playing"])
+:where(html:where([data-reduced-motion="true"])) .game-minesweeper:is([data-status="ready"], [data-status="playing"])
     .mine-board
-    .mine-cell:not(.is-open):is(:hover, :active),
-  .mine-cell.is-chord-ready {
+    .mine-cell:not(.is-open):is(:hover, :active), :where(html:where([data-reduced-motion="true"])) .mine-cell.is-chord-ready {
     transform: none;
   }
-}

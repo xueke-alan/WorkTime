@@ -11,6 +11,9 @@ const { launchGame } = require("./game-test-helpers.cjs");
       const page = await browser.newPage({ viewport: { width, height: 740 } });
       const errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
+      await page.addInitScript(() =>
+        localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+      );
       await page.route(/^https?:/, (route) => route.abort());
       await page.goto(
         pathToFileURL(path.resolve(process.argv[2] || ".", "index.html")).href,
@@ -27,12 +30,52 @@ const { launchGame } = require("./game-test-helpers.cjs");
           await page.locator('[data-garden-action="levels"]').click();
         const catalog = page.locator(".game-level-page:visible");
         await catalog.waitFor();
+        await page.waitForFunction(() => {
+          const catalog = document.querySelector(
+            ".game-level-page:not([hidden])",
+          );
+          return catalog?.style.getPropertyValue("--game-level-content-end");
+        });
         const geometry = await catalog.evaluate((element) => {
           const categories = element.querySelector(".game-level-categories");
           const entries = element.querySelector(".game-level-entries");
           const left = categories.getBoundingClientRect();
           const right = entries.getBoundingClientRect();
+          const title = element
+            .querySelector(".game-level-page-title")
+            .getBoundingClientRect();
+          const firstCategory = categories
+            .querySelector("button")
+            .getBoundingClientRect();
+          const cards = [...entries.querySelectorAll(".game-level-card")]
+            .filter((card) => card.getClientRects().length)
+            .map((card) => card.getBoundingClientRect());
+          const header = element.querySelector(".game-level-page-header");
+          const control = header.lastElementChild;
+          const button =
+            control === header.firstElementChild
+              ? null
+              : control.getBoundingClientRect();
+          const summary = element.querySelector(".game-level-page-summary");
+          const summaryStyle = getComputedStyle(summary);
           return {
+            aligned:
+              Math.abs(title.left - firstCategory.left) < 1 &&
+              (!button ||
+                (Math.abs(
+                  button.right - Math.max(...cards.map((card) => card.right)),
+                ) < 1 &&
+                  Math.abs(
+                    button.top +
+                      button.height / 2 -
+                      title.top -
+                      title.height / 2,
+                  ) < 1)) &&
+              Math.abs(
+                summary.getBoundingClientRect().right -
+                  parseFloat(summaryStyle.paddingRight) -
+                  Math.max(...cards.map((card) => card.right)),
+              ) < 1,
             split:
               left.right <= right.left && Math.abs(left.top - right.top) < 1,
             fits: [element, categories, entries].every(
@@ -43,6 +86,10 @@ const { launchGame } = require("./game-test-helpers.cjs");
         assert.ok(
           geometry.split && geometry.fits,
           game + " layout at " + width,
+        );
+        assert.ok(
+          geometry.aligned,
+          game + " header/card alignment at " + width,
         );
         assert.ok(
           await catalog.evaluate((element) => {

@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
 const vm = require("node:vm");
-const { pathToFileURL } = require("node:url");
+const { observeBackupWrites } = require("./lib/backup-test-file.cjs");
 const { chromium } = require("playwright");
 const sourceRoot = path.resolve(__dirname, "..");
 const results = path.join(sourceRoot, "test-results");
@@ -19,10 +19,29 @@ const coreSource = [
   .filter(
     (file) =>
       file === "assets/js/namespace.js" ||
-      file.startsWith("assets/js/domain/") ||
       /assets\/data\/(calendars|major-festivals|struggle-days)\.js/.test(file),
   )
   .map((file) => fs.readFileSync(path.join(sourceRoot, file), "utf8"))
+  .concat(
+    [
+      "preferences",
+      "time",
+      "state",
+      "calendar",
+      "records",
+      "schedule",
+      "batch",
+      "statistics",
+      "observations",
+      "agenda",
+      "validation",
+    ].map((name) =>
+      fs.readFileSync(
+        path.join(sourceRoot, "assets/js/domain", name + ".js"),
+        "utf8",
+      ),
+    ),
+  )
   .join("\n");
 const realm = vm.createContext({});
 vm.runInContext(
@@ -123,27 +142,29 @@ const root = path.resolve(process.argv[2] || sourceRoot);
   try {
     browser = await chromium.launch({ channel: "msedge", headless: true });
     for (const url of [
-      pathToFileURL(path.join(root, "index.html")).href,
       `http://127.0.0.1:${server.address().port}/index.html`,
     ]) {
       const context = await browser.newContext({
         acceptDownloads: true,
         timezoneId: "Asia/Shanghai",
       });
+      await context.addInitScript(() =>
+        localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+      );
       const page = await context.newPage();
-      const errors = [],
-        downloads = [];
+      const errors = [];
+      const capture = await observeBackupWrites(page);
+      const downloads = capture.writes;
       page.on("pageerror", (error) => errors.push(error.message));
-      page.on("download", (download) => downloads.push(download));
+      page.on("download", () =>
+        assert.fail("Backup must not trigger a browser download"),
+      );
       await page.route(/https?:\/\/(?!127\.0\.0\.1)/, (route) => route.abort());
       await page.clock.setFixedTime(new Date("2026-10-28T12:00:37+08:00"));
-      const defaultDownload = page.waitForEvent("download");
+      const defaultDownload = capture.next();
       await page.goto(url);
       await ready(page);
-      assert.match(
-        (await defaultDownload).suggestedFilename(),
-        /20261028-120037\.txt$/,
-      );
+      assert.match((await defaultDownload).name, /20261028-120037\.txt$/);
       await page.waitForFunction(
         () =>
           WorkTimeApp.services.preferences.page.state.lastAutoBackupDate ===
@@ -204,11 +225,11 @@ const root = path.resolve(process.argv[2] || sourceRoot);
         ),
       });
 
-      const first = page.waitForEvent("download");
+      const first = capture.next();
       await page.reload();
       await ready(page);
       const download = await first;
-      assert.match(download.suggestedFilename(), /20261028-120037\.txt$/);
+      assert.match(download.name, /20261028-120037\.txt$/);
       await page.waitForFunction(
         () =>
           WorkTimeApp.services.preferences.page.state.lastAutoBackupDate ===
@@ -256,7 +277,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
           "2026-10-28T04:00:00.000Z",
         );
       });
-      const text = fs.readFileSync(await download.path(), "utf8");
+      const text = download.text;
       const exported = await page.evaluate(async (text) => {
         const full = await WorkTimeApp.services.backup.decode(
           text,
@@ -290,6 +311,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
         );
       });
       const other = await context.newPage();
+      await observeBackupWrites(other);
       other.on("download", () => assert.fail("read-only tab downloaded"));
       await other.goto(url);
       await ready(other);
@@ -319,7 +341,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
         ),
         null,
       );
-      const next = page.waitForEvent("download");
+      const next = capture.next();
       await page.reload();
       await next;
       await page.waitForFunction(
@@ -336,7 +358,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
           "2026-09-01",
         );
       });
-      const manual = page.waitForEvent("download");
+      const manual = capture.next();
       await page.evaluate(() =>
         document.querySelector("#backupBeforeRestore").click(),
       );
@@ -348,7 +370,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
         "2026-09-01",
         "manual backup does not move automatic schedule",
       );
-      const overdue = page.waitForEvent("download");
+      const overdue = capture.next();
       await page.reload();
       await overdue;
       await page.waitForFunction(
@@ -367,17 +389,18 @@ const root = path.resolve(process.argv[2] || sourceRoot);
       await page.addInitScript(() => {
         if (sessionStorage.getItem("backup-test-failure")) return;
         sessionStorage.setItem("backup-test-failure", "true");
-        const click = HTMLAnchorElement.prototype.click;
-        HTMLAnchorElement.prototype.click = function () {
-          if (this.download) throw Error("Test download failure");
-          return click.call(this);
+        const create = FileSystemFileHandle.prototype.createWritable;
+        FileSystemFileHandle.prototype.createWritable = function (...args) {
+          if (this.name.endsWith(".txt"))
+            throw Error("Test backup write failure");
+          return create.apply(this, args);
         };
       });
       const beforeFailure = downloads.length;
       await page.reload();
       await ready(page);
       await page.waitForFunction(() =>
-        document.body.textContent.includes("Test download failure"),
+        document.body.textContent.includes("backups/automatic"),
       );
       assert.equal(downloads.length, beforeFailure);
       assert.equal(
@@ -386,7 +409,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
         ),
         "2026-09-01",
       );
-      const retry = page.waitForEvent("download");
+      const retry = capture.next();
       await page.reload();
       await retry;
       await page.waitForFunction(
@@ -414,7 +437,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
           { once: true },
         ),
       );
-      const dateFailure = page.waitForEvent("download");
+      const dateFailure = capture.next();
       await page.reload();
       await dateFailure;
       await page.waitForFunction(() =>
@@ -432,7 +455,7 @@ const root = path.resolve(process.argv[2] || sourceRoot);
       await context.close();
     }
     console.log(
-      "Automatic backup: calendar intervals, legacy validation, settings, full archive, reload deduplication, writer lock, failure/retry; file:// and HTTP passed.",
+      "Automatic backup: calendar intervals, legacy validation, settings, full archive, reload deduplication, writer lock, failure/retry; real HTTP directory writes passed.",
     );
   } finally {
     await browser?.close();

@@ -4,19 +4,16 @@ WorkTimeApp.ui.music = (() => {
   let pending = null;
   const loader = {
     refresh() {},
-    async open() {
+    async open(options) {
       try {
         if (!pending)
           pending = (async () => {
-            await Promise.all(
-              [
-                "assets/js/services/music-library.js",
-                "assets/js/services/music-storage.js",
-                "assets/js/controllers/music.js",
-                "assets/js/controllers/workspace-expansion.js",
-              ].map((path) => WorkTimeApp.services.assets.script(path)),
-            );
-            await WorkTimeApp.services.assets.script("assets/js/ui/music.js");
+            await Promise.all([
+              WorkTimeApp.services.assets.style("assets/css/music.css"),
+              WorkTimeApp.services.assets.script(
+                "assets/js/ui/music-runtime.min.js",
+              ),
+            ]);
           })().catch((error) => {
             pending = null;
             throw error;
@@ -24,10 +21,11 @@ WorkTimeApp.ui.music = (() => {
         await pending;
         if (WorkTimeApp.ui.music === loader)
           throw Error("Player did not initialize");
-        await WorkTimeApp.ui.music.open();
+        await WorkTimeApp.ui.music.open(options);
       } catch {
         const entry = document.getElementById("musicOpen");
         if (entry) {
+          entry.dataset.hint = "detail";
           entry.title = WorkTimeApp.ui.musicText("loadFailed");
           entry.setAttribute("aria-label", entry.title);
         }

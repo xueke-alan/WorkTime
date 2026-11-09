@@ -2320,9 +2320,7 @@ body .editor #dayForm #dayLeaveDone {
 body .editor #dayForm #dayLeaveDone:hover {
   background: color-mix(in srgb, var(--accent) 14%, var(--paper));
 }
-@media (prefers-reduced-motion: reduce) {
-  body .editor #dayForm :is(#dayLeaveLabel, .day-action-row > :not(#dayLeaveArea), #dayLeaveFull, #dayLeaveDone, #dayLeaveFull > *, #dayLeaveDone > *) { transition: none; }
-}
+:where(html:where([data-reduced-motion="true"])) body .editor #dayForm :is(#dayLeaveLabel, .day-action-row > :not(#dayLeaveArea), #dayLeaveFull, #dayLeaveDone, #dayLeaveFull > *, #dayLeaveDone > *) { transition: none; }
 body #dayPreview .preview-totals strong small { display: inline; margin: 0; font-size: 0.75em; }
 body #dayPreview #previewAverage { margin-top: 0.15rem; }
 
@@ -2375,12 +2373,10 @@ body .editor #dayForm #clearManual.is-planned-reset:focus-visible {
   pointer-events: none;
   animation: backup-ripple 450ms ease-out both;
 }
-@media (prefers-reduced-motion: reduce) {
-  :is(#dayShareTemplates, #batchShareTemplates).is-copying .template-share-icon-slot::after {
+:where(html:where([data-reduced-motion="true"])) :is(#dayShareTemplates, #batchShareTemplates).is-copying .template-share-icon-slot::after {
     animation: none;
     opacity: 0;
   }
-}
 
 body .editor #dayForm #plannedOvertimeToggle:disabled {
   color: var(--muted);

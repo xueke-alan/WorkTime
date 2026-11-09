@@ -224,23 +224,25 @@ WorkTimeApp.ui.createEditor = function (options) {
           (c.work && !isFullLeave(day)
             ? WorkTimeApp.i18n.t("copy.bed1305fb6")
             : "")
-        : !c.work && c.minutes === null
-          ? WorkTimeApp.i18n.t("copy.743a4ad0dd")
-          : !state.settings.configured
-            ? WorkTimeApp.i18n.t("copy.dd61e8801a")
-            : c.minutes === null
-              ? isFullLeave(day)
-                ? WorkTimeApp.i18n.t("copy.feb728221b") +
-                  WorkTimeApp.i18n.duration(day.leaveMinutes) +
-                  WorkTimeApp.i18n.t("copy.47fb6325b4")
-                : WorkTimeApp.i18n.t("copy.f8d57c4f0d")
-              : '<span class="preview-attendance" title="' +
-                esc(WorkTimeApp.i18n.t("copy.7a26926ed7")) +
-                '">' +
-                esc(WorkTimeApp.i18n.t("copy.7a26926ed7")) +
-                "<strong>" +
-                WorkTimeApp.i18n.number(Number(c.attendance.toFixed(4))) +
-                " d</strong></span>";
+        : !c.work && (day.plannedOvertime || c.overtime > 0)
+          ? WorkTimeApp.i18n.t("short.preview.ot")
+          : !c.work && c.minutes === null
+            ? WorkTimeApp.i18n.t("copy.743a4ad0dd")
+            : !state.settings.configured
+              ? WorkTimeApp.i18n.t("copy.dd61e8801a")
+              : c.minutes === null
+                ? isFullLeave(day)
+                  ? WorkTimeApp.i18n.t("copy.feb728221b") +
+                    WorkTimeApp.i18n.duration(day.leaveMinutes) +
+                    WorkTimeApp.i18n.t("copy.47fb6325b4")
+                  : WorkTimeApp.i18n.t("copy.f8d57c4f0d")
+                : '<span class="preview-attendance" title="' +
+                  esc(WorkTimeApp.i18n.t("copy.7a26926ed7")) +
+                  '">' +
+                  esc(WorkTimeApp.i18n.t("copy.7a26926ed7")) +
+                  "<strong>" +
+                  WorkTimeApp.i18n.number(Number(c.attendance.toFixed(4))) +
+                  " d</strong></span>";
       let employment = "",
         employmentDays = null;
       const progress = C.employmentDay(state.personal.employmentDate, selected);

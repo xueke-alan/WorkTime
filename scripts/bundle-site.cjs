@@ -39,17 +39,25 @@ function bundleSite(root) {
     ]
       .flatMap(dynamicFiles)
       .concat([
+        "assets/vendor/lunar.min.js",
+        "assets/js/ui/core-runtime.min.js",
+        "assets/js/ui/date-runtime.min.js",
+        "assets/js/ui/view-runtime.min.js",
+        "assets/js/ui/startup-runtime.min.js",
         "assets/js/auto-backup-folder.js",
         "assets/js/services/music-library.js",
         "assets/js/services/music-storage.js",
         "assets/js/controllers/music.js",
         "assets/js/controllers/workspace-expansion.js",
         "assets/js/ui/music.js",
+        "assets/js/ui/music-runtime.min.js",
         "assets/js/services/reader-storage.js",
         "assets/js/services/reader-library.js",
         "assets/js/services/reader-adapters.js",
         "assets/js/controllers/reader.js",
         "assets/js/ui/reader.js",
+        "assets/js/ui/reader-runtime.min.js",
+        "assets/js/services/runtime-import.js",
       ])
       .map((asset) => [
         asset,
@@ -137,7 +145,7 @@ function bundleSite(root) {
   }
   fs.writeFileSync(entry, html);
   console.log(
-    `Bundled ${styles.length} styles and ${scripts.length} scripts into 3 requests.`,
+    `Bundled ${styles.length} styles and ${scripts.length} scripts into 3 entry bundles.`,
   );
 }
 if (require.main === module)

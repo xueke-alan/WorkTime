@@ -194,6 +194,7 @@ async function main() {
     page.on("pageerror", (error) => errors.push(error.message));
     await page.route(/^https?:/, (route) => route.abort());
     await page.addInitScript((key) => {
+      localStorage.setItem("worktime.onboarding.v1", "dismissed");
       const fixture = localStorage.getItem(key + ".fixture");
       if (fixture) {
         localStorage.setItem(key, fixture);
@@ -341,6 +342,12 @@ async function main() {
       const tools = await page.locator(".sudoku-tools").boundingBox();
       const keypad = await page.locator(".sudoku-keypad").boundingBox();
       const content = await page.locator(".game-content").boundingBox();
+      const hud = await page.locator(".sudoku-hud").boundingBox();
+      assert.ok(hud.x >= board.x + board.width - 1, "header right of board");
+      assert.ok(
+        hud.y - board.y > 0 && hud.y - board.y <= 12,
+        "header slightly below board top",
+      );
       assert.ok(Math.abs(board.width - board.height) < 1, "square board");
       assert.ok(
         tools.x >= board.x + board.width - 1,
@@ -373,10 +380,20 @@ async function main() {
           optionsToggle,
         ].map((element) => element.boundingBox()),
       );
-      assert.ok(heading.x + heading.width <= timer.x);
+      if (
+        (await page.locator(".game-sudoku").getAttribute("data-layout")) ===
+        "wide"
+      ) {
+        assert.ok(heading.y + heading.height <= timer.y);
+      } else {
+        assert.ok(heading.x + heading.width <= timer.x);
+      }
       assert.ok(
-        timer.x + timer.width < pause.x && pause.x + pause.width < more.x,
+        timer.x > pause.x &&
+          timer.x + timer.width < pause.x + pause.width &&
+          pause.x + pause.width < more.x,
       );
+      assert.equal(await action("pause").locator(".sudoku-time").count(), 1);
       const centerY = (box) => box.y + box.height / 2;
       assert.ok(Math.abs(centerY(timer) - centerY(pause)) < 1);
       assert.ok(Math.abs(centerY(pause) - centerY(more)) < 1);
@@ -384,8 +401,8 @@ async function main() {
       assert.ok(Math.abs(panel.x + panel.width - more.x - more.width) < 1);
     }
     const hud = await page.locator(".sudoku-hud").boundingBox();
-    assert.ok(Math.abs(hud.x - geometry.x) < 1);
-    assert.ok(Math.abs(hud.width - geometry.width) < 1);
+    assert.ok(hud.x >= geometry.x + geometry.width);
+    assert.ok(hud.y - geometry.y > 0 && hud.y - geometry.y <= 12);
     await optionsToggle.click();
     await assertToolbar();
     await action("choose").press("Escape");

@@ -1,4 +1,8 @@
 "use strict";
+const {
+  downloadBackup,
+  importBackupFile,
+} = require("./lib/backup-test-file.cjs");
 const setScheduleRange = require("./lib/agenda-test-range.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
@@ -36,6 +40,9 @@ async function verify() {
       )
         await page.locator("#agendaScheduleOpen").click();
     };
+    await page.addInitScript(() =>
+      localStorage.setItem("worktime.onboarding.v1", "dismissed"),
+    );
     await page.goto(pathToFileURL(path.join(root, "index.html")).href);
     await ready();
     await page.locator("#agendaMode").click();
@@ -57,7 +64,7 @@ async function verify() {
       await page.evaluate(() => {
         window.dragBackup = null;
       });
-      await page.locator("#backup").click();
+      await downloadBackup(page, "dragBackup");
       await page.waitForFunction(() => !!window.dragBackup);
       return page.evaluate(async () => {
         const doc = await WorkTimeApp.services.backup.decode(
@@ -501,12 +508,23 @@ async function verify() {
     await page.evaluate((text) => {
       window.dragBackup = text;
     }, backupText);
-    await page.locator("#restore").click();
+    await importBackupFile(page, await page.evaluate(() => window.dragBackup));
     await page.locator("#restoreDialog").waitFor({ state: "visible" });
     await page.locator("#confirmRestore").click();
     await page.locator("#restoreDialog").waitFor({ state: "hidden" });
     assert.deepEqual(await snapshot(), archived);
     // Touch pointers must stay available to the browser for scrolling and taps.
+    // Reload restores data; explicitly choose a month containing the fixture.
+    if (
+      (await page.locator("#agendaMode").getAttribute("aria-pressed")) !==
+      "true"
+    )
+      await page.locator("#agendaMode").click();
+    await page.evaluate(() => {
+      const button = document.getElementById("agendaViewToggle");
+      for (let i = 0; i < 4 && button.dataset.agendaView !== "0"; i++)
+        button.click();
+    });
     await page.setViewportSize({ width: 390, height: 844 });
     const touch = await page
       .locator("#calendar .agenda-chip")

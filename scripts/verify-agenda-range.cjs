@@ -84,7 +84,12 @@ async function verify() {
     await open();
     assert.deepEqual(await dates(), ["2028-02-27", "2028-03-04"]);
     await day("2028-02-29").click();
-    await page.locator("#agendaTitle").click();
+    // The anchored popup can overlap the title; use the page margin outside it.
+    await page.mouse.click(10, 10);
+    assert.equal(
+      await popup.evaluate((node) => node.matches(":popover-open")),
+      false,
+    );
     await open();
     assert.deepEqual(await dates(), ["2028-02-27", "2028-03-04"]);
 

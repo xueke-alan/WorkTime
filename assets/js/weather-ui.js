@@ -57,8 +57,7 @@
   let mounted = false;
   let viewEvents = null;
   function resumeImages(root) {
-    if (!root || g.matchMedia("(prefers-reduced-motion: reduce)").matches)
-      return;
+    if (!root || WorkTimeApp.ui.animationCompat.preference().matches) return;
     const revision = Date.now() + "-" + ++resumeCount;
     for (const image of root.querySelectorAll(
       ".calendar-weather-icon img, .weather-day-icon img",
@@ -71,10 +70,7 @@
   function onVisibility() {
     cancelAnimationFrame(resumeFrame);
     resumeFrame = 0;
-    if (
-      document.hidden ||
-      g.matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
+    if (document.hidden || WorkTimeApp.ui.animationCompat.preference().matches)
       return;
     resumeFrame = requestAnimationFrame(() => {
       resumeFrame = 0;
@@ -133,7 +129,8 @@
     const picture = node("picture", undefined, "weather-day-icon");
     picture.title = description;
     const still = node("source");
-    still.media = "(prefers-reduced-motion: reduce)";
+    still.dataset.motionSource = "";
+    still.media = WorkTimeApp.ui.animationCompat.sourceMedia();
     still.srcset = "assets/icons/meteocons/svg-static/" + icon + ".svg";
     const image = node("img");
     image.alt = description;
@@ -162,9 +159,34 @@
         : WorkTimeApp.i18n.t("copy.6055fe4b90"),
     );
     cityName.title = cityName.textContent;
+    const source = node("a", undefined, "weather-source-info");
+    source.href =
+      "https://lbsyun.baidu.com/docs/webapi?title=weatherinquiry%2Fweather%2Fbase";
+    source.target = "_blank";
+    source.rel = "noopener noreferrer";
+    source.setAttribute(
+      "aria-label",
+      WorkTimeApp.i18n.t("copy.01f742eb2f") +
+        WorkTimeApp.i18n.t("copy.c07924cd7c"),
+    );
+    source.setAttribute("aria-describedby", "weatherSourceTip");
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("ui-icon");
+    svg.setAttribute("aria-hidden", "true");
+    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", "#ms-info");
+    svg.append(use);
+    const tip = node(
+      "span",
+      WorkTimeApp.i18n.t("copy.eb7df9d086"),
+      "weather-source-tooltip",
+    );
+    tip.id = "weatherSourceTip";
+    tip.setAttribute("role", "tooltip");
+    source.append(svg);
     head.append(cityName);
-    panel.append(head);
-    if (value.message)
+    panel.append(head, source, tip);
+    if (value.message && !value.record)
       panel.append(
         node("p", WorkTimeApp.i18n.message(value.message), "date-info-empty"),
       );
@@ -456,7 +478,7 @@
     }
     forecast.append(hourly, daily);
     const footer = node("div", undefined, "weather-footer");
-    footer.append(tabs, age);
+    footer.append(tabs, age, source, tip);
     panel.append(forecast, footer);
     select(saved.mode in views ? saved.mode : "daily", false);
   }

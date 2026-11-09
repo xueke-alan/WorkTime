@@ -199,6 +199,9 @@ const { chromium } = require("playwright");
         21,
       );
       await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.waitForFunction(
+        () => document.documentElement.dataset.reducedMotion === "true",
+      );
       for (let index = 0; index < 2; index++)
         await page.locator("#agendaViewToggle").click();
       assert.equal(
@@ -523,6 +526,9 @@ const { chromium } = require("playwright");
       );
       await page.emulateMedia({ reducedMotion: "reduce" });
       for (let index = 0; index < 3; index++) {
+        await page.waitForFunction(
+          () => document.documentElement.dataset.reducedMotion === "true",
+        );
         await page.locator("#agendaViewToggle").click();
         if (index === 1) {
           assert.equal(await page.locator(".timetable-divider").count(), 1);

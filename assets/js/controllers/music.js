@@ -10,12 +10,14 @@ WorkTimeApp.ui.createMusicController = function () {
   let tracks = [],
     index = new Map(),
     handle = null,
-    inputFiles = [],
     directory = "";
   let current = null,
     details = null,
     favorites = new Set(),
     mode = "list";
+  let legacyTracks = [],
+    legacyCurrent = null;
+  let autoplayRequested = false;
   let history = [],
     historyAt = -1,
     bag = [];
@@ -100,6 +102,9 @@ WorkTimeApp.ui.createMusicController = function () {
       volume: audio.volume,
       muted: audio.muted,
       rate: audio.playbackRate,
+      legacyTracks,
+      legacyCurrent,
+      runtimeLibrary: true,
     };
   }
   function persist(immediate = false) {
@@ -145,6 +150,7 @@ WorkTimeApp.ui.createMusicController = function () {
     }
   }
   function release() {
+    autoplayRequested = false;
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
@@ -164,6 +170,8 @@ WorkTimeApp.ui.createMusicController = function () {
     historyAt = history.length - 1;
   }
   async function play() {
+    if (disposed) return;
+    autoplayRequested = true;
     const token = loading;
     if (!current || !current.getFile) {
       status = current ? "accessHint" : "chooseHint";
@@ -189,6 +197,7 @@ WorkTimeApp.ui.createMusicController = function () {
     status = access ? "accessHint" : "skipError";
     audio.pause();
     emit();
+    if (!autoplayRequested) return;
     if (!tracks.some((track) => track.getFile && !failed.has(id(track)))) {
       status = "allFailed";
       emit();
@@ -202,9 +211,10 @@ WorkTimeApp.ui.createMusicController = function () {
     position = 0,
     recordHistory = true,
   ) {
-    if (!track) return;
+    if (!track || disposed) return;
     const token = ++loading;
     release();
+    autoplayRequested = autoplay;
     current = track;
     bag = bag.filter((key) => key !== id(track));
     pendingPosition = Math.max(0, Number(position) || 0);
@@ -256,6 +266,8 @@ WorkTimeApp.ui.createMusicController = function () {
     const available = tracks.filter(
       (track) => track.getFile && !failed.has(id(track)),
     );
+    const availableIds = new Set(available.map(id));
+    const availableTracks = new Set(available);
     if (!available.length) return null;
     if (mode === "shuffle") {
       if (previous && historyAt <= 0) return current;
@@ -271,7 +283,7 @@ WorkTimeApp.ui.createMusicController = function () {
         const track = tracks.find((item) => id(item) === key);
         if (track && !failed.has(id(track))) return track;
       }
-      bag = bag.filter((key) => available.some((track) => id(track) === key));
+      bag = bag.filter((key) => availableIds.has(key));
       if (!bag.length)
         bag = available.filter((track) => track !== current).map(id);
       if (!bag.length) return skipFailure ? null : available[0];
@@ -283,7 +295,7 @@ WorkTimeApp.ui.createMusicController = function () {
       const raw = start + (previous ? -offset : offset);
       if (!previous && mode === "order" && raw >= tracks.length) return null;
       const track = tracks[(raw + tracks.length * 2) % tracks.length];
-      if (available.includes(track)) return track;
+      if (availableTracks.has(track)) return track;
     }
     return null;
   }
@@ -334,8 +346,9 @@ WorkTimeApp.ui.createMusicController = function () {
     files = [],
     name = directory,
     restore = false,
+    token = ++scanning,
   ) {
-    const token = ++scanning;
+    if (disposed || token !== scanning) return false;
     readingTags = false;
     busy = true;
     count = 0;
@@ -353,27 +366,28 @@ WorkTimeApp.ui.createMusicController = function () {
       const oldId = current && id(current),
         oldPosition = pendingPosition || audio.currentTime || 0,
         wasPlaying = !audio.paused;
-      ++loading;
-      release();
       const sameDirectory = directory === name;
       tracks = result.tracks;
       index = result.index;
       handle = newHandle;
-      inputFiles = files;
       directory = name;
       current = sameDirectory
         ? tracks.find((track) => id(track) === oldId) || null
         : null;
-      if (!sameDirectory) favorites = new Set();
+      if (!current) {
+        ++loading;
+        release();
+      }
+      // Keep unmatched favorites until their source files are imported.
       failed.clear();
       history = [];
       historyAt = -1;
       resetShuffle();
       busy = false;
       status = tracks.length ? "" : "emptyFolder";
-      if (current)
+      if (current && !audioURL)
         await select(current, restore ? false : wasPlaying, oldPosition);
-      else if (tracks.length) await select(tracks[0], false);
+      else if (!current && tracks.length) await select(tracks[0], false);
       if (token !== scanning || disposed) return;
       persist();
       readingTags = true;
@@ -395,11 +409,13 @@ WorkTimeApp.ui.createMusicController = function () {
       readingTags = false;
       persist();
       emit();
+      return true;
     } catch (error) {
       if (token !== scanning || disposed) return;
       busy = false;
       status = error.name === "AbortError" ? "cancelled" : "accessHint";
       emit();
+      return false;
     }
   }
   function cancelScan() {
@@ -409,53 +425,54 @@ WorkTimeApp.ui.createMusicController = function () {
     status = "cancelled";
     emit();
   }
-  async function choose() {
-    if (!window.showDirectoryPicker) return false;
+  async function rescan(importResult) {
+    if (disposed) return false;
+    const token = ++scanning;
     try {
-      const selected = await window.showDirectoryPicker({
-        mode: "read",
-        id: "worktime-music",
-        startIn: "music",
-      });
-      void scan(selected, [], selected.name);
-      return true;
-    } catch (error) {
-      if (error.name === "AbortError") return true;
+      const runtime = WorkTimeApp.services.runtimeFolder;
+      const selected = await runtime.getDirectory("music");
+      if (disposed || token !== scanning) return false;
       if (
-        error.name === "SecurityError" ||
-        error.name === "TypeError" ||
-        error.name === "NotSupportedError"
+        !(await scan(selected, [], runtime.state.name + "/music", true, token))
       )
         return false;
+      if (disposed || token !== scanning) return false;
+      for (const item of importResult?.imported || []) {
+        const previous = legacyTracks.find(
+          (track) =>
+            track.fingerprint === item.fingerprint &&
+            (track.path === item.source ||
+              item.source.endsWith("/" + track.path)),
+        );
+        const next = tracks.find((track) => track.path === item.target);
+        if (!previous || !next) continue;
+        if (favorites.has(id(previous))) {
+          favorites.add(id(next));
+          if (id(previous) !== id(next)) favorites.delete(id(previous));
+        }
+        if (legacyCurrent?.id === id(previous)) {
+          await select(next, false, legacyCurrent.position);
+          legacyCurrent = null;
+        }
+      }
+      persist();
+      return true;
+    } catch {
+      if (disposed || token !== scanning) return false;
+      busy = readingTags = false;
+      ++loading;
+      // Missing authorization must not erase the saved library or playhead.
+      pendingPosition = pendingPosition || audio.currentTime || 0;
+      const currentId = current && id(current);
+      release();
+      tracks = tracks.map(({ getFile, file, handle, ...track }) => track);
+      index.clear();
+      handle = null;
+      current = tracks.find((track) => id(track) === currentId) || null;
       status = "accessHint";
       emit();
-      return true;
+      return false;
     }
-  }
-  async function rescan() {
-    if (handle) {
-      try {
-        if (
-          (await handle.queryPermission({ mode: "read" })) !== "granted" &&
-          (await handle.requestPermission({ mode: "read" })) !== "granted"
-        ) {
-          status = "accessHint";
-          emit();
-          return false;
-        }
-        void scan(handle);
-        return true;
-      } catch {
-        status = "accessHint";
-        emit();
-        return false;
-      }
-    }
-    if (inputFiles.length) {
-      void scan(null, inputFiles);
-      return true;
-    }
-    return false;
   }
   function forget() {
     ++scanning;
@@ -465,7 +482,6 @@ WorkTimeApp.ui.createMusicController = function () {
     release();
     setSleep("off");
     handle = null;
-    inputFiles = [];
     directory = "";
     tracks = [];
     index.clear();
@@ -560,6 +576,19 @@ WorkTimeApp.ui.createMusicController = function () {
   async function restore() {
     try {
       const value = await storage.read();
+      legacyTracks =
+        value.legacyTracks ||
+        (value.runtimeLibrary ? [] : value.tracks || []).map(
+          ({ path, fingerprint }) => ({
+            path,
+            fingerprint,
+          }),
+        );
+      legacyCurrent = Object.hasOwn(value, "legacyCurrent")
+        ? value.legacyCurrent
+        : !value.runtimeLibrary && value.current
+          ? { id: value.current, position: value.position || 0 }
+          : null;
       if (disposed) return;
       directory = typeof value.directory === "string" ? value.directory : "";
       tracks = Array.isArray(value.tracks)
@@ -584,20 +613,40 @@ WorkTimeApp.ui.createMusicController = function () {
         : 1;
       current = tracks.find((track) => id(track) === value.current) || null;
       pendingPosition = Math.max(0, Number(value.position) || 0);
-      handle = value.handle || null;
+      handle = null;
       if (tracks.length) status = "accessHint";
       emit();
-      if (
-        handle &&
-        (await handle.queryPermission({ mode: "read" })) === "granted"
-      )
-        void scan(handle, [], directory, true);
+      await rescan();
     } catch {
       storageIssue = true;
       emit();
     }
   }
   const ready = restore();
+  const runtimeChanged = () => {
+    if (current)
+      legacyCurrent = {
+        id: id(current),
+        position: pendingPosition || audio.currentTime || 0,
+      };
+    const history = new Map(legacyTracks.map((track) => [id(track), track]));
+    for (const track of tracks)
+      history.set(id(track), {
+        path: track.path,
+        fingerprint: track.fingerprint,
+      });
+    legacyTracks = [...history.values()];
+    ++scanning;
+    ++loading;
+    release();
+    current = null;
+    tracks = [];
+    index.clear();
+    emit();
+    void ready.then(rescan);
+  };
+  if (typeof document !== "undefined")
+    document.addEventListener("worktime:runtimefolderchange", runtimeChanged);
   function onPageHide() {
     persist(true);
   }
@@ -613,18 +662,17 @@ WorkTimeApp.ui.createMusicController = function () {
       listeners.add(fn);
       return () => listeners.delete(fn);
     },
-    choose,
     rescan,
     cancelScan,
     forget,
-    importFiles(files) {
-      const list = [...files];
-      if (list.length)
-        void scan(
-          null,
-          list,
-          list[0].webkitRelativePath?.split("/")[0] || "files",
-        );
+    async importFiles(files, options) {
+      const result = await WorkTimeApp.services.runtimeFolder.importFiles(
+        "music",
+        files,
+        options,
+      );
+      await rescan(result);
+      return result;
     },
     select(track) {
       failed.clear();
@@ -634,7 +682,10 @@ WorkTimeApp.ui.createMusicController = function () {
       if (audio.paused) {
         failed.clear();
         void play();
-      } else audio.pause();
+      } else {
+        autoplayRequested = false;
+        audio.pause();
+      }
     },
     previous() {
       failed.clear();
@@ -682,6 +733,12 @@ WorkTimeApp.ui.createMusicController = function () {
     },
     setSleep,
     dispose() {
+      if (disposed) return;
+      if (typeof document !== "undefined")
+        document.removeEventListener(
+          "worktime:runtimefolderchange",
+          runtimeChanged,
+        );
       persist(true);
       ++loading;
       ++scanning;

@@ -3,22 +3,60 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const root = path.resolve(__dirname, "..");
 const failures = [];
-function run(script, args = [], cwd = root) {
+function run(
+  script,
+  args = [],
+  cwd = root,
+  { preload = false, env = process.env } = {},
+) {
   console.log("\nChecking " + script + " " + args.join(" "));
-  const result = spawnSync(process.execPath, [script, ...args], {
-    cwd,
-    env: process.env,
-    stdio: "inherit",
-  });
+  const result = spawnSync(
+    process.execPath,
+    [
+      ...(preload
+        ? ["--require", path.join(root, "scripts/lib/browser-test-setup.cjs")]
+        : []),
+      script,
+      ...args,
+    ],
+    {
+      cwd,
+      env,
+      stdio: "inherit",
+    },
+  );
   if (result.error) throw result.error;
   if (result.status !== 0) throw Error("Release check failed: " + script);
 }
 function verify(feature, published = false, required = false) {
+  if (process.env.WORKTIME_REVIEW_SKIP_READER === "1" && feature === "reader") {
+    console.log(
+      "Explicitly excluded dormant reader internals for this review.",
+    );
+    return;
+  }
   try {
     run(
       path.join(root, "scripts", "verify-" + feature + ".cjs"),
       published ? [path.join(root, "_site")] : [],
       published ? path.join(root, "_site") : root,
+      {
+        preload: ![
+          "onboarding",
+          "auto-backup-folder",
+          "runtime-folder",
+          "review-browser",
+          "performance-budget",
+          "lunar-runtime",
+        ].includes(feature),
+        env: {
+          ...process.env,
+          WORKTIME_TEST_DISABLE_AUTO_BACKUP:
+            /backup|onboarding|runtime-folder|review-browser/.test(feature)
+              ? "0"
+              : "1",
+        },
+      },
     );
   } catch (error) {
     if (required) throw error;
@@ -73,6 +111,7 @@ const agendaChecks = [
   "analysis-ratio",
 ];
 try {
+  run(path.join(root, "scripts/verify-review-regressions.cjs"));
   run(path.join(root, "scripts/check-site.cjs"));
   run(path.join(root, "node_modules/typescript/bin/tsc"), [
     "-p",
@@ -110,7 +149,9 @@ try {
     "lunar-runtime",
     "offline",
     "loading",
-    "rescue",
+    "media-loading",
+    "runtime-folder",
+    "review-browser",
     "performance-budget",
   ])
     verify(feature, false, true);
@@ -153,7 +194,9 @@ try {
     "lunar-runtime",
     "startup",
     "loading",
-    "rescue",
+    "media-loading",
+    "runtime-folder",
+    "review-browser",
     "performance-budget",
   ])
     verify(feature, true, true);

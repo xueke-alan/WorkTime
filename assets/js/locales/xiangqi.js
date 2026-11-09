@@ -5,7 +5,7 @@
   const strings = {
     name: [
       "象棋残局",
-      "Xiangqi Endgames",
+      "Xiangqi",
       "象棋殘局",
       "象棋殘局",
       "샹치 끝내기",

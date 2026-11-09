@@ -296,6 +296,20 @@ body .editor > .notification-tabs .notification-tab svg {
   height: var(--tab-icon-size);
   flex: none;
 }
+.music-entry-icon > .headphones-icon,
+.music-entry-icon > .music-equalizer {
+  transform-box: view-box;
+  transform-origin: center;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.music-entry-icon > .music-equalizer {
+  opacity: 0;
+  transform: scale(.75);
+}
+:where(html:where([data-reduced-motion="true"])) .music-entry-icon > .headphones-icon,
+  :where(html:where([data-reduced-motion="true"])) .music-entry-icon > .music-equalizer {
+    transition: none;
+  }
 .work-countdown {
   position: relative;
   isolation: isolate;
@@ -369,11 +383,9 @@ body .editor > .notification-tabs .notification-tab svg {
     opacity: 0.65;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .countdown-scenery * {
+:where(html:where([data-reduced-motion="true"])) .countdown-scenery * {
     animation: none;
   }
-}
 body #countdownFocusToggle {
   position: absolute;
   top: 0.75rem;
@@ -406,11 +418,9 @@ body #countdownFocusToggle:focus-visible {
 body #countdownFocusToggle:focus-visible .ui-icon {
   transform: scale(1.12);
 }
-@media (prefers-reduced-motion: reduce) {
-  body #countdownFocusToggle {
+:where(html:where([data-reduced-motion="true"])) body #countdownFocusToggle {
     transition: none;
   }
-}
 body.is-countdown-focused {
   overflow: hidden;
 }
@@ -500,12 +510,10 @@ body.is-countdown-focused .countdown-end {
     opacity: 1;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .work-countdown.is-rest .countdown-rest-icon,
-  .countdown-rest-steam {
+:where(html:where([data-reduced-motion="true"])) .work-countdown.is-rest .countdown-rest-icon,
+  :where(html:where([data-reduced-motion="true"])) .countdown-rest-steam {
     animation: none;
   }
-}
 .countdown-message {
   color: color-mix(in srgb, var(--muted) 65%, white);
   font-size: 1.714286rem;
@@ -1013,4 +1021,22 @@ body #dateInfoPanel.almanac-panel .almanac-cycle {
 body #dateInfoPanel.almanac-panel .almanac-cycle > span {
   display: block;
   white-space: nowrap;
+}
+
+/* Let the calendar note rest at the bottom without separating it from content. */
+body .editor #dateInfoPanel.festivals-panel {
+  display: flex;
+  flex-direction: column;
+}
+body #dateInfoPanel.festivals-panel > * {
+  flex-shrink: 0;
+}
+body #dateInfoPanel.festivals-panel .festival-section:last-of-type {
+  border-bottom: 0;
+}
+body #dateInfoPanel.festivals-panel .holiday-calendar-note {
+  margin-top: auto;
+  padding-top: 0.714286rem;
+  align-self: flex-end;
+  text-align: right;
 }
