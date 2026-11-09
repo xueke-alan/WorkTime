@@ -15,6 +15,8 @@ WorkTimeApp.services.bootstrap.run(
     const elements = WorkTimeApp.ui.createElements(document);
     const { element: $, escape: esc, icon, controlIcon, trendIcon } = elements;
     elements.initialize();
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    if (lifecycle.closed) return;
     const sidebarPanels = WorkTimeApp.ui.createSidebarPanels({
       document,
       window,
@@ -136,6 +138,7 @@ WorkTimeApp.services.bootstrap.run(
       batchDraft: model.batchDraft,
       batchSaving: model.batchSaving,
       yearMode: model.yearMode,
+      yearViewMode: model.yearViewMode,
       analysisMode: model.analysisMode,
       agendaViewWeeks: model.agendaViewWeeks || 0,
       agendaViewAnchor: model.agendaViewAnchor,
@@ -208,6 +211,8 @@ WorkTimeApp.services.bootstrap.run(
     WorkTimeApp.ui.calendarWeather = weatherLayer;
     const analysisUI = WorkTimeApp.ui.createAnalysis(shared);
     lifecycle.defer(() => analysisUI.dispose());
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    if (lifecycle.closed) return;
     const calendarUI = WorkTimeApp.ui.createCalendar({
       renderAnalysis: analysisUI.render,
       ...shared,
@@ -277,6 +282,8 @@ WorkTimeApp.services.bootstrap.run(
       timeAnomaly,
       isFullLeave,
     });
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    if (lifecycle.closed) return;
     const workspace = WorkTimeApp.ui.createWorkspace({
       model,
       element: $,
@@ -536,6 +543,9 @@ WorkTimeApp.services.bootstrap.run(
       });
       controllers.push(controller);
       lifecycle.defer(() => controller.dispose());
+      // Keep expanded settings/game controls from monopolizing one startup task.
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+      if (lifecycle.closed) return;
     }
     for (const controller of controllers) {
       const { bind, dispose, hasDraft, onSaveRecovered, ...commands } =

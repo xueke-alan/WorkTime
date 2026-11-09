@@ -48,7 +48,7 @@
   ];
   const catalogs = {
     "zh-CN": [
-      "花了个花",
+      "羊了个羊",
       "揭开层层图案，三张消除。用七格托盘和两格暂存，规划你的清场路线。",
       "层叠三消 · 慢慢想，无需计时",
       "01 · 初芽",
@@ -94,7 +94,7 @@
       "点击未被上层遮挡的牌放入七格托盘，同类三张自动消除。托盘满时暂停取牌，仍可通过暂存或撤回解围。\n两格暂存区可反复使用：点击托盘里的牌移入暂存，再点击暂存牌放回；暂存牌不会参与消除，必须放回托盘。\n三关依次有 24、60、90 张牌，每关提供 3 次撤回和 3 次提示。撤回仅回退上一步，提示与已用撤回次数不会返还。提示优先推荐凑三与打开下层，不保证余局可解。\n每局生成时保留一条无需道具的通关路线。原局重试保留布局，新旅程更换布局。无倒计时，自动保存当前关卡。方向键移动焦点，回车或空格取牌。",
     ],
     en: [
-      "Triples",
+      "Sheep a Sheep",
       "Uncover layered tiles and match three. Plan your route with seven tray slots and two reserve spaces.",
       "LAYERED TRIPLES · Take your time",
       "01 · Sprout",
@@ -140,7 +140,7 @@
       "Pick uncovered tiles into a seven-slot tray. Three of a kind clear automatically. A full tray pauses picking; reserve and undo can still rescue it.\nTap a tray tile to move it into either reusable reserve space. Tap it again to return it. Reserved tiles only match after returning to the tray.\nThe three rounds contain 24, 60 and 90 tiles. Each round has 3 undos and 3 hints. Undo reverses only the last move; used hints and undos are never refunded. Hints favor triples and opening layers, without guaranteeing a win.\nEvery generated layout has a route that needs no tools. Retry keeps the layout; a new journey changes it. No timer. Progress saves automatically. Use arrow keys to focus tiles and Enter or Space to pick.",
     ],
     "zh-TW": [
-      "花了個花",
+      "羊了個羊",
       "揭開層層圖案，三張消除。用七格托盤與兩格暫存，規劃你的清場路線。",
       "層疊三消 · 慢慢想，無需計時",
       "01 · 初芽",
@@ -186,7 +186,7 @@
       "點擊未被上層遮擋的牌放入七格托盤，同類三張自動消除。托盤滿時暫停取牌，仍可透過暫存或復原解圍。\n兩格暫存區可反覆使用：點擊托盤牌移入暫存，再點暫存牌放回；暫存牌放回後才參與消除。\n三關依次有 24、60、90 張牌，每關提供 3 次復原和 3 次提示。僅復原上一步，已用提示與復原次數不退還。提示優先湊三與打開下層，不保證餘局可解。\n每局生成時保留一條無需道具的通關路線。原局重試保留配置，新旅程更換配置。無倒數，自動儲存。方向鍵移動焦點，Enter 或空白鍵取牌。",
     ],
     ja: [
-      "花了个花",
+      "羊了个羊",
       "重なったタイルをめくって3枚消し。7枠のトレイと2枠の保管で道筋を考えよう。",
       "重ねて3枚 · 時間制限なし",
       "01 · 芽",
@@ -232,7 +232,7 @@
       "覆われていない牌を7枠のトレイへ。同じ3枚で消去します。満杯になると選択が止まりますが、保管と1手戻すは使えます。\nトレイの牌を押すと2枠の保管へ移動します。保管した牌を押すとトレイへ戻ります。保管中は消去に参加しません。\n3面は24、60、90枚。各面に3回の1手戻すと3回のヒントがあります。使った回数は戻りません。ヒントは3枚揃えと下層の開放を優先しますが、その後のクリアは保証しません。\n生成時に道具なしでクリアできる道筋を用意しています。再挑戦は同じ配置、新しい旅は別の配置です。時間制限なし、自動保存。矢印キーで移動、EnterかSpaceで選択。",
     ],
     ko: [
-      "花了个花",
+      "羊了个羊",
       "겹친 타일을 열고 세 개씩 지우세요. 트레이 7칸과 보관 2칸으로 경로를 계획하세요.",
       "겹겹 세 개 맞추기 · 시간 제한 없음",
       "01 · 새싹",
@@ -281,12 +281,12 @@
   catalogs["zh-HK"] = catalogs["zh-TW"];
   const symbols = {
     "zh-CN":
-      "草莓,蜜蜂,蘑菇,青蛙,蜗牛,胡萝卜,小花盆,洒水壶,蝴蝶,橡果,刺猬,狐狸,猫头鹰,小鸟,南瓜,樱桃,仙人掌,松果,小鸭,蜻蜓,荷花,金鱼,瓢虫,向日葵,蓝莓,兔子,葡萄篮",
+      "青草,胡萝卜,玉米,树桩,草叉,白菜,棉花,刷子,剪刀,奶瓶,水桶,手套,铃铛,篝火,毛线球,麦捆,兔子,月亮,螃蟹,栗子,苹果,玫瑰,礼帽,木牌,短裤,书本,米饭",
     "zh-TW":
-      "草莓,蜜蜂,蘑菇,青蛙,蝸牛,紅蘿蔔,小花盆,澆水壺,蝴蝶,橡實,刺蝟,狐狸,貓頭鷹,小鳥,南瓜,櫻桃,仙人掌,松果,小鴨,蜻蜓,荷花,金魚,瓢蟲,向日葵,藍莓,兔子,葡萄籃",
-    en: "Strawberry,Bee,Mushroom,Frog,Snail,Carrot,Flowerpot,Watering can,Butterfly,Acorn,Hedgehog,Fox,Owl,Bird,Pumpkin,Cherries,Cactus,Pinecone,Duckling,Dragonfly,Lotus,Goldfish,Ladybug,Sunflower,Blueberry,Rabbit,Grape basket",
-    ja: "いちご,ミツバチ,キノコ,カエル,カタツムリ,ニンジン,植木鉢,じょうろ,チョウ,どんぐり,ハリネズミ,キツネ,フクロウ,小鳥,カボチャ,サクランボ,サボテン,松ぼっくり,アヒル,トンボ,ハス,金魚,テントウムシ,ヒマワリ,ブルーベリー,ウサギ,ブドウかご",
-    ko: "딸기,꿀벌,버섯,개구리,달팽이,당근,화분,물뿌리개,나비,도토리,고슴도치,여우,부엉이,새,호박,체리,선인장,솔방울,아기 오리,잠자리,연꽃,금붕어,무당벌레,해바라기,블루베리,토끼,포도 바구니",
+      "青草,紅蘿蔔,玉米,樹樁,草叉,白菜,棉花,刷子,剪刀,奶瓶,水桶,手套,鈴鐺,營火,毛線球,麥捆,兔子,月亮,螃蟹,栗子,蘋果,玫瑰,禮帽,木牌,短褲,書本,米飯",
+    en: "Grass,Carrot,Corn,Stump,Pitchfork,Cabbage,Cotton,Brush,Scissors,Milk bottle,Bucket,Glove,Bell,Campfire,Yarn,Wheat bundle,Rabbit,Moon,Crab,Chestnut,Apple,Rose,Top hat,Wooden sign,Shorts,Book,Rice",
+    ja: "草,ニンジン,トウモロコシ,切り株,ピッチフォーク,白菜,綿,ブラシ,ハサミ,哺乳瓶,バケツ,手袋,鈴,焚き火,毛糸,麦束,ウサギ,月,カニ,栗,リンゴ,バラ,シルクハット,木札,短パン,本,ご飯",
+    ko: "풀,당근,옥수수,그루터기,쇠스랑,배추,목화,솔,가위,우유병,양동이,장갑,방울,모닥불,실뭉치,밀 다발,토끼,달,게,밤,사과,장미,중절모,나무 팻말,반바지,책,밥",
   };
   symbols["zh-HK"] = symbols["zh-TW"];
   for (const [language, values] of Object.entries(catalogs)) {

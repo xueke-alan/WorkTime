@@ -1,10 +1,38 @@
+.game-content:has(.game-jump) {
+  container-type: inline-size;
+}
 .game-jump {
+  width: 100%;
+  height: 100%;
+}
+.jump-play {
+  display: grid;
+  grid-template-columns: max-content 18rem;
+  align-items: start;
+  align-content: safe center;
+  justify-content: center;
+  gap: 2rem;
+  height: 100%;
+  min-height: 0;
+  padding: 1.5rem;
+  container-type: size;
+}
+.jump-sidebar {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.65rem;
-  height: var(--jump-height, 100%);
-  min-height: 430px;
+  gap: 1.25rem;
+  min-width: 0;
+  padding-block: 0.5rem;
+}
+.jump-sidebar .jump-controls {
+  justify-content: flex-start;
+}
+.jump-counters .game-stat {
+  flex: none;
+  min-width: 0;
+  width: min(100%, 9rem);
 }
 .game-jump [hidden] {
   display: none !important;
@@ -17,11 +45,18 @@
   gap: 0.5rem;
   flex: none;
 }
+.jump-counters {
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 0;
+}
 .jump-stage {
   position: relative;
-  flex: 1;
-  min-height: 210px;
-  width: min(100%, 760px);
+  grid-column: 1;
+  grid-row: 1;
+  width: min(calc(100cqw - 20rem), 100cqh);
+  aspect-ratio: 1;
+  min-width: 0;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -57,6 +92,9 @@
   text-align: center;
   background: linear-gradient(#e7e9e6 0%, #e7e9e6ed 27%, #e7e9e600 65%);
 }
+.jump-cover.game-pause-cover {
+  justify-content: center;
+}
 .jump-cover h3 {
   margin: 0;
   font-size: clamp(1.5rem, 4vw, 2.5rem);
@@ -69,6 +107,9 @@
   line-height: 1.6;
 }
 .jump-cover .game-button {
+  --game-button-hover: #465a52;
+  --game-button-hover-ink: #fff;
+  --game-button-edge: #303c39;
   margin-top: 0.3rem;
   min-width: 9rem;
   background: #303c39;
@@ -111,7 +152,7 @@
   margin: 0;
   color: var(--muted);
   font-size: var(--text-small);
-  text-align: center;
+  text-align: start;
 }
 .game-jump .game-notice {
   text-align: center;
@@ -122,5 +163,34 @@
   }
   .jump-cover {
     padding-top: 1.25rem;
+  }
+}
+
+@container (width < 700px) {
+  .game-jump,
+  .jump-play {
+    height: auto;
+  }
+  .jump-play {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem;
+    container-type: normal;
+  }
+  .jump-stage {
+    order: -1;
+    width: 100%;
+  }
+  .jump-sidebar {
+    width: 100%;
+    gap: 0.75rem;
+  }
+  .jump-cover p {
+    font-size: var(--text-small);
+  }
+  .jump-cover {
+    gap: 0.4rem;
+    padding-top: 0.75rem;
   }
 }

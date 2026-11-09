@@ -166,7 +166,7 @@ body
 body
   button.ui-button:not(.notification-tab):not(#importOpen):not(
     .template-fill
-  ):not(.template-edit):not(.primary):not([aria-pressed="true"]):not(:where(.workspace-toolbar-action)):hover:not(
+  ):not(.template-edit):not(.primary):not(.game-menu-entry):not([aria-pressed="true"]):not(:where(.workspace-toolbar-action)):hover:not(
     :disabled
   ) {
   background: var(--control-hover);
@@ -225,7 +225,6 @@ body .sidebar-actions #importOASite .ui-icon {
   }
   @media (min-width: 1800px) {
     body .sidebar-actions > #importOpen {
-      font-size: round(nearest, 0.928571rem, 1px);
       --control-height: round(nearest, 3rem, 2px);
     }
     body #importOpen .ui-icon {

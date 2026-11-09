@@ -36,6 +36,7 @@ function bundleSite(root) {
       "assets/css",
       "assets/data",
       "assets/vendor/reader",
+      "assets/vendor/pikafish",
     ]
       .flatMap(dynamicFiles)
       .concat([
@@ -58,6 +59,8 @@ function bundleSite(root) {
         "assets/js/ui/reader.js",
         "assets/js/ui/reader-runtime.min.js",
         "assets/js/services/runtime-import.js",
+        "assets/js/services/runtime-migration.js",
+        "assets/js/ui/runtime-folder-change.js",
       ])
       .map((asset) => [
         asset,
@@ -67,6 +70,12 @@ function bundleSite(root) {
           .digest("hex")
           .slice(0, 16),
       ]),
+  );
+  // Only locale catalogs can be requested before deferred startup begins.
+  const earlyVersions = Object.fromEntries(
+    Object.entries(assetVersions).filter(([asset]) =>
+      asset.startsWith("assets/js/locales/runtime/"),
+    ),
   );
   const versions = Object.fromEntries(
     Array.from({ length: 12 }, (_, index) => {
@@ -117,19 +126,20 @@ function bundleSite(root) {
           read(match[2]) +
           (match[2] === "assets/js/namespace.js"
             ? "\n;WorkTimeApp.data.assetVersions = " +
-              JSON.stringify(assetVersions) +
+              JSON.stringify(earlyVersions) +
               ";\n"
             : ""),
       )
       .join("\n;\n");
     fs.writeFileSync(
       path.join(root, asset),
-      source +
-        (deferred
-          ? ""
-          : "\n;WorkTimeApp.data.historyVersions = " +
-            JSON.stringify(versions) +
-            ";\n"),
+      (deferred
+        ? '"use strict";\nObject.assign(WorkTimeApp.data.assetVersions,' +
+          JSON.stringify(assetVersions) +
+          ");\nWorkTimeApp.data.historyVersions = " +
+          JSON.stringify(versions) +
+          ";\n"
+        : "") + source,
     );
     for (const [index, match] of group.entries())
       html = html.replace(

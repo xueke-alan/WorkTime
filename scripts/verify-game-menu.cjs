@@ -118,7 +118,7 @@ async function checkLayout(menu, context) {
       const shell = page.locator("#gameShell");
       const entries = sidebar.locator(".game-menu-entry");
       const play = sidebar.locator(".game-menu-play");
-      assert.equal(await entries.count(), 10);
+      assert.equal(await entries.count(), 11);
       assert.equal(await entries.first().getAttribute("aria-pressed"), "true");
       const progress = sidebar.locator(".game-menu-progress p");
       assert.equal(

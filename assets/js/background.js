@@ -16,6 +16,12 @@
   function resize() {
     w = innerWidth;
     h = innerHeight;
+    if (reduced.matches) {
+      points = [];
+      canvas.width = canvas.height = 0;
+      synchronize();
+      return;
+    }
     const d = Math.min(devicePixelRatio, 2);
     canvas.width = w * d;
     canvas.height = h * d;
@@ -59,7 +65,9 @@
         p.x = (p.x + p.vx * elapsed + w) % w;
         p.y = (p.y + p.vy * elapsed + h) % h;
       }
-    ctx.fillStyle = `rgba(${themeRGB},.24)`;
+    // Batch faint connections by opacity instead of issuing a stroke per edge.
+    // This bounds canvas commands on software-rendered and slower devices.
+    const links = Array.from({ length: 15 }, () => []);
     for (let i = 0; i < points.length; i++) {
       const p = points[i];
       for (let j = i + 1; j < points.length; j++) {
@@ -68,23 +76,44 @@
           dy = p.y - q.y,
           d = dx * dx + dy * dy;
         if (d < 16900) {
-          ctx.strokeStyle = `rgba(${themeRGB},${(1 - d / 16900) * 0.14})`;
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(q.x, q.y);
-          ctx.stroke();
+          links[Math.round((1 - d / 16900) * 14)].push(p, q);
         }
       }
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, 7);
-      ctx.fill();
     }
+    for (let opacity = 1; opacity < links.length; opacity++) {
+      if (!links[opacity].length) continue;
+      ctx.strokeStyle = `rgba(${themeRGB},${opacity / 100})`;
+      ctx.beginPath();
+      for (let i = 0; i < links[opacity].length; i += 2) {
+        const p = links[opacity][i],
+          q = links[opacity][i + 1];
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(q.x, q.y);
+      }
+      ctx.stroke();
+    }
+    ctx.fillStyle = `rgba(${themeRGB},.24)`;
+    ctx.beginPath();
+    for (const p of points) {
+      ctx.moveTo(p.x + p.r, p.y);
+      ctx.arc(p.x, p.y, p.r, 0, 7);
+    }
+    ctx.fill();
   }
   function synchronize() {
     if (frame !== null) cancelAnimationFrame(frame);
     frame = null;
     lastDraw = lastTick = null;
-    if (!disposed && !document.hidden) draw();
+    if (disposed) return;
+    // Reduced motion has no decorative particles or unused GPU backing store.
+    if (reduced.matches) {
+      points = [];
+      if (canvas.width || canvas.height) canvas.width = canvas.height = 0;
+      return;
+    }
+    if (document.hidden) return;
+    if (!canvas.width || !canvas.height) resize();
+    else draw();
   }
   function dispose() {
     if (disposed) return;
@@ -98,6 +127,7 @@
     unlisten?.();
     unlisten = null;
     points = [];
+    canvas.width = canvas.height = 0;
   }
   function mount() {
     if (!disposed || document.documentElement.dataset.appState === "failed")

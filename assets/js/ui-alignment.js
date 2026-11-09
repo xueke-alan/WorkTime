@@ -9,13 +9,13 @@
     ".puzzle-overlay .game-button > .button-label",
     ".mine-cover-actions .game-button > .button-label",
     "#importOpen .import-main > span",
+    ".sidebar-year-month-number",
     ".month-title-year",
     ".month-title-month",
     ".month-title-week-label",
     ".calendar-today-number",
     ".calendar-today-weekday",
     ".calendar .daystatus .pill-text",
-    ".year-day>span",
     ".day-date .daynum-text",
     ".calendar .daykind",
     ".agenda-chip-title-text",
@@ -26,6 +26,7 @@
     ".summary-sidebar [data-number-ink]",
     ".sidebar-brand h1",
     ".editor-day-header .editor-date",
+    ".year-analysis-header .editor-date",
     ".batch-editor-header h2",
     ".page-settings-header h2",
     "dialog:not(#sourceDialog) .dialog-head h2",
@@ -149,27 +150,7 @@
     "display:inline-block;width:0;height:0;padding:0;margin:0;border:0;vertical-align:baseline;font-size:0;line-height:0";
   function alignTexts(targets) {
     const viewport = { left: scrollX, top: scrollY };
-    const representatives = [],
-      followers = [],
-      years = new Map();
-    for (const element of targets) {
-      if (!element.matches(".year-day>span")) {
-        representatives.push(element);
-        continue;
-      }
-      const style = getComputedStyle(element);
-      const key = [
-        element.textContent.trim(),
-        style.fontSize,
-        style.fontFamily,
-        style.fontWeight,
-      ].join("|");
-      if (years.has(key)) followers.push([element, years.get(key)]);
-      else {
-        years.set(key, element);
-        representatives.push(element);
-      }
-    }
+    const representatives = [...targets];
     // Read visibility before changing line boxes, then initialize all text layers.
     const visible = representatives.filter(
       (element) =>
@@ -184,11 +165,7 @@
           ?.style.setProperty("--average-trend-offset", "0px");
       // Clear both axes before measuring; retaining a previous translation
       // makes parent-centered labels alternate offsets on each refresh.
-      if (
-        element.matches(
-          ".year-day>span,.day-date .daynum-text,.onboarding-node-text",
-        )
-      )
+      if (element.matches(".day-date .daynum-text,.onboarding-node-text"))
         element.style.setProperty("--ui-ink-offset-x", "0px");
     }
     const measurements = [];
@@ -239,7 +216,7 @@
         metrics: cachedMetrics(style, text),
         // Mixed Latin/CJK legends also need hinted pixel bounds, not outline metrics.
         dateBounds: element.matches(
-          ".day-date .daynum-text,.calendar .daykind,.agenda-chip-title-text,.agenda-chip-time,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span,.onboarding-node-text,.onboarding-install-dismiss span",
+          ".day-date .daynum-text,.calendar .daykind,.agenda-chip-title-text,.agenda-chip-time,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span,.sidebar-year-month-number,.onboarding-node-text,.onboarding-install-dismiss span",
         )
           ? dateInkHeight(style, text)
           : null,
@@ -303,15 +280,6 @@
           ).toFixed(3) + "px",
         );
       }
-      if (element.matches(".year-day>span")) {
-        const x =
-          centerBox.left +
-          centerBox.width / 2 -
-          box.left +
-          (metrics.actualBoundingBoxLeft - metrics.actualBoundingBoxRight) / 2;
-        if (Number.isFinite(x))
-          element.style.setProperty("--ui-ink-offset-x", x.toFixed(3) + "px");
-      }
       if (
         element.matches(".day-date .daynum-text,.onboarding-node-text") &&
         dateBounds
@@ -323,17 +291,6 @@
       }
       if (Number.isFinite(offset))
         element.style.setProperty("--ui-ink-offset", offset.toFixed(3) + "px");
-    }
-    for (const [element, representative] of followers) {
-      element.classList.add("ui-aligned-text");
-      element.style.setProperty(
-        "--ui-ink-offset",
-        representative.style.getPropertyValue("--ui-ink-offset"),
-      );
-      element.style.setProperty(
-        "--ui-ink-offset-x",
-        representative.style.getPropertyValue("--ui-ink-offset-x"),
-      );
     }
     // Temporary line-box changes must not move a focused mobile page's scroll anchor.
     if (scrollX !== viewport.left || scrollY !== viewport.top)
@@ -375,6 +332,28 @@
       // Components declare text layers; alignment never changes their structure.
       targets.add(element);
     });
+    // Different font families can share a baseline while CJK ink still extends
+    // below the Latin wordmark. Match their visible bottoms at every font size.
+    for (const heading of targets) {
+      if (!heading.matches(".sidebar-brand h1")) continue;
+      const name = heading.querySelector(".sidebar-brand-name"),
+        subtitle = heading.querySelector(".sidebar-brand-subtitle");
+      if (!name || !subtitle) continue;
+      const descent = (element) => {
+        const style = getComputedStyle(element);
+        context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        if ("fontStretch" in context)
+          context.fontStretch = canvasFontStretch(style.fontStretch);
+        const text =
+          element.querySelector(".summary-number-accessible")?.textContent ||
+          element.textContent.trim();
+        return cachedMetrics(style, text).actualBoundingBoxDescent;
+      };
+      heading.style.setProperty(
+        "--brand-subtitle-offset",
+        (descent(name) - descent(subtitle)).toFixed(3) + "px",
+      );
+    }
     alignTexts(targets);
     observe();
   }

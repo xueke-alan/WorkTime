@@ -246,7 +246,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     )
       return;
     const target = event.target.closest(
-      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #agendaMode, #batchToggle, #restore, #restoreStorage, #initializeStorage, #analysisToggle",
+      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #agendaMode, #batchToggle, #yearViewToggle, #restore, #restoreStorage, #initializeStorage, #analysisToggle",
     );
     if (!target) return;
     const keepSettings = target.matches(

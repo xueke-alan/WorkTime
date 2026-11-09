@@ -104,6 +104,13 @@ async function main() {
       locale: "zh-CN",
       reducedMotion: "reduce",
     });
+    // Folder onboarding is covered separately and can reopen after language changes.
+    await session.addInitScript(() => {
+      const showModal = HTMLDialogElement.prototype.showModal;
+      HTMLDialogElement.prototype.showModal = function () {
+        if (this.id !== "onboardingDialog") showModal.call(this);
+      };
+    });
     const page = await session.newPage(),
       errors = [];
     await page.addInitScript((key) => {
@@ -121,6 +128,10 @@ async function main() {
     const saved = () =>
       page.evaluate((key) => JSON.parse(localStorage.getItem(key)), key);
     async function launch() {
+      // The compact app restores the game detail panel instead of the menu list.
+      // Launch through the desktop menu, then restore the requested game viewport.
+      const viewport = page.viewportSize();
+      await page.setViewportSize({ width: 1440, height: 1000 });
       const url = pathToFileURL(entry).href;
       if (page.url() === url) {
         await page.locator("#gameExitButton").click();
@@ -134,20 +145,31 @@ async function main() {
       );
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
       await page.locator("#date-tab-games").click();
-      await launchGame(page, "game-sokoban");
+      // Startup notices can return the sidebar to notifications after reload.
+      await page.waitForFunction(() => {
+        if (document.querySelector("#gamesPanel").hidden)
+          document.querySelector("#date-tab-games").click();
+        return !document.querySelector("#gamesPanel").hidden;
+      });
+      try {
+        await launchGame(page, "game-sokoban");
+      } catch (error) {
+        await page.screenshot({
+          path: path.join(output, "launch-failure.png"),
+        });
+        throw error;
+      }
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
       );
       assert.equal(await page.locator("[data-game-error]").count(), 0);
+      await page.setViewportSize(viewport);
     }
     await launch();
     assert.equal(await page.locator(".sokoban-levels button").count(), 20);
     assert.equal(
       await page.locator(".sokoban-levels button:enabled").count(),
       20,
-    );
-    const chapterProgress = page.locator(
-      ".sokoban-catalog .game-level-progress",
     );
     const columnCount = () =>
       page
@@ -158,7 +180,10 @@ async function main() {
         );
     assert.equal(await columnCount(), 5);
     assert.equal(await action("level-0").innerText(), "01");
-    assert.equal(await chapterProgress.innerText(), "已完成 0 / 20");
+    assert.equal(
+      await page.locator(".sokoban-catalog .game-level-page-summary").count(),
+      0,
+    );
     await action("chapter-2").click();
     assert.equal(
       await action("chapter-2").getAttribute("aria-pressed"),
@@ -192,6 +217,15 @@ async function main() {
       0,
     );
     const before = await board.boundingBox();
+    const stage = await page.locator(".sokoban-stage").boundingBox();
+    const sidebar = await page.locator(".sokoban-sidebar").boundingBox();
+    assert.ok(Math.abs(stage.width - stage.height) < 1, "square game area");
+    assert.ok(sidebar.x >= stage.x + stage.width, "controls stay on the right");
+    assert.ok(
+      (await action("undo").boundingBox()).y >
+        (await page.locator(".sokoban-goal-progress").boundingBox()).y,
+      "level information precedes actions",
+    );
     assert.ok(before.width >= 300, "intro board is large enough to read");
     assert.equal(
       await action("next").isVisible(),
@@ -248,16 +282,16 @@ async function main() {
     );
     await page.keyboard.press("Escape");
     assert.equal((await saved()).drafts[level.id].path, draft);
-    await page.locator("[data-game-help]").click();
+    assert.equal(await page.locator("[data-game-help]").count(), 0);
     assert.ok(
-      (await page.locator(".game-help-screen").innerText()).includes(
-        "David W. Skinner",
-      ),
-      "credit remains in help",
+      fs
+        .readFileSync(
+          path.join(path.dirname(entry), "licenses/microban.txt"),
+          "utf8",
+        )
+        .includes("David W. Skinner"),
+      "puzzle attribution remains in the distributed license",
     );
-    await page.keyboard.press("ArrowRight");
-    assert.equal((await saved()).drafts[level.id].path, draft);
-    await page.locator("[data-game-help-close]").click();
     await launch();
     assert.equal(
       (await saved()).current,
@@ -334,7 +368,7 @@ async function main() {
           .evaluate((element) => getComputedStyle(element).color),
       );
     }
-    assert.ok(colors.size > 5, "board pieces follow the site themes");
+    assert.equal(colors.size, 1, "skin palette is independent of site accent");
     await page.evaluate(
       () => (document.documentElement.dataset.theme = "green"),
     );
@@ -350,6 +384,11 @@ async function main() {
         .classList.contains("game-shell-compact"),
     );
     const bounds = await board.boundingBox();
+    const phoneStage = await page.locator(".sokoban-stage").boundingBox();
+    assert.ok(
+      Math.abs(phoneStage.width - phoneStage.height) < 1,
+      "phone game area stays square",
+    );
     assert.equal(
       await page.locator(".sokoban-directions").isVisible(),
       true,
@@ -391,6 +430,109 @@ async function main() {
         );
       }
     }
+    await page.setViewportSize({ width: 390, height: 844 });
+    // Theme selection, return, reload and boundary transitions use real saves.
+    const skins = ["forest", "desert", "space"];
+    const shapeSignatures = new Set();
+    for (const [chapter, skin] of skins.entries()) {
+      await action("choose").click();
+      await action("chapter-" + chapter).click();
+      assert.equal(
+        await page.locator(".game-sokoban").getAttribute("data-skin"),
+        skin,
+      );
+      assert.equal(await page.locator(".sokoban-card-motif svg").count(), 20);
+      await action("level-19").click();
+      shapeSignatures.add(
+        await page.locator(".sokoban-player svg").innerHTML(),
+      );
+      await launch();
+      assert.equal(
+        await page.locator(".game-sokoban").getAttribute("data-skin"),
+        skin,
+      );
+      await action("choose").click();
+      await action("chapter-" + ((chapter + 1) % 3)).click();
+      await page.locator(".sokoban-catalog .game-level-return").click();
+      assert.equal(
+        await page.locator(".game-sokoban").getAttribute("data-skin"),
+        skin,
+      );
+      for (const language of ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"]) {
+        await page.evaluate(
+          (language) => WorkTimeApp.i18n.setLanguage(language),
+          language,
+        );
+        await action("choose").click();
+        assert.ok(
+          !(await page.locator(".sokoban-catalog").innerText()).includes(
+            "games.sokoban.",
+          ),
+        );
+        await page.locator(".sokoban-catalog .game-level-return").click();
+      }
+      await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({
+          width,
+          height: width === 1440 ? 1000 : 844,
+        });
+        for (const colorScheme of ["light", "dark"]) {
+          await page.emulateMedia({ colorScheme });
+          await page.locator(".sokoban-stage").screenshot({
+            path: path.join(
+              output,
+              skin + "-" + width + "-" + colorScheme + ".png",
+            ),
+          });
+          const rect = await board.boundingBox();
+          assert.ok(
+            rect.width > 0 && rect.x >= 0 && rect.x + rect.width <= width,
+            "themed board fits viewport",
+          );
+        }
+      }
+    }
+    assert.equal(
+      shapeSignatures.size,
+      3,
+      "each theme has a distinct character",
+    );
+    for (const index of [19, 39]) {
+      const level = bank.levels[index];
+      await page.evaluate(
+        ({ key, level, chapter }) =>
+          localStorage.setItem(
+            key + ".fixture",
+            JSON.stringify({
+              version: 1,
+              chapter,
+              current: level.id,
+              drafts: { [level.id]: { path: level.solution.slice(0, -1) } },
+              completed: {},
+            }),
+          ),
+        { key, level, chapter: Math.floor(index / 20) },
+      );
+      await launch();
+      assert.equal(
+        await page.locator(".game-sokoban").getAttribute("data-skin"),
+        skins[Math.floor(index / 20)],
+      );
+      await board.press(
+        { u: "ArrowUp", r: "ArrowRight", d: "ArrowDown", l: "ArrowLeft" }[
+          level.solution.at(-1)
+        ],
+      );
+      assert.ok(await page.locator(".sokoban-box.on-goal").count());
+      await action("next").click();
+      assert.equal(
+        await page.locator(".game-sokoban").getAttribute("data-skin"),
+        skins[Math.floor((index + 1) / 20)],
+      );
+      assert.equal((await saved()).current, bank.levels[index + 1].id);
+    }
+    await page.emulateMedia({ colorScheme: "light" });
     await page.setViewportSize({ width: 390, height: 844 });
     // Exercise the last-level completion and all chapters using verified replays.
     const fixture = {
@@ -444,10 +586,11 @@ async function main() {
       2,
       "Compact chapter picker uses two columns",
     );
-    assert.equal(await chapterProgress.innerText(), "已完成 20 / 20");
     assert.equal(
-      await page.locator(".sokoban-progress").innerText(),
-      "已完成 60 / 60",
+      await page
+        .locator(".sokoban-progress, .sokoban-catalog .game-level-page-summary")
+        .count(),
+      0,
     );
     // Invalid storage falls back to the catalog without adding records.
     await page.evaluate(
@@ -582,7 +725,7 @@ async function main() {
           .querySelector(".sokoban-board")
           .getAnimations({ subtree: true }).length === 0,
     );
-    // Help, resize and exit settle the current step and discard unplayed input.
+    // Catalog, resize and exit settle the current step and discard unplayed input.
     await board.evaluate((element) => {
       element.dispatchEvent(
         new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
@@ -591,14 +734,14 @@ async function main() {
         .getAnimations({ subtree: true })
         .forEach((track) => track.pause());
     });
-    await page.locator("[data-game-help]").click();
+    await action("choose").click();
     assert.equal(
       await board.evaluate(
         (element) => element.getAnimations({ subtree: true }).length,
       ),
       0,
     );
-    await page.locator("[data-game-help-close]").click();
+    await page.locator(".sokoban-catalog .game-level-return").click();
     await board.evaluate((element) => {
       element.dispatchEvent(
         new KeyboardEvent("keydown", { key: "z", bubbles: true }),

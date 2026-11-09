@@ -40,13 +40,104 @@ WorkTimeApp.games.sudokuRules = (() => {
     return clue >= low && clue <= high;
   }
   const peerCache = new WeakMap();
+  const layoutCache = new WeakMap();
+  function layout(puzzle) {
+    if (!layoutCache.has(puzzle) && puzzle.tenBox) {
+      const boxes = Array.from({ length: 10 }, (_, n) =>
+        Array.from({ length: 9 }, (_, j) => [
+          (n + Math.floor(j / 3)) % 10,
+          (3 * n + (j % 3)) % 10,
+        ]),
+      );
+      const positions = boxes.flat().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      const lookup = new Map(positions.map((pos, i) => [pos.join(","), i]));
+      const regions = boxes.map((box) =>
+        box.map((pos) => lookup.get(pos.join(","))),
+      );
+      const rows = Array.from({ length: 10 }, (_, r) =>
+        positions.flatMap((pos, i) => (pos[0] === r ? [i] : [])),
+      );
+      const cols = Array.from({ length: 10 }, (_, c) =>
+        positions.flatMap((pos, i) => (pos[1] === c ? [i] : [])),
+      );
+      layoutCache.set(puzzle, {
+        positions,
+        units: [...rows, ...cols, ...regions],
+        regions,
+        width: 10,
+        height: 10,
+      });
+    }
+    if (!layoutCache.has(puzzle)) {
+      const grids = puzzle.grids || [[0, 0]];
+      const positions = [
+        ...new Set(
+          grids.flatMap(([r, c]) =>
+            Array.from(
+              { length: 81 },
+              (_, i) => r + Math.floor(i / 9) + "," + (c + (i % 9)),
+            ),
+          ),
+        ),
+      ]
+        .map((key) => key.split(",").map(Number))
+        .sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      const lookup = new Map(positions.map((pos, i) => [pos.join(","), i]));
+      const units = grids.flatMap(([r, c]) => {
+        const at = (y, x) => lookup.get([r + y, c + x].join(","));
+        return Array.from({ length: 9 }, (_, n) => [
+          Array.from({ length: 9 }, (_, j) => at(n, j)),
+          Array.from({ length: 9 }, (_, j) => at(j, n)),
+          Array.from({ length: 9 }, (_, j) =>
+            at(
+              Math.floor(n / 3) * 3 + Math.floor(j / 3),
+              (n % 3) * 3 + (j % 3),
+            ),
+          ),
+        ]).flat();
+      });
+      layoutCache.set(puzzle, {
+        positions,
+        units,
+        width: Math.max(...positions.map((p) => p[1])) + 1,
+        height: Math.max(...positions.map((p) => p[0])) + 1,
+      });
+    }
+    return layoutCache.get(puzzle);
+  }
   function puzzlePeers(puzzle) {
-    if (!puzzle.regions && !puzzle.antiKnight) return peers;
-    if (!peerCache.has(puzzle))
+    if (
+      !puzzle.grids &&
+      !puzzle.tenBox &&
+      !puzzle.extraRegions &&
+      !puzzle.regions &&
+      !puzzle.antiKnight
+    )
+      return peers;
+    if (puzzle.grids || puzzle.tenBox) {
+      if (!peerCache.has(puzzle)) {
+        const related = Array.from(
+          { length: layout(puzzle).positions.length },
+          () => new Set(),
+        );
+        for (const unit of layout(puzzle).units)
+          for (const i of unit)
+            for (const j of unit) if (i !== j) related[i].add(j);
+        peerCache.set(
+          puzzle,
+          related.map((set) => [...set]),
+        );
+      }
+      return peerCache.get(puzzle);
+    }
+    if (!peerCache.has(puzzle)) {
       peerCache.set(
         puzzle,
-        Array.from({ length: 81 }, (_, i) =>
-          Array.from({ length: 81 }, (_, j) => j).filter(
+        Array.from({ length: puzzle.givens?.length || 81 }, (_, i) =>
+          Array.from(
+            { length: puzzle.givens?.length || 81 },
+            (_, j) => j,
+          ).filter(
             (j) =>
               j !== i &&
               ((puzzle.regions
@@ -54,6 +145,9 @@ WorkTimeApp.games.sudokuRules = (() => {
                   i % 9 === j % 9 ||
                   puzzle.regions[i] === puzzle.regions[j]
                 : peers[i].includes(j)) ||
+                puzzle.extraRegions?.some(
+                  (unit) => unit.includes(i) && unit.includes(j),
+                ) ||
                 (puzzle.antiKnight &&
                   Math.abs(Math.floor(i / 9) - Math.floor(j / 9)) *
                     Math.abs((i % 9) - (j % 9)) ===
@@ -61,6 +155,7 @@ WorkTimeApp.games.sudokuRules = (() => {
           ),
         ),
       );
+    }
     return peerCache.get(puzzle);
   }
   function sumPossible(values, target, distinct) {
@@ -113,6 +208,36 @@ WorkTimeApp.games.sudokuRules = (() => {
     if (puzzlePeers(puzzle)[index].some((j) => board[j] === value))
       return false;
     const read = (i) => (i === index ? value : board[i]);
+    for (const [greater, smaller] of puzzle.inequalities || []) {
+      if (greater !== index && smaller !== index) continue;
+      const a = read(greater),
+        b = read(smaller);
+      if ((a && b && a <= b) || a === 1 || b === 9) return false;
+    }
+    for (const path of puzzle.palindromes || []) {
+      const at = path.indexOf(index);
+      if (
+        at >= 0 &&
+        read(path[path.length - 1 - at]) &&
+        read(path[path.length - 1 - at]) !== value
+      )
+        return false;
+    }
+    for (const cells of puzzle.quadSums || []) {
+      if (!cells.includes(index)) continue;
+      if (
+        !cells.some((target) => {
+          const total = read(target),
+            others = cells.filter((i) => i !== target).map(read);
+          return total
+            ? sumPossible(others, total, false)
+            : others.reduce((a, b) => a + b, 0) +
+                others.filter((n) => !n).length <=
+                9;
+        })
+      )
+        return false;
+    }
     for (const cage of puzzle.cages || [])
       if (
         cage.cells.includes(index) &&
@@ -213,7 +338,7 @@ WorkTimeApp.games.sudokuRules = (() => {
     const board = Array.from(puzzle.givens, Number),
       solutions = [];
     if (
-      board.length !== 81 ||
+      board.length !== layout(puzzle).positions.length ||
       board.some(
         (n, i) =>
           !Number.isInteger(n) ||
@@ -228,7 +353,7 @@ WorkTimeApp.games.sudokuRules = (() => {
       if (++nodes > maxNodes) throw Error("Sudoku search limit exceeded");
       let index = -1,
         candidates = [];
-      for (let i = 0; i < 81; i++) {
+      for (let i = 0; i < board.length; i++) {
         if (board[i]) continue;
         const values = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter((n) =>
           allowed(board, i, n, puzzle),
@@ -256,7 +381,7 @@ WorkTimeApp.games.sudokuRules = (() => {
   }
   const create = (puzzle) => ({
     values: Array.from(puzzle.givens, Number),
-    notes: Array(81).fill(0),
+    notes: Array(puzzle.givens.length).fill(0),
     elapsed: 0,
     hints: 0,
     history: [],
@@ -265,9 +390,9 @@ WorkTimeApp.games.sudokuRules = (() => {
     if (
       !value ||
       !Array.isArray(value.values) ||
-      value.values.length !== 81 ||
+      value.values.length !== puzzle.givens.length ||
       !Array.isArray(value.notes) ||
-      value.notes.length !== 81 ||
+      value.notes.length !== puzzle.givens.length ||
       !value.values.every(
         (n, i) =>
           Number.isInteger(n) &&
@@ -302,7 +427,7 @@ WorkTimeApp.games.sudokuRules = (() => {
     if (
       !Number.isInteger(index) ||
       index < 0 ||
-      index >= 81 ||
+      index >= puzzle.givens.length ||
       puzzle.givens[index] !== "0" ||
       !Number.isInteger(digit) ||
       digit < 0 ||
@@ -350,7 +475,9 @@ WorkTimeApp.games.sudokuRules = (() => {
       index === undefined
         ? undoEdit
         : index * editsPerCell + digit + (pencil && digit ? 9 : 0);
-    replay.moves += edit.toString(36).padStart(3, "0");
+    replay.moves += (index !== undefined && edit >= undoEdit ? edit + 1 : edit)
+      .toString(36)
+      .padStart(3, "0");
     return replay;
   }
   function replayStart(puzzle, replay) {
@@ -359,8 +486,9 @@ WorkTimeApp.games.sudokuRules = (() => {
       : create(puzzle);
   }
   function replayStep(puzzle, state, moves, step) {
-    const edit = parseInt(moves.slice(step * 3, step * 3 + 3), 36);
+    let edit = parseInt(moves.slice(step * 3, step * 3 + 3), 36);
     if (edit === undoEdit) return undo(state);
+    if (edit > undoEdit) edit--;
     const action = edit % editsPerCell;
     const pencil = action > 9;
     return enter(
@@ -403,6 +531,7 @@ WorkTimeApp.games.sudokuRules = (() => {
     return clean;
   }
   return {
+    layout,
     peers,
     puzzlePeers,
     allowed,

@@ -107,6 +107,12 @@ WorkTimeApp.games.register({
       "restart-alt",
     );
     const confirmLabel = node("span", "button-label", confirm);
+    const paintRestartCover = WorkTimeApp.games.createRestartCover({
+      cover: confirmation,
+      cancel: cancel,
+      accept: confirm,
+      signal,
+    });
     const board = node("div", "puzzle-board", root);
     board.tabIndex = 0;
     board.setAttribute("role", "group");
@@ -183,6 +189,7 @@ WorkTimeApp.games.register({
       confirmTitle.textContent = t("confirmTitle");
       confirmText.textContent = t("confirmHint");
       confirmation.hidden = !confirming;
+      paintRestartCover(confirming);
       undo.disabled = !previous || confirming;
       restart.disabled = confirming;
       board.setAttribute("aria-label", t("board"));

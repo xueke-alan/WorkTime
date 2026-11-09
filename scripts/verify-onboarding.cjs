@@ -3,10 +3,101 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
+async function verifyRecovery(browser, root) {
+  const context = await browser.newContext();
+  await context.route(/^https?:/, (route) => route.abort());
+  await context.addInitScript(() => {
+    document.addEventListener(
+      "worktime:ready",
+      () => {
+        const service = WorkTimeApp.services.autoBackupFolder;
+        let status = localStorage.getItem("test.recovered") || "permission";
+        Object.defineProperty(service, "state", {
+          configurable: true,
+          get: () => ({ status, name: "test", supported: true }),
+        });
+        window.recoveryCalls = 0;
+        window.showDirectoryPicker = () => {
+          throw Error("Recovery must not open the directory picker");
+        };
+        service.authorize = async () => {
+          window.recoveryActivation = navigator.userActivation.isActive;
+          if (++window.recoveryCalls === 1)
+            throw Object.assign(Error("permission"), {
+              folderCode: "permission",
+            });
+          status = "available";
+          localStorage.setItem("test.recovered", status);
+          document.dispatchEvent(new Event("worktime:languagechange"));
+          return true;
+        };
+        localStorage.setItem("worktime.installReminder.dismissed.v1", "true");
+      },
+      { once: true },
+    );
+  });
+  const page = await context.newPage();
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto(pathToFileURL(path.resolve(root, "index.html")).href);
+  const notice = page.locator("#runtimeFolderRecovery");
+  await notice.waitFor();
+  assert.match(await notice.innerText(), /test.*运行文件夹需要恢复读写授权/);
+  assert.match(await notice.innerText(), /授权成功后才能使用/);
+  assert.equal(
+    await notice.evaluate((dialog) => dialog.matches(":modal")),
+    true,
+  );
+  await page.keyboard.press("Escape");
+  assert.equal(
+    await notice.evaluate((dialog) => dialog.matches(":modal")),
+    true,
+  );
+  await page.mouse.click(1, 1);
+  assert.equal(
+    await notice.evaluate((dialog) => dialog.matches(":modal")),
+    true,
+  );
+  await assert.rejects(
+    page.locator("#importOpen").click({ timeout: 400 }),
+    /Timeout/,
+  );
+  assert.equal(await page.locator("#onboardingDialog").count(), 0);
+  await page.evaluate(() => {
+    document.dispatchEvent(new Event("worktime:installavailable"));
+    return WorkTimeApp.ui.onboarding.mount();
+  });
+  assert.equal(await notice.count(), 1);
+  assert.equal(await page.locator("#onboardingDialog").count(), 0);
+  const restore = notice.getByRole("button", { name: "恢复文件夹授权" });
+  await restore.click();
+  assert.equal(await restore.isEnabled(), true);
+  assert.equal(await notice.isVisible(), true);
+  assert.equal(
+    await notice.evaluate((dialog) => dialog.matches(":modal")),
+    true,
+  );
+  await restore.click();
+  await notice.waitFor({ state: "detached" });
+  await page.locator("#importOpen").click({ trial: true });
+  assert.equal(await page.evaluate(() => window.recoveryCalls), 2);
+  assert.equal(await page.evaluate(() => window.recoveryActivation), true);
+  assert.equal(await page.locator("#onboardingDialog").count(), 0);
+  await page.reload();
+  await page.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  await page.evaluate(() => WorkTimeApp.ui.onboarding.mount());
+  assert.equal(await notice.count(), 0);
+  assert.equal(await page.locator("#onboardingDialog").count(), 0);
+  assert.deepEqual(errors, []);
+  await context.close();
+}
 async function main() {
   const browser = await chromium.launch({ channel: "msedge", headless: true });
   try {
     for (const root of [".", "_site"]) {
+      await verifyRecovery(browser, root);
       const context = await browser.newContext();
       // Persist only the mocked folder availability across reloads/new tabs.
       await context.addInitScript(() => {

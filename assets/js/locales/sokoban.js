@@ -1,5 +1,18 @@
 "use strict";
 (() => {
+  const themes = {
+    "zh-CN": ["清新森林", "沙漠遗迹", "太空基地"],
+    "zh-TW": ["清新森林", "沙漠遺跡", "太空基地"],
+    "zh-HK": ["清新森林", "沙漠遺跡", "太空基地"],
+    en: ["Forest", "Desert Ruins", "Space Base"],
+    ja: ["新緑の森", "砂漠の遺跡", "宇宙基地"],
+    ko: ["푸른 숲", "사막 유적", "우주 기지"],
+  };
+  for (const [language, names] of Object.entries(themes))
+    ["forest", "desert", "space"].forEach((name, index) => {
+      WorkTimeApp.data.locales[language]["games.sokoban." + name] =
+        names[index];
+    });
   const additions = {
     "zh-CN": ["归位 {n} / {total}", "方向键 / WASD 移动 · Z 撤销 · R 重玩"],
     "zh-TW": ["歸位 {n} / {total}", "方向鍵 / WASD 移動 · Z 復原 · R 重玩"],
@@ -16,6 +29,8 @@
   };
   for (const [language, [goals, keyboard]] of Object.entries(additions)) {
     WorkTimeApp.data.locales[language]["games.sokoban.goals"] = goals;
+    WorkTimeApp.data.locales[language]["games.sokoban.goalsLabel"] =
+      goals.split(" {n}")[0];
     WorkTimeApp.data.locales[language]["games.sokoban.keyboard"] = keyboard;
   }
   const keys = [

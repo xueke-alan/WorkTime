@@ -79,7 +79,7 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
     )
       return false;
     // The same year/month has fixed day order and blank offsets. Keep every day
-    // button and its aligned text layer, including keyboard focus and animation.
+    // button and its text layers, including keyboard focus and animation.
     updateHTML(
       element.querySelector(".year-month-stats"),
       candidate.querySelector(".year-month-stats").innerHTML,
@@ -88,6 +88,16 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
       element.querySelector(".year-month-number"),
       candidate.querySelector(".year-month-number").textContent,
     );
+    const monthSwitch = element.querySelector(".year-month-switch"),
+      nextMonthSwitch = candidate.querySelector(".year-month-switch");
+    if (
+      monthSwitch?.getAttribute("aria-pressed") !==
+      nextMonthSwitch?.getAttribute("aria-pressed")
+    )
+      monthSwitch?.setAttribute(
+        "aria-pressed",
+        nextMonthSwitch?.getAttribute("aria-pressed") || "false",
+      );
     for (const next of nextButtons) {
       const button = buttons.get(next.dataset.yearDate);
       for (const attribute of [...button.attributes])
@@ -98,7 +108,10 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
         if (button.getAttribute(attribute.name) !== value)
           button.setAttribute(attribute.name, value);
       }
-      updateText(button.querySelector("span"), next.textContent);
+      // Year cards always carry number, lunar, festival and badge layers.
+      // Replace only when data changed; mode switches keep the same markup.
+      if (button.innerHTML !== next.innerHTML)
+        button.innerHTML = next.innerHTML;
     }
     return true;
   }

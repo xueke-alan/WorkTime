@@ -59,7 +59,18 @@ async function verify() {
           .screenshot({ path: process.env.WORKTIME_SHOT });
       assert.equal(boxes.length, 2);
       const motionBox = await page.locator("#motionTrigger").boundingBox();
-      assert.ok(Math.abs(motionBox.width - boxes[0].width) < 1);
+      const motionRowBox = await page
+        .locator(".motion-settings-row")
+        .boundingBox();
+      const installBox = await page.locator("#appInstallButton").boundingBox();
+      assert.ok(
+        Math.abs(installBox.width - motionRowBox.width * 0.25) < 1,
+        "install action must fill a quarter of the settings row",
+      );
+      assert.ok(
+        installBox.x > motionBox.x + motionBox.width,
+        "install action must sit to the right of the animation preference",
+      );
       assert.ok(motionBox.y < boxes[0].y);
       assert.equal(await page.locator("#motionHelp").count(), 0);
       assert.ok(
@@ -98,6 +109,13 @@ async function verify() {
       assert.equal(full.reduced, false);
       assert.ok(full.duration.includes("0.18s"));
       assert.equal(full.source, "not all");
+      assert.equal(
+        await page
+          .locator("#particleBg")
+          .evaluate((canvas) => canvas.width > 0 && canvas.height > 0),
+        true,
+        "full motion restores the decorative canvas buffer",
+      );
       // Inspect a real JS animation while the OS still requests reduced motion.
       assert.equal(
         await page.evaluate(() => {
@@ -127,6 +145,13 @@ async function verify() {
         /允许/,
       );
       await choose("reduce");
+      assert.deepEqual(
+        await page
+          .locator("#particleBg")
+          .evaluate((canvas) => [canvas.width, canvas.height]),
+        [0, 0],
+        "reduced motion releases the decorative canvas buffer",
+      );
       assert.deepEqual(await state(), {
         reduced: true,
         duration: "0s",

@@ -8,7 +8,12 @@ WorkTimeApp.ui.year = (() => {
   const { scheduleForDate } = WorkTimeApp.domain.schedule;
   const zeroColor = [231, 238, 233],
     maxColor = [74, 145, 106],
-    deficitColor = [194, 101, 96];
+    deficitColor = [194, 101, 96],
+    restOvertimeColor = {
+      ratio: 0,
+      background: "#8963b8",
+      text: "#ffffff",
+    };
   function heatColor(minutes, maximum, minimum = 0) {
     const negative = minutes < 0,
       limit = negative ? Math.abs(minimum) : maximum;
@@ -44,14 +49,10 @@ WorkTimeApp.ui.year = (() => {
     };
   }
   function scaleMaximum(months) {
-    const days = months.flatMap((month) => month.days),
-      weekdayMaximum = Math.max(
-        0,
-        ...days.filter((day) => !day.weekend).map((day) => day.overtime || 0),
-      );
-    // Weekend work must remain visible when no weekday has positive overtime.
-    const maximum =
-      weekdayMaximum || Math.max(0, ...days.map((day) => day.overtime || 0));
+    const days = months
+      .flatMap((month) => month.days)
+      .filter((day) => day.work);
+    const maximum = Math.max(0, ...days.map((day) => day.overtime || 0));
     return Math.ceil(maximum / 60) * 60;
   }
   function scaleMinimum(months) {
@@ -59,12 +60,83 @@ WorkTimeApp.ui.year = (() => {
       Math.floor(
         Math.min(
           0,
-          ...months.flatMap((month) =>
-            month.days.map((day) => day.overtime || 0),
-          ),
+          ...months
+            .flatMap((month) => month.days)
+            .filter((day) => day.work)
+            .map((day) => day.overtime || 0),
         ) / 60,
       ) * 60
     );
+  }
+  const lunarCache = new Map();
+  function lunarLabel(date, lunarFor) {
+    if (!lunarFor) return "";
+    let parts = lunarCache.get(date);
+    if (parts === undefined) {
+      try {
+        const lunar = lunarFor(date);
+        parts = {
+          month: lunar.getMonth(),
+          day: lunar.getDay(),
+          monthName: lunar.getMonthInChinese(),
+          dayName: lunar.getDayInChinese(),
+        };
+      } catch {
+        parts = null;
+      }
+      // Keep only enough entries for the current year and its neighbors.
+      if (lunarCache.size >= 1000) lunarCache.clear();
+      lunarCache.set(date, parts);
+    }
+    if (!parts) return "";
+    if (!WorkTimeApp.i18n.config.cjk)
+      return "L" + Math.abs(parts.month) + "/" + parts.day;
+    return parts.day === 1
+      ? (parts.month < 0 ? WorkTimeApp.i18n.t("yearView.leapMonth") : "") +
+          parts.monthName +
+          "月"
+      : parts.dayName;
+  }
+  function festivalLabels(info) {
+    const labels = new Set();
+    // The holiday-period name marks every day off, but the festival name only
+    // belongs to the exact festival date. Other holiday days just show the badge.
+    for (const part of String(info.festival || "").split(/[、,，;；]/)) {
+      const text = part.trim();
+      if (!text) continue;
+      // 除夕 is already a complete festival name; other names use the
+      // conventional “节” suffix understood by the locale dictionaries.
+      const name = text === "除夕" || text.endsWith("节") ? text : text + "节";
+      labels.add(WorkTimeApp.i18n.message(name));
+    }
+    return [...labels];
+  }
+  function calendarMonths(state, year, today, lunarFor) {
+    const result = months(state, year, today);
+    for (const month of result)
+      for (const day of month.days) {
+        const info = calendarInfo(day.date, state.days[day.date] || {});
+        day.lunar = lunarLabel(day.date, lunarFor);
+        day.festivals = festivalLabels(info);
+        day.badge = info.holiday ? "rest" : info.makeup ? "work" : "";
+        day.makeup = info.makeup;
+        day.holiday = !!info.holiday;
+        day.description = [
+          day.description,
+          day.lunar
+            ? WorkTimeApp.i18n.t("copy.e393811f90") + " " + day.lunar
+            : "",
+          day.festivals.join("、"),
+          day.badge === "rest"
+            ? WorkTimeApp.i18n.t("yearView.restLabel")
+            : day.badge === "work"
+              ? WorkTimeApp.i18n.t("yearView.workLabel")
+              : "",
+        ]
+          .filter(Boolean)
+          .join(" · ");
+      }
+    return result;
   }
   function months(state, year, today) {
     // Partition once: each monthly total only needs that month's records, even
@@ -137,6 +209,7 @@ WorkTimeApp.ui.year = (() => {
             complete: calc.minutes !== null,
             holiday: !!info.holiday,
             weekend: info.weekend,
+            work: info.work,
           };
         }),
       };
@@ -145,6 +218,12 @@ WorkTimeApp.ui.year = (() => {
       minimum = scaleMinimum(result);
     for (const month of result)
       for (const day of month.days) {
+        if (!day.work && (day.overtime || 0) > 0) {
+          // Rest-day work uses one dedicated colour and stays outside the
+          // weekday overtime scale used by the legend.
+          day.color = restOvertimeColor;
+          continue;
+        }
         day.color = heatColor(day.overtime, maximum, minimum);
         if (!day.overtime && (day.holiday || day.weekend))
           day.color = {
@@ -155,5 +234,5 @@ WorkTimeApp.ui.year = (() => {
       }
     return result;
   }
-  return { heatColor, scaleMaximum, scaleMinimum, months };
+  return { heatColor, scaleMaximum, scaleMinimum, months, calendarMonths };
 })();

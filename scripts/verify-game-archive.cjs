@@ -80,6 +80,42 @@ async function unit() {
   const group = app.data.sudoku.groups[0],
     puzzle = group.puzzles[0];
   const nextPuzzle = group.puzzles[1];
+
+  {
+    const triple = app.data.sudoku.groups.find((g) => g.id === "triple");
+    assert.equal(triple.puzzles.length, 20);
+    assert.equal(triple.legacyPuzzles.length, 20);
+    const old = triple.legacyPuzzles[0],
+      state = G.sudokuRules.create(old);
+    state.replay = G.sudokuRules.startReplay(old, state);
+    const index = old.givens.lastIndexOf("0");
+    G.sudokuRules.enter(old, state, index, Number(old.solution[index]));
+    G.sudokuRules.recordEdit(
+      state.replay,
+      index,
+      Number(old.solution[index]),
+      false,
+    );
+    const save = {
+      version: 1,
+      group: "triple",
+      current: old.id,
+      drafts: { [old.id]: state },
+      completed: {},
+    };
+    const normalized = S.normalize("game-sudoku", copy(save));
+    assert.equal(normalized.current, old.id);
+    assert.equal(normalized.drafts[old.id].values.length, 225);
+    assert.ok(normalized.drafts[old.id].replay);
+    const restored = S.validate({
+      type: S.TYPE,
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      games: { "game-sudoku": save },
+    });
+    assert.equal(restored.games["game-sudoku"].current, old.id);
+  }
+
   const draft = G.sudokuRules.create(puzzle);
   draft.elapsed = 100;
   draft.replay = G.sudokuRules.startReplay(puzzle, draft);
@@ -110,7 +146,27 @@ async function unit() {
   );
   assert.ok(direction);
   const [mate] = app.data.xiangqi;
-  const [, , , , , , twoMoves] = app.data.xiangqi;
+  const oldStalemate = {
+    version: 1,
+    current: "xq-20",
+    drafts: { "xq-20": { path: [1093] } },
+    completed: {},
+  };
+  const wonStalemate = S.normalize("game-xiangqi", oldStalemate);
+  assert.equal(wonStalemate.current, null);
+  assert.deepEqual(copy(wonStalemate.drafts), {});
+  assert.deepEqual(copy(wonStalemate.completed["xq-20"]), { path: [1093] });
+  assert.deepEqual(
+    copy(S.normalize("game-xiangqi", wonStalemate)),
+    copy(wonStalemate),
+  );
+  assert.throws(() =>
+    S.normalize("game-xiangqi", {
+      ...oldStalemate,
+      drafts: { "xq-20": { path: [1093, 0] } },
+    }),
+  );
+  const twoMoves = app.data.xiangqi.find(({ id }) => id === "xq-07");
   const [winningMove, alternative] = Object.keys(mate.tree[1]).map(Number);
   const [opening, otherOpening] = Object.keys(twoMoves.tree[1]).map(Number);
   const round = (move) => [move, G.xiangqiRules.reply(twoMoves.tree[1][move])];
@@ -120,6 +176,59 @@ async function unit() {
     drafts: { [twoMoves.id]: { path: round(opening) } },
     completed: { [mate.id]: { path: [winningMove] } },
   };
+  const retired = app.data.xiangqiRetired;
+  assert.equal(retired.length, 20);
+  const retiredMate = retired.find(({ goal }) => goal === 1);
+  const retiredBoard = G.xiangqiRules.parse(retiredMate.position);
+  const retiredWin = G.xiangqiRules
+    .legalMoves(retiredBoard, true)
+    .find(
+      (move) =>
+        G.xiangqiRules.result(
+          G.xiangqiRules.apply(retiredBoard, move),
+          false,
+        ) === "mate",
+    );
+  assert(Number.isInteger(retiredWin));
+  const oldSave = {
+    ...xiangqi,
+    current: retired.at(-1).id,
+    drafts: { ...xiangqi.drafts, [retired.at(-1).id]: { path: [] } },
+    completed: {
+      ...xiangqi.completed,
+      [retiredMate.id]: { path: [retiredWin] },
+    },
+  };
+  const migrated = S.normalize("game-xiangqi", oldSave);
+  assert.equal(migrated.current, null);
+  assert.deepEqual(copy(migrated.drafts), oldSave.drafts);
+  assert.deepEqual(copy(migrated.completed), oldSave.completed);
+  const historicalStorage = new Map([
+    [S.keys["game-xiangqi"], JSON.stringify(oldSave)],
+  ]);
+  const historicalOwner = S.create(() => ({
+    getItem: (key) => historicalStorage.get(key) ?? null,
+  }));
+  const loadedBank = app.data.xiangqi;
+  delete app.data.xiangqi;
+  assert.deepEqual(copy(historicalOwner.progressSummary("game-xiangqi")), {
+    kind: "completed",
+    value: 1,
+  });
+  for (const level of retired) {
+    historicalStorage.set(
+      S.keys["game-xiangqi"],
+      JSON.stringify({
+        version: 1,
+        completed: { [level.id]: {} },
+        drafts: { [level.id]: { path: [1] } },
+      }),
+    );
+    assert.deepEqual(copy(historicalOwner.progressSummary("game-xiangqi")), {
+      kind: "empty",
+    });
+  }
+  app.data.xiangqi = loadedBank;
   const saves = {
     "game-2048": {
       version: 1,
@@ -193,6 +302,11 @@ async function unit() {
   });
   assert.equal(unavailable.progressSummary("game-2048").kind, "unavailable");
   storage.setItem("worktime.unrelated", "keep");
+  const historicalArchive = archive({ "game-xiangqi": migrated });
+  assert.deepEqual(
+    copy(await S.decode(await S.encode(historicalArchive))),
+    copy(historicalArchive),
+  );
   const packed = owner.exportArchive();
   assert.equal(Object.keys(packed.games).length, 10);
   assert.deepEqual(copy(await S.decode(await S.encode(packed))), copy(packed));

@@ -1,7 +1,8 @@
 "use strict";
 /** calendar domain. No DOM or storage access. Loaded as an ordered classic script for file://. */
 const WorkTimeDomainCalendar = (() => {
-  const { dateKey, localDate } = WorkTimeApp.domain.time;
+  const { dateKey, localDate, monthBounds, validDate } =
+    WorkTimeApp.domain.time;
   const holidays = {},
     makeups = new Set();
   const calendarSchedules = WorkTimeApp.data.calendars.schedules;
@@ -70,12 +71,39 @@ const WorkTimeDomainCalendar = (() => {
       weekend: weekend && !work,
     };
   }
+  /**
+   * Pick the date the work-time editor focuses for a month: today in the
+   * current month, the last working day for a past month, and the first
+   * working day for a future month.
+   * @param {string} month
+   * @param {string} today
+   * @param {Object<string, WorkDay>} [days]
+   */
+  function attendanceFocusDate(month, today, days = {}) {
+    const [first, last] = monthBounds(month);
+    if (!validDate(first) || !validDate(today)) return first;
+    const todayMonth = today.slice(0, 7),
+      current = month === todayMonth;
+    if (current) return today;
+    const past = month < todayMonth,
+      candidate = localDate(past ? last : first),
+      limit = past ? first : last,
+      step = past ? -1 : 1;
+    for (;;) {
+      const date = dateKey(candidate);
+      if (calendarInfo(date, days[date] || {}).work) return date;
+      if (date === limit) break;
+      candidate.setDate(candidate.getDate() + step);
+    }
+    return past ? last : first;
+  }
   return {
     holidays,
     makeups,
     calendarSchedules,
     calendarKnown,
     calendarInfo,
+    attendanceFocusDate,
     festivalName,
   };
 })();

@@ -38,6 +38,7 @@ WorkTimeApp.ui.createWorkspace = function ({
   function leaveBatch() {
     if (disposed || !model.batchMode || model.batchSaving) return;
     model.batchMode = false;
+    model.calendarSelected = null;
     model.batchDays.clear();
     model.batchAnchor = null;
     model.batchDraft = null;

@@ -194,7 +194,7 @@
       "name": "horizontal_rule",
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/horizontal_rule/materialsymbolsrounded/horizontal_rule_24px.svg",
       "viewBox": "0 -960 960 960",
-      "sha256": "e1042847c0140128fb79ae254ee525d368dc9ba695843c5074e2a3deb3bcfae6"
+      "sha256": "0d203e7b04bbc98a124fd532caa63b9cb3e3c9296e5f306ca0524894e5461720"
     },
     {
       "id": "ms-info",
@@ -271,7 +271,7 @@
       "name": "article_person",
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/article_person/materialsymbolsrounded/article_person_24px.svg",
       "viewBox": "0 -960 960 960",
-      "sha256": "6f49d263e4cd6cb539929d8a6af316a1000c61d2661feba3b0184617f3b98bc5"
+      "sha256": "a90c1cba8c2b7736c1c9fb1cb6b54094e36e96b88889907985b1e2d55b26c027"
     },
     {
       "id": "ms-person-add",
@@ -460,7 +460,7 @@
       "name": "calendar_month",
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/calendar_month/materialsymbolsrounded/calendar_month_24px.svg",
       "viewBox": "0 -960 960 960",
-      "sha256": "5e519e24938ba00d32b07f9cc16126584bfba6fe06e451b1ec3a17cdd286fe20"
+      "sha256": "b17728fb9d768c22b34f0e4c3ec10b3185a26d03a707898130aad750c861dcf0"
     },
     {
       "id": "ms-book-5",
@@ -475,6 +475,13 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/install_desktop/materialsymbolsrounded/install_desktop_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "0e3847c34fb09a56370c68094becea8eaaa8e50e26b89444fd403a8b4b1c3944"
+    },
+    {
+      "id": "ms-hourglass-pause",
+      "name": "hourglass_pause",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/hourglass_pause/materialsymbolsrounded/hourglass_pause_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "19501a0c47e3a74378d1bbade75f75d36f9e01af02580310037c57c6003ad6b9"
     }
   ]
 }

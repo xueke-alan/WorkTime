@@ -22,6 +22,14 @@ const ids = [
   "kropki",
   "xsums",
   "antiKnight",
+  "inequality",
+  "extraRegion",
+  "palindrome",
+  "quadSum",
+  "windmill",
+  "flower",
+  "triple",
+  "tenBox",
 ];
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const adjacent = (a, b) =>
@@ -45,7 +53,7 @@ function verifyRules() {
   const variants = data.sudoku.groups.filter(
     (g) => !["easy", "medium", "hard", "expert"].includes(g.id),
   );
-  assert.equal(variants.length, 12);
+  assert.equal(variants.length, 20);
   for (const group of variants)
     assert.equal(group.puzzles.length, 20, group.id + " level count");
   for (const id of ids) {
@@ -72,6 +80,129 @@ function verifyRules() {
         );
       }
       const sum = (cells) => cells.reduce((a, i) => a + values[i], 0);
+      for (const [a, b] of p.inequalities || [])
+        assert.ok(values[a] > values[b]);
+      for (const cells of p.extraRegions || [])
+        assert.equal(
+          cells
+            .map((i) => values[i])
+            .sort()
+            .join(""),
+          "123456789",
+        );
+      for (const line of p.palindromes || [])
+        assert.deepEqual(
+          line.map((i) => values[i]),
+          line.map((i) => values[i]).reverse(),
+        );
+      for (const cells of p.quadSums || [])
+        assert.equal(Math.max(...cells.map((i) => values[i])) * 2, sum(cells));
+      if (p.tenBox) {
+        const grid = rules.layout(p);
+        assert.equal(grid.width, 10);
+        assert.equal(grid.height, 10);
+        assert.equal(grid.positions.length, 90);
+        assert.equal(grid.regions.length, 10);
+        assert.equal(new Set(grid.regions.flat()).size, 90);
+        grid.units.forEach((unit) => {
+          assert.equal(unit.length, 9);
+          assert.equal(
+            unit
+              .map((i) => values[i])
+              .sort()
+              .join(""),
+            "123456789",
+          );
+        });
+        for (const region of grid.regions) {
+          const coords = region.map((i) => grid.positions[i]);
+          const rows = [...new Set(coords.map((p) => p[0]))],
+            cols = [...new Set(coords.map((p) => p[1]))];
+          assert.equal(rows.length, 3);
+          assert.equal(cols.length, 3);
+          assert.ok(
+            rows.some(
+              (r) => rows.includes((r + 1) % 10) && rows.includes((r + 2) % 10),
+            ),
+          );
+          assert.ok(
+            cols.some(
+              (c) => cols.includes((c + 1) % 10) && cols.includes((c + 2) % 10),
+            ),
+          );
+        }
+        const pair = grid.regions.flatMap((unit) =>
+          unit.flatMap((i) =>
+            unit
+              .filter(
+                (j) =>
+                  i < j &&
+                  Math.abs(grid.positions[i][0] - grid.positions[j][0]) > 7 &&
+                  grid.positions[i][1] !== grid.positions[j][1],
+              )
+              .map((j) => [i, j]),
+          ),
+        )[0];
+        assert.ok(pair);
+        const board = Array(90).fill(0);
+        board[pair[0]] = 5;
+        assert.equal(
+          rules.allowed(board, pair[1], 5, p),
+          false,
+          "wrapped box conflict",
+        );
+      }
+      if (p.grids) {
+        const { positions } = rules.layout(p);
+        assert.equal(positions.length, p.solution.length);
+        if (id === "triple") {
+          assert.deepEqual(p.grids, [
+            [0, 3],
+            [3, 6],
+            [6, 0],
+          ]);
+          assert.equal(positions.length, 180);
+          assert.equal(rules.layout(p).width, 15);
+          assert.equal(rules.layout(p).height, 15);
+        }
+        for (const [r, c] of p.grids) {
+          const at = (y, x) =>
+            values[
+              positions.findIndex((pos) => pos[0] === r + y && pos[1] === c + x)
+            ];
+          for (let n = 0; n < 9; n++) {
+            const units = [
+              Array.from({ length: 9 }, (_, j) => at(n, j)),
+              Array.from({ length: 9 }, (_, j) => at(j, n)),
+              Array.from({ length: 9 }, (_, j) =>
+                at(
+                  Math.floor(n / 3) * 3 + Math.floor(j / 3),
+                  (n % 3) * 3 + (j % 3),
+                ),
+              ),
+            ];
+            units.forEach((unit) =>
+              assert.equal(unit.sort().join(""), "123456789"),
+            );
+          }
+        }
+        const progress = rules.create(p),
+          log = rules.startReplay(p, progress);
+        const index = p.givens.lastIndexOf("0");
+        assert.ok(rules.enter(p, progress, index, values[index]));
+        rules.recordEdit(log, index, values[index], false);
+        assert.ok(
+          rules.restoreReplay(p, log, progress),
+          p.id + " extended replay",
+        );
+        assert.ok(rules.undo(progress));
+        rules.recordEdit(log);
+        assert.ok(
+          rules.restoreReplay(p, log, progress),
+          p.id + " extended undo replay",
+        );
+      }
+
       if (p.cages) {
         assert.deepEqual(
           p.cages.flatMap((c) => Array.from(c.cells)).sort((a, b) => a - b),
@@ -181,6 +312,29 @@ function verifyRules() {
   );
   const board = Array(81).fill(0);
   // Deliberately use cells in different rows, columns and boxes to isolate each extra rule.
+  board[40] = 4;
+  assert.equal(rules.allowed(board, 0, 3, { inequalities: [[0, 40]] }), false);
+  assert.equal(rules.allowed(board, 0, 5, { inequalities: [[0, 40]] }), true);
+  assert.equal(
+    rules.allowed(board, 0, 3, { palindromes: [[0, 20, 40]] }),
+    false,
+  );
+  assert.equal(
+    rules.allowed(board, 0, 4, { palindromes: [[0, 20, 40]] }),
+    true,
+  );
+  assert.equal(rules.allowed(board, 0, 4, { extraRegions: [[0, 40]] }), false);
+  board[10] = 1;
+  board[20] = 2;
+  assert.equal(
+    rules.allowed(board, 0, 7, { quadSums: [[0, 10, 20, 40]] }),
+    true,
+  );
+  assert.equal(
+    rules.allowed(board, 0, 8, { quadSums: [[0, 10, 20, 40]] }),
+    false,
+  );
+  board.fill(0);
   board[13] = 4;
   assert.equal(rules.allowed(board, 2, 4, {}), true);
   assert.equal(rules.allowed(board, 2, 4, { antiKnight: true }), false);
@@ -277,6 +431,14 @@ async function verifyUI() {
         "xsums",
         "skyscraper",
         "parity",
+        "inequality",
+        "extraRegion",
+        "palindrome",
+        "quadSum",
+        "windmill",
+        "flower",
+        "triple",
+        "tenBox",
       ],
     );
     assert.equal(
@@ -287,9 +449,9 @@ async function verifyUI() {
     );
     const action = (id) => page.locator(`[data-sudoku-action="${id}"]`);
     async function choose() {
-      await page.locator(".sudoku-options > summary").click();
       await action("choose").click();
     }
+    let pooledCell = null;
     for (const id of ids) {
       await action(id).click();
       assert.equal(
@@ -297,6 +459,23 @@ async function verifyUI() {
         20,
       );
       await action("level-" + (id === "killer" ? 4 : 1)).click();
+      if (!pooledCell) pooledCell = await action("cell-0").elementHandle();
+      assert.ok(
+        await pooledCell.evaluate(
+          (cell) => cell === document.querySelector('[data-cell="0"]'),
+        ),
+        "reuse cells across shapes",
+      );
+      assert.equal(
+        await page.locator(".sudoku-notes span").count(),
+        0,
+        "no empty note grid items",
+      );
+      if (id === "tenBox") {
+        assert.equal(await page.locator(".sudoku-blocked").count(), 10);
+        assert.equal(await page.locator(".sudoku-cell").count(), 90);
+        assert.ok(await page.locator(".sudoku-multi-grid").count());
+      }
       if (id === "killer") {
         assert.equal(await page.locator(".sudoku-cell.is-given").count(), 0);
         assert.ok(await page.locator(".sudoku-cage-sum").count());
@@ -322,6 +501,22 @@ async function verifyUI() {
             (wide ? "wide" : "compact"),
           width > 1000,
         );
+        if (
+          width === 320 &&
+          ["windmill", "flower", "triple", "tenBox"].includes(id)
+        ) {
+          await action("zoom").click();
+          const cell = await page.locator(".sudoku-cell").first().boundingBox();
+          assert.ok(cell.width >= 24, "readable enlarged cells");
+          if (id !== "tenBox")
+            assert.equal(
+              await page
+                .locator(".sudoku-field")
+                .evaluate((el) => el.scrollWidth > el.clientWidth),
+              true,
+            );
+          await action("zoom").click();
+        }
         const rect = await page.locator(".sudoku-field").boundingBox();
         assert.ok(rect.x >= 0 && rect.x + rect.width <= width + 1);
         await page.screenshot({
@@ -338,13 +533,37 @@ async function verifyUI() {
             "games.sudoku.",
           ),
         );
-        assert.ok((await page.locator(".sudoku-rule").innerText()).length > 20);
+        assert.equal(
+          await page
+            .locator(
+              ".sudoku-rule, [data-game-help], .sudoku-source, .sudoku-options",
+            )
+            .count(),
+          0,
+        );
       }
       const puzzle = data.sudoku.groups.find((g) => g.id === id).puzzles[
           id === "killer" ? 3 : 0
         ],
         index = puzzle.givens.indexOf("0");
       await action("cell-" + index).click();
+      await action("notes").click();
+      await action("digit-" + puzzle.solution[index]).click();
+      const noteSlots = action("cell-" + index).locator(".sudoku-notes span");
+      assert.equal(await noteSlots.count(), 9);
+      const noteSlot = await noteSlots.first().elementHandle();
+      await action("notes").click();
+      assert.ok(
+        await noteSlot.evaluate(
+          (span, i) =>
+            span ===
+            document.querySelector(`[data-cell="${i}"] .sudoku-notes span`),
+          index,
+        ),
+        "reuse unchanged note slots",
+      );
+      await action("undo").click();
+      assert.equal(await noteSlots.count(), 0);
       await action("digit-" + puzzle.solution[index]).click();
       assert.equal(
         await action("cell-" + index).getAttribute("aria-invalid"),
@@ -427,9 +646,84 @@ async function verifyUI() {
       );
       await choose();
     }
+    // The compact replacement must not reinterpret saved cells from the old 21×21 layout.
+    for (const legacyGroup of ["triple"]) {
+      const legacy = data.sudoku.groups.find((g) => g.id === legacyGroup)
+        .legacyPuzzles[0];
+      const legacyState = rules.create(legacy);
+      legacyState.replay = rules.startReplay(legacy, legacyState);
+      const legacyIndex = legacy.givens.lastIndexOf("0");
+      rules.enter(
+        legacy,
+        legacyState,
+        legacyIndex,
+        Number(legacy.solution[legacyIndex]),
+      );
+      rules.recordEdit(
+        legacyState.replay,
+        legacyIndex,
+        Number(legacy.solution[legacyIndex]),
+        false,
+      );
+      const legacyPage = await browser.newPage({
+        viewport: { width: 1440, height: 1000 },
+        reducedMotion: "reduce",
+      });
+      legacyPage.on("pageerror", (e) => errors.push(e.message));
+      await legacyPage.route(/^https?:/, (route) => route.abort());
+      await legacyPage.addInitScript(
+        (save) => {
+          localStorage.setItem("worktime.onboarding.v1", "dismissed");
+          localStorage.setItem(
+            "worktime.games.sudoku.v1",
+            JSON.stringify(save),
+          );
+        },
+        plain({
+          version: 1,
+          group: "triple",
+          current: legacy.id,
+          drafts: { [legacy.id]: legacyState },
+          completed: {},
+        }),
+      );
+      await legacyPage.goto(
+        pathToFileURL(path.resolve(process.argv[2] || root, "index.html")).href,
+      );
+      await legacyPage.waitForFunction(
+        () => document.documentElement.dataset.appState === "ready",
+      );
+      await legacyPage.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
+      await launchGame(legacyPage, "game-sudoku");
+      assert.equal(
+        await legacyPage.locator(".sudoku-cell").count(),
+        legacy.givens.length,
+      );
+      assert.match(
+        await legacyPage.locator(".game-title").innerText(),
+        /第 1 关/,
+      );
+      assert.equal(await legacyPage.locator(".sudoku-rule").count(), 0);
+      const preserved = await legacyPage.evaluate(() =>
+        WorkTimeApp.services.gameArchive.normalize(
+          "game-sudoku",
+          JSON.parse(localStorage.getItem("worktime.games.sudoku.v1")),
+        ),
+      );
+      assert.equal(preserved.current, legacy.id);
+      assert.ok(preserved.drafts[legacy.id].replay);
+      await legacyPage.locator('[data-sudoku-action="choose"]').click();
+      assert.equal(
+        await legacyPage.locator(".sudoku-levels button:visible").count(),
+        20,
+      );
+      await legacyPage.locator('[data-sudoku-action="level-1"]').click();
+      assert.equal(await legacyPage.locator(".sudoku-cell").count(), 180);
+      await legacyPage.close();
+    }
     assert.deepEqual(errors, []);
     console.log(
-      "Nine variants: offline UI, clues, empty-grid killer, six languages, mobile and archives verified.",
+      "Seventeen variants: offline UI, clues, empty-grid killer, six languages, mobile and archives verified.",
     );
   } finally {
     await browser.close();

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220">
+  <defs>
+    <radialGradient id="ink"><stop stop-color="#343a38" stop-opacity=".24"/><stop offset=".6" stop-color="#555d58" stop-opacity=".12"/><stop offset="1" stop-color="#555d58" stop-opacity="0"/></radialGradient>
+    <filter id="edge" x="-15%" y="-20%" width="130%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="14" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="18"/><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <g fill="url(#ink)" filter="url(#edge)"><ellipse cx="142" cy="110" rx="127" ry="76"/><ellipse cx="260" cy="108" rx="119" ry="72"/><ellipse cx="205" cy="129" rx="150" ry="53"/></g>
+</svg>

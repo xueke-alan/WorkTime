@@ -1,5 +1,5 @@
 "use strict";
-const { launchGame } = require("./game-test-helpers.cjs");
+const { launchGame, continueGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -80,6 +80,13 @@ async function verifyUI(browser, viewport, reducedMotion) {
     hasTouch: true,
     deviceScaleFactor: viewport.width < 500 ? 3 : 1,
   });
+  // Keep folder setup, which has its own suite, outside game interaction tests.
+  await context.addInitScript(() => {
+    const showModal = HTMLDialogElement.prototype.showModal;
+    HTMLDialogElement.prototype.showModal = function () {
+      if (this.id !== "onboardingDialog") showModal.call(this);
+    };
+  });
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -111,10 +118,9 @@ async function verifyUI(browser, viewport, reducedMotion) {
   await page.clock.pauseAt(new Date(clockTime.getTime() + 1000));
   const game = page.locator(".game-jump");
   const stage = page.locator(".jump-stage");
-  const start = page.locator('[data-jump-action="start"]');
   const score = game.locator(".game-stat strong").first();
   const best = game.locator(".game-stat strong").nth(1);
-  await start.click();
+  await continueGame(page, "jump");
   assert.equal(await game.getAttribute("data-mode"), "playing");
   await page.clock.runFor(100);
   await stage.evaluate((element) => {
@@ -194,7 +200,7 @@ async function verifyUI(browser, viewport, reducedMotion) {
   await page.clock.runFor(1500);
   assert.equal(await score.textContent(), "6");
   assert.ok(await page.locator(".jump-cover").isVisible());
-  await start.click();
+  await continueGame(page, "jump");
   assert.equal(await game.getAttribute("data-phase"), "idle");
   // Use a real touch stream so pointer capture follows browser behavior.
   const touch = await context.newCDPSession(page);
@@ -213,10 +219,9 @@ async function verifyUI(browser, viewport, reducedMotion) {
     touchPoints: [],
   });
   assert.equal(await game.getAttribute("data-phase"), "idle");
-  await game.locator("[data-game-help]").click();
-  assert.equal(await game.locator(".game-help-screen").isVisible(), true);
-  await game.locator("[data-game-help-close]").click();
-  await start.click();
+  assert.equal(await game.locator("[data-game-help]").count(), 0);
+  await game.locator('[data-jump-action="pause"]').click();
+  await continueGame(page, "jump");
   await page.screenshot({
     path: path.join(root, `test-results/jump/${viewport.width}.png`),
   });
@@ -225,12 +230,14 @@ async function verifyUI(browser, viewport, reducedMotion) {
     const stage = element.querySelector(".jump-stage").getBoundingClientRect();
     return {
       right: bounds.right,
+      square: Math.abs(stage.width - stage.height) < 1,
       stageBottom: stage.bottom,
       viewportWidth: innerWidth,
       viewportHeight: innerHeight,
     };
   });
   assert.ok(geometry.right <= geometry.viewportWidth + 1);
+  assert.ok(geometry.square, "game area stays square");
   assert.ok(geometry.stageBottom <= geometry.viewportHeight);
   // Freeze a flight, then resume at the same score and complete it.
   await stage.focus();
@@ -241,11 +248,11 @@ async function verifyUI(browser, viewport, reducedMotion) {
   await page.locator('[data-jump-action="pause"]').click();
   await page.clock.runFor(1800);
   assert.equal(await game.getAttribute("data-mode"), "playing");
-  await start.click();
+  await continueGame(page, "jump");
   await page.clock.runFor(1000);
   assert.equal(await game.getAttribute("data-mode"), "over");
   assert.equal(await best.textContent(), "6");
-  await start.click();
+  await continueGame(page, "jump");
   assert.equal(await score.textContent(), "0");
   assert.equal(await best.textContent(), "6");
   for (const language of ["en", "zh-TW", "zh-HK", "ja", "ko", "zh-CN"]) {
@@ -262,7 +269,7 @@ async function verifyUI(browser, viewport, reducedMotion) {
   await page.clock.runFor(600);
   assert.equal(await best.textContent(), "6");
   assert.equal(await score.textContent(), "0");
-  await start.click();
+  await continueGame(page, "jump");
   await touch.send("Input.dispatchTouchEvent", {
     type: "touchStart",
     touchPoints: [touchPoint],
@@ -285,6 +292,7 @@ async function verifyUI(browser, viewport, reducedMotion) {
       throw Error("blocked storage");
     };
   });
+  await page.locator('[data-game-restart="new"]').click();
   await stage.focus();
   await page.keyboard.down("Space");
   await page.clock.runFor(1400);
@@ -295,7 +303,7 @@ async function verifyUI(browser, viewport, reducedMotion) {
   assert.deepEqual(errors, []);
   await context.close();
   console.log(
-    `Jump UI: ${viewport.width}px, ${reducedMotion}, no per-frame layout reads, idle rendering stops, keyboard/mouse/touch, streak scoring, pause/help, persistence and storage failure verified.`,
+    `Jump UI: ${viewport.width}px, ${reducedMotion}, no per-frame layout reads, idle rendering stops, keyboard/mouse/touch, streak scoring, pause/confirmation, persistence and storage failure verified.`,
   );
 }
 async function main() {

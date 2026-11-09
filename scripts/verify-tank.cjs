@@ -1,5 +1,5 @@
 "use strict";
-const { launchGame } = require("./game-test-helpers.cjs");
+const { launchGame, continueGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -435,6 +435,12 @@ async function main() {
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.route(/^https?:/, (route) => route.abort());
+    await page.addInitScript(() => {
+      const showModal = HTMLDialogElement.prototype.showModal;
+      HTMLDialogElement.prototype.showModal = function () {
+        if (this.id !== "onboardingDialog") showModal.call(this);
+      };
+    });
     await page.goto(pathToFileURL(entry).href);
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
@@ -482,7 +488,7 @@ async function main() {
       false,
     );
     await page.setViewportSize({ width: 390, height: 390 });
-    assert.equal(await stageGrid.locator("button:enabled").count(), 35);
+    assert.equal(await stageGrid.locator("button:enabled").count(), 36);
     assert.equal(await isFocused(action("stage-1")), true);
     assert.equal(await action("stage-1").getAttribute("aria-current"), "step");
     assert.equal(
@@ -505,7 +511,6 @@ async function main() {
     assert.equal(await stagePage.isVisible(), false);
     assert.equal(await isFocused(chooseStage), true);
     await chooseStage.click();
-    await stagePage.locator(".game-level-categories button").last().click();
     await action("stage-35").click();
     assert.equal(await page.evaluate(() => window.tankTest.stage), 35);
     assert.equal(await stagePage.isVisible(), false);
@@ -513,12 +518,16 @@ async function main() {
     await chooseStage.press("Enter");
     assert.equal(await isFocused(action("stage-35")), true);
     assert.equal(await action("stage-35").getAttribute("aria-current"), "step");
+    assert.equal(await stagePage.locator(".game-level-categories").count(), 0);
     assert.equal(
-      await stagePage
-        .locator(".game-level-categories button")
-        .last()
-        .getAttribute("aria-pressed"),
-      "true",
+      await stageGrid.evaluate(
+        (grid) => getComputedStyle(grid).gridTemplateColumns.split(" ").length,
+      ),
+      6,
+    );
+    assert.equal(
+      await stageGrid.locator("button").last().getAttribute("data-tank-action"),
+      "editor",
     );
     assert.ok(
       await action("stage-35").evaluate((card) => {
@@ -540,12 +549,19 @@ async function main() {
       }),
       "narrow cards separate the number and badge and show keyboard focus",
     );
-    await stagePage.locator(".game-level-categories button").first().click();
     await action("stage-1").click();
     assert.equal(await page.evaluate(() => window.tankTest.stage), 1);
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await action("start").click();
-    assert.equal(await chooseStage.isDisabled(), true);
+    await continueGame(page, "tank");
+    assert.equal(await chooseStage.isDisabled(), false);
+    await chooseStage.click();
+    assert.equal(
+      await page.locator(".game-tank").getAttribute("data-paused"),
+      "true",
+      "opening the new stage catalog pauses the current game",
+    );
+    await action("close-stages").click();
+    await continueGame(page, "tank");
     await page.keyboard.down("KeyW");
     await page.waitForTimeout(250);
     await page.keyboard.up("KeyW");
@@ -554,18 +570,18 @@ async function main() {
     const time = await page.evaluate(() => window.tankTest.time);
     await page.waitForTimeout(180);
     assert.equal(await page.evaluate(() => window.tankTest.time), time);
-    await action("start").click();
+    await continueGame(page, "tank");
     await page.keyboard.down("Space");
     await page.waitForTimeout(80);
     await page.keyboard.up("Space");
     assert.ok(await page.evaluate(() => window.tankTest.bullets.length > 0));
-    await page.locator("[data-game-help]").click();
-    assert.equal(await page.locator(".game-help-screen").isVisible(), true);
-    await page.locator("[data-game-help-close]").click();
-    assert.equal(
-      await page.locator(".game-tank").getAttribute("data-paused"),
-      "true",
+    assert.equal(await page.locator(".game-tank [data-game-help]").count(), 0);
+    await page.locator("#gameExitButton").click();
+    await page.waitForFunction(
+      () => document.getElementById("gameShell").dataset.state === "closed",
     );
+    await launchGame(page, "game-tank");
+    await action("choose-stage").click();
     await action("editor").click();
     await action("clearMap").click();
     await action("brush3").click();
@@ -616,7 +632,7 @@ async function main() {
     assert.ok(
       (await page.locator(".tank-results").textContent()).includes("1234"),
     );
-    await action("start").click();
+    await continueGame(page, "tank");
     assert.equal(
       await page.evaluate(() => window.tankTest.custom),
       true,
@@ -627,7 +643,7 @@ async function main() {
       s.status = "clear";
     });
     await page.waitForSelector('.game-tank[data-mode="clear"]');
-    await action("start").click();
+    await continueGame(page, "tank");
     assert.equal(
       await page.locator(".game-tank").getAttribute("data-mode"),
       "playing",
@@ -646,7 +662,7 @@ async function main() {
       el.value = "2";
       el.dispatchEvent(new Event("change"));
     });
-    await action("start").click();
+    await continueGame(page, "tank");
     assert.equal(await page.evaluate(() => window.tankTest.players.length), 2);
     await page.keyboard.down("ArrowUp");
     await page.waitForTimeout(200);
@@ -660,7 +676,7 @@ async function main() {
       window.tankTest.status = "clear";
     });
     await page.waitForSelector('.game-tank[data-mode="clear"]');
-    await action("start").click();
+    await continueGame(page, "tank");
     assert.equal(
       await page
         .locator(".game-tank .game-stat")
@@ -709,7 +725,7 @@ async function main() {
       });
     }
     await page.setViewportSize({ width: 390, height: 844 });
-    await action("start").click();
+    await continueGame(page, "tank");
     const before = await page.evaluate(() => window.tankTest.tanks[0].y);
     const touchBox = await action("dir0").boundingBox();
     await page.mouse.move(
@@ -727,7 +743,7 @@ async function main() {
       await page.locator(".game-tank").getAttribute("data-paused"),
       "true",
     );
-    await action("start").click();
+    await continueGame(page, "tank");
     await page.evaluate(() => {
       const s = window.tankTest;
       s.map.fill(0);
@@ -762,14 +778,17 @@ async function main() {
     });
     await page.waitForFunction(() => window.tankTest.status === "clear");
     assert.equal(
-      await page.locator(".tank-cover").isVisible(),
+      await page.locator(".tank-cover:not(.game-pause-outgoing)").isVisible(),
       false,
       "the last explosion plays before the result cover",
     );
     await page.waitForSelector('.game-tank[data-mode="clear"]');
-    assert.equal(await page.locator(".tank-cover").isVisible(), true);
+    assert.equal(
+      await page.locator(".tank-cover:not(.game-pause-outgoing)").isVisible(),
+      true,
+    );
     await page.evaluate(() => (window.tankTest.stage = 35));
-    await action("start").click();
+    await continueGame(page, "tank");
     assert.equal(await page.evaluate(() => window.tankTest.stage), 36);
     await page.evaluate(() => {
       window.tankTest.status = "over";
@@ -787,6 +806,10 @@ async function main() {
     assert.deepEqual(errors, []);
     const blocked = await browser.newPage();
     await blocked.addInitScript(() => {
+      const showModal = HTMLDialogElement.prototype.showModal;
+      HTMLDialogElement.prototype.showModal = function () {
+        if (this.id !== "onboardingDialog") showModal.call(this);
+      };
       Storage.prototype.getItem = () => {
         throw Error("Blocked");
       };
@@ -808,7 +831,7 @@ async function main() {
       "playing",
     );
     console.log(
-      "Tank UI: offline entry, keyboard/co-op, pause/help, editor/save/retry, results, six languages, touch, mobile/landscape, storage failure and disposal verified: " +
+      "Tank UI: offline entry, keyboard/co-op, pause, editor/save/retry, results, six languages, touch, mobile/landscape, storage failure and disposal verified: " +
         entry,
     );
   } finally {

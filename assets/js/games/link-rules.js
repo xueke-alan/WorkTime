@@ -154,7 +154,6 @@ WorkTimeApp.games.linkRules = (() => {
     const matchedFamily = family(state.board[a]);
     state.board[a] = state.board[b] = 0;
     state.score += points;
-    state.energy = Math.min(6, state.energy + 1);
     if (state.mode !== "zen")
       state.remaining = Math.min(240000, state.remaining + 4000);
     let completedMission = false;
@@ -164,7 +163,6 @@ WorkTimeApp.games.linkRules = (() => {
         completedMission = true;
         state.missions++;
         state.score += 600;
-        state.energy = Math.min(6, state.energy + 2);
         if (state.mode !== "zen")
           state.remaining = Math.min(240000, state.remaining + 8000);
         state.targetProgress = 0;
@@ -185,20 +183,6 @@ WorkTimeApp.games.linkRules = (() => {
       state.phase = state.level === 2 ? "won" : "cleared";
     }
     return { path, points, completedMission, gravity, moves, ...info };
-  }
-  function swap(state, a, b) {
-    if (
-      state.phase !== "playing" ||
-      state.energy < 3 ||
-      a === b ||
-      !state.board[a] ||
-      !state.board[b] ||
-      state.board[a] === state.board[b]
-    )
-      return false;
-    [state.board[a], state.board[b]] = [state.board[b], state.board[a]];
-    state.energy -= 3;
-    return true;
   }
   function restore(value) {
     if (
@@ -244,14 +228,12 @@ WorkTimeApp.games.linkRules = (() => {
         return null;
     const empty = !value.board.some(Boolean);
     const strategy = {
-      energy: value.energy ?? 3,
       target: value.target ?? value.level % 4,
       targetProgress: value.targetProgress ?? 0,
       tideStep: value.tideStep ?? 0,
       missions: value.missions ?? 0,
     };
     for (const [name, max] of [
-      ["energy", 6],
       ["target", 3],
       ["targetProgress", 2],
       ["tideStep", 3],
@@ -298,7 +280,6 @@ WorkTimeApp.games.linkRules = (() => {
     fall,
     fallPlan,
     match,
-    swap,
     restore,
   };
 })();

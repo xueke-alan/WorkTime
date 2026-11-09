@@ -27,13 +27,166 @@ WorkTimeApp.ui.createCalendar = function (options) {
   let renderedMode = null,
     renderedSelection = null,
     renderedYearMode = null;
+  let yearTitleAnimation = null;
+  let lunarLoading = null,
+    lunarUnavailable = false;
 
-  const { updateHTML, updateText, updateCalendar } =
-    WorkTimeApp.ui.createCalendarRenderer({
-      element: $,
-      document,
-      weatherLayer,
-    });
+  function updateSidebarYearMonth(yearMode, month) {
+    const actions = document.querySelector(".sidebar-actions"),
+      label = actions.querySelector(".sidebar-year-month"),
+      text = $("sidebarYearMonthText"),
+      nextText = month.slice(0, 4) + " / " + month.slice(5),
+      changed = text.dataset.month !== month;
+    if (changed) {
+      text.dataset.month = month;
+      text.setAttribute("aria-label", nextText);
+      for (const [selector, value] of [
+        [".sidebar-year-number", month.slice(0, 4)],
+        [".sidebar-month-number", month.slice(5)],
+      ])
+        numbers.set(text.querySelector(selector), value, {
+          animateInitial: false,
+          motion: yearMode && renderedYearMode === true,
+        });
+    }
+    actions.classList.toggle("is-year-mode", yearMode);
+    label.setAttribute("aria-hidden", String(!yearMode));
+    const importButton = $("importOpen"),
+      secondaryActions = actions.querySelector(".import-secondary-actions");
+    importButton.inert = yearMode;
+    const secondaryHidden =
+      yearMode ||
+      document
+        .querySelector(".summary-sidebar")
+        .classList.contains("is-oa-open");
+    secondaryActions.inert = secondaryHidden;
+    importButton.setAttribute("aria-hidden", String(yearMode));
+    secondaryActions.setAttribute("aria-hidden", String(secondaryHidden));
+  }
+
+  function ensureLunar() {
+    if (window.Solar) return true;
+    if (lunarUnavailable || lunarLoading) return false;
+    const settle = () => {
+      lunarLoading = null;
+      const view = getView();
+      // Populate the shared year cards while the heatmap is still showing, so a
+      // later mode switch only animates the already-present text layers.
+      if (view.yearMode) renderCalendar();
+    };
+    lunarLoading = WorkTimeApp.services.dateInfo
+      .loadLunar()
+      .then(settle, () => {
+        lunarUnavailable = true;
+        settle();
+      });
+    return false;
+  }
+  let noteTicker = null,
+    noteTracks = [];
+  const noteIndexes = new Map();
+  function collectNoteTracks() {
+    noteTracks = [...$("calendar").querySelectorAll(".year-day-note-track")]
+      .map((track) => {
+        const date = track.closest(".year-day")?.dataset.yearDate || "",
+          count = track.children.length;
+        return count > 1 ? { track, date, count } : null;
+      })
+      .filter(Boolean);
+    for (const item of noteTracks) {
+      const index = (noteIndexes.get(item.date) || 0) % item.count;
+      item.track.style.setProperty("--year-note-index", String(index));
+    }
+  }
+  function tickNotes() {
+    for (const item of noteTracks) {
+      const index = ((noteIndexes.get(item.date) || 0) + 1) % item.count;
+      noteIndexes.set(item.date, index);
+      item.track.style.setProperty("--year-note-index", String(index));
+    }
+    if (noteIndexes.size > 1000) noteIndexes.clear();
+  }
+  function syncNoteTicker(active) {
+    if (
+      active &&
+      getView().yearViewMode === "calendar" &&
+      !document.hidden &&
+      !WorkTimeApp.ui.animationCompat.preference().matches
+    ) {
+      collectNoteTracks();
+      if (!noteTicker) noteTicker = window.setInterval(tickNotes, 2600);
+    } else {
+      if (noteTicker) window.clearInterval(noteTicker);
+      noteTicker = null;
+      noteTracks = [];
+    }
+  }
+  function refreshNoteTicker() {
+    const view = getView();
+    syncNoteTicker(view.yearMode && !view.analysisMode);
+  }
+  document.addEventListener("visibilitychange", refreshNoteTicker);
+  document.addEventListener("worktime:yearviewchange", refreshNoteTicker);
+  WorkTimeApp.ui.animationCompat
+    .preference()
+    .addEventListener("change", refreshNoteTicker);
+  window.addEventListener("pagehide", () => syncNoteTicker(false));
+  const yearFooter = document.querySelector(".calendar-footer");
+  function updateYearFooterShift() {
+    if (!yearFooter) return;
+    const width = $("yearLegend").getBoundingClientRect().width,
+      gap = parseFloat(getComputedStyle(yearFooter).columnGap) || 0;
+    yearFooter.style.setProperty(
+      "--year-footer-shift",
+      width > 0 ? width + gap + "px" : "0px",
+    );
+  }
+  if (typeof ResizeObserver === "function") {
+    const observer = new ResizeObserver(updateYearFooterShift);
+    observer.observe($("yearLegend"));
+  }
+  function yearLegendParts() {
+    const legend = $("yearLegend");
+    if (!legend.querySelector(".year-scale > .year-gradient"))
+      legend.innerHTML =
+        '<span class="year-scale"><span class="year-min"></span><span class="year-gradient" aria-hidden="true"></span><span class="year-max"></span></span>';
+    return {
+      scale: legend.querySelector(".year-scale"),
+      min: legend.querySelector(".year-min"),
+      gradient: legend.querySelector(".year-gradient"),
+      max: legend.querySelector(".year-max"),
+    };
+  }
+  function setYearLegendLabel(label, text) {
+    if (label._clearTimer) {
+      window.clearTimeout(label._clearTimer);
+      label._clearTimer = null;
+    }
+    if (text) {
+      label.textContent = text;
+      label.removeAttribute("aria-hidden");
+      const justify = label.style.justifyContent;
+      label.style.justifyContent = "flex-start";
+      const width = label.scrollWidth;
+      label.style.justifyContent = justify;
+      label.style.width = width + 1 + "px";
+      label.style.opacity = "1";
+      return;
+    }
+    label.setAttribute("aria-hidden", "true");
+    label.style.width = "0px";
+    label.style.opacity = "0";
+    label._clearTimer = window.setTimeout(() => {
+      label._clearTimer = null;
+      if (label.getAttribute("aria-hidden") === "true") label.textContent = "";
+    }, 380);
+  }
+
+  const { updateText, updateCalendar } = WorkTimeApp.ui.createCalendarRenderer({
+    element: $,
+    document,
+    weatherLayer,
+  });
   const monthSlotWidths = new Map();
   let monthMeasureContext;
   function timePart(value, manual) {
@@ -305,6 +458,18 @@ WorkTimeApp.ui.createCalendar = function (options) {
       yearMode,
       analysisMode,
     } = getView();
+    updateSidebarYearMonth(yearMode, month);
+    const yearWatermark = $("yearWatermark");
+    if (yearMode) yearWatermark.textContent = String(getView().viewYear);
+    else {
+      // Leaving the year page belongs to the page transition. Do not leave a
+      // separately fading watermark over the destination calendar.
+      yearWatermark.classList.remove("is-mode-transition", "is-visible");
+    }
+    yearWatermark.classList.toggle(
+      "is-visible",
+      yearMode && !analysisMode && getView().yearViewMode === "calendar",
+    );
     for (const id of ["prevMonth", "nextMonth", "todayButton"])
       $(id).disabled = batchMode;
     $("monthTitle").setAttribute("aria-disabled", String(batchMode));
@@ -320,12 +485,21 @@ WorkTimeApp.ui.createCalendar = function (options) {
       renderedYearMode !== null && renderedYearMode !== yearMode;
     renderedYearMode = yearMode;
     $("calendar").classList.toggle("year-calendar", yearMode);
+    $("calendar").classList.toggle(
+      "year-calendar-detail",
+      yearMode && getView().yearViewMode === "calendar",
+    );
     $("calendar").classList.toggle("is-batch-editing", batchMode && !yearMode);
     document
       .querySelector("#panelContent>.weekdays")
       .classList.toggle("hidden", yearMode);
     $("yearLegend").classList.toggle("hidden", !yearMode);
-    $("batchToggle").disabled = yearMode || analysisMode;
+    if (!yearMode) {
+      $("yearLegend").classList.remove("is-inactive");
+      $("yearLegend").removeAttribute("aria-hidden");
+    }
+    if (!yearMode || analysisMode) syncNoteTicker(false);
+    $("batchToggle").disabled = analysisMode;
     $("analysisToggle").disabled = batchMode;
     const agendaMode = $("agendaMode");
     if (agendaMode) agendaMode.disabled = batchMode;
@@ -344,9 +518,13 @@ WorkTimeApp.ui.createCalendar = function (options) {
     $("calendar").classList.toggle("hidden", !!analysisMode);
     $("analysisPage").hidden = !analysisMode;
     $("analysisSidebar").hidden = !analysisMode;
+    $("yearAnalysisSidebar").hidden = !yearMode || !!analysisMode;
     document
       .querySelector(".workspace > .editor")
       .classList.toggle("is-analysis-mode", !!analysisMode);
+    document
+      .querySelector(".workspace > .editor")
+      .classList.toggle("is-year-view", !!yearMode && !analysisMode);
     if (analysisMode) {
       document.querySelector("#panelContent>.weekdays").classList.add("hidden");
       $("yearLegend").classList.add("hidden");
@@ -392,6 +570,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     );
     if (yearMode) {
       renderYear();
+      syncNoteTicker(true);
       if (viewChanged)
         WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-view");
       return;
@@ -790,12 +969,13 @@ WorkTimeApp.ui.createCalendar = function (options) {
   }
   function renderYear() {
     const state = getState();
-    const {
-      today,
-      selected,
-      calendarSelected = selected,
-      viewYear,
-    } = getView();
+    const { today, month, selected, viewYear, yearViewMode } = getView();
+    const detail = yearViewMode === "calendar";
+    $("yearWatermark").textContent = String(viewYear);
+    $("yearWatermark").classList.toggle("is-visible", detail);
+    // Both display modes share one card structure. Lunar data is prepared while
+    // the year view is open so switching modes only changes presentation.
+    if (viewYear >= 1900 && viewYear <= 2100) ensureLunar();
 
     updateMonthTitle(viewYear, Number(getView().month.slice(5)), true);
     const notice = $("yearNotice");
@@ -804,8 +984,93 @@ WorkTimeApp.ui.createCalendar = function (options) {
       viewYear + WorkTimeApp.i18n.t("copy.29c9747e36"),
     );
     notice.classList.toggle("hidden", C.calendarKnown(viewYear + "-01-01"));
-    const months = WorkYear.months(state, viewYear, today);
+    const lunarFor =
+      window.Solar && viewYear >= 1900 && viewYear <= 2100
+        ? (date) => WorkTimeApp.services.dateInfo.lunar(date)
+        : null;
+    const months = WorkYear.calendarMonths(state, viewYear, today, lunarFor);
+    renderYearAnalysis(viewYear, months);
     $("calendar").removeAttribute("data-weeks");
+    $("calendar").classList.toggle("year-calendar-detail", detail);
+    $("yearLegend").classList.toggle("hidden", false);
+    $("yearLegend").classList.toggle("is-inactive", detail);
+    $("yearLegend").setAttribute("aria-hidden", String(detail));
+    const statsMarkup = WorkTimeApp.i18n
+      .t("copy.2b3cbb76bd")
+      .replace(/^<\/span>/, "");
+    const heading = (m) => {
+      const monthKey = viewYear + "-" + C.pad(m.month),
+        active = monthKey === month;
+      return (
+        '<h3><button class="year-month-switch" type="button" data-year-month-switch="' +
+        monthKey +
+        '" aria-pressed="' +
+        active +
+        '"><span class="year-month-number">' +
+        WorkTimeApp.i18n.monthName(monthKey + "-01") +
+        '</span><span class="year-month-dot" aria-hidden="true"></span></button>' +
+        statsMarkup +
+        WorkTimeApp.i18n.number(
+          (m.summary.workOvertime + m.summary.restOvertime) / 60,
+          { useGrouping: false, maximumFractionDigits: 2 },
+        ) +
+        WorkTimeApp.i18n.t("copy.42b92eadd3") +
+        (m.summary.average === null
+          ? "—"
+          : WorkTimeApp.i18n.number(m.summary.average / 60, {
+              useGrouping: false,
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })) +
+        "h/d</span></span></h3>"
+      );
+    };
+    const yearDay = (d) => {
+      const badge = d.badge
+          ? '<span class="year-day-badge is-' +
+            d.badge +
+            '" aria-hidden="true">' +
+            esc(
+              WorkTimeApp.i18n.t(
+                d.badge === "rest"
+                  ? "yearView.restBadge"
+                  : "yearView.workBadge",
+              ),
+            ) +
+            "</span>"
+          : "",
+        notes = [d.lunar, ...d.festivals].filter(Boolean),
+        classes = [
+          "year-day",
+          d.today ? "is-today" : "",
+          d.holiday ? "is-holiday" : "",
+          d.makeup ? "is-makeup" : "",
+          d.weekend ? "is-weekend" : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+      return (
+        '<button type="button" class="' +
+        classes +
+        '" data-year-date="' +
+        d.date +
+        '" style="--year-heat-bg:' +
+        d.color.background +
+        ";--year-heat-text:" +
+        d.color.text +
+        '" aria-label="' +
+        esc(d.description) +
+        '"' +
+        (d.today ? ' aria-current="date"' : "") +
+        ">" +
+        badge +
+        '<span class="year-day-number"><span>' +
+        d.number +
+        '</span></span><span class="year-day-note" aria-hidden="true"><span class="year-day-note-track">' +
+        notes.map((note) => "<span>" + esc(note) + "</span>").join("") +
+        "</span></span></button>"
+      );
+    };
     updateCalendar(
       months
         .map(
@@ -818,47 +1083,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
             WorkTimeApp.i18n.month(
               viewYear + "-" + String(m.month).padStart(2, "0"),
             ) +
-            '"><h3><span class="year-month-number">' +
-            WorkTimeApp.i18n.monthName(
-              viewYear + "-" + String(m.month).padStart(2, "0") + "-01",
-            ) +
-            WorkTimeApp.i18n.t("copy.2b3cbb76bd").replace(/^月/, "") +
-            WorkTimeApp.i18n.number(
-              (m.summary.workOvertime + m.summary.restOvertime) / 60,
-              { useGrouping: false, maximumFractionDigits: 2 },
-            ) +
-            WorkTimeApp.i18n.t("copy.42b92eadd3") +
-            (m.summary.average === null
-              ? "—"
-              : WorkTimeApp.i18n.number(m.summary.average / 60, {
-                  useGrouping: false,
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })) +
-            'h/d</span></span></h3><div class="year-days">' +
+            '">' +
+            heading(m) +
+            '<div class="year-days">' +
             '<span aria-hidden="true"></span>'.repeat(m.offset) +
-            m.days
-              .map(
-                (d) =>
-                  '<button type="button" class="year-day' +
-                  (d.date === calendarSelected ? " selected" : "") +
-                  '" aria-pressed="' +
-                  (d.date === calendarSelected) +
-                  '" style="background:' +
-                  d.color.background +
-                  ";color:" +
-                  d.color.text +
-                  '" data-year-date="' +
-                  d.date +
-                  '" aria-label="' +
-                  esc(d.description) +
-                  '"' +
-                  (d.today ? ' aria-current="date"' : "") +
-                  "><span>" +
-                  d.number +
-                  "</span></button>",
-              )
-              .join("") +
+            m.days.map(yearDay).join("") +
             "</div></section>",
         )
         .join(""),
@@ -877,25 +1106,24 @@ WorkTimeApp.ui.createCalendar = function (options) {
       minimum = WorkYear.scaleMinimum(months);
     const zeroPosition =
       maximum > minimum ? (-minimum / (maximum - minimum)) * 100 : 0;
-    const stops =
-      WorkYear.heatColor(minimum, maximum, minimum).background +
-      " 0%," +
-      WorkYear.heatColor(0, maximum, minimum).background +
-      " " +
-      zeroPosition +
-      "%," +
-      WorkYear.heatColor(maximum, maximum, minimum).background +
-      " 100%";
-    updateHTML(
-      $("yearLegend"),
-      '<span class="year-scale">' +
-        (minimum < 0 ? "<span>" + C.hours(minimum) + " h</span>" : "") +
-        '<span class="year-gradient" aria-hidden="true" style="background:linear-gradient(to right,' +
-        stops +
-        ')"></span>' +
-        (maximum > 0 ? "<span>" + C.hours(maximum) + " h</span>" : "") +
-        "</span>",
+    const minColor = WorkYear.heatColor(minimum, maximum, minimum).background,
+      zeroColor = WorkYear.heatColor(0, maximum, minimum).background,
+      maxColor = WorkYear.heatColor(maximum, maximum, minimum).background;
+    const legend = yearLegendParts(),
+      minText = minimum < 0 ? C.hours(minimum) + " h" : "",
+      maxText = maximum > 0 ? C.hours(maximum) + " h" : "";
+    setYearLegendLabel(legend.min, minText);
+    setYearLegendLabel(legend.max, maxText);
+    legend.scale.classList.toggle("is-empty", !minText && !maxText);
+    legend.gradient.style.removeProperty("background");
+    legend.gradient.style.setProperty("--year-legend-min", minColor);
+    legend.gradient.style.setProperty("--year-legend-zero", zeroColor);
+    legend.gradient.style.setProperty("--year-legend-max", maxColor);
+    legend.gradient.style.setProperty(
+      "--year-legend-zero-position",
+      zeroPosition + "%",
     );
+    updateYearFooterShift();
     $("batchBar").classList.add("hidden");
     $("dayEditor").classList.remove("hidden");
     $("batchToggle").setAttribute("aria-pressed", "false");
@@ -909,6 +1137,121 @@ WorkTimeApp.ui.createCalendar = function (options) {
     renderedMode = false;
     renderedSelection = selected;
     updateNotificationEmptyState();
+  }
+  function renderYearAnalysis(viewYear, months) {
+    const totals = months.reduce(
+      (sum, month) => {
+        for (const key of [
+          "total",
+          "workOvertime",
+          "restOvertime",
+          "attendance",
+          "completeDays",
+        ])
+          sum[key] += month.summary[key] || 0;
+        return sum;
+      },
+      {
+        total: 0,
+        workOvertime: 0,
+        restOvertime: 0,
+        attendance: 0,
+        completeDays: 0,
+      },
+    );
+    const average = totals.attendance
+      ? totals.workOvertime / totals.attendance
+      : null;
+    const title = $("yearAnalysisTitle"),
+      nextTitle = String(viewYear),
+      titleChanged = title.textContent !== nextTitle;
+    if (titleChanged) title.textContent = nextTitle;
+    const animationCompat = WorkTimeApp.ui.animationCompat;
+    if (
+      titleChanged &&
+      !animationCompat.preference().matches &&
+      !document.hidden
+    ) {
+      yearTitleAnimation?.cancel();
+      const animation = animationCompat.animate(
+        title,
+        [
+          { opacity: 0.25, translate: "0 4px" },
+          { opacity: 1, translate: "0 0" },
+        ],
+        {
+          duration: 240,
+          easing: "cubic-bezier(0.2, 0.7, 0.3, 1)",
+          fill: "both",
+        },
+      );
+      yearTitleAnimation = animation;
+      animation.finished
+        .then(() => {
+          if (yearTitleAnimation !== animation) return;
+          yearTitleAnimation = null;
+          animation.cancel();
+        })
+        .catch(() => {});
+    }
+    const data = [
+      [
+        WorkTimeApp.i18n.t("copy.cc954e610b"),
+        average === null ? null : average / 60,
+        { decimals: 2, unit: " h" },
+        true,
+      ],
+      [
+        WorkTimeApp.i18n.t("yearView.totalOvertime"),
+        (totals.workOvertime + totals.restOvertime) / 60,
+        { decimals: 2, unit: " h" },
+      ],
+      [
+        WorkTimeApp.i18n.t("copy.7a26926ed7"),
+        totals.attendance,
+        { decimals: 2, unit: " d" },
+      ],
+      [
+        WorkTimeApp.i18n.t("short.workOT"),
+        totals.workOvertime / 60,
+        { decimals: 2, unit: " h" },
+      ],
+      [
+        WorkTimeApp.i18n.t("short.restOT"),
+        totals.restOvertime / 60,
+        { decimals: 2, unit: " h" },
+      ],
+      [
+        WorkTimeApp.i18n.t("copy.016315b388"),
+        totals.total / 60,
+        { decimals: 2, unit: " h" },
+      ],
+      [
+        WorkTimeApp.i18n.t("yearView.completeDays"),
+        totals.completeDays,
+        { unit: " d" },
+      ],
+    ];
+    let cards = [...$("yearAnalysisCards").children];
+    if (cards.length !== data.length) {
+      cards = data.map(([label, , , featured]) => {
+        const card = document.createElement("article");
+        card.className = "card" + (featured ? " average-card" : "");
+        card.innerHTML =
+          '<div class="card-label"></div><div class="metric"></div>';
+        card.querySelector(".card-label").textContent = label;
+        return card;
+      });
+      $("yearAnalysisCards").replaceChildren(...cards);
+    }
+    data.forEach(([label, value, format], index) => {
+      cards[index].querySelector(".card-label").textContent = label;
+      numbers.set(cards[index].querySelector(".metric"), value, {
+        ...format,
+        alignInk: true,
+        unit: value === null ? "" : format.unit,
+      });
+    });
   }
   return { monthWorkdayNumber, adjacentDayCard, renderCalendar, renderYear };
 };

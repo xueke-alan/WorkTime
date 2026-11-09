@@ -101,7 +101,7 @@ WorkTimeApp.games.register({
       render();
     });
     const restart = button(toolbar, "restart", () =>
-      requestNew(state.difficulty),
+      requestNew(state.difficulty, true),
     );
     pauseButton.classList.add("game-icon-button");
     restart.classList.add("game-icon-button");
@@ -112,6 +112,7 @@ WorkTimeApp.games.register({
     const board = node("div", "mine-board", boardFrame);
     board.setAttribute("role", "grid");
     const cover = node("div", "mine-cover", boardFrame);
+    const paintPauseCover = WorkTimeApp.games.createPauseCover(cover, signal);
     const coverTitle = node("h3", "", cover);
     const coverHint = node("p", "", cover);
     const coverActions = node("div", "mine-cover-actions", cover);
@@ -137,6 +138,12 @@ WorkTimeApp.games.register({
     const confirmLabel = node("span", "button-label", confirm);
     resume.append(WorkTimeApp.games.createIcon("play-arrow"));
     const resumeLabel = node("span", "button-label", resume);
+    const paintRestartCover = WorkTimeApp.games.createRestartCover({
+      cover: cover,
+      cancel: cancel,
+      accept: confirm,
+      signal,
+    });
     const feedback = node("div", "mine-feedback", arrangement);
     const result = node("div", "mine-result", feedback);
     result.setAttribute("role", "status");
@@ -211,10 +218,10 @@ WorkTimeApp.games.register({
       warning.hidden = !saveFailed;
       warning.textContent = t("saveFailed");
     }
-    function requestNew(difficulty) {
+    function requestNew(difficulty, force = false) {
       clearPointer();
       select.value = state.difficulty;
-      if (state.status === "playing") {
+      if (force || state.status === "playing") {
         confirmation = difficulty;
         syncClock();
         render();
@@ -222,6 +229,7 @@ WorkTimeApp.games.register({
       } else newGame(difficulty);
     }
     function newGame(difficulty) {
+      paintPauseCover.reset();
       if (!difficulty) return;
       const from = board.getBoundingClientRect();
       celebration.stop();
@@ -389,6 +397,7 @@ WorkTimeApp.games.register({
       );
     }
     function render() {
+      if (signal.aborted) return;
       const { columns, rows, count } = rules.levels[state.difficulty];
       root.dataset.status = state.status;
       root.dataset.difficulty = state.difficulty;
@@ -431,10 +440,11 @@ WorkTimeApp.games.register({
         clearPointer();
         clearPreview();
       }
+      paintPauseCover(covered && confirmation === null, t("paused"));
       cover.hidden = !covered;
       board.inert = covered || changingBoard;
       board.setAttribute("aria-hidden", String(covered));
-      board.classList.toggle("mine-board-covered", covered);
+      board.classList.remove("mine-board-covered");
       board.setAttribute("aria-label", t("board", { columns, rows }));
       coverTitle.textContent = t(
         confirmation !== null ? "confirmTitle" : "paused",
@@ -447,6 +457,7 @@ WorkTimeApp.games.register({
       cancelLabel.textContent = t("cancel");
       confirmLabel.textContent = t("confirm");
       resumeLabel.textContent = t("resume");
+      paintRestartCover(confirmation !== null);
       cells.forEach((cell, index) => {
         const shown = state.revealed[index],
           flagged = state.flagged[index];
@@ -634,10 +645,6 @@ WorkTimeApp.games.register({
         neighbors.filter((cell) => state.flagged[cell]).length ===
         rules.adjacent(state, index);
       cells[index].classList.toggle("is-chord-ready", ready);
-      neighbors.forEach((cell) => {
-        if (!state.revealed[cell] && !state.flagged[cell])
-          cells[cell].classList.add("is-neighbor");
-      });
     }
     const listen = (element, name, callback, options = {}) =>
       element.addEventListener(name, callback, { ...options, signal });

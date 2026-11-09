@@ -367,13 +367,29 @@ WorkTimeApp.ui.createMusicController = function () {
         oldPosition = pendingPosition || audio.currentTime || 0,
         wasPlaying = !audio.paused;
       const sameDirectory = directory === name;
+      const aliases = new Map(
+        (WorkTimeApp.services.runtimeFolder.state.migration || []).map(
+          (alias) => [alias.path, alias],
+        ),
+      );
+      const migrated = result.tracks.find((track) => {
+        const alias = aliases.get(track.path);
+        return (
+          alias?.fingerprints.includes(track.fingerprint) &&
+          alias.fingerprints.some(
+            (fingerprint) => `${alias.path}|${fingerprint}` === oldId,
+          )
+        );
+      });
       tracks = result.tracks;
       index = result.index;
       handle = newHandle;
       directory = name;
-      current = sameDirectory
-        ? tracks.find((track) => id(track) === oldId) || null
-        : null;
+      current =
+        migrated ||
+        (sameDirectory
+          ? tracks.find((track) => id(track) === oldId) || null
+          : null);
       if (!current) {
         ++loading;
         release();
@@ -437,6 +453,24 @@ WorkTimeApp.ui.createMusicController = function () {
       )
         return false;
       if (disposed || token !== scanning) return false;
+      // Files copied to a new workspace have new modification times. Match the
+      // committed lineage instead of losing favorites and the saved playhead.
+      const tracksByPath = new Map(tracks.map((track) => [track.path, track]));
+      for (const alias of runtime.state.migration || []) {
+        const next = tracksByPath.get(alias.path);
+        if (!next || !alias.fingerprints.includes(next.fingerprint)) continue;
+        for (const fingerprint of alias.fingerprints) {
+          const oldId = `${alias.path}|${fingerprint}`;
+          if (favorites.has(oldId)) {
+            favorites.delete(oldId);
+            favorites.add(id(next));
+          }
+          if (legacyCurrent?.id === oldId) {
+            await select(next, false, legacyCurrent.position);
+            legacyCurrent = null;
+          }
+        }
+      }
       for (const item of importResult?.imported || []) {
         const previous = legacyTracks.find(
           (track) =>

@@ -58,6 +58,13 @@
 .tank-select {
   width: 100%;
 }
+.tank-stage-title {
+  width: 100%;
+  margin: 0.25rem 0 0;
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  line-height: 1.2;
+  text-align: start;
+}
 .tank-controls {
   grid-column: 3;
   grid-row: 1;
@@ -67,6 +74,7 @@
   align-items: stretch;
   min-height: 0;
   height: 100%;
+  padding-top: 0.25rem;
   overflow: auto;
 }
 .tank-actions {
@@ -184,6 +192,14 @@
 .tank-warning:empty {
   display: none;
 }
+.tank-feedback {
+  flex: none;
+  margin-top: auto;
+  margin-bottom: 0.5rem;
+  padding-top: 0.5rem;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
 .tank-short {
   gap: 0.5rem;
 }
@@ -193,9 +209,6 @@
 }
 .tank-short .game-stat > strong {
   font-size: 1.1rem;
-}
-.tank-short .tank-feedback {
-  display: none;
 }
 .tank-short .tank-warning {
   position: absolute;
@@ -328,12 +341,24 @@
   height: auto;
   overflow: visible;
 }
+.tank-stacked .tank-feedback {
+  width: 100%;
+  margin-top: 0;
+  padding-top: 0;
+  text-align: center;
+  white-space: normal;
+}
 .tank-stacked .tank-select {
   width: 7rem;
 }
 .tank-stacked .tank-actions {
-  display: flex;
-  width: auto;
+  flex: 1;
+  min-width: 8rem;
+  width: 100%;
+}
+.tank-stage-page .game-level-page-header .tank-select {
+  width: 9rem;
+  flex: none;
 }
 .tank-stacked .tank-controls > .game-button {
   width: auto;
@@ -377,4 +402,28 @@
   .tank-board {
     border-width: 5px;
   }
+}
+
+.tank-actions > .game-button {
+  width: 100%;
+  min-width: 0;
+  padding-inline: 0;
+}
+.tank-stage-page .game-level-page-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+.game-tank .tank-stage-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.tank-stage-grid .tank-editor-card {
+  padding: 0.3rem;
+  font-family: inherit;
+  font-size: clamp(0.65rem, 1.6vw, 1rem);
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.game-tank .tank-stage-page {
+  width: min(100%, 36rem);
 }

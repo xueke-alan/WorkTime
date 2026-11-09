@@ -209,10 +209,106 @@ WorkTimeApp.ui.onboarding = (() => {
       localStorage.setItem(KEY, "done");
     } catch {}
   };
+  let recoveryDialog = null;
+  let recoveryPending = false;
+  let recoveryError = "";
+  let watchingRecovery = false;
+  function renderRecovery() {
+    const service = WorkTimeApp.services.autoBackupFolder;
+    const state = service.state;
+    if (!state.name || state.status === "available") {
+      recoveryDialog?.close();
+      recoveryDialog?.remove();
+      recoveryDialog = null;
+      recoveryError = "";
+      return;
+    }
+    if (!recoveryDialog) {
+      if (
+        state.status !== "permission" ||
+        document.getElementById("onboardingDialog")
+      )
+        return;
+      recoveryDialog = document.createElement("dialog");
+      recoveryDialog.id = "runtimeFolderRecovery";
+      recoveryDialog.setAttribute(
+        "aria-labelledby",
+        "runtimeFolderRecoveryTitle",
+      );
+      recoveryDialog.setAttribute(
+        "aria-describedby",
+        "runtimeFolderRecoveryHelp",
+      );
+      recoveryDialog.setAttribute("closedby", "none");
+      recoveryDialog.innerHTML = `
+        <div class="dialog-head"><h2 id="runtimeFolderRecoveryTitle"></h2></div>
+        <div class="dialog-body"><p data-recovery-status role="status"></p><p id="runtimeFolderRecoveryHelp" class="help"></p></div>
+        <div class="dialog-foot"></div>`;
+      recoveryDialog.addEventListener("cancel", (event) =>
+        event.preventDefault(),
+      );
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "ui-button primary";
+      button.addEventListener("click", async () => {
+        if (recoveryPending || service.state.busy) return;
+        recoveryPending = true;
+        recoveryError = "";
+        try {
+          // Request permission directly in the click gesture; never reopen the picker.
+          const result = service.authorize();
+          renderRecovery();
+          if (await result)
+            document.dispatchEvent(new Event("worktime:autobackupretry"));
+        } catch (error) {
+          recoveryError = error.folderCode || "failed";
+        } finally {
+          recoveryPending = false;
+          renderRecovery();
+        }
+      });
+      recoveryDialog.querySelector(".dialog-foot").append(button);
+      document.body.append(recoveryDialog);
+    }
+    const t = WorkTimeApp.ui.runtimeFolderText;
+    recoveryDialog.querySelector("h2").textContent = t("restorePermission");
+    recoveryDialog.querySelector("#runtimeFolderRecoveryHelp").textContent =
+      t("permissionRequired");
+    recoveryDialog.querySelector("[data-recovery-status]").textContent =
+      state.name +
+      " · " +
+      t(recoveryError || state.status, { name: state.detail });
+    const button = recoveryDialog.querySelector("button");
+    button.textContent = t("restorePermission");
+    button.disabled = recoveryPending || state.busy || !state.supported;
+    recoveryDialog.setAttribute("aria-busy", String(recoveryPending));
+    if (!recoveryDialog.open) recoveryDialog.showModal();
+  }
   async function mount() {
     if (closed) return;
     await WorkTimeApp.services.autoBackupFolder.initialize();
     const folderState = WorkTimeApp.services.autoBackupFolder.state;
+    if (!watchingRecovery && !closed) {
+      watchingRecovery = true;
+      const unsubscribe =
+        WorkTimeApp.services.autoBackupFolder.subscribe(renderRecovery);
+      document.addEventListener("worktime:languagechange", renderRecovery);
+      window.addEventListener(
+        "pagehide",
+        () => {
+          unsubscribe();
+          document.removeEventListener(
+            "worktime:languagechange",
+            renderRecovery,
+          );
+        },
+        { once: true },
+      );
+    }
+    if (!closed) renderRecovery();
+    // A remembered folder awaiting permission is recovery, not first-run setup.
+    // This also suppresses queued installation reminders while recovery is pending.
+    if (recoveryDialog) return;
     if (closed || document.getElementById("onboardingDialog")) return;
     // Folder setup is mandatory. Installation reminders recur on each visit
     // until the user opts out or the browser reports an installed app.
@@ -228,6 +324,8 @@ WorkTimeApp.ui.onboarding = (() => {
     await WorkTimeApp.services.assets
       .style("assets/css/onboarding.css")
       .catch(() => {});
+    if (!closed) renderRecovery();
+    if (recoveryDialog) return;
     if (
       closed ||
       document.getElementById("onboardingDialog") ||

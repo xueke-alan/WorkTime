@@ -27,6 +27,14 @@ WorkTimeApp.games.register({
         "xsums",
         "skyscraper",
         "parity",
+        "inequality",
+        "extraRegion",
+        "palindrome",
+        "quadSum",
+        "windmill",
+        "flower",
+        "triple",
+        "tenBox",
       ].map((id, index) => [id, index]),
     );
     const groups = [...WorkTimeApp.data.sudoku.groups].sort(
@@ -37,8 +45,12 @@ WorkTimeApp.games.register({
     const key = "worktime.games.sudoku.v1";
     const t = (name, params) =>
       WorkTimeApp.i18n.t("games.sudoku." + name, params);
+    const groupPuzzles = (group) => [
+      ...group.puzzles,
+      ...(group.legacyPuzzles || []),
+    ];
     const puzzles = new Map(
-      groups.flatMap((g) => g.puzzles.map((p) => [p.id, p])),
+      groups.flatMap((g) => groupPuzzles(g).map((p) => [p.id, p])),
     );
     let drafts = {},
       completed = {},
@@ -91,7 +103,7 @@ WorkTimeApp.games.register({
         if (groups.some((g) => g.id === saved.group))
           selectedGroup = saved.group;
         const puzzle = puzzles.get(saved.current);
-        const group = groups.find((g) => g.puzzles.includes(puzzle));
+        const group = groups.find((g) => groupPuzzles(g).includes(puzzle));
         if (puzzle && drafts[puzzle.id]) {
           current = puzzle;
           state = drafts[puzzle.id];
@@ -135,20 +147,8 @@ WorkTimeApp.games.register({
       render();
       if (!manualPaused) cells[selected].focus();
     });
-    const options = node("details", "sudoku-options", sessionMeta);
-    const optionsToggle = node(
-      "summary",
-      "game-button game-icon-button",
-      options,
-    );
-    optionsToggle.append(WorkTimeApp.games.createIcon("more-horiz"));
-    const controls = node(
-      "div",
-      "sudoku-controls settings-select-options",
-      options,
-    );
-    const choose = button(controls, "choose", () => {
-      options.open = false;
+    const choose = button(sessionMeta, "choose", () => {
+      paintPauseCover.reset();
       choosing = true;
       celebration.stop();
       syncClock();
@@ -156,16 +156,15 @@ WorkTimeApp.games.register({
       render();
       groupButtons.get(selectedGroup).focus();
     });
-    const restart = button(controls, "restart", () => {
-      options.open = false;
+    const restart = button(sessionMeta, "restart", () => {
       confirming = true;
       celebration.stop();
       syncClock();
       render();
       cancel.focus();
     });
-    const menuReplay = button(controls, "menu-replay", () =>
-      openReplay(optionsToggle),
+    const menuReplay = button(sessionMeta, "menu-replay", () =>
+      openReplay(menuReplay),
     );
     const catalog = WorkTimeApp.games.createLevelPage(
       root,
@@ -178,9 +177,20 @@ WorkTimeApp.games.register({
     categoryList.setAttribute("role", "group");
     const difficulties = node("div", "sudoku-difficulties", categoryList);
     const variants = node("div", "sudoku-variants", categoryList);
+    const multiVariants = node(
+      "div",
+      "sudoku-variants sudoku-multi-variants",
+      categoryList,
+    );
     const groupButtons = new Map(
       groups.map((group, index) => {
-        const b = button(index < 4 ? difficulties : variants, group.id, () => {
+        const parent =
+          index < 4
+            ? difficulties
+            : group.puzzles[0]?.grids || group.puzzles[0]?.tenBox
+              ? multiVariants
+              : variants;
+        const b = button(parent, group.id, () => {
           selectedGroup = group.id;
           save();
           render();
@@ -203,7 +213,19 @@ WorkTimeApp.games.register({
     const play = node("div", "sudoku-play", root);
     play.append(hud);
     const tools = node("div", "sudoku-tools", play);
-    const ruleText = node("p", "sudoku-rule", tools);
+    const zoom = button(tools, "zoom", () => {
+      field.classList.toggle("is-zoomed");
+      zoom.textContent = t(
+        field.classList.contains("is-zoomed") ? "zoomOut" : "zoomIn",
+      );
+      zoom.setAttribute(
+        "aria-pressed",
+        String(field.classList.contains("is-zoomed")),
+      );
+      if (field.classList.contains("is-zoomed"))
+        cells[selected].scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+    zoom.classList.add("sudoku-zoom");
     const stage = node("div", "sudoku-stage", play);
     const field = node("div", "sudoku-field", stage);
     const board = node("div", "sudoku-board", field);
@@ -221,36 +243,90 @@ WorkTimeApp.games.register({
     overlay.classList.add("sudoku-variant-overlay");
     overlay.setAttribute("aria-hidden", "true");
     board.append(overlay);
-    const cells = Array.from({ length: 81 }, (_, index) => {
-      const cell = button(board, "cell-" + index, () => {
-        selected = index;
-        renderBoard();
-      });
-      cell.className = "sudoku-cell";
-      cell.dataset.cell = index;
-      if (index % 9 === 2 || index % 9 === 5)
-        cell.classList.add("sudoku-box-right");
-      if (Math.floor(index / 9) === 2 || Math.floor(index / 9) === 5)
-        cell.classList.add("sudoku-box-bottom");
-      node("span", "sudoku-digit", cell);
-      node("span", "sudoku-notes", cell);
-      listen(cell, "focus", () => {
-        if (selected !== index) {
-          selected = index;
-          renderBoard();
+    let cells = [];
+    const cellPool = [];
+    const cellViews = [];
+    let cellLayout = "";
+    let blockedCells = [];
+    function buildCells() {
+      const signature = JSON.stringify(
+        current?.tenBox ? "tenBox" : current?.grids || [[0, 0]],
+      );
+      if (signature === cellLayout) return;
+      cellLayout = signature;
+      cells.forEach((cell) => cell.remove());
+      blockedCells.forEach((cell) => cell.remove());
+      blockedCells = [];
+      const grid = current ? rules.layout(current) : rules.layout({});
+      board.style.gridTemplateColumns = `repeat(${grid.width}, minmax(0, 1fr))`;
+      board.style.gridTemplateRows = `repeat(${grid.height}, minmax(0, 1fr))`;
+      board.style.aspectRatio = `${grid.width} / ${grid.height}`;
+      board.classList.toggle("is-multi", !!(current?.grids || current?.tenBox));
+      field.classList.toggle("is-multi", !!(current?.grids || current?.tenBox));
+      field.classList.remove("is-zoomed");
+      board.style.setProperty("--sudoku-columns", grid.width);
+      for (const layer of [svg, overlay]) {
+        layer.setAttribute("preserveAspectRatio", "xMidYMid meet");
+        layer.setAttribute(
+          "viewBox",
+          `0 0 ${grid.width * 10} ${grid.height * 10}`,
+        );
+      }
+      // Keep one bounded pool across shapes, and insert the board in one batch.
+      const fragment = document.createDocumentFragment();
+      cells = Array.from({ length: grid.positions.length }, (_, index) => {
+        let cell = cellPool[index];
+        if (!cell) {
+          cell = button(fragment, "cell-" + index, () => {
+            selected = index;
+            renderBoard();
+          });
+          cell.className = "sudoku-cell";
+          cell.dataset.cell = index;
+          cellViews[index] = {
+            digit: node("span", "sudoku-digit", cell),
+            notes: node("span", "sudoku-notes", cell),
+            noteMask: 0,
+            noteDigits: null,
+          };
+          listen(cell, "focus", () => {
+            if (selected !== index) {
+              selected = index;
+              renderBoard();
+            }
+          });
+          listen(cell, "contextmenu", (event) => {
+            event.preventDefault();
+            if (!canInput()) return;
+            selected = index;
+            cell.focus({ preventScroll: true });
+            renderBoard();
+            input(0);
+          });
+          cellPool[index] = cell;
         }
+        const [r, c] = grid.positions[index];
+        cell.style.gridRow = r + 1;
+        cell.style.gridColumn = c + 1;
+        fragment.append(cell);
+        return cell;
       });
-      listen(cell, "contextmenu", (event) => {
-        event.preventDefault();
-        if (!canInput()) return;
-        selected = index;
-        cell.focus({ preventScroll: true });
-        renderBoard();
-        input(0);
-      });
-      return cell;
-    });
+      if (current?.tenBox) {
+        const occupied = new Set(grid.positions.map((pos) => pos.join(",")));
+        for (let r = 0; r < 10; r++)
+          for (let c = 0; c < 10; c++)
+            if (!occupied.has([r, c].join(","))) {
+              const hole = node("span", "sudoku-blocked", fragment);
+              hole.style.gridRow = r + 1;
+              hole.style.gridColumn = c + 1;
+              hole.setAttribute("aria-hidden", "true");
+              blockedCells.push(hole);
+            }
+      }
+      board.append(fragment);
+    }
     const cover = node("div", "sudoku-cover", stage);
+    const paintPauseCover = WorkTimeApp.games.createPauseCover(cover, signal);
     const coverTitle = node("h3", "", cover);
     const coverDescription = node("p", "", cover);
     const coverActions = node("div", "sudoku-cover-actions", cover);
@@ -258,7 +334,7 @@ WorkTimeApp.games.register({
       confirming = false;
       syncClock();
       render();
-      optionsToggle.focus();
+      restart.focus();
     });
     const accept = button(coverActions, "accept", () => {
       if (confirming) {
@@ -279,6 +355,12 @@ WorkTimeApp.games.register({
     const coverReplay = button(coverActions, "replay", () =>
       openReplay(coverReplay),
     );
+    const paintRestartCover = WorkTimeApp.games.createRestartCover({
+      cover: cover,
+      cancel: cancel,
+      accept: accept,
+      signal,
+    });
     const actions = node("div", "sudoku-actions", tools);
     tools.prepend(actions);
     const undo = button(actions, "undo", undoEdit);
@@ -293,7 +375,7 @@ WorkTimeApp.games.register({
       b.textContent = i + 1;
       return b;
     });
-    play.append(stage, tools, ruleText);
+    play.append(stage, tools);
     tools.append(keypad, actions);
     const replayPanel = node("section", "sudoku-replay", tools);
     const replayTitle = node("h4", "", replayPanel);
@@ -320,47 +402,14 @@ WorkTimeApp.games.register({
     const replayExit = button(replayActions, "replay-exit", closeReplay);
     const feedback = node("p", "sudoku-feedback", root);
     feedback.setAttribute("role", "status");
-    const source = node("a", "sudoku-source", controls);
-    source.href = WorkTimeApp.data.sudoku.repository;
-    source.target = "_blank";
-    source.rel = "noopener noreferrer";
-    const help = WorkTimeApp.games.createHelp({
-      root,
-      controls,
-      signal,
-      text: () =>
-        [
-          "classicRule",
-          "parityRule",
-          "thermoRule",
-          "skyscraperRule",
-          "sandwichRule",
-          "killerRule",
-          "arrowRule",
-          "jigsawRule",
-          "whispersRule",
-          "renbanRule",
-          "kropkiRule",
-          "xsumsRule",
-          "antiKnightRule",
-        ]
-          .map((key) => t(key))
-          .join("\n\n") +
-        "\n\n" +
-        t("help"),
-      onChange(open) {
-        options.open = false;
-        if (!open)
-          queueMicrotask(() => optionsToggle.focus({ preventScroll: true }));
-        syncClock();
-        save();
-      },
-    });
-    controls.append(source);
+    for (const control of [choose, restart, menuReplay])
+      control.classList.add("game-icon-button");
     function labelButton(element, label, icon) {
       element.replaceChildren(WorkTimeApp.games.createIcon(icon));
       const text = node("span", "sudoku-action-label", element);
       text.textContent = label;
+      if (element.classList.contains("game-icon-button"))
+        text.classList.add("game-sr-only");
       element.title = element.classList.contains("game-icon-button")
         ? label
         : "";
@@ -375,7 +424,6 @@ WorkTimeApp.games.register({
         !manualPaused &&
         !suspended &&
         !confirming &&
-        !help.isOpen() &&
         !disposed &&
         !signal.aborted &&
         !isWon()
@@ -441,6 +489,7 @@ WorkTimeApp.games.register({
       return Math.max(0, current.givens.indexOf("0"));
     }
     function open(puzzle) {
+      paintPauseCover.reset();
       celebration.stop();
       settle();
       if (current) drafts[current.id] = state;
@@ -459,7 +508,9 @@ WorkTimeApp.games.register({
     }
     function next() {
       celebration.stop();
-      const groupIndex = groups.findIndex((g) => g.puzzles.includes(current));
+      const groupIndex = groups.findIndex((g) =>
+        groupPuzzles(g).includes(current),
+      );
       const group = groups[groupIndex],
         index = group.puzzles.indexOf(current);
       if (index < group.puzzles.length - 1) open(group.puzzles[index + 1]);
@@ -508,14 +559,13 @@ WorkTimeApp.games.register({
       save();
       render();
       if (won) {
-        celebration.play();
+        celebration.play(container.closest(".game-shell") || container);
         accept.focus();
       }
     }
     function openReplay(returnFocus) {
       const log = completed[current?.id]?.replay;
       if (!log) return;
-      options.open = false;
       celebration.stop();
       replay = {
         log,
@@ -609,6 +659,7 @@ WorkTimeApp.games.register({
       timerValue.title = value;
     }
     function drawThermos() {
+      buildCells();
       svg.replaceChildren();
       overlay.replaceChildren();
       for (const path of current?.thermos || []) {
@@ -646,6 +697,93 @@ WorkTimeApp.games.register({
         );
       for (const path of current?.whispers || []) line(path, "whispers");
       for (const path of current?.renbans || []) line(path, "renban");
+      for (const path of current?.palindromes || []) line(path, "palindrome");
+      for (const cells of current?.extraRegions || [])
+        for (const i of cells)
+          shape(
+            svg,
+            "rect",
+            {
+              x: (i % 9) * 10,
+              y: Math.floor(i / 9) * 10,
+              width: 10,
+              height: 10,
+            },
+            "sudoku-extra-region",
+          );
+      for (const [a, b] of current?.inequalities || []) {
+        const [x, y] = center(a),
+          [u, v] = center(b);
+        const dx = (u - x) / 10,
+          dy = (v - y) / 10,
+          mx = (x + u) / 2,
+          my = (y + v) / 2;
+        shape(
+          overlay,
+          "polyline",
+          {
+            points: [
+              [mx - dx + dy, my - dy - dx],
+              [mx + dx, my + dy],
+              [mx - dx - dy, my - dy + dx],
+            ]
+              .map((p) => p.join(","))
+              .join(" "),
+          },
+          "sudoku-inequality",
+        );
+      }
+      for (const cells of current?.quadSums || []) {
+        const points = cells.map(center);
+        shape(
+          overlay,
+          "circle",
+          {
+            cx: points.reduce((a, p) => a + p[0], 0) / 4,
+            cy: points.reduce((a, p) => a + p[1], 0) / 4,
+            r: 1,
+          },
+          "sudoku-quad-sum",
+        );
+      }
+      if (current?.tenBox) {
+        const grid = rules.layout(current),
+          regionAt = new Map();
+        grid.regions.forEach((cells, n) =>
+          cells.forEach((i) => regionAt.set(grid.positions[i].join(","), n)),
+        );
+        let d = "";
+        for (const [key, region] of regionAt) {
+          const [r, c] = key.split(",").map(Number);
+          if (r === 0 || regionAt.get([r - 1, c].join(",")) !== region)
+            d += `M${c * 10},${r * 10}h10`;
+          if (c === 0 || regionAt.get([r, c - 1].join(",")) !== region)
+            d += `M${c * 10},${r * 10}v10`;
+          if (r === 9 || !regionAt.has([r + 1, c].join(",")))
+            d += `M${c * 10},${(r + 1) * 10}h10`;
+          if (c === 9 || !regionAt.has([r, c + 1].join(",")))
+            d += `M${(c + 1) * 10},${r * 10}v10`;
+        }
+        shape(
+          overlay,
+          "path",
+          { d: d + "M0,0H100V100H0Z" },
+          "sudoku-multi-grid",
+        );
+      }
+      if (current?.grids) {
+        for (const [r, c] of current.grids)
+          for (let n = 0; n <= 9; n += 3) {
+            shape(
+              overlay,
+              "path",
+              {
+                d: `M${c * 10},${(r + n) * 10}h90 M${(c + n) * 10},${r * 10}v90`,
+              },
+              "sudoku-multi-grid",
+            );
+          }
+      }
       for (const arrow of current?.arrows || []) {
         const [x, y] = center(arrow.circle);
         const radius = 2.9;
@@ -734,6 +872,8 @@ WorkTimeApp.games.register({
       const invalid = rules.conflicts(current, view);
       const editable = canInput();
       const value = replay ? 0 : view.values[selected];
+      const related = new Set(rules.puzzlePeers(current)[selected]);
+      const positions = rules.layout(current).positions;
       cells.forEach((cell, i) => {
         const digit = view.values[i];
         const noteMask = view.notes[i];
@@ -742,10 +882,7 @@ WorkTimeApp.games.register({
         cell.disabled = !editable;
         cell.classList.toggle("is-given", current.givens[i] !== "0");
         cell.classList.toggle("is-selected", focused);
-        cell.classList.toggle(
-          "is-peer",
-          !replay && rules.puzzlePeers(current)[selected].includes(i),
-        );
+        cell.classList.toggle("is-peer", !replay && related.has(i));
         cell.classList.toggle("is-same", !!value && digit === value);
         cell.classList.toggle("is-conflict", invalid[i]);
         cell.setAttribute("aria-pressed", String(focused));
@@ -770,17 +907,32 @@ WorkTimeApp.games.register({
           "has-cage-sum",
           !!current.cages?.some((c) => Math.min(...c.cells) === i),
         );
-        cell.querySelector(".sudoku-digit").textContent = digit || "";
-        const candidates = Array.from({ length: 9 }, (_, n) =>
-          noteMask & (1 << n) ? String(n + 1) : "",
-        );
-        cell.querySelector(".sudoku-notes").replaceChildren(
-          ...candidates.map((text) => {
-            const span = document.createElement("span");
-            span.textContent = text;
-            return span;
-          }),
-        );
+        const cellView = cellViews[i];
+        const text = digit ? String(digit) : "";
+        if (cellView.digit.textContent !== text)
+          cellView.digit.textContent = text;
+        const candidates = noteMask
+          ? Array.from({ length: 9 }, (_, n) =>
+              noteMask & (1 << n) ? String(n + 1) : "",
+            )
+          : [];
+        // Empty notes need no grid items; reuse populated slots until the mask changes.
+        if (cellView.noteMask !== noteMask) {
+          if (!noteMask) cellView.notes.replaceChildren();
+          else {
+            if (!cellView.noteDigits)
+              cellView.noteDigits = Array.from({ length: 9 }, () =>
+                document.createElement("span"),
+              );
+            cellView.noteDigits.forEach((span, n) => {
+              if (span.textContent !== candidates[n])
+                span.textContent = candidates[n];
+            });
+            if (!cellView.noteMask)
+              cellView.notes.replaceChildren(...cellView.noteDigits);
+          }
+          cellView.noteMask = noteMask;
+        }
         const description =
           digit ||
           (noteMask
@@ -789,8 +941,8 @@ WorkTimeApp.games.register({
         cell.setAttribute(
           "aria-label",
           t("cell", {
-            row: Math.floor(i / 9) + 1,
-            col: (i % 9) + 1,
+            row: positions[i][0] + 1,
+            col: positions[i][1] + 1,
             value:
               description +
               (current.regions
@@ -845,12 +997,19 @@ WorkTimeApp.games.register({
       });
     }
     function render() {
+      if (signal.aborted) return;
       root.dataset.playing = String(!choosing);
       const group = groups.find((g) => g.id === selectedGroup);
       title.textContent =
         t(group.id) +
         " · " +
-        t("level", { n: group.puzzles.indexOf(current) + 1 });
+        t("level", {
+          n:
+            (group.puzzles.includes(current)
+              ? group.puzzles
+              : group.legacyPuzzles || []
+            ).indexOf(current) + 1,
+        });
       paintMeters();
       timerLabel.textContent = t("time");
       for (const [id, b] of groupButtons) {
@@ -858,12 +1017,22 @@ WorkTimeApp.games.register({
         b.setAttribute("aria-pressed", String(id === selectedGroup));
       }
       categoryList.setAttribute("aria-label", t("categories"));
+      catalog.setReturn(
+        current && state
+          ? () => {
+              selectedGroup = groups.find((group) =>
+                groupPuzzles(group).includes(current),
+              ).id;
+              choosing = false;
+              syncClock();
+              save();
+              render();
+              cells[selected].focus({ preventScroll: true });
+            }
+          : null,
+      );
       catalog.refresh();
       catalog.selectCategory(selectedGroup);
-      catalog.summary.textContent = t("completed", {
-        n: group.puzzles.filter((p) => completed[p.id]).length,
-        total: group.puzzles.length,
-      });
       levelButtons.forEach((b, i) => {
         const p = group.puzzles[i];
         b.hidden = !p;
@@ -881,16 +1050,13 @@ WorkTimeApp.games.register({
       });
       catalog.page.hidden = !choosing;
       hud.hidden = choosing;
-      const optionsHost = choosing ? catalog.header : sessionMeta;
-      if (options.parentElement !== optionsHost) optionsHost.append(options);
-      options.hidden = !!replay;
       timerBox.hidden = choosing || !!replay;
       play.hidden = choosing;
-      choose.hidden = choosing;
+      choose.hidden = choosing || !!replay;
       pause.hidden = choosing || !!replay;
-      restart.hidden = choosing;
+      restart.hidden = choosing || !!replay;
       const hasReplay = !!completed[current?.id]?.replay;
-      menuReplay.hidden = choosing || confirming || !hasReplay;
+      menuReplay.hidden = choosing || !!replay || confirming || !hasReplay;
       labelButton(menuReplay, t("replay"), "play-arrow");
       labelButton(choose, t("choose"), "grid-4x4");
       labelButton(
@@ -901,39 +1067,26 @@ WorkTimeApp.games.register({
       pause.classList.add("game-icon-button");
       pause.querySelector("span").classList.add("game-sr-only");
       pause.append(timerBox);
-      optionsToggle.setAttribute("aria-label", t("more"));
-      optionsToggle.title = t("more");
       labelButton(restart, t("restart"), "restart-alt");
       pause.disabled = isWon() || confirming;
       restart.disabled = !state || confirming;
-      const variant = [
-        "sandwich",
-        "killer",
-        "arrow",
-        "jigsaw",
-        "whispers",
-        "renban",
-        "kropki",
-        "xsums",
-        "antiKnight",
-      ].find((id) =>
-        groups.find((g) => g.id === id)?.puzzles.includes(current),
+      zoom.hidden = !(current?.grids || current?.tenBox);
+      zoom.textContent = t(
+        field.classList.contains("is-zoomed") ? "zoomOut" : "zoomIn",
       );
-      const rule = variant
-        ? variant + "Rule"
-        : current?.skyscrapers
-          ? "skyscraperRule"
-          : current?.parity
-            ? "parityRule"
-            : current?.thermos
-              ? "thermoRule"
-              : "";
-      ruleText.hidden = !rule;
-      ruleText.textContent = rule ? t(rule) : "";
+      zoom.setAttribute(
+        "aria-pressed",
+        String(field.classList.contains("is-zoomed")),
+      );
       renderSkyClues();
       board.setAttribute("aria-label", t("board"));
       const covered =
-        !replay && (manualPaused || suspended || confirming || isWon());
+        !choosing &&
+        !replay &&
+        (manualPaused || suspended || confirming || isWon());
+      const pausedCover = covered && !confirming && !isWon();
+      cover.classList.toggle("is-paused", pausedCover);
+      paintPauseCover(pausedCover, t("paused"));
       cover.hidden = !covered;
       field.inert = covered;
       coverReplay.hidden = confirming || !isWon() || !hasReplay;
@@ -955,6 +1108,7 @@ WorkTimeApp.games.register({
         );
         accept.disabled = suspended;
       }
+      paintRestartCover(confirming);
       for (const [b, name, icon] of [
         [undo, "undo", "undo"],
         [notes, "notes", "event-note"],
@@ -981,11 +1135,6 @@ WorkTimeApp.games.register({
       paintReplay();
       feedback.textContent = t(saveFailed ? "saveFailed" : "saved");
       feedback.hidden = !saveFailed;
-      source.textContent = t("source");
-      help.refresh();
-      const helpButton = controls.querySelector("[data-game-help]");
-      helpButton.classList.remove("game-icon-button");
-      labelButton(helpButton, WorkTimeApp.i18n.t("games.help"), "help");
       renderBoard();
       fit();
     }
@@ -1007,21 +1156,6 @@ WorkTimeApp.games.register({
         Math.floor(Math.max(260, Math.min(boardWidth, boardHeight))) + "px",
       );
     }
-    listen(document, "pointerdown", (event) => {
-      if (!options.contains(event.target)) options.open = false;
-    });
-    listen(options, "focusout", (event) => {
-      if (event.relatedTarget && !options.contains(event.relatedTarget))
-        options.open = false;
-    });
-    listen(options, "keydown", (event) => {
-      if (event.key === "Escape" && options.open) {
-        event.preventDefault();
-        event.stopPropagation();
-        options.open = false;
-        optionsToggle.focus();
-      }
-    });
     listen(board, "keydown", (event) => {
       if (!canInput() || event.altKey) return;
       const offsets = {
@@ -1033,13 +1167,20 @@ WorkTimeApp.games.register({
       if (Object.hasOwn(offsets, event.key)) {
         event.preventDefault();
         event.stopPropagation();
-        const row = Math.floor(selected / 9),
-          col = selected % 9;
-        const offset = offsets[event.key];
-        selected =
-          Math.abs(offset) === 1
-            ? row * 9 + ((col + offset + 9) % 9)
-            : (selected + offset + 81) % 81;
+        const { positions, width, height } = rules.layout(current);
+        const [r, c] = positions[selected],
+          offset = offsets[event.key];
+        const horizontal = Math.abs(offset) === 1,
+          direction = Math.sign(offset);
+        for (let step = 1; step <= (horizontal ? width : height); step++) {
+          const row = horizontal ? r : (r + direction * step + height) % height;
+          const col = horizontal ? (c + direction * step + width) % width : c;
+          const next = positions.findIndex((p) => p[0] === row && p[1] === col);
+          if (next >= 0) {
+            selected = next;
+            break;
+          }
+        }
         renderBoard();
         cells[selected].focus();
       } else if (
@@ -1069,7 +1210,7 @@ WorkTimeApp.games.register({
         confirming = false;
         syncClock();
         render();
-        optionsToggle.focus();
+        restart.focus();
       }
       if (event.key === "Tab" && confirming) {
         event.preventDefault();

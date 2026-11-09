@@ -43,6 +43,12 @@
   font: 700 1.5rem var(--font-numeric);
   font-variant-numeric: tabular-nums;
 }
+.game-detail-number {
+  color: var(--ink);
+  font: 650 1.4rem / 1.2 var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  vertical-align: baseline;
+}
 .game-button {
   display: inline-flex;
   align-items: center;
@@ -76,6 +82,7 @@
   --game-button-edge: var(--accent);
   --game-button-fill: var(--accent);
   --game-button-hover: var(--theme-accent-dark, #116d59);
+  --game-button-hover-ink: #fff;
   background: var(--accent);
   color: white;
   border-color: var(--accent);
@@ -222,10 +229,12 @@ body .game-session .game-select-options > .game-button[aria-selected="true"] {
 @media (hover: hover) {
   .game-session .game-button:hover:not(:disabled) {
     background: var(--game-button-hover, var(--game-control-hover));
+    color: var(--game-button-hover-ink, var(--ink));
     border-color: var(--game-button-edge, var(--game-control-border));
   }
 }
 .game-session .game-button:active:not(:disabled) {
+  color: var(--game-button-hover-ink, var(--ink));
   background: var(
     --game-button-hover,
     color-mix(in srgb, var(--accent) 16%, white)
@@ -503,7 +512,7 @@ body .game-menu-archive-actions .ui-icon {
   min-height: 0;
   min-width: 0;
   overflow: hidden;
-  padding-inline: min(5%, var(--editor-gutter, 1.428571rem));
+  padding-inline: 0;
 }
 .game-content:has(> .game-library) {
   display: flex;
@@ -521,12 +530,50 @@ body .game-menu-archive-actions .ui-icon {
   overscroll-behavior: contain;
   overflow-wrap: anywhere;
 }
+.game-menu-scroll {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
 .game-menu-list {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.35rem 0.35rem 1rem 0;
-  scroll-padding-block: 0.5rem;
+  gap: 0;
+  padding: 0;
+  scroll-padding-block: 0;
+  scrollbar-width: none;
+}
+.game-menu-list::-webkit-scrollbar {
+  display: none;
+}
+.game-menu-scroll-track {
+  position: absolute;
+  inset-block: 3px;
+  inset-inline-end: 1px;
+  width: 8px;
+  opacity: 0;
+  touch-action: none;
+  transition: opacity 140ms;
+}
+.game-menu-scroll-track[hidden] {
+  display: none;
+}
+.game-menu-scroll:is(:hover, :focus-within, .is-dragging) > .game-menu-scroll-track {
+  opacity: 1;
+}
+.game-menu-scroll-thumb {
+  width: 4px;
+  margin-inline: auto;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent) 35%, var(--paper));
+  cursor: grab;
+}
+.game-menu-scroll.is-dragging .game-menu-scroll-thumb {
+  background: var(--accent);
+  cursor: grabbing;
 }
 .game-menu-detail {
   padding: 0.45rem 0.25rem 0.75rem clamp(0.55rem, 4%, 1.5rem);
@@ -585,19 +632,17 @@ body button.ui-button.game-menu-entry {
   width: 100%;
   height: auto;
   min-width: 0;
-  min-height: var(--control-height);
+  min-height: 2rem;
   margin: 0;
-  padding: 0.35rem;
+  padding: 0.25rem 0.5rem;
   text-align: start;
   white-space: normal;
   color: var(--ink);
   background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--control-radius);
+  border: 0;
+  border-radius: 0;
   box-shadow: none;
-  transition:
-    background-color 140ms,
-    border-color 140ms;
+  transition: background-color 140ms;
 }
 .game-menu-artwork {
   display: grid;
@@ -612,6 +657,8 @@ body button.ui-button.game-menu-entry {
 .game-menu-entry .game-menu-artwork {
   width: 1.45rem;
   height: 1.45rem;
+  border-radius: 0;
+  background: transparent;
 }
 .game-menu-artwork > .ui-icon {
   width: 70%;
@@ -640,16 +687,21 @@ body .game-menu-description:focus-visible {
   outline-offset: -2px;
 }
 body button.game-menu-entry:is(:hover, :focus-visible) {
-  background: var(--theme-surface-subtle, var(--control-hover));
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: var(--control-hover);
 }
-body button:is(.game-menu-entry, .game-menu-play):focus-visible {
+body button.ui-button.game-menu-entry:focus-visible {
+  outline: none;
+}
+body button.game-menu-play:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -3px;
 }
 body button.ui-button.game-menu-entry:is([aria-pressed="true"], :active) {
-  background: var(--accent-light);
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: var(--theme-surface-active, color-mix(in srgb, var(--accent) 16%, var(--paper)));
+  color: var(--accent);
+}
+.game-menu-scroll:has(> .game-menu-scroll-track:not([hidden])) .game-menu-list {
+  padding-inline-end: 9px;
 }
 .game-shell {
   position: absolute;
@@ -724,12 +776,22 @@ body .game-shell .workspace-toolbar .workspace-toolbar-action:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
-/* Match the calendar's previous-month chevron and theme color. */
+/* Match the shared workspace toolbar icon size and theme color. */
 body .game-shell .workspace-toolbar .workspace-toolbar-action :is(.ui-icon, .music-glyph, .reader-glyph) {
   width: var(--icon-size);
   height: var(--icon-size);
   color: var(--toolbar-icon-color);
   shape-rendering: geometricPrecision;
+}
+/* The return-calendar action uses the same ink as its adjacent heading. */
+body .game-shell .workspace-toolbar :is(#gameExitButton, #musicExitButton) {
+  color: var(--ink);
+}
+/* Calendar Month has inset SVG artwork; enlarge its slot to match title ink. */
+body .game-shell .workspace-toolbar :is(#gameExitButton, #musicExitButton) > .ui-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: inherit;
 }
 body .game-shell .workspace-toolbar .workspace-toolbar-action:disabled {
   opacity: 0.45;
@@ -837,8 +899,7 @@ body .game-shell .workspace-toolbar .workspace-toolbar-action:disabled {
   min-height: var(--control-height);
   flex: none;
 }
-.game-level-page-header,
-.game-level-page-summary {
+.game-level-page-header {
   padding-inline: 3px var(--game-level-content-end, 3px);
 }
 .game-level-page-title {
@@ -870,16 +931,6 @@ body .game-shell .workspace-toolbar .workspace-toolbar-action:disabled {
   padding: 3px;
   scrollbar-gutter: stable;
 }
-.game-level-page-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  flex: none;
-  justify-content: space-between;
-  color: var(--muted);
-  font-size: 0.875rem;
-  line-height: 1.4;
-}
 .game-level-categories {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -909,13 +960,16 @@ body .game-shell .workspace-toolbar .workspace-toolbar-action:disabled {
   flex: none;
 }
 .game-level-grid .game-button {
+  display: grid;
+  place-items: center;
   width: 100%;
   min-width: 0;
   height: auto;
-  min-height: 44px;
-  aspect-ratio: 4 / 3;
-  padding: 8px 0 0;
-  font: 600 1.1rem var(--font-numeric);
+  min-height: 0;
+  aspect-ratio: 1;
+  padding: 0;
+  text-align: center;
+  font: 600 1.1rem / 1 var(--font-numeric);
 }
 .game-button.game-level-card {
   position: relative;
@@ -1025,3 +1079,126 @@ body .game-shell .workspace-toolbar .workspace-toolbar-action:disabled {
   height: 14px;
   will-change: transform, opacity;
 }
+
+/* Pause stays on the board, with resume in the HUD. */
+.game-session .game-pause-content { display: none; }
+body .game-session .game-pause-cover {
+  background: rgb(255 255 255 / 90%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  border-radius: 0;
+  cursor: default;
+}
+body .game-session .game-pause-cover > :not(.game-pause-content) { display: none; }
+body .game-session .game-pause-cover > .game-pause-content {
+  display: flex;
+  width: clamp(4.5rem, 12vw, 9rem);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.6rem, 1.5vw, 1.25rem);
+  max-width: 60%;
+  max-height: 80%;
+  color: color-mix(in srgb, var(--accent) 25%, #14181c);
+}
+body .game-session .game-pause-content > .game-pause-icon {
+  flex: none;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  aspect-ratio: 1;
+}
+body .game-session .game-pause-content > .game-pause-caption {
+  font: 600 clamp(1.15rem, 2.1vw, 1.75rem) / 1.4 var(--font-ui);
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  color: var(--ink);
+}
+body .game-session .game-pause-outgoing { pointer-events: none; }
+
+.game-level-page-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+body .game-session .game-level-return {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: clamp(1.25rem, 4vw, 1.8rem);
+}
+body .game-session .game-level-return > .ui-icon {
+  width: 1.3em;
+  height: 1.3em;
+}
+body .game-session .game-level-return[hidden] { display: none; }
+
+/* Restart confirmation stays on the play surface and shares pause styling. */
+.game-restart-host { position: relative; }
+.game-session .game-restart-content { display: none; }
+body .game-session .game-restart-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border: 0;
+  border-radius: inherit;
+  background: rgb(255 255 255 / 90%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  animation: none;
+  box-shadow: none;
+}
+body .game-session .game-restart-cover > :not(.game-restart-content) { display: none; }
+body .game-session .game-restart-cover > .game-restart-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 3vw, 2rem);
+  width: min(100%, 22rem);
+  color: color-mix(in srgb, var(--accent) 25%, #14181c);
+}
+body .game-session .game-restart-icon {
+  width: clamp(4rem, 16vw, 11rem);
+  height: auto;
+  max-width: 45%;
+  aspect-ratio: 1;
+}
+body .game-session .game-restart-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+}
+body .game-session .game-restart-actions > .game-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  height: auto;
+  margin: 0;
+  padding: 0.65rem 0.4rem;
+  border: 1px solid var(--game-control-border);
+  border-radius: var(--control-radius);
+  background: var(--game-control);
+  color: var(--ink);
+  font: 500 var(--text-small) / 1.4 var(--font-ui);
+  white-space: normal;
+  aspect-ratio: auto;
+  flex-direction: row;
+}
+body .game-session .game-restart-actions > .game-button > .ui-icon { display: none; }

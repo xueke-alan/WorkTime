@@ -99,6 +99,7 @@
 .puzzle-overlay[data-result="lost"] [data-puzzle-action="retry"] {
   --game-button-fill: var(--accent);
   --game-button-hover: var(--theme-accent-dark, #116d59);
+  --game-button-hover-ink: #fff;
   --game-button-edge: var(--accent);
   color: #fff;
 }

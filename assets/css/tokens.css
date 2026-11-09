@@ -44,6 +44,8 @@
   --font-almanac: "Bahnschrift", "Noto Serif SC", "Songti SC", "SimSun", serif;
   --font-countdown: "Bahnschrift", "Cascadia Mono", "Consolas", monospace;
   --font-feedback: "Bahnschrift", "Segoe UI", sans-serif;
+  /* Active bottom-tab bubble keeps the original green when no palette is set. */
+  --theme-tab-active: #e7f2ed;
 }
 
 /* The original green component shades remain as inline fallbacks. Other themes
@@ -87,6 +89,7 @@
   --theme-surface-subtle: color-mix(in srgb, var(--accent) 3%, white);
   --theme-surface-soft: color-mix(in srgb, var(--accent) 7%, white);
   --theme-surface-active: color-mix(in srgb, var(--accent) 16%, white);
+  --theme-tab-active: color-mix(in srgb, var(--accent) 9%, white);
   --theme-accent-dark: color-mix(in srgb, var(--accent) 85%, black);
   --theme-accent-deep: color-mix(in srgb, var(--accent) 70%, black);
   --clock-ink: var(--ink);

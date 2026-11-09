@@ -18,7 +18,7 @@
 }
 .mine-header,
 .mine-toolbar {
-  width: min(100%, 800px);
+  width: min(100%, 27rem);
   margin-inline: auto;
 }
 .mine-header,
@@ -35,26 +35,36 @@
 .mine-counters {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
   gap: 0.5rem;
+}
+.mine-counters .game-stat {
+  width: auto;
+  min-width: 0;
 }
 .mine-toolbar {
   position: sticky;
   top: 0;
   z-index: 2;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(2, 3.5rem);
   padding: 0;
   background: var(--theme-surface-paper, #f8fbf9);
   border: 0;
 }
 .mine-difficulty {
-  width: 13rem;
+  width: auto;
+  min-width: 0;
   max-width: 100%;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-inline-end: 0;
+}
+.mine-toolbar .game-icon-button {
+  box-sizing: border-box;
+  width: 3.5rem;
 }
 .mine-difficulty > span {
   font-size: var(--text-small);
@@ -116,6 +126,7 @@
   place-items: center;
   width: var(--mine-cell);
   height: var(--mine-cell);
+  aspect-ratio: 1 / 1;
   min-width: 0;
   min-height: 0;
   padding: 0;
@@ -172,10 +183,6 @@
   --mine-fill: #fce5df;
   --mine-edge: transparent;
 }
-.mine-cell.is-neighbor {
-  --mine-fill: color-mix(in srgb, var(--accent) 32%, white);
-  filter: brightness(1.035);
-}
 .mine-cell.is-chord-ready {
   --mine-fill: var(--accent-light);
 }
@@ -220,7 +227,7 @@ body .mine-cell > .mine-incorrect-icon {
 @media (hover: hover) {
   .game-minesweeper:is([data-status="ready"], [data-status="playing"])
     .mine-cell:not(.is-open):hover:not(:active) {
-    filter: brightness(1.07);
+    filter: brightness(1.025);
   }
 }
 .game-minesweeper:is([data-status="ready"], [data-status="playing"])
@@ -400,6 +407,7 @@ body .mine-cell > .mine-incorrect-icon {
 .mine-cover-actions [data-mine-action="confirm"] {
   --game-button-fill: var(--accent);
   --game-button-hover: var(--theme-accent-dark, #116d59);
+  --game-button-hover-ink: #fff;
   --game-button-edge: var(--accent);
   background: var(--accent);
   border-color: var(--accent);
@@ -440,24 +448,19 @@ body .mine-cell > .mine-incorrect-icon {
     gap: 0.75rem;
     flex-wrap: wrap;
   }
-  .mine-counters {
+  .mine-header {
     width: 100%;
-  }
-  .mine-counters .game-stat {
-    width: auto;
-    min-width: 0;
-    padding-inline: 0.25rem;
   }
   .mine-result-copy > span {
     font-size: 0.75rem;
   }
   .mine-toolbar {
     gap: 0.5rem;
+    width: 100%;
     padding: 0;
   }
   .mine-difficulty {
-    flex-basis: 100%;
-    justify-content: center;
+    flex-basis: auto;
   }
 }
 @media (max-width: 700px) {

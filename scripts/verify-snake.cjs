@@ -1,5 +1,5 @@
 "use strict";
-const { launchGame } = require("./game-test-helpers.cjs");
+const { launchGame, continueGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -376,7 +376,7 @@ async function verifyBrowser() {
       await page.locator(".game-snake").getAttribute("data-paused"),
       "true",
     );
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.clock.runFor(1900);
     await page.keyboard.press("ArrowUp");
     await page.keyboard.press("ArrowLeft");
@@ -390,10 +390,7 @@ async function verifyBrowser() {
     const stopped = JSON.stringify((await read()).state);
     await page.clock.runFor(2000);
     assert.equal(JSON.stringify((await read()).state), stopped);
-    await page.locator("[data-game-help]").click();
-    assert.equal(await page.locator(".game-help-screen").isVisible(), true);
-    await page.keyboard.press("Escape");
-    assert.equal(await page.locator(".game-help-screen").isVisible(), false);
+    assert.equal(await page.locator("[data-game-help]").count(), 0);
     await action("restart").click();
     assert.equal(await action("cancel").isVisible(), true);
     await action("cancel").click();
@@ -410,7 +407,7 @@ async function verifyBrowser() {
     routeChoice.score = 50;
     await seed(routeChoice);
     await open();
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.clock.runFor(2050);
     await page.keyboard.press("p");
     assert.equal(
@@ -437,7 +434,7 @@ async function verifyBrowser() {
     chain.bonus = { x: 10, y: 10, ttl: 65, duration: 65 };
     await seed(chain);
     await open();
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.clock.runFor(2050);
     await page.keyboard.press("p");
     assert.equal((await read()).state.score, 150);
@@ -457,7 +454,7 @@ async function verifyBrowser() {
     chain.bonus = { x: 0, y: 1, ttl: 1, duration: 65 };
     await seed(chain);
     await open();
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.clock.runFor(2050);
     await page.keyboard.press("p");
     assert.equal((await read()).state.combo, 0);
@@ -488,7 +485,7 @@ async function verifyBrowser() {
       await page.clock.pauseAt(
         new Date(await page.evaluate(() => Date.now() + 100)),
       );
-      await action("start").click();
+      await continueGame(page, "snake");
       await page.clock.runFor(1850);
       await page.keyboard.press("ArrowRight");
       await page.clock.runFor(150);
@@ -536,7 +533,7 @@ async function verifyBrowser() {
         deathBoard,
         "impact keeps board layout fixed",
       );
-      await action("start").click();
+      await continueGame(page, "snake");
       assert.equal(
         await page.locator(".game-snake").getAttribute("data-status"),
         "ready",
@@ -548,7 +545,7 @@ async function verifyBrowser() {
     await setMotion(page, "no-preference");
     await seed(collision);
     await open();
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.clock.runFor(1850);
     await page.keyboard.press("ArrowRight");
     await page.clock.runFor(150);
@@ -576,7 +573,7 @@ async function verifyBrowser() {
     await setMotion(page, "no-preference");
     await seed(cornerState);
     await open();
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.clock.runFor(1900);
     const cornerPixels = () =>
       page.locator(".snake-board canvas").evaluate((canvas) => {
@@ -619,7 +616,7 @@ async function verifyBrowser() {
     foodState.food = { x: 10, y: 10 };
     await seed(foodState);
     await open();
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.clock.runFor(2050);
     await page.keyboard.press("p");
     assert.equal((await read()).state.score, 10);
@@ -641,7 +638,7 @@ async function verifyBrowser() {
       );
     }
     await action("restart").click();
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.locator("#snakeModeTrigger").click();
     await page.locator('[data-game-option="wrap"]').click();
     assert.equal((await read()).state.mode, "wrap");
@@ -715,7 +712,7 @@ async function verifyBrowser() {
     edge.body.forEach((p) => (p.x += rules.columns - 10));
     await seed(edge);
     await open();
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.clock.runFor(2050);
     await page.keyboard.press("p");
     assert.ok((await read()).state.body[0].x < 3);
@@ -723,7 +720,7 @@ async function verifyBrowser() {
     await close();
     await seed(fixture());
     await open();
-    await action("start").click();
+    await continueGame(page, "snake");
     await page.clock.runFor(1900);
     await page.evaluate(() => window.dispatchEvent(new Event("blur")));
     assert.equal(
@@ -782,7 +779,7 @@ async function verifyBrowser() {
     assert.ok(landscapePad.y + landscapePad.height <= 390);
     await touch.setViewportSize({ width: 390, height: 844 });
     await touch.waitForSelector(".snake-side-layout", { state: "detached" });
-    await touch.locator('[data-snake-action="start"]').tap();
+    await touch.locator('[data-snake-action="pause"]').tap();
     await touch.clock.runFor(1850);
     const box = await touch.locator(".snake-board canvas").boundingBox();
     const client = await touch.context().newCDPSession(touch);

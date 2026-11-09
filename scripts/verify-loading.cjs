@@ -74,7 +74,7 @@ async function verify() {
         );
         assert.equal(
           await page.evaluate(() => WorkTimeApp.games.list().length),
-          10,
+          11,
         );
         await page.evaluate(async () => {
           await WorkTimeApp.i18n.setLanguage("ja");

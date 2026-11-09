@@ -15,6 +15,7 @@ WorkTimeApp.services.runtimeFolder = (() => {
     importQueue = Promise.resolve(),
     reloadPending = false,
     closed = false;
+  let migration = [];
   const listeners = new Set();
   const channel =
     typeof BroadcastChannel === "function"
@@ -96,12 +97,16 @@ WorkTimeApp.services.runtimeFolder = (() => {
       });
     return database;
   }
-  async function store(value) {
+  async function store(value, aliases = []) {
     const db = await open();
     await new Promise((resolve, reject) => {
       const tx = db.transaction("settings", "readwrite");
       const settings = tx.objectStore("settings");
-      if (value) settings.put({ handle: value, layoutVersion: 1 }, "runtime");
+      if (value)
+        settings.put(
+          { handle: value, layoutVersion: 1, migration: aliases },
+          "runtime",
+        );
       else {
         settings.delete("runtime");
         settings.delete("directory");
@@ -156,6 +161,7 @@ WorkTimeApp.services.runtimeFolder = (() => {
               reject(tx.error || Error("Storage unavailable"));
           });
           layoutVersion = handle?.layoutVersion || 0;
+          migration = handle?.migration || [];
           handle = handle?.handle || null;
           await refreshPermission();
         } catch {
@@ -211,11 +217,130 @@ WorkTimeApp.services.runtimeFolder = (() => {
           throw fail("storageFailed");
         }
         handle = candidate = null;
+        migration = [];
         layoutVersion = 0;
         status = "needsInitialization";
         changed();
         document.dispatchEvent(new Event("worktime:folderreset"));
         return true;
+      }),
+    );
+  }
+  // A selection is a proposal, never the active handle or recovery candidate.
+  function pickReplacement() {
+    if (!supported()) return Promise.reject(Error("unsupported"));
+    return run(async () => {
+      let selected;
+      try {
+        selected = await window.showDirectoryPicker({
+          mode: "readwrite",
+          id: "worktime-auto-backup",
+        });
+      } catch (error) {
+        if (error.name === "AbortError") return null;
+        throw error;
+      }
+      await initialize();
+      return { selected, source: handle };
+    });
+  }
+  function changeFolder(
+    selection,
+    { migrate = false, signal, progress: report = () => {} } = {},
+  ) {
+    return run(() =>
+      locked(async () => {
+        initialization = null;
+        await initialize();
+        const source = handle;
+        const previousStatus = status;
+        const check = () => {
+          if (signal?.aborted)
+            throw new DOMException("Cancelled", "AbortError");
+        };
+        try {
+          if (
+            !source ||
+            !selection?.source ||
+            !(await source.isSameEntry(selection.source))
+          )
+            throw Object.assign(Error("sourceChanged"), {
+              folderCode: "sourceChanged",
+            });
+          const target = selection.selected;
+          if (await source.isSameEntry(target))
+            throw Object.assign(Error("sameFolder"), {
+              folderCode: "sameFolder",
+            });
+          if (
+            (await source.resolve(target)) !== null ||
+            (await target.resolve(source)) !== null
+          )
+            throw Object.assign(Error("nestedFolder"), {
+              folderCode: "nestedFolder",
+            });
+          if (
+            (await target.queryPermission({ mode: "readwrite" })) !== "granted"
+          )
+            throw Object.assign(Error("permission"), {
+              folderCode: "permission",
+            });
+          if (
+            migrate &&
+            (await source.queryPermission({ mode: "readwrite" })) !== "granted"
+          )
+            throw Object.assign(Error("sourcePermission"), {
+              folderCode: "sourcePermission",
+            });
+          await WorkTimeApp.services.assets.script(
+            "assets/js/services/runtime-migration.js",
+          );
+          const result = await WorkTimeApp.services.runtimeMigration.copy(
+            source,
+            target,
+            { migrate, signal, progress: report },
+          );
+          check();
+          const aliases = migrate
+            ? result.music.map((item) => ({
+                path: item.path,
+                fingerprints: [
+                  ...new Set([
+                    ...(migration.find(
+                      (old) =>
+                        old.path === item.path &&
+                        old.fingerprints.includes(item.before),
+                    )?.fingerprints || []),
+                    item.before,
+                    item.after,
+                  ]),
+                ],
+              }))
+            : [];
+          report({ ...result, phase: "saving" });
+          check();
+          // No cancellation after the atomic IndexedDB commit begins.
+          try {
+            await store(target, aliases);
+          } catch (error) {
+            error.folderCode = "storageFailed";
+            throw error;
+          }
+          handle = target;
+          candidate = null;
+          migration = aliases;
+          layoutVersion = 1;
+          status = "available";
+          detail = progress = "";
+          changed();
+          notify();
+          return result;
+        } catch (error) {
+          // Replacement failures never turn a proposal into the recovery target.
+          status = previousStatus;
+          notify();
+          throw error;
+        }
       }),
     );
   }
@@ -347,12 +472,15 @@ WorkTimeApp.services.runtimeFolder = (() => {
         );
       }
     }
+    const aliases =
+      handle && (await handle.isSameEntry(selected)) ? migration : [];
     try {
-      await store(selected);
+      await store(selected, aliases);
     } catch {
       throw fail("storageFailed");
     }
     handle = selected;
+    migration = aliases;
     candidate = null;
     layoutVersion = 1;
     progress = "";
@@ -388,6 +516,10 @@ WorkTimeApp.services.runtimeFolder = (() => {
     }
   }
   function importFiles(kind, files, options = {}) {
+    if (busy)
+      return Promise.reject(
+        Object.assign(Error("busy"), { folderCode: "busy" }),
+      );
     if (!["music", "ebooks"].includes(kind))
       return Promise.reject(Error("Invalid media kind"));
     const selected = [...files];
@@ -433,6 +565,8 @@ WorkTimeApp.services.runtimeFolder = (() => {
   return {
     initialize,
     choose,
+    pickReplacement,
+    changeFolder,
     reset,
     authorize,
     write,
@@ -449,6 +583,7 @@ WorkTimeApp.services.runtimeFolder = (() => {
         revision,
         progress,
         detail,
+        migration,
       };
     },
     subscribe(listener) {

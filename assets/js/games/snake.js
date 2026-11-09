@@ -144,7 +144,7 @@ WorkTimeApp.games.register({
     const restart = button(
       actions,
       "restart",
-      () => requestNew(state.mode),
+      () => requestNew(state.mode, true),
       "restart-alt",
     );
     pauseButton.classList.add("game-icon-button");
@@ -157,6 +157,7 @@ WorkTimeApp.games.register({
     canvas.setAttribute("aria-hidden", "true");
     const ctx = canvas.getContext("2d");
     const cover = node("div", "snake-cover", board);
+    const paintPauseCover = WorkTimeApp.games.createPauseCover(cover, signal);
     const coverTitle = node("h3", "", cover);
     const coverHint = node("p", "", cover);
     const coverActions = node("div", "snake-cover-actions", cover);
@@ -170,6 +171,12 @@ WorkTimeApp.games.register({
       if (confirming) newGame(confirming);
       else if (["won", "lost"].includes(state.status)) newGame(state.mode);
       else begin();
+    });
+    const paintRestartCover = WorkTimeApp.games.createRestartCover({
+      cover: cover,
+      cancel: cancel,
+      accept: start,
+      signal,
     });
     const pad = node("div", "snake-pad", sidebar);
     const arrows = {
@@ -191,20 +198,6 @@ WorkTimeApp.games.register({
     const notice = node("div", "game-notice", sidebar);
     const warning = node("p", "", notice);
     warning.setAttribute("role", "status");
-    const help = WorkTimeApp.games.createHelp({
-      root,
-      controls: actions,
-      signal,
-      text: () => t("help"),
-      onChange(open) {
-        if (open && state.status === "playing") {
-          paused = true;
-          stopLoop();
-          save();
-          render();
-        }
-      },
-    });
     function save() {
       best[state.mode] = Math.max(best[state.mode], state.score);
       try {
@@ -233,7 +226,7 @@ WorkTimeApp.games.register({
       draw(1);
     }
     function begin() {
-      if (help.isOpen() || suspended) return;
+      if (suspended) return;
       stopLoop();
       paused = false;
       state.status = "playing";
@@ -243,7 +236,7 @@ WorkTimeApp.games.register({
       schedule();
     }
     function togglePause() {
-      if (confirming || help.isOpen()) return;
+      if (confirming) return;
       if (state.status === "ready") {
         begin();
         return;
@@ -257,11 +250,11 @@ WorkTimeApp.games.register({
         render();
       }
     }
-    function requestNew(mode) {
+    function requestNew(mode, force = false) {
       picker.close();
       select.value = state.mode;
       picker.sync();
-      if (state.status === "playing") {
+      if (force || state.status === "playing") {
         paused = true;
         stopLoop();
         confirming = mode;
@@ -270,6 +263,7 @@ WorkTimeApp.games.register({
       } else newGame(mode);
     }
     function newGame(mode) {
+      paintPauseCover.reset();
       stopLoop();
       state = rules.create(mode);
       previous = state.body;
@@ -285,7 +279,6 @@ WorkTimeApp.games.register({
         suspended ||
         disposed ||
         signal.aborted ||
-        help.isOpen() ||
         confirming ||
         paused ||
         countdown > 0
@@ -297,6 +290,7 @@ WorkTimeApp.games.register({
         queue.push(direction);
     }
     function render() {
+      if (signal.aborted) return;
       root.dataset.status = state.status;
       root.dataset.paused = String(paused);
       modeLabel.textContent = t("mode");
@@ -329,6 +323,10 @@ WorkTimeApp.games.register({
       restart.setAttribute("aria-label", t("restart"));
       padButtons.forEach((b) =>
         b.setAttribute("aria-label", t(b.dataset.snakeAction)),
+      );
+      paintPauseCover(
+        paused && state.status === "playing" && !confirming && countdown <= 0,
+        t("paused"),
       );
       cover.hidden =
         (!confirming &&
@@ -372,7 +370,7 @@ WorkTimeApp.games.register({
         "aria-label",
         t("board", { score: state.score, length: state.body.length }),
       );
-      help.refresh();
+      paintRestartCover(confirming);
       readColors();
       draw(1);
     }
@@ -688,11 +686,7 @@ WorkTimeApp.games.register({
     }
     listen(select, "change", () => requestNew(select.value));
     listen(container, "keydown", (event) => {
-      if (
-        event.target.closest(".snake-mode, .game-help-screen") ||
-        help.isOpen()
-      )
-        return;
+      if (event.target.closest(".snake-mode")) return;
       const direction = {
         ArrowUp: "up",
         w: "up",

@@ -176,6 +176,18 @@ WorkTimeApp.ui.createBackupController = function (options) {
     autoBackupChecked = true;
     try {
       await WorkTimeApp.services.autoBackupFolder.initialize();
+      const runtime = WorkTimeApp.services.autoBackupFolder;
+      // Scheduled backups wait for migration/import instead of recording a
+      // transient busy failure and missing the next backup opportunity.
+      if (runtime.state.busy)
+        await new Promise((resolve) => {
+          const unsubscribe = runtime.subscribe(() => {
+            if (!runtime.state.busy) {
+              unsubscribe();
+              resolve();
+            }
+          });
+        });
       if (disposed) return;
       const pagePreferences = WorkTimeApp.services.preferences.page;
       const lastDate = pagePreferences.state.lastAutoBackupDate;

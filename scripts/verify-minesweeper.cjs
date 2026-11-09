@@ -695,10 +695,9 @@ async function verifyBrowser(fixtures) {
       1,
     );
     assert.equal(
-      await cell(page, 9).evaluate(
-        (element) => getComputedStyle(element).visibility,
-      ),
-      "hidden",
+      await page.locator(".mine-board").evaluate((element) => element.inert),
+      true,
+      "translucent pause cover disables the visible board",
     );
     await page.waitForTimeout(1100);
     await close(page);
@@ -710,7 +709,7 @@ async function verifyBrowser(fixtures) {
     );
     await open(page);
     assert.equal(await page.locator(".mine-cover:not([hidden])").count(), 1);
-    await action(page, "resume").click();
+    await action(page, "pause").click();
     const beforeNew = (await saved(page)).state;
     const beforeConfirmation = await page.locator(".mine-board").boundingBox();
     await action(page, "difficulty").click();
@@ -760,7 +759,7 @@ async function verifyBrowser(fixtures) {
       (await saved(page)).elapsed - background.elapsed < 400,
       "background does not count",
     );
-    await action(page, "resume").click();
+    await action(page, "pause").click();
     await close(page);
     const departed = await saved(page);
     await page.waitForTimeout(1100);
@@ -790,9 +789,16 @@ async function verifyBrowser(fixtures) {
           .some((neighbor) => !fixtures.state.revealed[neighbor]),
     );
     await cell(page, chordTarget).focus();
-    assert.ok(
-      (await page.locator(".mine-cell.is-neighbor").count()) > 0,
-      "keyboard focus previews covered neighbors",
+    assert.equal(
+      await page.locator(".mine-cell.is-neighbor").count(),
+      0,
+      "keyboard focus keeps covered neighbors visually neutral",
+    );
+    assert.equal(
+      await cell(page, chordTarget).evaluate(
+        (element) => element === document.activeElement,
+      ),
+      true,
     );
     const beforeChord = (await saved(page)).state;
     await cell(page, chordTarget).click();
@@ -963,6 +969,7 @@ async function verifyBrowser(fixtures) {
     });
     // Mobile: native taps, long hold, drag cancellation and scrollable large board.
     await action(page, "restart").click();
+    await action(page, "confirm").click();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(100);
     assert.ok(

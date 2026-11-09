@@ -139,7 +139,8 @@ WorkTimeApp.ui.music = (() => {
   function accessible(element, key) {
     if (registerBindings) labels.push({ element, key });
     element.setAttribute("aria-label", t(key));
-    element.title = t(key);
+    if (key === "returnMain") element.removeAttribute("title");
+    else element.title = t(key);
   }
   function icon(name) {
     const paths = {
@@ -236,7 +237,7 @@ WorkTimeApp.ui.music = (() => {
     "icon-only",
     "workspace-toolbar-action",
   );
-  exitButton.replaceChildren(WorkTimeApp.games.createIcon("chevron-left"));
+  exitButton.replaceChildren(WorkTimeApp.games.createIcon("calendar-month"));
   const title = node("h2", "", header);
   title.id = "musicTitle";
   copy(title, "title");
@@ -691,7 +692,8 @@ WorkTimeApp.ui.music = (() => {
     return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, "0")}`;
   }
   function dynamicLabel(element, key) {
-    element.title = t(key);
+    if (key === "returnMain") element.removeAttribute("title");
+    else element.title = t(key);
     element.setAttribute("aria-label", t(key));
   }
   function setMobile(view) {

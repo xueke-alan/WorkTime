@@ -84,6 +84,329 @@ dialog {
 dialog::backdrop {
   background: rgba(64, 64, 64, 0.3);
 }
+#runtimeFolderChange {
+  width: 600px;
+  max-width: calc(100vw - 32px);
+  border-radius: 18px;
+}
+#runtimeFolderChange .dialog-head {
+  justify-content: flex-start;
+  gap: 13px;
+  padding: 22px 24px 20px;
+  border-bottom: 0;
+}
+#runtimeFolderChange h2 {
+  font-size: 18px;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+#runtimeFolderChange svg {
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+}
+#runtimeFolderChange .dialog-body {
+  display: grid;
+  gap: 20px;
+  padding: 0 24px 20px;
+  overflow-wrap: anywhere;
+}
+#runtimeFolderChange .folder-change-locations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+#runtimeFolderChange .folder-change-current {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+  min-height: 168px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+#runtimeFolderChange .folder-change-current > svg {
+  justify-self: start;
+  margin-top: 0;
+  color: var(--muted);
+}
+#runtimeFolderChange .folder-change-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  text-align: start;
+}
+#runtimeFolderChange .folder-change-label {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.5;
+}
+#runtimeFolderChange .folder-change-identity strong {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+#runtimeFolderChange .folder-change-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  align-content: start;
+  gap: 16px;
+  width: 100%;
+  min-height: 168px;
+  padding: 20px;
+  border: 1px dashed var(--theme-border, var(--line));
+  border-radius: 12px;
+  background: var(--theme-surface-subtle, #f7faf8);
+  box-shadow: none;
+}
+#runtimeFolderChange .folder-change-picker:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+#runtimeFolderChange .folder-change-picker:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+#runtimeFolderChange .folder-change-picker:disabled {
+  opacity: 1;
+}
+#runtimeFolderChange[data-state="pending"] .folder-change-select-action,
+#runtimeFolderChange[data-state="done"] .folder-change-select-action {
+  display: none;
+}
+#runtimeFolderChange.has-selection .folder-change-picker {
+  border-style: solid;
+}
+#runtimeFolderChange:not(.has-selection) [data-target] {
+  color: var(--muted);
+  font-weight: 400;
+}
+#runtimeFolderChange .folder-change-destination-icon {
+  justify-self: start;
+  margin-top: 0;
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+}
+#runtimeFolderChange .folder-change-select-action {
+  display: flex;
+  grid-column: 1;
+  grid-row: auto;
+  align-self: center;
+  align-items: center;
+  gap: 3px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+}
+#runtimeFolderChange .folder-change-select-action svg {
+  width: 15px;
+  height: 15px;
+}
+#runtimeFolderChange .folder-change-migration {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  padding: 12px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+}
+#runtimeFolderChange .folder-change-migration:has(:checked) {
+  background: var(--theme-surface-subtle, #f7faf8);
+  border-color: var(--theme-border, var(--accent));
+}
+#runtimeFolderChange .folder-change-checkbox {
+  position: relative;
+  width: 22px;
+  height: 22px;
+}
+#runtimeFolderChange .folder-change-checkbox [data-migrate] {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+#runtimeFolderChange .folder-change-check {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background: var(--paper, #fff);
+  box-shadow: var(--control-shadow);
+  color: #fff;
+}
+#runtimeFolderChange .folder-change-check .ui-icon {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+  stroke: none;
+  opacity: 0;
+}
+#runtimeFolderChange [data-migrate]:checked + .folder-change-check {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+#runtimeFolderChange [data-migrate]:checked + .folder-change-check .ui-icon {
+  opacity: 1;
+}
+#runtimeFolderChange [data-migrate]:focus-visible + .folder-change-check {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+#runtimeFolderChange [data-migrate]:disabled {
+  cursor: default;
+}
+#runtimeFolderChange [data-migrate]:disabled + .folder-change-check {
+  opacity: 0.55;
+}
+#runtimeFolderChange .folder-change-option-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+#runtimeFolderChange .folder-change-help {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+#runtimeFolderChange .folder-change-feedback {
+  padding: 14px 15px;
+  border-radius: 10px;
+  background: var(--theme-surface-subtle, #f7faf8);
+  font-size: 12px;
+  line-height: 1.8;
+}
+#runtimeFolderChange[data-state="error"] .folder-change-feedback {
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 6%, white);
+}
+#runtimeFolderChange[data-state="done"] .folder-change-feedback {
+  color: var(--accent);
+  background: var(--accent-light);
+}
+#runtimeFolderChange .folder-change-feedback-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+#runtimeFolderChange .folder-change-percent {
+  flex-shrink: 0;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+#runtimeFolderChange [data-progress] {
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  accent-color: var(--accent);
+}
+#runtimeFolderChange [data-progress]::-webkit-progress-bar {
+  border-radius: 6px;
+  background: var(--line);
+}
+#runtimeFolderChange [data-progress]::-webkit-progress-value {
+  border-radius: 6px;
+  background: var(--accent);
+}
+#runtimeFolderChange .folder-change-stats:not(:empty) {
+  margin-top: 8px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+#runtimeFolderChange .folder-change-path:not(:empty) {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+#runtimeFolderChange .dialog-foot {
+  padding: 16px 24px;
+  background: var(--theme-surface-subtle, #f7faf8);
+}
+#runtimeFolderChange .dialog-foot .ui-button {
+  min-height: 36px;
+  padding: 8px 18px;
+}
+@media (max-width: 640px) {
+  #runtimeFolderChange .folder-change-locations {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  #runtimeFolderChange :is(.folder-change-current, .folder-change-picker, .folder-change-migration) {
+    padding: 16px;
+  }
+  #runtimeFolderChange :is(.folder-change-current, .folder-change-picker) {
+    min-height: 88px;
+  }
+  #runtimeFolderChange .dialog-head {
+    padding: 20px 20px 18px;
+  }
+  #runtimeFolderChange .dialog-body {
+    gap: 16px;
+    padding: 0 20px 20px;
+  }
+  #runtimeFolderChange .dialog-foot {
+    padding: 14px 20px;
+    flex-wrap: wrap;
+  }
+  #runtimeFolderChange .folder-change-picker {
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 6px 10px;
+  }
+  #runtimeFolderChange .folder-change-current {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+  #runtimeFolderChange .folder-change-select-action {
+    grid-column: 2;
+    grid-row: auto;
+  }
+}
+#runtimeFolderRecovery {
+  width: min(460px, calc(100vw - 32px));
+}
+#runtimeFolderRecovery .dialog-body {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: min(168px, 45dvh);
+  padding-block: 28px;
+  overflow-wrap: anywhere;
+}
+#runtimeFolderRecovery .dialog-body p {
+  margin: 0;
+}
+#runtimeFolderRecovery .dialog-body .help {
+  margin-top: 18px;
+}
 .dialog-head {
   background: var(--theme-surface-paper, #f8fbf9);
   padding: 21px 24px;

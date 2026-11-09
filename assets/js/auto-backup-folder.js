@@ -153,7 +153,12 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
       }
     }
     for (const [key, action] of Object.entries({
-      choose: service.choose,
+      choose: () => {
+        if (!service.state.name) return service.choose();
+        return WorkTimeApp.services.assets
+          .script("assets/js/ui/runtime-folder-change.js")
+          .then(() => WorkTimeApp.ui.showRuntimeFolderChange());
+      },
       retry: service.authorize,
     })) {
       const button = document.createElement("button");

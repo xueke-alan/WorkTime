@@ -39,7 +39,6 @@ WorkTimeApp.games.register({
       saveFailed = false,
       confirming = false,
       transposed = false,
-      swapMode = false,
       connectionPath = null;
     let best = { zen: 0, quest: 0, tide: 0 };
     try {
@@ -60,7 +59,6 @@ WorkTimeApp.games.register({
     const hud = node("div", "link-hud game-hud", root);
     const heading = node("h3", "game-title", hud);
     const objective = node("span", "link-objective", hud);
-    const controls = node("div", "link-controls", hud);
     function button(parent, name, callback) {
       const element = node("button", "game-button", parent);
       element.type = "button";
@@ -70,20 +68,29 @@ WorkTimeApp.games.register({
       });
       return element;
     }
-    const restart = button(controls, "restart", () => {
-      if (state?.phase === "playing") {
-        confirming = true;
-        setPaused(true);
-        render();
-        primary.focus();
-      } else {
-        clearMotion();
-        state = null;
-        save();
-        render();
-        modeButtons[0].element.focus();
-      }
-    });
+    function actionButton(parent, name, icon, callback) {
+      const element = button(parent, name, callback);
+      element.classList.add("link-action-button");
+      const symbol =
+        icon === "shuffle"
+          ? (() => {
+              const svg = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "svg",
+              );
+              svg.setAttribute("class", "ui-icon");
+              svg.setAttribute("viewBox", "0 0 24 24");
+              svg.setAttribute("aria-hidden", "true");
+              svg.innerHTML =
+                '<path d="M4 7h3l10 10h3m-3-3 3 3-3 3M4 17h3L17 7h3m-3-3 3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+              return svg;
+            })()
+          : WorkTimeApp.games.createIcon(icon);
+      element.append(symbol);
+      element.actionIcon = symbol;
+      element.actionLabel = node("span", "link-action-label", element);
+      return element;
+    }
     const catalog = node("div", "link-catalog", root);
     const modes = node("div", "link-modes", catalog);
     const modeButtons = ["zen", "quest", "tide"].map((mode) => {
@@ -110,6 +117,7 @@ WorkTimeApp.games.register({
     line.setAttribute("aria-hidden", "true");
     stage.append(line);
     const cover = node("div", "link-cover", arena);
+    const paintPauseCover = WorkTimeApp.games.createPauseCover(cover, signal);
     const coverTitle = node("h3", "", cover),
       coverText = node("p", "", cover);
     const primary = button(cover, "primary", () => {
@@ -136,13 +144,18 @@ WorkTimeApp.games.register({
       render();
       primary.focus();
     });
-    const actions = node("div", "link-actions game-controls", play);
-    const hint = button(actions, "hint", () => {
+    const paintRestartCover = WorkTimeApp.games.createRestartCover({
+      cover: cover,
+      cancel: cancel,
+      accept: primary,
+      signal,
+    });
+    const actions = node("div", "link-actions game-controls", root);
+    const hint = actionButton(actions, "hint", "help", () => {
       if (!active() || (state.mode !== "zen" && !state.hints)) return;
       tick();
       if (!active()) return;
       hintPair = rules.find(state.board, state.cols);
-      swapMode = false;
       if (state.mode !== "zen") state.hints--;
       combo = 0;
       feedback = "hinted";
@@ -150,13 +163,12 @@ WorkTimeApp.games.register({
       render();
       hint.focus();
     });
-    const shuffle = button(actions, "shuffle", () => {
+    const shuffle = actionButton(actions, "shuffle", "shuffle", () => {
       if (!active() || (state.mode !== "zen" && !state.shuffles)) return;
       tick();
       if (!active()) return;
       if (state.mode !== "zen") state.shuffles--;
       state.board = rules.shuffle(state.board, Math.random, state.cols);
-      swapMode = false;
       selected = -1;
       hintPair = null;
       combo = 0;
@@ -165,42 +177,33 @@ WorkTimeApp.games.register({
       render();
       shuffle.focus();
     });
-    const pause = button(actions, "pause", () => {
+    const pause = actionButton(actions, "pause", "pause", () => {
       if (state?.phase === "playing") {
+        setPaused(!paused);
+        render();
+        if (!paused) focusTile();
+      }
+    });
+    const restart = actionButton(actions, "restart", "restart-alt", () => {
+      if (state) {
+        confirming = true;
         setPaused(true);
         render();
         primary.focus();
+      } else {
+        clearMotion();
+        state = null;
+        save();
+        render();
+        modeButtons[0].element.focus();
       }
     });
-    const swapButton = button(actions, "swap", () => {
-      tick();
-      if (!active() || state.energy < 3) return;
-      swapMode = !swapMode;
-      selected = -1;
-      hintPair = null;
-      feedback = swapMode ? "swapPick" : "ready";
-      render();
-      if (swapMode) focusTile();
-    });
-    actions.insertBefore(swapButton, pause);
     const notice = node("p", "link-notice game-sr-only", root);
     notice.setAttribute("role", "status");
     const warning = node("p", "link-warning", root);
     warning.setAttribute("role", "status");
-    const help = WorkTimeApp.games.createHelp({
-      root,
-      controls,
-      signal,
-      text: () => t("help"),
-      onChange(open) {
-        if (open && state) {
-          setPaused(true);
-          render();
-        }
-      },
-    });
     const sidebar = node("aside", "link-sidebar", root);
-    sidebar.append(hud, meters, actions, controls);
+    sidebar.append(hud, meters, actions);
     const colors = [
       "#ae701b",
       "#6476b4",
@@ -225,6 +228,7 @@ WorkTimeApp.games.register({
       warning.textContent = saveFailed ? t("saveFailed") : "";
     }
     function start(mode) {
+      paintPauseCover.reset();
       clearMotion();
       state = {
         mode,
@@ -236,7 +240,6 @@ WorkTimeApp.games.register({
         remaining: 150000,
         hints: 3,
         shuffles: 2,
-        energy: 3,
         target: 0,
         targetProgress: 0,
         tideStep: 0,
@@ -254,6 +257,7 @@ WorkTimeApp.games.register({
       focusTile();
     }
     function next() {
+      paintPauseCover.reset();
       clearMotion();
       state.level++;
       state.cols = rules.size(state.level).cols;
@@ -262,7 +266,6 @@ WorkTimeApp.games.register({
       state.remaining = Math.min(240000, state.remaining + 45000);
       state.hints = 3;
       state.shuffles = 2;
-      state.energy = 3;
       state.target = state.level % 4;
       state.targetProgress = 0;
       state.tideStep = 0;
@@ -282,7 +285,6 @@ WorkTimeApp.games.register({
         !paused &&
         !suspended &&
         !busy &&
-        !help.isOpen() &&
         !signal.aborted &&
         !disposed
       );
@@ -291,14 +293,7 @@ WorkTimeApp.games.register({
       const now = performance.now(),
         elapsed = now - lastTick;
       lastTick = now;
-      if (
-        state?.phase !== "playing" ||
-        paused ||
-        suspended ||
-        busy ||
-        help.isOpen()
-      )
-        return;
+      if (state?.phase !== "playing" || paused || suspended || busy) return;
       if (combo && now - lastMatch > 6000) {
         combo = 0;
         paintStats();
@@ -317,7 +312,6 @@ WorkTimeApp.games.register({
         tick();
         clearMotion();
         combo = 0;
-        swapMode = false;
         selected = -1;
       }
       paused = value;
@@ -345,7 +339,7 @@ WorkTimeApp.games.register({
       if (token !== motionRevision || disposed || signal.aborted) return;
       clearMotion();
       render();
-      if (!help.isOpen() && !suspended && !paused) {
+      if (!suspended && !paused) {
         if (state.phase === "playing") focusTile(index);
         else primary.focus({ preventScroll: true });
       }
@@ -356,7 +350,7 @@ WorkTimeApp.games.register({
       motionStarted = performance.now();
       root.dataset.motion = "linking";
       board.inert = true;
-      [hint, shuffle, swapButton].forEach((button) => {
+      [hint, shuffle].forEach((button) => {
         button.disabled = true;
       });
       if (reduced.matches || document.hidden) {
@@ -439,25 +433,6 @@ WorkTimeApp.games.register({
         selected = -1;
         renderBoard();
         board.children[index]?.focus({ preventScroll: true });
-        return;
-      }
-      if (swapMode) {
-        if (selected >= 0 && rules.swap(state, selected, index)) {
-          swapMode = false;
-          selected = -1;
-          combo = 0;
-          feedback = "swapped";
-          ensureMove();
-          save();
-          render();
-          focusTile(index);
-        } else {
-          const alreadySelected = selected >= 0;
-          selected = index;
-          renderBoard();
-          notice.textContent = t(alreadySelected ? "sameSwap" : "swapPick");
-          board.children[index]?.focus({ preventScroll: true });
-        }
         return;
       }
       const path =
@@ -643,49 +618,59 @@ WorkTimeApp.games.register({
       });
     }
     function render() {
+      if (signal.aborted) return;
       heading.textContent = state
         ? t("round", { mode: t(state.mode), n: state.level + 1 })
         : t("name");
-      restart.textContent = t("new");
+      restart.actionLabel.textContent = t("new");
       restart.hidden = !state;
       objective.hidden = !state;
       modeButtons.forEach(({ mode, element }) => {
-        element.textContent = t(mode);
+        element.textContent = t("modeName", { name: t(mode) });
       });
       catalog.hidden = !!state;
       play.hidden = !state;
       meters.hidden = !state;
       actions.hidden = !state;
-      help.refresh();
+      root.dataset.playing = String(!!state);
+      sidebar.hidden = !state;
       warning.textContent = saveFailed ? t("saveFailed") : "";
-      if (!state) return;
+      if (!state) {
+        paintRestartCover(false);
+        return;
+      }
       paintObjective();
       board.setAttribute("aria-label", t("name"));
       renderBoard();
       paintStats();
-      hint.textContent =
+      hint.actionLabel.textContent =
         t("hint") + " · " + (state.mode === "zen" ? "∞" : state.hints);
-      shuffle.textContent =
+      shuffle.actionLabel.textContent =
         t("shuffle") + " · " + (state.mode === "zen" ? "∞" : state.shuffles);
-      pause.textContent = t("pause");
-      swapButton.textContent = t("swap") + " · " + state.energy;
-      swapButton.title = t("swapHelp");
-      swapButton.setAttribute("aria-pressed", String(swapMode));
-      swapButton.disabled = !active() || state.energy < 3;
+      pause.actionLabel.textContent = t(paused ? "resume" : "pause");
+      const pauseIcon = WorkTimeApp.games.createIcon(
+        paused ? "play-arrow" : "pause",
+      );
+      pause.actionIcon.replaceWith(pauseIcon);
+      pause.actionIcon = pauseIcon;
+      restart.actionLabel.textContent = t("new");
+      restart.setAttribute("aria-label", t("new"));
       hint.disabled = !active() || (state.mode !== "zen" && !state.hints);
       shuffle.disabled = !active() || (state.mode !== "zen" && !state.shuffles);
-      pause.disabled = !active();
+      pause.disabled = confirming || suspended || state.phase !== "playing";
       notice.textContent = [
         "blocked",
         "hinted",
         "shuffled",
         "rescued",
-        "swapPick",
-        "swapped",
         "missionDone",
       ].includes(feedback)
         ? t(feedback)
         : "";
+      paintPauseCover(
+        state.phase === "playing" && paused && !confirming,
+        t("paused"),
+      );
       cover.hidden = state.phase === "playing" && !paused && !confirming;
       coverTitle.textContent = t(
         confirming ? "new" : state.phase === "playing" ? "paused" : state.phase,
@@ -706,6 +691,7 @@ WorkTimeApp.games.register({
       );
       cancel.hidden = !confirming;
       cancel.textContent = t("cancel");
+      paintRestartCover(confirming);
       fit();
     }
     listen(board, "click", (event) => {

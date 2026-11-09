@@ -1,8 +1,31 @@
-WorkTime Xiangqi levels 21, 45–47, 72–80 and 101–110 use starting positions
-from Xiangqi Arena. Levels 101–110 also carry the original titles from
-the Shi Qing Ya Qu collection.
+WorkTime Xiangqi stable IDs xq-21, xq-45–47, xq-72–80, xq-101–110,
+and xq-classic-* use starting positions from Xiangqi Arena.
+All 120 classic puzzles carry the original Shi Qing Ya Qu titles.
+Stable IDs are independent of the displayed 01–80 basic puzzle numbers.
 The positions were selected from the collections below, converted to
 WorkTime's board notation, and solved with WorkTime's own rules.
+The 544-position candidate snapshot is scripts/xiangqi-classics-source.json.
+Upstream Git blob SHA: 9fb5c169d8aa4b0bb6365ad263b68de4760907ce.
+Exact offline search certificates are scripts/xiangqi-classics-solutions.json;
+these cover every legal black defense, with shortest distances independently
+checked by scripts/xiangqi-solver/Program.cs. No search engine is loaded in
+the browser. Development requires .NET 10 only for rebuilding certificates:
+
+dotnet build scripts/xiangqi-solver/xiangqi-solver.csproj -c Release -o .cache/xiangqi-solver -p:BaseIntermediateOutputPath=<absolute-workspace>/.cache/xiangqi-obj/
+node scripts/solve-xiangqi.cjs
+node scripts/solve-xiangqi.cjs --select
+node scripts/build-xiangqi.cjs
+node scripts/solve-xiangqi.cjs --inspect
+node scripts/solve-xiangqi.cjs --verify
+
+Discovery uses a 200,000-node per-position budget and searches up to 16 red
+moves. To complete the advanced category, increase the budget with:
+node scripts/solve-xiangqi.cjs 1000000 16 --advanced
+Positions exceeding a budget are not labeled as solved. Selection preserves
+the ten original classics and existing choices where possible, then fills
+45 easy (4–5 moves), 60 medium (6–8), and 15 advanced (9+) places with unique
+verified mates in source order. The budget is a build resource limit, not an
+alteration to the rules or a checking-only search.
 
 https://github.com/dffge552/xiangqi-pwa-offline/blob/main/basic-checkmates.json
 https://github.com/dffge552/xiangqi-pwa-offline/blob/main/shi-qing-ya-qu.json

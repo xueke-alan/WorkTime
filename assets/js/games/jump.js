@@ -58,7 +58,9 @@ WorkTimeApp.games.register({
     const listen = (target, event, callback, options = {}) =>
       target.addEventListener(event, callback, { ...options, signal });
     const root = node("section", "game-jump game-session", container);
-    const counters = node("div", "jump-counters game-hud", root);
+    const layout = node("div", "jump-play", root);
+    const sidebar = node("div", "jump-sidebar", layout);
+    const counters = node("div", "jump-counters game-hud", sidebar);
     const meters = ["score", "best"].map((name) => {
       const box = node("div", "game-stat", counters);
       return {
@@ -67,7 +69,7 @@ WorkTimeApp.games.register({
         value: node("strong", "", box),
       };
     });
-    const controls = node("div", "jump-controls game-controls", root);
+    const controls = node("div", "jump-controls game-controls", sidebar);
     function button(parent, action, callback, icon) {
       const element = node("button", "game-button", parent);
       element.type = "button";
@@ -95,14 +97,20 @@ WorkTimeApp.games.register({
       },
       "pause",
     );
-    const restart = button(controls, "restart", start, "restart-alt");
-    const stage = node("div", "jump-stage", root);
+    const restart = button(
+      controls,
+      "restart",
+      () => restartPrompt.open(restart),
+      "restart-alt",
+    );
+    const stage = node("div", "jump-stage", layout);
     stage.tabIndex = 0;
     stage.setAttribute("role", "group");
     const canvas = node("canvas", "", stage);
     canvas.setAttribute("aria-hidden", "true");
     const ctx = canvas.getContext("2d");
     const cover = node("div", "jump-cover", stage);
+    const paintPauseCover = WorkTimeApp.games.createPauseCover(cover, signal);
     const heading = node("h3", "", cover);
     const description = node("p", "", cover);
     const play = button(cover, "start", () => {
@@ -116,23 +124,30 @@ WorkTimeApp.games.register({
     const chargeBar = node("div", "jump-charge", stage);
     chargeBar.setAttribute("aria-hidden", "true");
     const chargeFill = node("span", "", chargeBar);
-    const feedback = node("p", "jump-feedback", root);
+    const feedback = node("p", "jump-feedback", sidebar);
     feedback.setAttribute("role", "status");
-    const notice = node("div", "game-notice", root);
+    const notice = node("div", "game-notice", sidebar);
     const warning = node("p", "", notice);
     warning.setAttribute("role", "status");
-    const help = WorkTimeApp.games.createHelp({
-      root,
-      controls,
+    let restartWasPaused = false;
+    const restartPrompt = WorkTimeApp.games.createRestartPrompt({
+      host: stage,
       signal,
-      text: () => t("help"),
-      onChange(open) {
-        if (open) {
-          cancelCharge();
-          if (mode === "playing") paused = true;
-          stop();
-          sync();
-        }
+      onOpen() {
+        restartWasPaused = paused;
+        paused = true;
+        stop();
+        cancelCharge();
+        sync();
+      },
+      onCancel() {
+        paused = restartWasPaused;
+        sync();
+        loop();
+      },
+      onConfirm() {
+        saveBest();
+        start();
       },
     });
     function saveBest() {
@@ -146,6 +161,7 @@ WorkTimeApp.games.register({
       }
     }
     function sync(paint = true) {
+      if (signal.aborted) return;
       root.dataset.mode = mode;
       root.dataset.phase = flight
         ? "jumping"
@@ -166,6 +182,7 @@ WorkTimeApp.games.register({
       WorkTimeApp.games.setIcon(pauseButton, isPaused ? "play-arrow" : "pause");
       restart.title = t("restart");
       restart.setAttribute("aria-label", restart.title);
+      paintPauseCover(mode === "playing" && isPaused, t("paused"));
       cover.hidden = mode === "playing" && !isPaused;
       cover.dataset.ended = String(mode === "over");
       heading.textContent =
@@ -174,14 +191,13 @@ WorkTimeApp.games.register({
         best,
       });
       play.textContent = t(
-        mode === "over" ? "again" : isPaused ? "resume" : "start",
+        mode === "over" ? "restart" : isPaused ? "resume" : "start",
       );
       feedback.textContent = gainText || t("instruction");
       sceneHint = t("sceneHint");
       warning.textContent = saveFailed ? t("saveFailed") : "";
       stage.setAttribute("aria-label", t("board", { score: state.score }));
       chargeBar.hidden = mode !== "playing" || isPaused;
-      help.refresh();
       if (paint) draw();
     }
     function cancelCharge() {
@@ -194,6 +210,7 @@ WorkTimeApp.games.register({
       chargeFill.style.transform = "scaleX(0)";
     }
     function start() {
+      paintPauseCover.reset();
       if (disposed || suspended || signal.aborted) return;
       stop();
       cancelCharge();
@@ -215,8 +232,7 @@ WorkTimeApp.games.register({
         !paused &&
         !suspended &&
         !disposed &&
-        !signal.aborted &&
-        !help.isOpen()
+        !signal.aborted
       );
     }
     function beginCharge() {
@@ -588,10 +604,10 @@ WorkTimeApp.games.register({
         for (let i = 3; i > 0; i--)
           ellipse(
             shadow.x + 5,
-            shadow.y + 3,
+            shadow.y + 1,
             (16 + i * 2) * shadowScale,
             (5 + i) * shadowScale,
-            `rgba(28,40,52,${0.045 * shadowScale})`,
+            `rgba(28,40,52,${0.07 * shadowScale})`,
           );
         ctx.save();
         ctx.translate(hero.x, hero.y);
@@ -625,7 +641,7 @@ WorkTimeApp.games.register({
           else if (flight && progress < 0.12)
             ctx.translate(0, flight.power * 5 * (1 - progress / 0.12));
         }
-        ctx.drawImage(heroSprite, -20, -70, 40, 80);
+        ctx.drawImage(heroSprite, -20, -76, 40, 80);
         ctx.restore();
       };
       for (const p of trail) {
@@ -701,11 +717,7 @@ WorkTimeApp.games.register({
     measure();
     sync();
     return {
-      resize({ height: available }) {
-        root.style.setProperty(
-          "--jump-height",
-          Math.max(430, available) + "px",
-        );
+      resize() {
         measure();
       },
       pause() {

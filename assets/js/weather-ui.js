@@ -142,6 +142,7 @@
   function render(panel, value) {
     releaseView();
     mount(panel);
+    panel.classList.toggle("is-weather-empty", !value.city && !value.record);
     viewEvents = new AbortController();
     const signal = viewEvents.signal;
     const saved = forecastState.get(panel) || {
@@ -159,33 +160,8 @@
         : WorkTimeApp.i18n.t("copy.6055fe4b90"),
     );
     cityName.title = cityName.textContent;
-    const source = node("a", undefined, "weather-source-info");
-    source.href =
-      "https://lbsyun.baidu.com/docs/webapi?title=weatherinquiry%2Fweather%2Fbase";
-    source.target = "_blank";
-    source.rel = "noopener noreferrer";
-    source.setAttribute(
-      "aria-label",
-      WorkTimeApp.i18n.t("copy.01f742eb2f") +
-        WorkTimeApp.i18n.t("copy.c07924cd7c"),
-    );
-    source.setAttribute("aria-describedby", "weatherSourceTip");
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.classList.add("ui-icon");
-    svg.setAttribute("aria-hidden", "true");
-    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-    use.setAttribute("href", "#ms-info");
-    svg.append(use);
-    const tip = node(
-      "span",
-      WorkTimeApp.i18n.t("copy.eb7df9d086"),
-      "weather-source-tooltip",
-    );
-    tip.id = "weatherSourceTip";
-    tip.setAttribute("role", "tooltip");
-    source.append(svg);
     head.append(cityName);
-    panel.append(head, source, tip);
+    panel.append(head);
     if (value.message && !value.record)
       panel.append(
         node("p", WorkTimeApp.i18n.message(value.message), "date-info-empty"),
@@ -256,6 +232,11 @@
         hour12: false,
       }),
       "date-info-source weather-time",
+    );
+    const source = node(
+      "span",
+      "数据来源：百度地图天气API",
+      "weather-source-label",
     );
     age.title =
       WorkTimeApp.i18n.t("copy.35024cc449") +
@@ -478,7 +459,7 @@
     }
     forecast.append(hourly, daily);
     const footer = node("div", undefined, "weather-footer");
-    footer.append(tabs, age, source, tip);
+    footer.append(tabs, source, age);
     panel.append(forecast, footer);
     select(saved.mode in views ? saved.mode : "daily", false);
   }

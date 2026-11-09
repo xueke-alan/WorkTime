@@ -155,7 +155,8 @@ WorkTimeApp.games.register({
       };
     });
     const controls = node("aside", "tank-controls game-controls", playfield);
-    const playerHost = node("div", "tank-select", controls);
+    const stageHeading = node("h3", "tank-stage-title", controls);
+    const playerHost = node("div", "tank-select");
     const playerLabel = node("label", "game-sr-only", playerHost);
     playerLabel.id = "tank-players-label";
     const players = node("select", "", playerHost);
@@ -183,28 +184,28 @@ WorkTimeApp.games.register({
       listen(el, "click", fn);
       return el;
     }
-    const stageHost = node("div", "tank-select", controls);
-    const stagePicker = button(stageHost, "choose-stage", () => {
-      choosingStage = true;
-      sync();
-      levelRanges.reveal(selectedStage - 1);
-      stageButtons[selectedStage - 1].focus();
-    });
-    stagePicker.classList.add("game-select-trigger");
+    const actions = node("div", "tank-actions", controls);
+    const stagePicker = button(
+      actions,
+      "choose-stage",
+      () => {
+        choosingStage = true;
+        if (mode === "playing" && !paused) pause();
+        sync();
+        stageButtons[selectedStage - 1].focus();
+      },
+      "grid-4x4",
+    );
     stagePicker.setAttribute("aria-controls", "tank-stage-page");
-    const stageValue = node("span", "button-label", stagePicker);
-    stagePicker.append(WorkTimeApp.games.createIcon("grid-4x4"));
     const levels = WorkTimeApp.games.createLevelPage(
       root,
       "tank-stage-page",
       signal,
     );
-    const closeStages = button(
-      levels.header,
-      "close-stages",
-      closeStagePage,
-      "close",
-    );
+    levels.header.append(playerHost);
+    const closeStages = levels.back;
+    closeStages.dataset.tankAction = "close-stages";
+    levels.setReturn(closeStagePage);
     const stageGrid = node(
       "div",
       "game-level-grid tank-stage-grid",
@@ -213,8 +214,10 @@ WorkTimeApp.games.register({
     const stageButtons = Array.from({ length: 35 }, (_, index) => {
       const number = index + 1;
       return button(stageGrid, "stage-" + number, () => {
+        paintPauseCover.reset();
         selectedStage = number;
         mode = "ready";
+        paused = false;
         state = rules.create({
           stage: selectedStage,
           players: Number(players.value),
@@ -222,18 +225,18 @@ WorkTimeApp.games.register({
         closeStagePage();
       });
     });
-    const levelRanges = levels.addRanges(stageGrid);
+    levels.categories.remove();
+    levels.page.classList.add("tank-stage-page");
     function closeStagePage() {
       choosingStage = false;
       sync();
       stagePicker.focus({ preventScroll: true });
     }
-    const actions = node("div", "tank-actions", controls);
     const pauseButton = button(actions, "pause", togglePause, "pause");
     const restart = button(
       actions,
       "restart",
-      () => start(state.custom),
+      () => restartPrompt.open(restart),
       "restart-alt",
     );
     const sound = button(actions, "sound", () => {
@@ -243,7 +246,8 @@ WorkTimeApp.games.register({
       sync();
     });
     sound.classList.add("game-icon-button");
-    const editor = button(controls, "editor", openEditor);
+    const editor = button(stageGrid, "editor", openEditor);
+    editor.classList.add("tank-editor-card");
     const arena = node("div", "tank-arena", playfield);
     const board = node("div", "tank-board", arena);
     board.tabIndex = 0;
@@ -255,6 +259,7 @@ WorkTimeApp.games.register({
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
     const cover = node("div", "tank-cover", board);
+    const paintPauseCover = WorkTimeApp.games.createPauseCover(cover, signal);
     const eyebrow = node("span", "tank-eyebrow", cover);
     eyebrow.textContent = "BATTLE CITY";
     const heading = node("h3", "", cover),
@@ -326,18 +331,26 @@ WorkTimeApp.games.register({
     const fireButton = button(touchBar, "fire", () => {});
     fireButton.classList.add("tank-fire");
     bindHold(fireButton, { fire: true });
-    const feedback = node("p", "tank-feedback", root);
+    const feedback = node("p", "tank-feedback", controls);
     feedback.setAttribute("role", "status");
     feedback.setAttribute("aria-live", "polite");
     const warning = node("p", "tank-warning", root);
     warning.setAttribute("role", "status");
-    const help = WorkTimeApp.games.createHelp({
-      root,
-      controls: actions,
+    let restartWasPaused = false;
+    const restartPrompt = WorkTimeApp.games.createRestartPrompt({
+      host: board,
       signal,
-      text: () => t("help"),
-      onChange(open) {
-        if (open) pause();
+      onOpen() {
+        restartWasPaused = paused;
+        pause();
+      },
+      onCancel() {
+        paused = restartWasPaused;
+        sync();
+        loop();
+      },
+      onConfirm() {
+        start(state.custom);
       },
     });
     function save() {
@@ -417,8 +430,7 @@ WorkTimeApp.games.register({
         !paused &&
         !suspended &&
         !disposed &&
-        !signal.aborted &&
-        !help.isOpen()
+        !signal.aborted
       );
     }
     function pause() {
@@ -437,6 +449,7 @@ WorkTimeApp.games.register({
       } else pause();
     }
     function start(useCustom = false) {
+      paintPauseCover.reset();
       if (disposed || suspended || signal.aborted) return;
       if (mode === "editor" && !useCustom) return;
       stop();
@@ -467,6 +480,8 @@ WorkTimeApp.games.register({
       loop();
     }
     function openEditor() {
+      choosingStage = false;
+      paintPauseCover.reset();
       stop();
       clearInput();
       save();
@@ -553,31 +568,32 @@ WorkTimeApp.games.register({
       root.dataset.paused = String(paused || suspended);
     }
     function sync() {
+      if (signal.aborted) return;
       paintCounters();
       meters.forEach((m) => (m.label.textContent = t(m.key)));
       const canSelect = mode === "ready" || mode === "over";
       playerLabel.textContent = t("players");
       solo.textContent = t("solo");
       duo.textContent = t("duo");
-      players.disabled = !canSelect;
+      players.disabled = !(canSelect || choosingStage);
       playerPicker.sync();
-      stagePicker.disabled = !canSelect;
+      stagePicker.disabled = mode === "editor";
       stagePicker.setAttribute("aria-expanded", String(choosingStage));
       levels.page.hidden = !choosingStage;
       playfield.hidden = choosingStage;
       feedback.hidden = choosingStage;
       levels.refresh();
-      stageValue.textContent = t("stageOption", { n: selectedStage });
-      levels.summary.textContent = stageValue.textContent;
+      stageHeading.textContent = t("stageOption", { n: selectedStage });
       stagePicker.setAttribute(
         "aria-label",
         WorkTimeApp.i18n.t("games.levelStatus.choose") +
           " · " +
-          stageValue.textContent,
+          stageHeading.textContent,
       );
+      stagePicker.title = stageHeading.textContent;
       closeStages.setAttribute(
         "aria-label",
-        WorkTimeApp.i18n.t("games.levelStatus.close"),
+        WorkTimeApp.i18n.t("games.levelStatus.returnGame"),
       );
       stageButtons.forEach((element, index) => {
         const number = index + 1;
@@ -619,6 +635,7 @@ WorkTimeApp.games.register({
         b.setAttribute("aria-label", t("dir" + b.dataset.dir)),
       );
       fireButton.textContent = t("fire");
+      paintPauseCover(mode === "playing" && isPaused, t("paused"));
       cover.hidden = mode === "editor" || (mode === "playing" && !isPaused);
       cover.dataset.result = String(mode === "over" || mode === "clear");
       heading.textContent = t(
@@ -630,6 +647,7 @@ WorkTimeApp.games.register({
               ? "paused"
               : "name",
       );
+      description.hidden = mode === "ready";
       description.textContent = t(
         mode === "over"
           ? state.reason === "base"
@@ -662,7 +680,7 @@ WorkTimeApp.games.register({
           : state.playerCount === 2
             ? "duoKeys"
             : "keys",
-      );
+      ).replaceAll(" · ", "\n");
       warning.textContent = saveFailed ? t("saveFailed") : "";
       board.setAttribute(
         "aria-label",
@@ -671,7 +689,6 @@ WorkTimeApp.games.register({
           remaining: 20 - state.destroyed,
         }),
       );
-      help.refresh();
       if (viewport) layout(viewport);
       draw();
     }
@@ -1209,10 +1226,18 @@ WorkTimeApp.games.register({
     listen(window, "keyup", (e) => keys.delete(e.code));
     listen(window, "blur", pause);
     listen(root, "focusout", (e) => {
+      if (e.relatedTarget?.closest?.("#gameExitButton")) {
+        clearInput();
+        return;
+      }
       if (mode === "playing" && !root.contains(e.relatedTarget)) pause();
     });
     listen(document, "worktime:languagechange", sync);
     listen(players, "change", () => {
+      if (choosingStage) {
+        mode = "ready";
+        paused = false;
+      }
       state = rules.create({
         players: Number(players.value),
         stage: selectedStage,

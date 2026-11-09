@@ -170,8 +170,8 @@ async function main() {
       "frequency and folder must share a row",
     );
     assert.ok(
-      Math.abs(layout.ratio - 1) < 0.02,
-      "frequency/folder widths must share equal columns beside installation",
+      Math.abs(layout.ratio - 1.5) < 0.03,
+      "frequency/folder widths must keep the 2:3 ratio",
     );
     assert.equal(downloads.length, 0, "folder archive must not download");
     assert.equal(
@@ -238,6 +238,8 @@ async function main() {
       window.folderTest.cancel = true;
     });
     await page.locator("#autoBackupFolderChoose").click();
+    await page.locator("#runtimeFolderChange [data-select]").click();
+    await page.locator("#runtimeFolderChange [data-close]").click();
     await status("available");
     assert.equal(
       await page.evaluate(
@@ -260,7 +262,7 @@ async function main() {
       ),
       "2020-01-01",
     );
-    await page.locator("#autoBackupFolderRetry").click();
+    await page.locator("#runtimeFolderRecovery[open] button").click();
     await saved();
     archived = await files();
     assert.equal(archived.length, 2);
@@ -319,7 +321,14 @@ async function main() {
       window.folderTest.folder = "archive-B";
     });
     await page.locator("#autoBackupFolderChoose").click();
-    await status("storageFailed");
+    await page.locator("#runtimeFolderChange [data-select]").click();
+    await page.locator("#runtimeFolderChange [data-submit]").click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector("#runtimeFolderChange [data-status]")
+        .textContent.includes("仍使用原文件夹"),
+    );
+    await status("available");
     assert.equal(
       await page.evaluate(
         () => WorkTimeApp.services.autoBackupFolder.state.name,
@@ -330,13 +339,63 @@ async function main() {
     await page.evaluate(() => {
       window.folderTest.failSave = false;
     });
-    await page.locator("#autoBackupFolderChoose").click();
+    await page.locator("#runtimeFolderChange [data-submit]").click();
+    await page.waitForFunction(
+      () => WorkTimeApp.services.runtimeFolder.state.name === "archive-B",
+    );
+    await page.locator("#runtimeFolderChange [data-close]").click();
     await status("available");
     assert.equal(
       await page.evaluate(
         () => WorkTimeApp.services.autoBackupFolder.state.name,
       ),
       "archive-B",
+    );
+    await due();
+    await page.evaluate(async () => {
+      const runtime = WorkTimeApp.services.runtimeFolder;
+      const root = await navigator.storage.getDirectory();
+      const source = await root.getDirectoryHandle("archive-B");
+      const selected = await root.getDirectoryHandle("archive-C", {
+        create: true,
+      });
+      const script = WorkTimeApp.services.assets.script;
+      let entered;
+      const started = new Promise((resolve) => {
+        entered = resolve;
+      });
+      WorkTimeApp.services.assets.script = async (src) => {
+        await script(src);
+        if (src === "assets/js/services/runtime-migration.js") {
+          entered();
+          await new Promise((resolve) => {
+            window.releaseMigration = resolve;
+          });
+        }
+      };
+      window.pendingMigration = runtime
+        .changeFolder({ source, selected })
+        .finally(() => {
+          WorkTimeApp.services.assets.script = script;
+        });
+      await started;
+      document.dispatchEvent(new Event("worktime:autobackupretry"));
+    });
+    assert.equal(
+      await page.evaluate(
+        () => WorkTimeApp.services.preferences.page.state.lastAutoBackupDate,
+      ),
+      "2020-01-01",
+      "automatic backup must wait for migration",
+    );
+    await page.evaluate(async () => {
+      window.releaseMigration();
+      await window.pendingMigration;
+    });
+    await saved();
+    assert.equal(
+      await page.evaluate(() => WorkTimeApp.services.runtimeFolder.state.name),
+      "archive-C",
     );
     // Unsupported environments explain the limitation without a download route.
     await page.evaluate(() => {

@@ -292,10 +292,10 @@ async function verifyTemplates(page) {
   const heatScales = await page.evaluate(() => {
     const year = WorkTimeApp.ui.year;
     const scale = (days) => year.scaleMaximum([{ days }]);
-    const weekend = { weekend: true, overtime: 480 };
+    const weekend = { work: false, weekend: true, overtime: 480 };
     const weekendMaximum = scale([weekend]);
     return {
-      mixed: scale([weekend, { weekend: false, overtime: 61 }]),
+      mixed: scale([weekend, { work: true, weekend: false, overtime: 61 }]),
       weekendMaximum,
       weekendRatio: year.heatColor(480, weekendMaximum).ratio,
       empty: scale([]),
@@ -304,8 +304,8 @@ async function verifyTemplates(page) {
   });
   assert.deepEqual(heatScales, {
     mixed: 120,
-    weekendMaximum: 480,
-    weekendRatio: 1,
+    weekendMaximum: 0,
+    weekendRatio: 0,
     empty: 0,
     deficits: 0,
   });

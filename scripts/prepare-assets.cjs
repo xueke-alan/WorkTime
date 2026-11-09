@@ -311,6 +311,7 @@ function prepareAssets({ check = false } = {}) {
     "garden",
     "tank",
     "xiangqi",
+    "gomoku",
   ])
     vm.runInContext(
       fs.readFileSync(
@@ -369,6 +370,7 @@ function prepareAssets({ check = false } = {}) {
     "garden",
     "tank",
     "xiangqi",
+    "gomoku",
   ];
   const entries = games.map((id) => {
     const source = fs.readFileSync(
@@ -387,9 +389,12 @@ function prepareAssets({ check = false } = {}) {
         .map((node) => [node.key.name, node.value.value]),
     );
     const rules = [];
-    if (["sudoku", "sokoban", "xiangqi"].includes(id))
+    if (id === "gomoku") rules.push("assets/data/gomoku-legacy.js");
+    if (["sudoku", "sokoban", "xiangqi", "gomoku"].includes(id))
       rules.push("assets/data/" + id + ".js");
     if (id === "tank") rules.push("assets/js/games/tank-stages.js");
+    if (id === "gomoku") rules.push("assets/js/games/gomoku-search.js");
+    if (id === "xiangqi") rules.push("assets/js/games/xiangqi-engine.js");
     rules.push("assets/js/games/" + id + "-rules.js");
     return {
       ...metadata,

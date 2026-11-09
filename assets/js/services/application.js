@@ -24,6 +24,7 @@ const WorkTimeServiceApplication = (() => {
       batchPreview: null,
       batchSaving: false,
       yearMode: false,
+      yearViewMode: "heatmap",
       analysisMode: false,
       analysisIncludeManual: false,
       viewYear: Number(input.today.slice(0, 4)),

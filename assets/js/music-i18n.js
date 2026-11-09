@@ -522,7 +522,7 @@ WorkTimeApp.ui.musicText = (() => {
   const languages = ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"];
   return (key, n) =>
     key === "returnMain"
-      ? WorkTimeApp.i18n.t("copy.11d0241540")
+      ? WorkTimeApp.i18n.t("workspace.returnCalendar")
       : (
           rows[key]?.[
             Math.max(0, languages.indexOf(WorkTimeApp.i18n.language))

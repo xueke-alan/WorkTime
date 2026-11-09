@@ -46,11 +46,13 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     settingsCancel = document.getElementById("personalSettingsCancel"),
     tablist = settings.querySelector(".settings-tabs"),
     tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  const animationCompat = WorkTimeApp.ui.animationCompat;
+  let settingsIconAnimation = null;
   let activeTab = tabs[0];
   const themeSettings = WorkTimeApp.ui.theme.mount(
     settings.querySelector(".theme-settings-host"),
   );
-  function updateSettingsButton() {
+  function updateSettingsButton(animate = false) {
     const open = !settings.hidden;
     settingsButton.classList.toggle("primary", open);
     settingsButton.setAttribute("aria-pressed", String(open));
@@ -59,9 +61,34 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       open ? "copy.e2ae92e1ec" : "copy.165118b1d4",
     );
     settingsButton.setAttribute("aria-label", settingsButton.title);
-    settingsButton
-      .querySelector("use")
-      .setAttribute("href", open ? "#ms-close" : "#ms-settings");
+    const use = settingsButton.querySelector("use"),
+      href = open ? "#ms-close" : "#ms-settings",
+      changed = use.getAttribute("href") !== href;
+    use.setAttribute("href", href);
+    if (!changed || !animate || animationCompat.preference().matches) return;
+    settingsIconAnimation?.cancel();
+    const icon = settingsButton.querySelector("svg"),
+      angle = open ? 65 : -65,
+      animation = animationCompat.animate(
+        icon,
+        [
+          { opacity: 0.2, transform: "scale(0.55) rotate(" + angle + "deg)" },
+          { opacity: 1, transform: "scale(1) rotate(0deg)" },
+        ],
+        {
+          duration: 280,
+          easing: "cubic-bezier(0.2, 0.7, 0.3, 1)",
+          fill: "both",
+        },
+      );
+    settingsIconAnimation = animation;
+    animation.finished
+      .then(() => {
+        if (settingsIconAnimation !== animation) return;
+        settingsIconAnimation = null;
+        animation.cancel();
+      })
+      .catch(() => {});
   }
   function hidePopovers() {
     settings.dispatchEvent(new Event("settings-tab-leave", { bubbles: true }));
@@ -106,7 +133,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     settings.hidden = true;
     editor.classList.remove("is-page-settings-open", "is-settings-open");
     settings.dispatchEvent(new Event("settings-closed"));
-    updateSettingsButton();
+    updateSettingsButton(true);
     if (!disposed) {
       const content = editor.closest(".agenda-mode")
         ? document.getElementById("agendaEditor")
@@ -127,7 +154,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       settings.hidden = false;
       settings.dispatchEvent(new Event("settings-opened"));
       editor.classList.add("is-page-settings-open", "is-settings-open");
-      updateSettingsButton();
+      updateSettingsButton(true);
       WorkTimeApp.ui.motion?.stop(editor.querySelector(".editor-content"));
       WorkTimeApp.ui.motion?.stop(document.getElementById("agendaEditor"));
       WorkTimeApp.ui.motion?.play(settings, "motion-sidebar-forward");

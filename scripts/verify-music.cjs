@@ -326,6 +326,7 @@ async function modelChecks() {
     }
   }
   const window = new EventTarget();
+  const document = new EventTarget();
   window.MediaMetadata = class {};
   let saved = {},
     denyStorage = false,
@@ -337,7 +338,7 @@ async function modelChecks() {
       return {
         tracks: (handle?.files || files).map((file) => ({
           path: file.name,
-          fingerprint: "100:1",
+          fingerprint: file.fingerprint || "100:1",
           title: file.name,
           artist: "",
           album: "",
@@ -391,6 +392,7 @@ async function modelChecks() {
     WorkTimeApp: app,
     Audio: FakeAudio,
     window,
+    document,
     navigator: {
       mediaSession: {
         setActionHandler: (key, value) => mediaActions.set(key, value),
@@ -576,6 +578,47 @@ async function modelChecks() {
   await nativeRestore.ready;
   assert.equal(nativeRestore.snapshot().position, 9);
   assert.equal(nativeRestore.snapshot().paused, true);
+  nativeRestore.select(nativeRestore.snapshot().tracks[1]);
+  await until(
+    () =>
+      nativeRestore.snapshot().details &&
+      nativeRestore.snapshot().position === 0,
+    "Select before migration",
+  );
+  nativeRestore.seek(17);
+  const migratedTrack = nativeRestore.snapshot().current;
+  nativeRestore.favorite(migratedTrack);
+  app.services.runtimeFolder.state = {
+    name: "migrated-fixture",
+    migration: files.map((file) => ({
+      path: file.name,
+      fingerprints: ["100:1", "100:2"],
+    })),
+  };
+  runtimeDirectory = {
+    name: "migrated-fixture",
+    files: files.map((file) => ({ ...file, fingerprint: "100:2" })),
+  };
+  document.dispatchEvent(new Event("worktime:runtimefolderchange"));
+  await until(
+    () =>
+      !nativeRestore.snapshot().busy &&
+      nativeRestore.snapshot().current?.path === migratedTrack.path &&
+      nativeRestore.snapshot().position === 17,
+    "Migrated track and playhead",
+  );
+  assert.equal(
+    nativeRestore.isFavorite(nativeRestore.snapshot().current),
+    true,
+  );
+  assert.equal(
+    nativeRestore.snapshot().favorites.has(`${migratedTrack.path}|100:1`),
+    false,
+  );
+  window.dispatchEvent(new Event("pagehide"));
+  await wait();
+  assert.equal(saved.current, `${migratedTrack.path}|100:2`);
+  assert.equal(saved.position, 17);
   nativeRestore.dispose();
   console.log(
     "Music state: playback, shuffle history, repeat, failures, timers, persistence, cancellation and URL cleanup passed.",

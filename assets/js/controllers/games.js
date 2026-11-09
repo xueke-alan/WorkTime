@@ -50,7 +50,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   exitButton.id = "gameExitButton";
   exitButton.className = "ui-button icon-only workspace-toolbar-action";
   exitButton.innerHTML =
-    '<svg class="ui-icon" aria-hidden="true"><use href="#ms-chevron-left"/></svg>';
+    '<svg class="ui-icon" aria-hidden="true"><use href="#ms-calendar-month"/></svg>';
   toolbar.append(exitButton, title);
   const content = document.createElement("div");
   content.className = "game-content";
@@ -100,6 +100,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     instance = null;
     currentId = null;
     lastSize = null;
+    shellMenu?.dispose();
     shellMenu = null;
     content.replaceChildren();
   }
@@ -107,8 +108,8 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     title.textContent = t(
       WorkTimeApp.games.get(currentId)?.nameKey || "games.menu",
     );
-    exitButton.setAttribute("aria-label", t("copy.11d0241540"));
-    exitButton.title = t("copy.11d0241540");
+    exitButton.setAttribute("aria-label", t("workspace.returnCalendar"));
+    exitButton.removeAttribute("title");
   }
   function notifySize() {
     if (!instance || state === "closed") return;
@@ -323,6 +324,8 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       document.getElementById("date-tab-games")?.focus({ preventScroll: true });
   }
   function renderMenu(container) {
+    if (container === sidebar) sidebarMenu?.dispose();
+    else shellMenu?.dispose();
     return WorkTimeApp.ui.renderGameMenu(container, {
       selectedId,
       onSelect(id) {
@@ -541,6 +544,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       observer.disconnect();
       contentObserver.disconnect();
       if (state !== "closed") restore(false);
+      sidebarMenu?.dispose();
       sidebar.replaceChildren();
       shell.remove();
     },

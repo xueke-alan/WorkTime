@@ -639,3 +639,195 @@
       WorkTimeApp.data.locales[language]["games.sudoku." + key] = values[i];
     });
 })();
+
+(() => {
+  const ids = [
+    "inequality",
+    "extraRegion",
+    "palindrome",
+    "quadSum",
+    "windmill",
+    "flower",
+    "triple",
+  ];
+  const translations = {
+    "zh-CN": [
+      [
+        "数比数独",
+        "额外区域数独",
+        "回文数独",
+        "四和数独",
+        "风车数独",
+        "花数独",
+        "三叠数独",
+      ],
+      [
+        "遵循标准数独规则。相邻数字的大小关系必须与“大于”标志一致，开口一侧的数字更大。",
+        "遵循标准数独规则。每个相连的阴影九格区域也须包含 1–9，且不能重复。",
+        "遵循标准数独规则。每条灰色线上的数字，从两个方向读取都相同。",
+        "遵循标准数独规则。每个圆点周围四格中，有一格的数字等于其余三格数字之和。",
+        "由五个 9×9 数独组成，四个外围盘面与中心盘面错位重叠。每个子盘面的行、列和 3×3 宫均须包含 1–9 且不重复；重叠格共享数字。",
+        "由五个 9×9 数独组成，中心盘面被另外四个子盘面完全覆盖。每个子盘面的行、列和 3×3 宫均须包含 1–9 且不重复；重叠格共享数字。",
+        "由三个相互重叠的 9×9 数独组成。每个子盘面的行、列和 3×3 宫均须包含 1–9 且不重复；重叠格共享数字。",
+      ],
+    ],
+    en: [
+      [
+        "Greater Than",
+        "Extra Regions",
+        "Palindrome",
+        "Quad Sum",
+        "Windmill",
+        "Flower",
+        "Triple Doku",
+      ],
+      [
+        "Standard Sudoku rules apply. Each greater-than sign opens toward the larger adjacent digit.",
+        "Standard Sudoku rules apply. Each connected shaded nine-cell region also contains every digit 1–9 exactly once.",
+        "Standard Sudoku rules apply. Digits along each gray line read the same in both directions.",
+        "Standard Sudoku rules apply. Around each dot, one of the four digits equals the sum of the other three.",
+        "Five overlapping 9×9 grids form a windmill around a central grid. Each subgrid has 1–9 once per row, column and 3×3 box. Overlapping cells share one digit.",
+        "Five overlapping 9×9 grids form a flower. The four outer grids fully cover the central grid. Each subgrid has 1–9 once per row, column and 3×3 box. Shared cells have one digit.",
+        "Three overlapping 9×9 grids. Each subgrid has 1–9 once per row, column and 3×3 box. Overlapping cells share one digit.",
+      ],
+    ],
+    ja: [
+      [
+        "不等号数独",
+        "追加領域数独",
+        "回文数独",
+        "四和数独",
+        "風車数独",
+        "花数独",
+        "トリプル数独",
+      ],
+      [
+        "通常の数独のルールに従います。不等号は大きい数字の側に開きます。",
+        "通常の数独のルールに従います。つながった各灰色の9マスにも1〜9を重複なく入れます。",
+        "通常の数独のルールに従います。灰色の線の数字は、どちらから読んでも同じになります。",
+        "通常の数独のルールに従います。丸の周囲の4マスのうち、1つの数字は残り3つの合計です。",
+        "中央と周囲4つの、計5つの9×9盤面が風車状に重なります。各盤面の行・列・3×3ブロックには1〜9を重複なく入れます。重なるマスは数字を共有します。",
+        "5つの9×9盤面が花の形に重なり、中央の盤面は周囲4つに完全に覆われます。各盤面の行・列・3×3ブロックには1〜9を重複なく入れます。重なるマスは数字を共有します。",
+        "3つの9×9盤面が重なります。各盤面の行・列・3×3ブロックには1〜9を重複なく入れます。重なるマスは数字を共有します。",
+      ],
+    ],
+    ko: [
+      [
+        "부등호 스도쿠",
+        "추가 영역 스도쿠",
+        "회문 스도쿠",
+        "네 칸 합 스도쿠",
+        "풍차 스도쿠",
+        "꽃 스도쿠",
+        "트리플 스도쿠",
+      ],
+      [
+        "기본 스도쿠 규칙을 따릅니다. 부등호의 열린 쪽에 더 큰 숫자를 넣습니다.",
+        "기본 스도쿠 규칙을 따릅니다. 연결된 각 음영 9칸 영역에도 1~9를 한 번씩 넣습니다.",
+        "기본 스도쿠 규칙을 따릅니다. 회색 선 위 숫자는 어느 방향으로 읽어도 같습니다.",
+        "기본 스도쿠 규칙을 따릅니다. 각 점 주변 네 칸 중 한 숫자는 나머지 세 숫자의 합과 같습니다.",
+        "중앙 보드와 주변 네 보드, 총 다섯 9×9 보드가 풍차 모양으로 겹칩니다. 각 보드의 행, 열, 3×3 영역에 1~9를 한 번씩 넣습니다. 겹친 칸은 숫자를 공유합니다.",
+        "다섯 9×9 보드가 꽃 모양으로 겹치며 주변 네 보드가 중앙 보드를 완전히 덮습니다. 각 보드의 행, 열, 3×3 영역에 1~9를 한 번씩 넣습니다. 겹친 칸은 숫자를 공유합니다.",
+        "세 9×9 보드가 겹칩니다. 각 보드의 행, 열, 3×3 영역에 1~9를 한 번씩 넣습니다. 겹친 칸은 숫자를 공유합니다.",
+      ],
+    ],
+  };
+  for (const [language, [names, rules]] of Object.entries(translations))
+    ids.forEach((id, i) => {
+      WorkTimeApp.data.locales[language]["games.sudoku." + id] = names[i];
+      WorkTimeApp.data.locales[language]["games.sudoku." + id + "Rule"] =
+        rules[i];
+    });
+})();
+
+for (const [language, values] of Object.entries({
+  "zh-TW": {
+    "games.sudoku.inequality": "數比數獨",
+    "games.sudoku.inequalityRule":
+      "遵循標準數獨規則。相鄰數字的大小關係必須與“大於”標誌一致，開口一側的數字更大。",
+    "games.sudoku.extraRegion": "額外區域數獨",
+    "games.sudoku.extraRegionRule":
+      "遵循標準數獨規則。每個相連的陰影九格區域也須包含 1–9，且不能重複。",
+    "games.sudoku.palindrome": "迴文數獨",
+    "games.sudoku.palindromeRule":
+      "遵循標準數獨規則。每條灰色線上的數字，從兩個方向讀取都相同。",
+    "games.sudoku.quadSum": "四和數獨",
+    "games.sudoku.quadSumRule":
+      "遵循標準數獨規則。每個圓點周圍四格中，有一格的數字等於其餘三格數字之和。",
+    "games.sudoku.windmill": "風車數獨",
+    "games.sudoku.windmillRule":
+      "由五個 9×9 數獨組成，四個外圍盤面與中心盤面錯位重疊。每個子盤面的行、列和 3×3 宮均須包含 1–9 且不重複；重疊格共享數字。",
+    "games.sudoku.flower": "花數獨",
+    "games.sudoku.flowerRule":
+      "由五個 9×9 數獨組成，中心盤面被另外四個子盤面完全覆蓋。每個子盤面的行、列和 3×3 宮均須包含 1–9 且不重複；重疊格共享數字。",
+    "games.sudoku.triple": "三疊數獨",
+    "games.sudoku.tripleRule":
+      "由三個相互重疊的 9×9 數獨組成。每個子盤面的行、列和 3×3 宮均須包含 1–9 且不重複；重疊格共享數字。",
+  },
+  "zh-HK": {
+    "games.sudoku.inequality": "數比數獨",
+    "games.sudoku.inequalityRule":
+      "遵循標準數獨規則。相鄰數字的大小關係必須與“大於”標誌一致，開口一側的數字更大。",
+    "games.sudoku.extraRegion": "額外區域數獨",
+    "games.sudoku.extraRegionRule":
+      "遵循標準數獨規則。每個相連的陰影九格區域也須包含 1–9，且不能重複。",
+    "games.sudoku.palindrome": "迴文數獨",
+    "games.sudoku.palindromeRule":
+      "遵循標準數獨規則。每條灰色線上的數字，從兩個方向讀取都相同。",
+    "games.sudoku.quadSum": "四和數獨",
+    "games.sudoku.quadSumRule":
+      "遵循標準數獨規則。每個圓點周圍四格中，有一格的數字等於其餘三格數字之和。",
+    "games.sudoku.windmill": "風車數獨",
+    "games.sudoku.windmillRule":
+      "由五個 9×9 數獨組成，四個外圍盤面與中心盤面錯位重疊。每個子盤面的行、列和 3×3 宮均須包含 1–9 且不重複；重疊格共享數字。",
+    "games.sudoku.flower": "花數獨",
+    "games.sudoku.flowerRule":
+      "由五個 9×9 數獨組成，中心盤面被另外四個子盤面完全覆蓋。每個子盤面的行、列和 3×3 宮均須包含 1–9 且不重複；重疊格共享數字。",
+    "games.sudoku.triple": "三疊數獨",
+    "games.sudoku.tripleRule":
+      "由三個相互重疊的 9×9 數獨組成。每個子盤面的行、列和 3×3 宮均須包含 1–9 且不重複；重疊格共享數字。",
+  },
+}))
+  Object.assign(WorkTimeApp.data.locales[language], values);
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["放大棋盘", "显示全盘"],
+  "zh-TW": ["放大棋盤", "顯示全盤"],
+  "zh-HK": ["放大棋盤", "顯示全盤"],
+  en: ["Enlarge board", "Show whole board"],
+  ja: ["盤面を拡大", "盤面全体を表示"],
+  ko: ["보드 확대", "전체 보드 표시"],
+})) {
+  WorkTimeApp.data.locales[language]["games.sudoku.zoomIn"] = labels[0];
+  WorkTimeApp.data.locales[language]["games.sudoku.zoomOut"] = labels[1];
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "十盒数独",
+    "在 10×10 盘面的白格中填入 1–9，每行、每列及十个粗线围出的 3×3 宫内均不重复。灰格不能填数。盘面首尾相连：越过右边（下边）的宫会从左边（上边）继续。选中格会高亮跨边界的相关格。",
+  ],
+  "zh-TW": [
+    "十盒數獨",
+    "在 10×10 盤面的白格中填入 1–9，每列、每欄及十個粗線圍出的 3×3 宮內均不重複。灰格不能填數。盤面首尾相連：越過右邊（下邊）的宮會從左邊（上邊）繼續。選取格會醒目顯示跨邊界的相關格。",
+  ],
+  "zh-HK": [
+    "十盒數獨",
+    "在 10×10 盤面的白格中填入 1–9，每行、每列及十個粗線圍出的 3×3 宮內均不重複。灰格不能填數。盤面首尾相連：越過右邊（下邊）的宮會從左邊（上邊）繼續。選取格會突顯跨邊界的相關格。",
+  ],
+  en: [
+    "Ten Box",
+    "Fill the white cells of the 10×10 board with 1–9, once per row, column and each of ten outlined 3×3 boxes. Gray cells are blocked. The board is toroidal: boxes crossing the right or bottom edge continue at the left or top. Selecting a cell highlights its peers across edges.",
+  ],
+  ja: [
+    "テンボックス数独",
+    "10×10盤面の白マスに1〜9を入れ、各行・列と10個の3×3領域で重複しないようにします。灰色のマスには入力しません。盤面は上下・左右がつながり、端を越えた領域は反対側に続きます。選択すると端を越えた関連マスも強調されます。",
+  ],
+  ko: [
+    "텐 박스 스도쿠",
+    "10×10 보드의 흰 칸에 1~9를 넣어 각 행, 열 및 열 개의 3×3 영역에서 한 번씩 나오게 합니다. 회색 칸은 입력할 수 없습니다. 오른쪽과 아래쪽을 넘어가는 영역은 왼쪽과 위쪽으로 이어집니다. 칸을 선택하면 경계 너머의 관련 칸도 강조됩니다.",
+  ],
+})) {
+  WorkTimeApp.data.locales[language]["games.sudoku.tenBox"] = labels[0];
+  WorkTimeApp.data.locales[language]["games.sudoku.tenBoxRule"] = labels[1];
+}

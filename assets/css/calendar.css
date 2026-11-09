@@ -537,7 +537,7 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 }
 .calendar-foot {
   border-color: var(--theme-border-soft, #ecf1ed);
-  background: #fbfdfb;
+  background: var(--theme-surface-paper, #fbfdfb);
   color: var(--theme-text-muted, #849489);
 }
 @media (min-width: 1151px) {
@@ -633,7 +633,7 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
   gap: 6px 14px;
   padding: 9px 15px;
   border-top: 1px solid var(--line);
-  background: #fbfdfb;
+  background: var(--theme-surface-paper, #fbfdfb);
   flex: none;
 }
 .calendar-footer .calendar-foot {
@@ -1348,7 +1348,7 @@ body .month-controls .month-title.is-year-title > :is(.month-title-divider, .mon
 body .calendar-footer {
   padding-block: 0.285714rem;
   padding-inline: 1.714286rem;
-  background: #fbfdfb;
+  background: var(--theme-surface-paper, #fbfdfb);
 }
 body .calendar .day.weekend {
   --day-surface: #f3f3f3;
@@ -1553,11 +1553,54 @@ body .workspace .calendar.year-calendar {
   padding: 16px 18px;
   overflow: auto;
 }
+.year-watermark {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  color: var(--accent);
+  font-family:
+    "Bodoni 72", "Bodoni MT", Didot, "Cormorant Garamond", "Times New Roman",
+    serif;
+  font-size: clamp(11rem, 28vw, 34rem);
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.92);
+  transition: none;
+  visibility: hidden;
+  white-space: nowrap;
+}
+.year-watermark.is-visible {
+  opacity: 0.055;
+  transform: translate(-50%, -50%) scale(1);
+  transition: none;
+  visibility: visible;
+}
+.year-watermark.is-mode-transition {
+  transition:
+    opacity 420ms ease,
+    transform 560ms var(--motion-ease),
+    visibility 0s linear 560ms;
+}
+.year-watermark.is-mode-transition.is-visible {
+  transition:
+    opacity 420ms ease,
+    transform 560ms var(--motion-ease),
+    visibility 0s;
+}
+.calendar.year-calendar {
+  position: relative;
+  z-index: 1;
+}
 .year-month {
   position: relative;
   min-width: 0;
   padding: 6px 4px;
   isolation: isolate;
+  cursor: pointer;
 }
 .year-month h3 {
   display: flex;
@@ -1570,39 +1613,160 @@ body .workspace .calendar.year-calendar {
   line-height: 24px;
   margin: 0 0 10px;
 }
-.year-month-stats { display: flex; gap: 8px; justify-content: flex-end; text-align: right; font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--theme-text-muted, #637f70); }
+.year-month-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.year-month-switch:hover:not(:disabled) {
+  border-color: transparent;
+  background: transparent;
+  color: var(--theme-text-strong, var(--ink));
+}
+.year-month-switch:focus-visible {
+  outline: 2px solid var(--theme-edge, var(--accent));
+  outline-offset: 3px;
+}
+.year-month-dot {
+  display: block;
+  width: 0.62rem;
+  height: 0.62rem;
+  min-height: 0;
+  flex: 0 0 0.62rem;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.year-month-switch[aria-pressed="true"] .year-month-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+.year-month-stats {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--theme-text-muted, #637f70);
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 260ms ease,
+    visibility 0s;
+}
+.year-calendar-detail .year-month-stats {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 260ms ease,
+    visibility 0s 260ms;
+}
 .year-days {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  grid-auto-rows: 30px;
+  grid-auto-rows: 34px;
   align-content: start;
   gap: 3px;
   text-align: center;
 }
 
 body .year-day {
+  --year-card-height: 34px;
+  --year-detail-stack: 26px;
+  --year-detail-offset: 1px;
+  --year-card-background: var(--year-detail-bg, var(--theme-surface-paper, #f8fbf9));
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: block;
   min-width: 0;
-  min-height: 26px;
-  padding: 3px 0;
+  width: 100%;
+  height: var(--year-card-height);
+  min-height: var(--year-card-height);
+  max-height: var(--year-card-height);
+  padding: 0;
   border: 1px solid transparent;
   border-radius: 4px;
+  overflow: hidden;
   font-size: 11px;
-  line-height: 1.2;
-  color: var(--theme-text-muted, #8b9b94);
+  line-height: 1.15;
+  color: var(--theme-text, #35453e);
+  background-color: var(--year-detail-bg, var(--theme-surface-paper, #f8fbf9));
+  transition:
+    background-color 360ms ease,
+    color 360ms ease,
+    box-shadow 200ms ease;
+}
+body .workspace .calendar.year-calendar .year-day {
+  transition:
+    background-color 360ms ease,
+    color 360ms ease,
+    box-shadow 240ms var(--motion-ease);
+}
+@property --year-legend-min {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #e7eee9;
+}
+@property --year-legend-zero {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #e7eee9;
+}
+@property --year-legend-max {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #4a916a;
+}
+@property --year-legend-zero-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
 }
 body .calendar-footer .year-legend {
   margin: 0;
+  width: 198px;
+  height: 16px;
+  flex: none;
+  align-items: center;
   justify-self: end;
   justify-content: flex-end;
   flex-wrap: nowrap;
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
+  transform: translateX(0);
+  transition:
+    opacity 260ms ease,
+    transform 360ms var(--motion-ease),
+    visibility 0s;
+}
+body .calendar-footer .year-legend.is-inactive {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-20px);
+  transition:
+    opacity 260ms ease,
+    transform 360ms var(--motion-ease),
+    visibility 0s 360ms;
 }
 .year-legend span {
   display: inline-flex;
@@ -1622,37 +1786,37 @@ body .calendar-footer .year-legend {
   .year-month {
     padding: 12px;
   }
+  .year-days {
+    grid-auto-rows: 38px;
+  }
   body .year-day {
-    min-height: 32px;
+    --year-card-height: 38px;
+    --year-detail-stack: 30px;
+    min-height: 38px;
     font-size: 12px;
   }
 }
 body button.year-day {
   width: 100%;
-  height: 30px;
-  min-height: 30px;
-  max-height: 30px;
+  height: var(--year-card-height);
+  min-height: var(--year-card-height);
+  max-height: var(--year-card-height);
   border-radius: 4px;
   gap: 0;
   box-shadow: none;
-  padding: 2px 0;
+  padding: 0;
   border-color: transparent;
-  padding-block: 0;
-  line-height: 1.3;
+  line-height: 1.15;
 }
-body button.year-day:hover {
-  filter: brightness(0.94);
+body button.year-day:hover:not(:disabled) {
+  border-color: color-mix(
+    in srgb,
+    var(--year-card-background) 72%,
+    var(--theme-text-strong, var(--ink))
+  );
+  filter: none;
 }
-body button.year-day.selected {
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-body .year-month .year-day.selected > span {
-  opacity: 1;
-}
-body .year-month .year-day[aria-current="date"] > span {
-  position: relative;
-  top: -2px;
-  line-height: 1;
+body .year-month .year-day[aria-current="date"] > .year-day-number {
   opacity: 1;
 }
 body button.year-day[aria-current="date"]::after {
@@ -1668,14 +1832,179 @@ body button.year-day[aria-current="date"]::after {
   transform: translateX(-50%);
   pointer-events: none;
 }
+/* One fixed year-card grid serves both display modes. Switching modes only
+   changes surfaces and text layers, so date cards never change position. */
+body .year-day.is-weekend:not(.is-holiday) {
+  --year-detail-bg: color-mix(in srgb, var(--day-surface) 74%, white);
+}
+body .year-day.is-holiday {
+  --year-detail-bg: color-mix(in srgb, #f4e7d6 68%, white);
+}
+body .year-day.is-makeup {
+  --year-detail-bg: color-mix(in srgb, #dfece4 74%, white);
+}
+body .workspace .calendar.year-calendar:not(.year-calendar-detail) .year-day {
+  --year-card-background: var(--year-heat-bg);
+  background-color: var(--year-card-background);
+  color: var(--year-heat-text);
+}
+body .year-day-number {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, calc((var(--year-card-height) - 15px) / 2));
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.28;
+  transition:
+    transform 280ms cubic-bezier(0.2, 0.7, 0.3, 1),
+    opacity 240ms ease;
+}
+body .year-day-number > span {
+  display: block;
+  transform: scale(0.857142);
+  transform-origin: center;
+  transition: transform 280ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+body .year-calendar-detail .year-day-number {
+  transform: translate(
+    -50%,
+    calc(
+      (var(--year-card-height) - var(--year-detail-stack, 26px)) / 2 +
+        var(--year-detail-offset, 1px)
+    )
+  );
+  opacity: 1;
+}
+body .year-calendar-detail .year-day-number > span {
+  transform: scale(1);
+}
+body .year-day-note {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 10px;
+  overflow: hidden;
+  font-size: 9px;
+  line-height: 10px;
+  text-align: center;
+  color: var(--theme-text-muted, #7c8f86);
+  opacity: 0;
+  transform: translateY(2px);
+  pointer-events: none;
+  transition:
+    opacity 300ms ease,
+    transform 360ms ease;
+}
+body .year-calendar-detail .year-day-note {
+  opacity: 1;
+  transform: translateY(
+    calc(
+      -1 *
+        (
+          (var(--year-card-height) - var(--year-detail-stack, 26px)) / 2 -
+            var(--year-detail-offset, 1px)
+        )
+    )
+  );
+}
+body .year-day-note-track {
+  --year-note-height: 10px;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(
+    calc(var(--year-note-index, 0) * var(--year-note-height, 10px) * -1)
+  );
+  transition: transform 360ms ease;
+}
+body .year-day-note-track > span {
+  display: block;
+  height: 10px;
+  line-height: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body .year-day-badge {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  z-index: 1;
+  padding: 0 1px;
+  border-radius: 3px;
+  font-size: 7.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  opacity: 0;
+  transform: translateY(-2px);
+  pointer-events: none;
+  transition:
+    opacity 260ms ease,
+    transform 320ms ease;
+}
+body .year-calendar-detail .year-day-badge {
+  opacity: 1;
+  transform: none;
+}
+body .year-day-badge.is-rest {
+  color: #a1443d;
+  background: #f7dfda;
+}
+body .year-day-badge.is-work {
+  color: #1f6f56;
+  background: #dbeee5;
+}
+body .year-calendar-detail button.year-day[aria-current="date"]::after {
+  display: none;
+}
+body .year-calendar-detail .year-day[aria-current="date"] .year-day-number {
+  color: var(--accent);
+  font-weight: 700;
+}
+body .calendar.year-calendar:not(.year-calendar-detail) .year-day[aria-current="date"] .year-day-number {
+  transform: translate(
+    -50%,
+    calc((var(--year-card-height) - 14px) / 2 - 2px)
+  );
+}
+body .calendar.year-calendar:not(.year-calendar-detail) .year-month:hover .year-day-number,
+body .calendar.year-calendar:not(.year-calendar-detail) .year-month:focus-within .year-day-number {
+  opacity: 1;
+}
 @media (max-width: 540px) {
-  .year-days {
-    grid-auto-rows: 32px;
+  body .year-day-number {
+    font-size: 15px;
   }
-  body button.year-day {
-    height: 32px;
-    min-height: 32px;
-    max-height: 32px;
+  body .year-day-number > span {
+    transform: scale(0.8);
+  }
+  body .year-calendar-detail .year-day-number {
+    transform: translate(
+      -50%,
+      calc(
+        (var(--year-card-height) - var(--year-detail-stack, 30px)) / 2 +
+          var(--year-detail-offset, 1px)
+      )
+    );
+  }
+  body .year-day-note {
+    height: 11px;
+    font-size: 10px;
+    line-height: 11px;
+  }
+  body .year-day-note-track {
+    --year-note-height: 11px;
+  }
+  body .year-day-note-track > span {
+    height: 11px;
+    line-height: 11px;
+  }
+  body .year-day-badge {
+    font-size: 8px;
   }
 }
 
@@ -1683,33 +2012,58 @@ body .calendar-footer .year-legend > span {
   display: inline-flex;
   flex: none;
 }
-
+body .calendar-footer .year-scale {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  transition: gap 360ms var(--motion-ease);
+}
+body .calendar-footer .year-scale.is-empty {
+  gap: 0;
+}
 body .calendar-footer .year-gradient {
   display: inline-block;
-  width: 120px;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
   height: 8px;
   border-radius: 4px;
-  flex: none;
+  background-image: linear-gradient(
+    to right,
+    var(--year-legend-min) 0%,
+    var(--year-legend-zero) var(--year-legend-zero-position),
+    var(--year-legend-max) 100%
+  );
+  transition-property:
+    --year-legend-min, --year-legend-zero, --year-legend-max,
+    --year-legend-zero-position;
+  transition-duration: 320ms;
+  transition-timing-function: ease;
+}
+body .calendar-footer .year-scale > :is(.year-min, .year-max) {
+  flex: 0 0 auto;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition:
+    width 360ms var(--motion-ease),
+    opacity 260ms ease;
+}
+body .calendar-footer .year-scale > .year-min {
+  justify-content: flex-end;
+}
+body .calendar-footer .year-scale > .year-max {
+  justify-content: flex-start;
 }
 body .month-controls .month-title {
   width: calc(
     4ch + var(--month-label-width, 2ch) + 0.5em + var(--month-item-gap) + var(--month-item-gap) + 0.857142rem
   );
 }
-body .year-day > span.ui-aligned-text {
-  transform: translate(var(--ui-ink-offset-x, 0px), var(--ui-ink-offset, 0px));
-}
-body .year-month .year-day > span {
-  opacity: 0.28;
-  transition: opacity 240ms ease;
-}
-body .year-month:hover .year-day > span,
-body .year-month:focus-within .year-day > span {
-  opacity: 1;
-}
-:where(html:where([data-reduced-motion="true"])) body .year-month .year-day > span {
-    transition: none;
-  }
 body .calendar .day-date {
   display: inline-flex;
   align-items: center;
@@ -2054,11 +2408,38 @@ body .calendar-footer .site-meta {
   text-decoration: underline;
 }
 body .calendar-footer .year-legend {
-  grid-column: 1 / -1;
+  grid-column: 1;
   grid-row: 1;
+  justify-self: start;
+  justify-content: flex-start;
+}
+body .calendar-footer:has(.year-legend:not(.hidden)) {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+body .calendar-footer:has(.year-legend:not(.hidden)) .calendar-foot {
+  grid-column: 2;
+  grid-row: 1;
+}
+body .calendar-footer:has(.year-legend:not(.hidden)) .site-meta {
+  grid-column: 3;
+  grid-row: 1;
+}
+body .calendar-footer:has(.year-legend:not(.hidden)) .calendar-foot {
+  transform: translateX(0);
+  transition: transform 360ms var(--motion-ease);
+}
+body .calendar-footer:has(.year-legend.is-inactive) .calendar-foot {
+  transform: translateX(calc(var(--year-footer-shift, 0px) * -1));
 }
 @media (max-width: 699px) {
   body .calendar-footer .site-meta {
     grid-column: 1;
+  }
+  body .calendar-footer:has(.year-legend:not(.hidden)) {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  body .calendar-footer:has(.year-legend:not(.hidden)) .site-meta {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 }

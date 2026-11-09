@@ -1,0 +1,14 @@
+Sheep a Sheep tile artwork source
+
+Source repository: https://github.com/adesign4all/sheep-sheep
+Source file: assets/resources/native/1b/1bb1ee4cb.e456b.png
+Local file: assets/images/games/sheep-tiles.png
+Retrieved: 2026-11-10
+
+The upstream PNG is preserved byte for byte. The game displays 27 individual
+motifs through CSS sprite coordinates, including the 16 standard tile motifs
+and 11 additional theme motifs. No upstream executable code is included.
+
+This file records provenance, not a grant of rights. The source repository
+does not provide an artwork license. Original artwork rights remain with
+their respective owners.

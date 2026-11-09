@@ -43,21 +43,22 @@ WorkTimeApp.games = (() => {
   // Minimal menu artwork: a shared 32px grid and uniform rounded outlines.
   // Inline SVG keeps the offline entry self-contained and crisp at any scale.
   const gameIcons = {
+    "game-gomoku": `<path d="M4 10h2m8 0h14M4 22h14m8 0h2M10 4v2m0 8v14M22 4v14m0 8v2"/><circle cx="10" cy="10" r="4" fill="currentColor"/><circle cx="22" cy="22" r="4"/>`,
     "game-tank": `<rect x="5" y="15" width="22" height="11" rx="4"/><path d="M10 15v-5h10l3 5M17 10V5h10M10 21h12"/><circle cx="10" cy="21" r="1"/><circle cx="22" cy="21" r="1"/>`,
-    "game-garden": `<rect x="4" y="12" width="14" height="15" rx="3"/><path d="M11 8V6a2 2 0 0 1 2-2h12a3 3 0 0 1 3 3v12a2 2 0 0 1-2 2h-3"/><path d="M11 23v-7m0 4c-4 0-4-4-4-4 4 0 4 4 4 4Zm0 0c4 0 4-4 4-4-4 0-4 4-4 4Z"/>`,
+    "game-garden": `<path d="M8 23a5 5 0 0 1-4-8 5 5 0 0 1 3-8 5 5 0 0 1 8-2 5 5 0 0 1 8 4M9 23v5m10-5v5"/><path d="M20 13c-5-5-8-1-5 2m10-2c5-5 7-1 4 2M17 14h10v5a5 5 0 0 1-10 0Zm3 3v1m4-1v1M8 23h12"/>`,
     "game-link": `<rect x="3" y="5" width="10" height="13" rx="2"/><rect x="19" y="14" width="10" height="13" rx="2"/><path d="M8 22v5h7m9-17V5h-7"/>`,
     "game-2048": `<rect x="5" y="5" width="9" height="9" rx="2"/><rect x="18" y="5" width="9" height="9" rx="2"/>
       <rect x="5" y="18" width="9" height="9" rx="2"/><rect x="18" y="18" width="9" height="9" rx="2"/>`,
     "game-minesweeper": `<circle cx="16" cy="16" r="7"/>
       <path d="M16 4v3m0 18v3M4 16h3m18 0h3M7.5 7.5l2 2m13 13 2 2m-17 0 2-2m13-13 2-2"/>`,
-    "game-snake": `<path d="M6 26h12a5 5 0 0 0 0-10h-4a5 5 0 0 1 0-10h12"/>`,
+    "game-snake": `<path d="M18 9h-5a5 5 0 0 0 0 10h5a4 4 0 0 1 0 8H6" stroke-width="4"/><rect x="18" y="5" width="10" height="8" rx="3"/><circle cx="23" cy="8" r="1" fill="currentColor" stroke="none"/><path d="M28 10h2"/>`,
     "game-sudoku": `<rect x="5" y="5" width="22" height="22" rx="2"/>
       <path d="M12.5 5v22M20 5v22M5 12.5h22M5 20h22"/>`,
     "game-jump": `<circle cx="10" cy="9" r="2.5"/>
       <path d="m8.5 15-2 8h7l-2-8zM4 27h12m5-9h7"/>`,
     "game-sokoban": `<rect x="6" y="6" width="20" height="20" rx="2"/>
       <path d="m10 10 12 12m0-12L10 22"/>`,
-    "game-xiangqi": `<circle cx="16" cy="16" r="11"/><path d="M11 11h10M16 11v10m-6 0h12"/>`,
+    "game-xiangqi": `<circle cx="16" cy="16" r="12"/><path d="M10 10h12M11 13h10v7H11zM11 16.5h10M9 23h14M16 8v17" stroke-width="1.7"/>`,
   };
   return {
     define(catalog) {

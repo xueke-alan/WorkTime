@@ -82,7 +82,7 @@ WorkTimeApp.data.locales["zh-CN"] = {
   "copy.02ffd2393f": "下载当前备份",
   "copy.0f14276a72": "工作记录原始数据-",
   "copy.8e990e61b4": "备份已恢复",
-  "copy.35c89c4491": "工作记录备份-",
+  "copy.35c89c4491": "HWorkTime-Backup-",
   "copy.5091362c8b": "备份已下载",
   "copy.d09d00bfdf": "备份失败：",
   "copy.1af51f35b9": "备份已复制到剪贴板",

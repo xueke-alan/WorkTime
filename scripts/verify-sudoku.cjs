@@ -18,7 +18,7 @@ const rules = games.sudokuRules;
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const groupById = (id) => data.sudoku.groups.find((group) => group.id === id);
 function verifyBank() {
-  assert.equal(data.sudoku.groups.length, 16);
+  assert.equal(data.sudoku.groups.length, 24);
   const seen = new Set();
   for (const group of data.sudoku.groups) {
     assert.equal(group.puzzles.length, 20);
@@ -55,23 +55,14 @@ function verifyBank() {
       };
       assert.equal(rules.won(puzzle, solved), true);
       // Independently validate rows, columns, boxes and additional clues.
-      for (let i = 0; i < 9; i++) {
-        const row = solved.values.slice(i * 9, i * 9 + 9);
-        const col = Array.from(
-          { length: 9 },
-          (_, j) => solved.values[j * 9 + i],
+      for (const unit of rules.layout(puzzle).units)
+        assert.equal(
+          unit
+            .map((i) => solved.values[i])
+            .sort()
+            .join(""),
+          "123456789",
         );
-        const box = Array.from(
-          { length: 9 },
-          (_, j) =>
-            solved.values[
-              (Math.floor(i / 3) * 3 + Math.floor(j / 3)) * 9 +
-                ((i % 3) * 3 + (j % 3))
-            ],
-        );
-        for (const unit of [row, col, box])
-          assert.equal([...unit].sort().join(""), "123456789");
-      }
       puzzle.parity?.forEach((value, i) => {
         if (value) assert.equal(solved.values[i] % 2, value === "o" ? 1 : 0);
       });
@@ -225,12 +216,7 @@ async function main() {
       assert.equal(await page.locator("[data-game-error]").count(), 0);
     }
     const action = (id) => page.locator('[data-sudoku-action="' + id + '"]');
-    async function menuAction(id) {
-      if (
-        !(await page.locator(".sudoku-options").getAttribute("open")) &&
-        !(await page.locator(".sudoku-options").evaluate((el) => el.open))
-      )
-        await page.locator(".sudoku-options > summary").click();
+    async function toolbarAction(id) {
       await action(id).click();
     }
     const saved = async () => {
@@ -246,7 +232,15 @@ async function main() {
       assert.ok(buttons[0].x < buttons[1].x && buttons[1].x < buttons[2].x);
     }
     await launch();
-    assert.equal(await page.locator(".sudoku-categories button").count(), 16);
+    assert.equal(await page.locator(".sudoku-categories button").count(), 24);
+    assert.equal(
+      await page
+        .locator(
+          ".sudoku-catalog .sudoku-options, .sudoku-catalog [data-game-help], .sudoku-source",
+        )
+        .count(),
+      0,
+    );
     assert.equal(await page.locator(".sudoku-levels button").count(), 20);
     assert.equal(
       await page.locator(".sudoku-levels button:enabled").count(),
@@ -274,7 +268,7 @@ async function main() {
       assert.ok(
         tiles.every(
           ({ width, height, radius }) =>
-            Math.abs(Math.max(44, (width * 3) / 4) - height) < 1 && radius > 0,
+            Math.abs(width - height) < 1 && radius > 0,
         ),
       );
       await page.screenshot({
@@ -307,7 +301,7 @@ async function main() {
     await launch();
     assert.equal(await page.locator(".sudoku-catalog").isVisible(), false);
     assert.equal((await saved()).current, laterPuzzle.id);
-    await menuAction("choose");
+    await toolbarAction("choose");
     await action("easy").click();
     await action("level-1").click();
     const puzzle = data.sudoku.groups[0].puzzles[0],
@@ -368,99 +362,88 @@ async function main() {
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
     const geometry = await page.locator(".sudoku-board").boundingBox();
-    const optionsToggle = page.locator(".sudoku-options > summary");
-    const menu = page.locator(".sudoku-controls");
-    const title = page.locator(".sudoku-hud .game-title");
     async function assertToolbar() {
-      const [heading, timer, pause, more] = await Promise.all(
-        [
-          title,
-          page.locator(".sudoku-time strong"),
-          action("pause"),
-          optionsToggle,
-        ].map((element) => element.boundingBox()),
+      assert.equal(
+        await page
+          .locator(
+            ".sudoku-options, .sudoku-controls, .sudoku-source, .sudoku-rule, .game-sudoku [data-game-help]",
+          )
+          .count(),
+        0,
       );
-      if (
-        (await page.locator(".game-sudoku").getAttribute("data-layout")) ===
-        "wide"
-      ) {
-        assert.ok(heading.y + heading.height <= timer.y);
-      } else {
-        assert.ok(heading.x + heading.width <= timer.x);
+      for (const name of ["pause", "choose", "restart"]) {
+        const b = action(name),
+          rect = await b.boundingBox();
+        assert.ok(
+          rect &&
+            rect.x >= 0 &&
+            rect.x + rect.width <= page.viewportSize().width + 1,
+          name + " fits toolbar",
+        );
+        assert.ok((await b.getAttribute("aria-label")).length > 0);
+        assert.equal(await b.locator("svg").count(), 1);
       }
-      assert.ok(
-        timer.x > pause.x &&
-          timer.x + timer.width < pause.x + pause.width &&
-          pause.x + pause.width < more.x,
-      );
       assert.equal(await action("pause").locator(".sudoku-time").count(), 1);
-      const centerY = (box) => box.y + box.height / 2;
-      assert.ok(Math.abs(centerY(timer) - centerY(pause)) < 1);
-      assert.ok(Math.abs(centerY(pause) - centerY(more)) < 1);
-      const panel = await menu.boundingBox();
-      assert.ok(Math.abs(panel.x + panel.width - more.x - more.width) < 1);
     }
     const hud = await page.locator(".sudoku-hud").boundingBox();
     assert.ok(hud.x >= geometry.x + geometry.width);
     assert.ok(hud.y - geometry.y > 0 && hud.y - geometry.y <= 12);
-    await optionsToggle.click();
     await assertToolbar();
-    await action("choose").press("Escape");
-    assert.equal(await menu.isVisible(), false);
-    assert.equal(
-      await optionsToggle.evaluate((el) => el === document.activeElement),
-      true,
-    );
-    await optionsToggle.click();
-    await title.click();
-    assert.equal(await menu.isVisible(), false);
-    await optionsToggle.click();
-    await page.screenshot({ path: path.join(output, "options-desktop.png") });
-    await page.locator("[data-game-help]").click();
-    assert.equal(await page.locator(".game-help-screen").isVisible(), true);
-    await page.locator("[data-game-help-close]").click();
-    assert.deepEqual(
-      await page.locator(".sudoku-board").boundingBox(),
-      geometry,
-    );
-    await menuAction("restart");
+    await page.screenshot({ path: path.join(output, "toolbar-desktop.png") });
+    await toolbarAction("restart");
     await action("cancel").click();
     assert.equal((await saved()).drafts[puzzle.id].values[index], digit);
     await action("pause").click();
     const cover = page.locator(".sudoku-cover");
-    assert.equal(await page.locator(".sudoku-board").isVisible(), false);
-    assert.deepEqual(await cover.boundingBox(), geometry);
-    const heading = await cover.locator("h3").boundingBox();
-    const resume = await action("accept").boundingBox();
+    assert.equal(await page.locator(".sudoku-board").isVisible(), true);
+    assert.equal(
+      await page.locator(".sudoku-field").evaluate((el) => el.inert),
+      true,
+    );
+    assert.deepEqual(
+      await page.locator(".sudoku-board").boundingBox(),
+      geometry,
+      "pausing preserves the board geometry",
+    );
+    assert.deepEqual(
+      await cover.boundingBox(),
+      await page.locator(".sudoku-stage").boundingBox(),
+    );
+    assert.equal(await cover.innerText(), "暂停");
+    assert.equal(await action("accept").isVisible(), false);
+    assert.equal(await cover.locator("h3").isVisible(), false);
+    assert.equal(
+      await cover.evaluate((el) => getComputedStyle(el).backdropFilter),
+      "none",
+    );
+    const icon = await cover.locator(".game-pause-content").boundingBox();
+    assert.ok(icon.width >= 80);
     assert.ok(
-      Math.abs(heading.x + heading.width / 2 - (resume.x + resume.width / 2)) <
-        1,
+      Math.abs(icon.x + icon.width / 2 - (geometry.x + geometry.width / 2)) < 1,
     );
     assert.ok(
-      Math.abs(
-        (heading.y + resume.y + resume.height) / 2 -
-          (geometry.y + geometry.height / 2),
-      ) < 1,
+      Math.abs(icon.y + icon.height / 2 - (geometry.y + geometry.height / 2)) <
+        1,
     );
     await page.screenshot({ path: path.join(output, "paused-desktop.png") });
     const paused = (await saved()).drafts[puzzle.id].elapsed;
     await page.waitForTimeout(1200);
     assert.equal((await saved()).drafts[puzzle.id].elapsed, paused);
-    await action("accept").click();
+    await action("pause").click();
     await page.waitForTimeout(1100);
     assert.ok((await saved()).drafts[puzzle.id].elapsed > paused);
-    await menuAction("choose");
+    await toolbarAction("choose");
     await action("parity").click();
     await action("level-1").click();
     assert.ok(
       (await page.locator('.sudoku-cell[data-parity="o"]').count()) > 0,
     );
-    await menuAction("choose");
+    await toolbarAction("choose");
     await action("thermo").click();
     await action("level-1").click();
     assert.ok((await page.locator(".sudoku-thermos polyline").count()) > 0);
     await page.screenshot({ path: path.join(output, "thermometer.png") });
-    await menuAction("choose");
+    await toolbarAction("choose");
     assert.equal(await action("fog").count(), 0);
     await action("skyscraper").click();
     assert.equal(
@@ -491,7 +474,7 @@ async function main() {
       });
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await menuAction("choose");
+    await toolbarAction("choose");
     await action("easy").click();
     assert.equal(
       await action("level-1")
@@ -527,7 +510,7 @@ async function main() {
         ),
       );
       for (const entries of Object.values(translations)) {
-        assert.equal(entries.length, 78);
+        assert.equal(entries.length, 96);
         assert.ok(entries.every(([, v]) => typeof v === "string" && v.length));
       }
     }
@@ -559,21 +542,18 @@ async function main() {
       await page.screenshot({
         path: path.join(output, "mobile-" + width + ".png"),
       });
-      await optionsToggle.click();
       await assertToolbar();
-      const menuBounds = await menu.boundingBox();
-      assert.ok(menuBounds.x >= 0 && menuBounds.x + menuBounds.width <= width);
       await page.screenshot({
-        path: path.join(output, "options-mobile-" + width + ".png"),
+        path: path.join(output, "toolbar-mobile-" + width + ".png"),
       });
-      await optionsToggle.press("Escape");
       await action("pause").click();
-      assert.equal(await page.locator(".sudoku-board").isVisible(), false);
+      assert.equal(await page.locator(".sudoku-board").isVisible(), true);
+      assert.equal(await action("accept").isVisible(), false);
       assert.deepEqual(await cover.boundingBox(), bounds);
       await page.screenshot({
         path: path.join(output, "paused-mobile-" + width + ".png"),
       });
-      await action("accept").click();
+      await action("pause").click();
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
     // Complete through a normal final keypress and verify the replay record.
@@ -590,7 +570,7 @@ async function main() {
       { key, id: puzzle.id, solution: puzzle.solution, index },
     );
     await launch();
-    await action("accept").click();
+    await action("pause").click();
     const last = index;
     await page.locator('[data-cell="' + last + '"]').focus();
     await page
@@ -617,7 +597,7 @@ async function main() {
     assert.ok(
       await action("replay").evaluate((el) => el === document.activeElement),
     );
-    await menuAction("choose");
+    await toolbarAction("choose");
     assert.equal(
       await action("level-1")
         .locator(".game-level-badge")
@@ -627,7 +607,7 @@ async function main() {
     assert.match(await action("level-1").getAttribute("aria-label"), /已通关/);
     assert.equal(await action("level-2").isEnabled(), true);
     await action("level-1").click();
-    await menuAction("restart");
+    await toolbarAction("restart");
     await action("accept").click();
     {
       const noted = rules.peers[index].find((i) => puzzle.givens[i] === "0");
@@ -647,7 +627,7 @@ async function main() {
         { key, id: puzzle.id },
       );
       await launch();
-      await action("accept").click();
+      await action("pause").click();
       await action("cell-" + index).click();
       await action("digit-" + wrong).click();
       await action("erase").click();
@@ -674,6 +654,19 @@ async function main() {
         { index, puzzle },
       );
       assert.equal(await page.locator(".game-confetti").count(), 120);
+      const effect = await page.locator(".game-celebration").boundingBox();
+      const shell = await page.locator("#gameShell").boundingBox();
+      for (const key of ["x", "y", "width", "height"])
+        assert.ok(
+          Math.abs(effect[key] - shell[key]) < 1,
+          "confetti uses game window bounds",
+        );
+      assert.equal(
+        await page
+          .locator(".game-celebration")
+          .evaluate((el) => getComputedStyle(el).pointerEvents),
+        "none",
+      );
       const winningSave = await saved();
       const latest = winningSave.completed[puzzle.id];
       assert.equal(latest.elapsed, firstResult.elapsed);
@@ -735,18 +728,18 @@ async function main() {
       await page.emulateMedia({ reducedMotion: "reduce" });
       await launch();
       assert.equal(await page.locator(".game-celebration").count(), 0);
-      await menuAction("restart");
+      await toolbarAction("restart");
       await action("accept").click();
-      await menuAction("menu-replay");
+      await toolbarAction("menu-replay");
       await action("replay-exit").click();
       assert.ok(
         await page
-          .locator(".sudoku-options > summary")
+          .locator('[data-sudoku-action="menu-replay"]')
           .evaluate((el) => el === document.activeElement),
       );
       assert.deepEqual((await saved()).completed[puzzle.id], latest);
     }
-    await menuAction("choose");
+    await toolbarAction("choose");
     assert.equal(await action("level-2").isEnabled(), true);
     assert.deepEqual(errors, []);
     await page.locator("#gameExitButton").click();
@@ -793,7 +786,7 @@ async function main() {
     );
     await blocked.close();
     console.log(
-      "Sudoku: 320 unique solutions, variant constraints, free level selection, input, undo, drafts, replay, pause, help, six languages, mobile, unavailable storage and offline loading verified.",
+      "Sudoku: 480 unique solutions, variant constraints, free level selection, input, undo, drafts, replay, pause, direct toolbar, six languages, mobile, unavailable storage and offline loading verified.",
     );
   } finally {
     await browser.close();

@@ -3536,3 +3536,138 @@ for (const [language, labels] of Object.entries({
     WorkTimeApp.data.locales[language]["motion." + key] = labels[index];
   });
 }
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "切换到热力图",
+    "切换到普通日历",
+    "休",
+    "班",
+    "休",
+    "班",
+    "热力图模式",
+    "普通日历模式",
+  ],
+  "zh-TW": [
+    "切換到熱力圖",
+    "切換到普通日曆",
+    "休",
+    "班",
+    "休",
+    "班",
+    "熱力圖模式",
+    "普通日曆模式",
+  ],
+  "zh-HK": [
+    "切換到熱力圖",
+    "切換到普通日曆",
+    "休",
+    "班",
+    "休",
+    "班",
+    "熱力圖模式",
+    "普通日曆模式",
+  ],
+  en: [
+    "Switch to heatmap",
+    "Switch to calendar",
+    "O",
+    "W",
+    "Off",
+    "Work",
+    "Heatmap mode",
+    "Calendar mode",
+  ],
+  ja: [
+    "ヒートマップに切り替え",
+    "カレンダーに切り替え",
+    "休",
+    "出",
+    "休",
+    "出",
+    "ヒートマップモード",
+    "カレンダーモード",
+  ],
+  ko: [
+    "히트맵으로 전환",
+    "달력으로 전환",
+    "휴",
+    "근",
+    "휴",
+    "근",
+    "히트맵 모드",
+    "달력 모드",
+  ],
+})) {
+  WorkTimeApp.data.locales[language]["yearView.toHeatmap"] = labels[0];
+  WorkTimeApp.data.locales[language]["yearView.toCalendar"] = labels[1];
+  WorkTimeApp.data.locales[language]["yearView.restBadge"] = labels[2];
+  WorkTimeApp.data.locales[language]["yearView.workBadge"] = labels[3];
+  WorkTimeApp.data.locales[language]["yearView.restLabel"] = labels[4];
+  WorkTimeApp.data.locales[language]["yearView.workLabel"] = labels[5];
+  WorkTimeApp.data.locales[language]["yearView.heatmapMode"] = labels[6];
+  WorkTimeApp.data.locales[language]["yearView.calendarMode"] = labels[7];
+}
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["年度数据分析", "总加班时长", "完整记录天数"],
+  "zh-TW": ["年度數據分析", "總加班時數", "完整記錄天數"],
+  "zh-HK": ["年度數據分析", "總加班時數", "完整記錄日數"],
+  en: ["Annual analysis", "Total overtime", "Complete record days"],
+  ja: ["年間データ分析", "年間残業時間", "記録完了日数"],
+  ko: ["연간 데이터 분석", "총 초과 근무 시간", "기록 완료 일수"],
+})) {
+  WorkTimeApp.data.locales[language]["yearView.analysisTitle"] = labels[0];
+  WorkTimeApp.data.locales[language]["yearView.totalOvertime"] = labels[1];
+  WorkTimeApp.data.locales[language]["yearView.completeDays"] = labels[2];
+}
+for (const [language, label] of Object.entries({
+  "zh-CN": "闰",
+  "zh-TW": "閏",
+  "zh-HK": "閏",
+  en: "Leap ",
+  ja: "閏",
+  ko: "윤",
+})) {
+  WorkTimeApp.data.locales[language]["yearView.leapMonth"] = label;
+}
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "暂停",
+  "zh-TW": "暫停",
+  "zh-HK": "暫停",
+  en: "Paused",
+  ja: "一時停止",
+  ko: "일시 정지",
+}))
+  WorkTimeApp.data.locales[language]["games.pauseOverlay"] = label;
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "返回日历",
+  "zh-TW": "返回日曆",
+  "zh-HK": "返回日曆",
+  en: "Return to calendar",
+  ja: "カレンダーに戻る",
+  ko: "달력으로 돌아가기",
+}))
+  WorkTimeApp.data.locales[language]["workspace.returnCalendar"] = label;
+
+for (const [language, label] of Object.entries({
+  "zh-CN": "返回游戏",
+  "zh-TW": "返回遊戲",
+  "zh-HK": "返回遊戲",
+  en: "Return to game",
+  ja: "ゲームに戻る",
+  ko: "게임으로 돌아가기",
+}))
+  WorkTimeApp.data.locales[language]["games.levelStatus.returnGame"] = label;
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["取消", "新游戏"],
+  "zh-TW": ["取消", "新遊戲"],
+  "zh-HK": ["取消", "新遊戲"],
+  en: ["Cancel", "New game"],
+  ja: ["キャンセル", "新しいゲーム"],
+  ko: ["취소", "새 게임"],
+})) {
+  WorkTimeApp.data.locales[language]["games.restartCancel"] = labels[0];
+  WorkTimeApp.data.locales[language]["games.restartNew"] = labels[1];
+}

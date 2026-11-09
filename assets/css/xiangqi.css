@@ -1,38 +1,150 @@
+.game-content:has(.game-xiangqi) {
+  container-type: inline-size;
+  container-name: xiangqi-layout;
+}
 .game-xiangqi {
   --xiangqi-red: #ad3734;
   --xiangqi-black: #262f35;
   --xiangqi-grid: color-mix(in srgb, var(--ink) 62%, var(--paper));
   --xiangqi-mark: color-mix(in srgb, var(--accent) 68%, var(--ink));
   width: 100%;
-  max-width: 36rem;
-  margin-inline: auto;
+  height: 100%;
 }
 .game-xiangqi [hidden] {
   display: none;
 }
-.game-xiangqi[data-playing="false"] {
-  max-width: none;
+.xiangqi-versus-setup {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 30rem;
+  margin-inline: auto;
+  padding: 1rem;
 }
-.game-xiangqi .game-title {
-  margin: 0 0 0.65rem;
-  font-size: 1.15rem;
+.xiangqi-category-divider {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: var(--line);
+  margin-block: .75rem;
+}
+.game-xiangqi .game-level-categories [data-xiangqi-action="versus"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 3rem;
+  align-self: start;
+}
+.xiangqi-difficulties { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; width: 100%; max-width: 17rem; }
+.game-xiangqi .xiangqi-difficulties .game-button { aspect-ratio: 1; width: 100%; height: auto; min-width: 0; padding: .3rem; justify-content: center; }
+.xiangqi-setup-title { margin: 0 0 .25rem; font-size: 1.5rem; font-weight: 700; line-height: 1.35; }
+.xiangqi-start-title { margin: .5rem 0 0; font-size: var(--text-small); font-weight: 500; }
+.xiangqi-start-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; width: 100%; max-width: 17rem; }
+.game-xiangqi .xiangqi-start-options .game-button { min-height: 4rem; padding: .6rem .3rem; justify-content: center; flex-direction: column; gap: .3rem; }
+.xiangqi-start-heading { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+.xiangqi-start-side { font-size: var(--text-small); line-height: 1.3; }
+.game-xiangqi [data-xiangqi-action="start-red"] { --game-button-hover: #ad3539; --game-button-hover-ink: #fff; --game-button-edge: #ad3539; color: #ad3539; background: color-mix(in srgb, #ad3539 7%, var(--paper)); border-color: color-mix(in srgb, #ad3539 22%, var(--paper)); }
+.game-xiangqi [data-xiangqi-action="start-black"] { --game-button-hover: #25292e; --game-button-hover-ink: #fff; --game-button-edge: #25292e; color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, var(--paper)); border-color: color-mix(in srgb, var(--ink) 18%, var(--paper)); }
+.game-xiangqi [data-xiangqi-action="start-red"]:hover:not(:disabled) { color: #fff; background: #ad3539; border-color: #ad3539; }
+.game-xiangqi [data-xiangqi-action="start-black"]:hover:not(:disabled) { color: #fff; background: #25292e; border-color: #25292e; }
+@container xiangqi-layout (width < 540px) {
+  .game-xiangqi[data-category="ai"] .game-level-page-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .game-xiangqi[data-category="ai"] .game-level-categories { border-inline-end: 0; padding-inline-end: 3px; }
+  .xiangqi-versus-setup { padding: .5rem; gap: 1rem; }
+}
+.game-xiangqi .game-level-categories {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 4.5rem) auto 3rem;
+}
+.game-xiangqi .game-level-categories .game-button {
+  white-space: pre-line;
+}
+.xiangqi-named-levels {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  row-gap: 0.4rem;
+}
+.xiangqi-named-levels .game-button {
+  display: block;
+  aspect-ratio: auto;
+  min-height: max(44px, 3rem);
+  padding: 0.4rem 0.5rem;
+  overflow-wrap: anywhere;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+@media (max-width: 540px) {
+  .game-xiangqi .game-level-categories { grid-template-rows: repeat(3, 4.5rem) auto 3rem; }
+  .game-xiangqi .game-level-categories,
+  .xiangqi-named-levels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .xiangqi-named-levels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.game-xiangqi[data-playing="false"] {
+  height: auto;
+}
+.xiangqi-play {
+  display: grid;
+  grid-template-columns: max-content 18rem;
+  align-items: start;
+  align-content: safe center;
+  justify-content: center;
+  gap: 2rem;
+  height: 100%;
+  min-height: 0;
+  padding: 1.5rem;
+  container-type: size;
+}
+.xiangqi-stage {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  flex: none;
+  width: min(calc(100cqw - 20rem), 90cqh);
+  container-type: inline-size;
+}
+.xiangqi-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 1.25rem;
+  min-width: 0;
+  flex: 0 0 18rem;
+  padding-block: 0.5rem;
+  align-self: stretch;
 }
 .xiangqi-objective,
 .xiangqi-status,
-.xiangqi-help,
 .xiangqi-warning {
-  margin: 0.6rem 0;
-  text-align: center;
+  margin: 0;
+  text-align: left;
+  overflow-wrap: anywhere;
 }
-.xiangqi-help {
+.xiangqi-objective {
+  display: grid;
+  gap: 0.4rem;
+}
+.xiangqi-level-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.xiangqi-detail {
+  margin: 0;
   color: var(--muted);
+  font-size: var(--text-small);
+  line-height: 1.5;
 }
 .xiangqi-board {
   position: relative;
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
   grid-template-rows: repeat(10, minmax(0, 1fr));
-  width: min(100%, 30rem, max(17rem, calc((100dvh - 22rem) * 0.9)));
+  width: 100%;
   aspect-ratio: 9 / 10;
   margin: 0 auto;
   border: 1px solid color-mix(in srgb, var(--ink) 20%, var(--line));
@@ -47,6 +159,41 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+}
+.xiangqi-result {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  user-select: none;
+}
+.xiangqi-result-frame {
+  position: relative;
+  width: 55%;
+  isolation: isolate;
+}
+.xiangqi-result-art {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 2px 1px rgb(252 252 249 / 90%));
+}
+.xiangqi-result-wash,
+.xiangqi-result-splash {
+  position: absolute;
+  inset: -45% -25%;
+  background: center / 100% 100% no-repeat;
+  opacity: 0;
+}
+.xiangqi-result-wash {
+  background-image: url("../images/xiangqi/ink-wash.svg");
+}
+.xiangqi-result-splash {
+  background-image: url("../images/xiangqi/ink-splash.svg");
 }
 .xiangqi-art svg {
   width: 100%;
@@ -81,18 +228,8 @@
 .xiangqi-cell.is-red {
   color: var(--xiangqi-red);
 }
-.xiangqi-board .xiangqi-cell:not(.is-drop):is(:hover, :active) {
+.xiangqi-board .xiangqi-cell:is(:hover, :active) {
   background: transparent;
-}
-.xiangqi-cell.is-draggable {
-  touch-action: none;
-  cursor: grab;
-}
-.xiangqi-board[data-replying] .xiangqi-cell {
-  cursor: wait;
-}
-.xiangqi-cell.is-drag-origin .xiangqi-piece {
-  visibility: hidden;
 }
 .xiangqi-cell:is(.is-selected, .is-capture, .is-check)::before {
   position: absolute;
@@ -109,13 +246,6 @@
 .xiangqi-cell.is-check::before {
   border-color: var(--xiangqi-red);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--xiangqi-red) 23%, transparent);
-}
-.xiangqi-cell.is-drop {
-  box-shadow: inset 0 0 0 2px var(--xiangqi-red);
-}
-.xiangqi-cell.is-drop:is(.is-legal, .is-selected) {
-  box-shadow: inset 0 0 0 2px var(--xiangqi-mark);
-  background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 .game-xiangqi .xiangqi-cell:focus-visible {
   z-index: 4;
@@ -146,13 +276,7 @@
 .xiangqi-piece:empty {
   visibility: hidden;
 }
-.xiangqi-ghost {
-  position: absolute;
-  z-index: 5;
-  color: var(--xiangqi-red);
-  transform: translate(-50%, -50%);
-}
-.xiangqi-cell:is(.is-legal, .is-last-from, .is-last-to, .is-suggested)::after {
+.xiangqi-cell:is(.is-legal, .is-last-from, .is-last-to)::after {
   position: absolute;
   z-index: 3;
   pointer-events: none;
@@ -173,44 +297,145 @@
 .xiangqi-cell.is-last-red::after {
   border-color: var(--xiangqi-red);
 }
-.xiangqi-cell.is-legal:not(.is-capture, .is-suggested)::after {
+.xiangqi-cell.is-legal:not(.is-capture)::after {
   inset: 41%;
   width: auto;
   border: none;
   border-radius: 50%;
   background: var(--xiangqi-mark);
 }
-.xiangqi-cell.is-suggested::after {
-  inset: 9% auto auto 9%;
-  width: 24%;
-  aspect-ratio: 1;
-  border: 0;
-  border-top: 2px solid var(--xiangqi-mark);
-  border-left: 2px solid var(--xiangqi-mark);
-  border-radius: 0;
-}
 .xiangqi-status {
-  display: grid;
-  place-items: center;
   min-height: 2.8em;
   line-height: 1.4;
   font-weight: 600;
 }
-.xiangqi-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.45rem;
+.xiangqi-thinking {
+  align-self: flex-start;
+  flex: none;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: color-mix(in srgb, var(--accent) 78%, var(--ink));
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.96);
+  transition:
+    opacity 220ms ease,
+    transform 260ms cubic-bezier(.2,.75,.25,1),
+    visibility 260ms;
+  pointer-events: none;
 }
-.xiangqi-help,
+.xiangqi-thinking[data-active] {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+.xiangqi-thinking[data-side="red"] {
+  color: var(--xiangqi-red);
+}
+.xiangqi-thinking[data-side="black"] {
+  color: var(--xiangqi-black);
+}
+.xiangqi-thinking-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: currentColor;
+}
+.xiangqi-thinking[data-active] .xiangqi-thinking-icon {
+  animation: xiangqi-thinking-breathe 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+.xiangqi-thinking[data-active] .xiangqi-thinking-gear {
+  animation: xiangqi-thinking-spin 3s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes xiangqi-thinking-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+@keyframes xiangqi-thinking-spin {
+  to { transform: rotate(360deg); }
+}
+:where(html:where([data-reduced-motion="true"])) .xiangqi-thinking-icon,
+:where(html:where([data-reduced-motion="true"])) .xiangqi-thinking-gear {
+  animation: none !important;
+}
+:where(html:where([data-reduced-motion="true"])) .xiangqi-thinking {
+  transition: none;
+}
+.xiangqi-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-top: auto;
+}
+.xiangqi-actions [data-xiangqi-action="next"] {
+  grid-column: 1;
+  grid-row: 1;
+}
+.xiangqi-actions [data-xiangqi-action="undo"] {
+  grid-column: 1;
+  grid-row: 2;
+}
+.xiangqi-actions [data-xiangqi-action="restart"] {
+  grid-column: 2;
+  grid-row: 2;
+}
+.xiangqi-actions [data-xiangqi-action="choose"] {
+  grid-column: 3;
+  grid-row: 2;
+}
+.xiangqi-actions .game-button {
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  min-height: 3.6rem;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem 0.15rem;
+  border-color: transparent;
+  background: transparent;
+  white-space: normal;
+  text-align: center;
+}
+.xiangqi-actions .ui-icon {
+  width: 1.3rem;
+  height: 1.3rem;
+}
 .xiangqi-warning {
+  color: var(--muted);
   font-size: var(--text-small);
 }
-@media (max-width: 480px) {
-  .xiangqi-objective,
-  .xiangqi-status,
-  .xiangqi-help {
-    margin-block: 0.35rem;
+@container (width < 640px) {
+  .game-xiangqi[data-playing="true"],
+  .xiangqi-play {
+    height: auto;
+  }
+  .xiangqi-play {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem;
+    container-type: normal;
+  }
+  .xiangqi-stage {
+    width: 100%;
+  }
+  .xiangqi-board {
+    width: 100%;
+  }
+  .xiangqi-controls {
+    flex: none;
+    width: 100%;
+    gap: 0.75rem;
+  }
+  .xiangqi-status {
+    min-height: 0;
   }
   .xiangqi-actions {
     gap: 0.3rem;

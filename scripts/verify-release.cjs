@@ -3,6 +3,37 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const root = path.resolve(__dirname, "..");
 const failures = [];
+// Explicit per-release scope also applies inside the immutable pre-push snapshot.
+const focusedFeatures = process.env.WORKTIME_RELEASE_FEATURES?.split(",")
+  .map((feature) => feature.trim())
+  .filter(Boolean);
+if (focusedFeatures) {
+  if (!focusedFeatures.length) throw Error("Release feature scope is empty");
+  for (const feature of focusedFeatures)
+    if (
+      !/^[a-z0-9-]+$/.test(feature) ||
+      !require("node:fs").existsSync(
+        path.join(root, "scripts", "verify-" + feature + ".cjs"),
+      )
+    )
+      throw Error("Unknown release feature: " + feature);
+  console.log("Focused release checks: " + focusedFeatures.join(", "));
+}
+const publishedFeatures =
+  process.env.WORKTIME_RELEASE_PUBLISHED_FEATURES?.split(",")
+    .map((feature) => feature.trim())
+    .filter(Boolean);
+if (publishedFeatures) {
+  if (
+    !focusedFeatures ||
+    !publishedFeatures.length ||
+    publishedFeatures.some((feature) => !focusedFeatures.includes(feature))
+  )
+    throw Error(
+      "Published checks must be a nonempty subset of the focused scope",
+    );
+  console.log("Published release checks: " + publishedFeatures.join(", "));
+}
 function run(
   script,
   args = [],
@@ -45,6 +76,7 @@ function verify(feature, published = false, required = false) {
           "onboarding",
           "auto-backup-folder",
           "runtime-folder",
+          "runtime-migration",
           "review-browser",
           "performance-budget",
           "lunar-runtime",
@@ -109,9 +141,11 @@ const agendaChecks = [
   "agenda-selection",
   "agenda-position",
   "analysis-ratio",
+  "view-focus",
 ];
 try {
-  run(path.join(root, "scripts/verify-review-regressions.cjs"));
+  if (!focusedFeatures)
+    run(path.join(root, "scripts/verify-review-regressions.cjs"));
   run(path.join(root, "scripts/check-site.cjs"));
   run(path.join(root, "node_modules/typescript/bin/tsc"), [
     "-p",
@@ -144,94 +178,118 @@ try {
       "eslint.config.cjs",
     ],
   );
-  // Catch broken entries and resource-budget regressions before long UI/game runs.
-  for (const feature of [
-    "lunar-runtime",
-    "offline",
-    "loading",
-    "media-loading",
-    "motion-settings",
-    "runtime-folder",
-    "review-browser",
-    "performance-budget",
-  ])
-    verify(feature, false, true);
-  for (const feature of [
-    ...agendaChecks,
-    "calendar-date",
-    "batch-month",
-    "reset-state",
-    "rest-overtime",
-    "source-priority",
-    "games",
-    "game-menu",
-    "music",
-    "reader",
-    "game-archive",
-    "backup-clipboard",
-    "backup-cache",
-    "auto-backup",
-    "auto-backup-folder",
-    "settings-tabs",
-    "minesweeper",
-    "snake",
-    "sudoku",
-    "sudoku-variants",
-    "sokoban",
-    "xiangqi",
-    "analysis",
-    "analysis-summary",
-    "analysis-persistence",
-    "analysis-sidebar",
-    "performance",
-    "jump",
-    "link",
-    "garden",
-    "tank",
-  ])
-    verify(feature);
-  run(path.join(root, "scripts/prepare-site.cjs"));
-  for (const feature of [
-    "lunar-runtime",
-    "startup",
-    "loading",
-    "media-loading",
-    "motion-settings",
-    "runtime-folder",
-    "review-browser",
-    "performance-budget",
-  ])
-    verify(feature, true, true);
-  for (const feature of [
-    ...agendaChecks,
-    "calendar-date",
-    "minesweeper",
-    "game-menu",
-    "music",
-    "reader",
-    "game-archive",
-    "backup-clipboard",
-    "backup-cache",
-    "auto-backup",
-    "auto-backup-folder",
-    "settings-tabs",
-    "games",
-    "analysis",
-    "analysis-summary",
-    "analysis-persistence",
-    "analysis-sidebar",
-    "performance",
-    "snake",
-    "sudoku",
-    "sudoku-variants",
-    "sokoban",
-    "xiangqi",
-    "jump",
-    "link",
-    "garden",
-    "tank",
-  ])
-    verify(feature, true);
+  if (focusedFeatures) {
+    // Some focused fixtures compare offline and published entries themselves.
+    // Build first so a fresh commit snapshot never relies on an old _site.
+    run(path.join(root, "scripts/prepare-site.cjs"));
+    for (const feature of focusedFeatures)
+      if (feature !== "startup") verify(feature);
+    for (const feature of publishedFeatures || focusedFeatures)
+      if (
+        ![
+          "offline",
+          "xiangqi-engine",
+          "onboarding",
+          "sudoku-celebration",
+        ].includes(feature)
+      )
+        verify(feature, true);
+  } else {
+    // Catch broken entries and resource-budget regressions before long UI/game runs.
+    for (const feature of [
+      "lunar-runtime",
+      "offline",
+      "loading",
+      "media-loading",
+      "motion-settings",
+      "runtime-folder",
+      "runtime-migration",
+      "review-browser",
+      "performance-budget",
+    ])
+      verify(feature, false, true);
+    for (const feature of [
+      ...agendaChecks,
+      "calendar-date",
+      "batch-month",
+      "reset-state",
+      "rest-overtime",
+      "source-priority",
+      "games",
+      "game-menu",
+      "music",
+      "reader",
+      "game-archive",
+      "backup-clipboard",
+      "backup-cache",
+      "auto-backup",
+      "auto-backup-folder",
+      "settings-tabs",
+      "minesweeper",
+      "snake",
+      "sudoku",
+      "sudoku-variants",
+      "sokoban",
+      "xiangqi",
+      "gomoku",
+      "ai-thinking",
+      "analysis",
+      "analysis-summary",
+      "analysis-persistence",
+      "analysis-sidebar",
+      "performance",
+      "jump",
+      "link",
+      "garden",
+      "tank",
+    ])
+      verify(feature);
+    run(path.join(root, "scripts/prepare-site.cjs"));
+    for (const feature of [
+      "lunar-runtime",
+      "startup",
+      "loading",
+      "media-loading",
+      "motion-settings",
+      "runtime-folder",
+      "runtime-migration",
+      "review-browser",
+      "performance-budget",
+    ])
+      verify(feature, true, true);
+    for (const feature of [
+      ...agendaChecks,
+      "calendar-date",
+      "minesweeper",
+      "game-menu",
+      "music",
+      "reader",
+      "game-archive",
+      "backup-clipboard",
+      "backup-cache",
+      "auto-backup",
+      "auto-backup-folder",
+      "settings-tabs",
+      "games",
+      "analysis",
+      "analysis-summary",
+      "analysis-persistence",
+      "analysis-sidebar",
+      "performance",
+      "snake",
+      "sudoku",
+      "sudoku-variants",
+      "sokoban",
+      "xiangqi",
+      "gomoku",
+      "ai-thinking",
+      "jump",
+      "link",
+      "garden",
+      "tank",
+    ])
+      verify(feature, true);
+  }
   if (failures.length)
     throw Error("Release checks failed: " + failures.join(", "));
   console.log("\nAll release checks passed.");

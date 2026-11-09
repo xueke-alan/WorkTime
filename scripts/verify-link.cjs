@@ -1,5 +1,5 @@
 "use strict";
-const { launchGame } = require("./game-test-helpers.cjs");
+const { launchGame, continueGame } = require("./game-test-helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -141,7 +141,11 @@ function verifyRules() {
     shuffles: 2,
   };
   assert.ok(rules.restore(state));
-  assert.equal(rules.restore(state).energy, 3);
+  assert.equal(
+    rules.restore({ ...state, energy: 3 }).energy,
+    undefined,
+    "legacy energy is discarded while the old save stays importable",
+  );
   const fallExample = [1, 0, 2, 0, 3, 0];
   for (const [direction, expected] of Object.entries({
     down: [0, 0, 0, 1, 3, 2],
@@ -213,36 +217,11 @@ function verifyRules() {
   assert.equal(rules.match(mission, 4, 5).completedMission, true);
   assert.equal(mission.score, 1080);
   assert.equal(mission.remaining, 120000);
-  assert.equal(mission.energy, 5);
+  assert.equal(mission.energy, undefined);
   assert.equal(mission.target, 1);
   assert.equal(mission.missions, 1);
   assert.equal(mission.targetProgress, 0);
-  const beforeSwap = [...mission.board].sort((a, b) => a - b);
-  assert.equal(
-    rules.swap(mission, 20, 21),
-    false,
-    "same pictures cannot waste energy",
-  );
-  const swapping = rules.restore({ ...state, energy: 3 });
-  const other = swapping.board.findIndex(
-    (value) => value !== swapping.board[0],
-  );
-  const values = [swapping.board[0], swapping.board[other]];
-  assert.equal(rules.swap(swapping, 0, other), true);
-  assert.equal(swapping.energy, 0);
-  assert.deepEqual(
-    [swapping.board[0], swapping.board[other]],
-    [values[1], values[0]],
-  );
-  assert.equal(
-    rules.swap(swapping, 0, other),
-    false,
-    "energy cost is enforced",
-  );
-  assert.deepEqual(
-    [...mission.board].sort((a, b) => a - b),
-    beforeSwap,
-  );
+  assert.equal(rules.swap, undefined, "removed swapping has no rules API");
   const tide = rules.restore({ ...state, mode: "tide" });
   for (let n = 0; n < 8; n++) {
     const pair = rules.find(tide.board, tide.cols);
@@ -278,7 +257,6 @@ function verifyRules() {
     { score: -1 },
     { level: 3 },
     { cols: 11 },
-    { energy: 7 },
     { targetProgress: 3 },
     { tideStep: 4 },
     { remaining: NaN },
@@ -301,6 +279,12 @@ async function verifyTideAnimations(browser) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.route(/^https?:/, (route) => route.abort());
+  await page.addInitScript(() => {
+    const showModal = HTMLDialogElement.prototype.showModal;
+    HTMLDialogElement.prototype.showModal = function () {
+      if (this.id !== "onboardingDialog") showModal.call(this);
+    };
+  });
   await page.goto(pathToFileURL(entry).href);
   await page.waitForFunction(
     () => document.documentElement.dataset.appState === "ready",
@@ -403,7 +387,7 @@ async function verifyTideAnimations(browser) {
     await page.waitForFunction(
       () => document.getElementById("gameShell").dataset.state === "open",
     );
-    await page.locator('[data-link-action="primary"]').click();
+    await continueGame(page, "link", "primary");
   }
   async function exit() {
     await page.locator("#gameExitButton").click();
@@ -526,14 +510,7 @@ async function verifyTideAnimations(browser) {
       assert.equal(await page.locator(".link-tile:enabled").count(), 4);
       await exit();
     }
-    for (const action of [
-      "pause",
-      "resize",
-      "reduce",
-      "exit",
-      "help",
-      "language",
-    ]) {
+    for (const action of ["pause", "resize", "reduce", "exit", "language"]) {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.emulateMedia({ reducedMotion: "no-preference" });
       await open();
@@ -545,8 +522,6 @@ async function verifyTideAnimations(browser) {
         await page.setViewportSize({ width: 390, height: 844 });
       if (action === "reduce")
         await page.emulateMedia({ reducedMotion: "reduce" });
-      if (action === "help")
-        await page.locator(".game-link [data-game-help]").click();
       if (action === "language")
         await page.evaluate(() => WorkTimeApp.i18n.setLanguage("en"));
       if (action === "exit") await exit();
@@ -554,8 +529,6 @@ async function verifyTideAnimations(browser) {
         await settled();
         if (action === "pause")
           assert.ok(await page.locator(".link-cover").isVisible());
-        if (action === "help")
-          await page.locator(".game-link [data-game-help-close]").click();
         await exit();
       }
       assert.deepEqual(
@@ -598,12 +571,14 @@ async function verifyTideAnimations(browser) {
     });
     await trigger();
     await page.locator('[data-link-action="restart"]').click();
+    assert.ok(await page.locator(".game-restart-cover").isVisible());
+    await page.locator('[data-link-action="primary"]').click();
     assert.ok(await page.locator(".link-catalog").isVisible());
     await settled();
     await exit();
     assert.deepEqual(errors, []);
     console.log(
-      "Tide animation: four physical directions, duplicate tile identity, input lock, pause/help/resize/exit, reduced motion and missing animation API verified.",
+      "Tide animation: four physical directions, duplicate tile identity, input lock, pause/resize/exit, reduced motion and missing animation API verified.",
     );
   } finally {
     await page.close();
@@ -629,6 +604,12 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.route(/^https?:/, (route) => route.abort());
+    await page.addInitScript(() => {
+      const showModal = HTMLDialogElement.prototype.showModal;
+      HTMLDialogElement.prototype.showModal = function () {
+        if (this.id !== "onboardingDialog") showModal.call(this);
+      };
+    });
     await page.goto(pathToFileURL(entry).href);
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
@@ -653,6 +634,15 @@ async function main() {
       );
     }
     await open();
+    for (const mode of ["zen", "quest", "tide"]) {
+      const bounds = await action(mode).boundingBox();
+      assert.ok(
+        Math.abs(bounds.width - bounds.height) < 1,
+        "square mode cards",
+      );
+      assert.ok((await action(mode).innerText()).endsWith("模式"));
+    }
+    assert.equal(await page.locator(".link-sidebar").isVisible(), false);
     await page
       .locator(".game-link")
       .screenshot({ path: path.join(output, "modes.png") });
@@ -662,7 +652,7 @@ async function main() {
     await action("cancel").click();
     assert.deepEqual((await load()).state.board, initial.board);
     await action("restart").click();
-    await action("primary").click();
+    await continueGame(page, "link", "primary");
     assert.equal(
       await action("zen").evaluate(
         (button) => document.activeElement === button,
@@ -674,7 +664,7 @@ async function main() {
     await page.keyboard.press("Enter");
     assert.equal((await load()).state.mode, "zen");
     await action("restart").click();
-    await action("primary").click();
+    await continueGame(page, "link", "primary");
     await action("quest").click();
     assert.equal(await page.locator(".link-tile:enabled").count(), 240);
     assert.equal(await page.locator(".link-animal").count(), 240);
@@ -707,68 +697,76 @@ async function main() {
       });
     assert.ok(atlas.width >= 1000 && atlas.height >= 750);
     assert.equal(atlas.width * 3, atlas.height * 4, "atlas has square cells");
-    for (const mode of ["quest", "tide", "zen"]) {
-      if (mode !== "quest") {
-        await action("primary").click();
-        await action(mode).click();
-      }
-      for (let round = 0; round < 3; round++) {
-        let saved = await load();
-        assert.equal(
-          saved.state.board.length,
-          240,
-          "every round stays the same size",
-        );
-        assert.equal(saved.state.cols, 20);
-        if (mode === "quest" && round === 2) {
-          assert.equal(await page.locator(".link-animal").count(), 240);
+    if (!process.argv.includes("--ui-review")) {
+      for (const mode of ["quest", "tide", "zen"]) {
+        if (mode !== "quest") {
+          await continueGame(page, "link", "primary");
+          await action(mode).click();
+        }
+        for (let round = 0; round < 3; round++) {
+          let saved = await load();
           assert.equal(
+            saved.state.board.length,
+            240,
+            "every round stays the same size",
+          );
+          assert.equal(saved.state.cols, 20);
+          if (mode === "quest" && round === 2) {
+            assert.equal(await page.locator(".link-animal").count(), 240);
+            assert.equal(
+              await page
+                .locator(".link-animal")
+                .evaluateAll(
+                  (animals) =>
+                    new Set(
+                      animals.map(
+                        (animal) =>
+                          animal.dataset.sheet +
+                          animal.style.backgroundPosition,
+                      ),
+                    ).size,
+                ),
+              48,
+            );
             await page
-              .locator(".link-animal")
-              .evaluateAll(
-                (animals) =>
-                  new Set(
-                    animals.map(
-                      (animal) =>
-                        animal.dataset.sheet + animal.style.backgroundPosition,
-                    ),
-                  ).size,
-              ),
-            48,
-          );
-          await page
-            .locator(".game-link")
-            .screenshot({ path: path.join(output, "animals-all.png") });
+              .locator(".game-link")
+              .screenshot({ path: path.join(output, "animals-all.png") });
+          }
+          while (saved.state.phase === "playing") {
+            const pair = await page.evaluate(
+              (storageKey) =>
+                WorkTimeApp.games.linkRules.find(
+                  JSON.parse(localStorage.getItem(storageKey)).state.board,
+                  JSON.parse(localStorage.getItem(storageKey)).state.cols,
+                ),
+              key,
+            );
+            assert.ok(pair);
+            const before = saved.state.score;
+            await page.locator(`.link-tile[data-index="${pair.a}"]`).click();
+            await page.locator(`.link-tile[data-index="${pair.b}"]`).click();
+            await page.waitForFunction(
+              ({ storageKey, before }) =>
+                JSON.parse(localStorage.getItem(storageKey)).state.score >
+                before,
+              { storageKey: key, before },
+            );
+            await page.waitForFunction(
+              () => !document.querySelector(".link-path polyline"),
+            );
+            saved = await load();
+          }
+          assert.equal(saved.state.phase, round === 2 ? "won" : "cleared");
+          if (round < 2) await continueGame(page, "link", "primary");
         }
-        while (saved.state.phase === "playing") {
-          const pair = await page.evaluate(
-            (storageKey) =>
-              WorkTimeApp.games.linkRules.find(
-                JSON.parse(localStorage.getItem(storageKey)).state.board,
-                JSON.parse(localStorage.getItem(storageKey)).state.cols,
-              ),
-            key,
-          );
-          assert.ok(pair);
-          const before = saved.state.score;
-          await page.locator(`.link-tile[data-index="${pair.a}"]`).click();
-          await page.locator(`.link-tile[data-index="${pair.b}"]`).click();
-          await page.waitForFunction(
-            ({ storageKey, before }) =>
-              JSON.parse(localStorage.getItem(storageKey)).state.score > before,
-            { storageKey: key, before },
-          );
-          await page.waitForFunction(
-            () => !document.querySelector(".link-path polyline"),
-          );
-          saved = await load();
-        }
-        assert.equal(saved.state.phase, round === 2 ? "won" : "cleared");
-        if (round < 2) await action("primary").click();
+        assert.ok((await load()).best[mode] > 0);
       }
-      assert.ok((await load()).best[mode] > 0);
+      await continueGame(page, "link", "primary");
+    } else {
+      // Changed controls and persistence do not require replaying nine full rounds.
+      await action("restart").click();
+      await action("primary").click();
     }
-    await action("primary").click();
     await action("tide").click();
     const sheets = await page
       .locator(".link-animal")
@@ -791,44 +789,8 @@ async function main() {
       });
     assert.equal(sheets, 4, "all four animal atlases load offline");
     await page.screenshot({ path: path.join(output, "diversity.png") });
-    const before = (await load()).state;
-    const swapCells = await page.evaluate((storageKey) => {
-      const state = JSON.parse(localStorage.getItem(storageKey)).state;
-      const anchor = WorkTimeApp.games.linkRules.find(state.board, state.cols);
-      const a = state.board.findIndex(
-        (_, i) => i !== anchor.a && i !== anchor.b,
-      );
-      const b = state.board.findIndex(
-        (value, i) =>
-          i !== anchor.a && i !== anchor.b && value !== state.board[a],
-      );
-      return { a, b };
-    }, key);
-    await action("swap").click();
-    assert.equal(await action("swap").getAttribute("aria-pressed"), "true");
-    await page.locator('.link-tile[data-index="' + swapCells.a + '"]').click();
-    await page.locator('.link-tile[data-index="' + swapCells.b + '"]').click();
-    const after = (await load()).state;
-    assert.equal(after.energy, 0);
-    assert.equal(after.board[swapCells.a], before.board[swapCells.b]);
-    assert.equal(after.board[swapCells.b], before.board[swapCells.a]);
-    assert.equal(await action("swap").isDisabled(), true);
-    for (let n = 0; n < 3; n++) {
-      const pair = await page.evaluate((storageKey) => {
-        const state = JSON.parse(localStorage.getItem(storageKey)).state;
-        return WorkTimeApp.games.linkRules.find(state.board, state.cols);
-      }, key);
-      await page.locator('.link-tile[data-index="' + pair.a + '"]').click();
-      await page.locator('.link-tile[data-index="' + pair.b + '"]').click();
-      await page.waitForFunction(
-        () => !document.querySelector(".link-path polyline"),
-      );
-    }
-    assert.ok(
-      (await load()).state.energy >= 3,
-      "matching replenishes swap energy",
-    );
-    assert.equal(await action("swap").isEnabled(), true);
+    assert.equal(await action("swap").count(), 0, "swap control was removed");
+    assert.equal((await load()).state.energy, undefined);
     await action("hint").click();
     assert.equal(await page.locator(".link-tile.is-hint").count(), 2);
     assert.equal((await load()).state.hints, 2);
@@ -837,22 +799,18 @@ async function main() {
     await action("pause").click();
     const paused = (await load()).state.remaining;
     await page.waitForTimeout(700);
-    await action("primary").click();
+    await continueGame(page, "link", "primary");
     assert.ok(
       (await load()).state.remaining >= paused - 50,
       "manual pause freezes time",
     );
-    await page.locator(".game-link [data-game-help]").click();
-    await page.waitForTimeout(700);
-    await page.locator(".game-link [data-game-help-close]").click();
-    assert.equal(await page.locator(".link-cover").isVisible(), true);
-    await action("primary").click();
+    assert.equal(await page.locator(".game-link [data-game-help]").count(), 0);
     const draft = (await load()).state.board;
     await exit();
     await open();
     assert.equal(await page.locator(".link-cover").isVisible(), true);
     assert.deepEqual((await load()).state.board, draft);
-    await action("primary").click();
+    await continueGame(page, "link", "primary");
     for (const language of ["en", "zh-TW", "zh-HK", "ja", "ko", "zh-CN"]) {
       await page.evaluate(
         (value) => WorkTimeApp.i18n.setLanguage(value),
@@ -987,7 +945,7 @@ async function main() {
       localStorage.setItem(storageKey, JSON.stringify(saved));
     }, key);
     await open();
-    await action("primary").click();
+    await continueGame(page, "link", "primary");
     await page.waitForFunction(
       () => document.querySelector(".link-cover").hidden === false,
     );
@@ -1026,6 +984,10 @@ async function main() {
     assert.deepEqual(errors, []);
     const unavailable = await browser.newPage();
     await unavailable.addInitScript(() => {
+      const showModal = HTMLDialogElement.prototype.showModal;
+      HTMLDialogElement.prototype.showModal = function () {
+        if (this.id !== "onboardingDialog") showModal.call(this);
+      };
       Storage.prototype.getItem = () => {
         throw Error("disabled");
       };
@@ -1044,7 +1006,9 @@ async function main() {
     assert.equal(await unavailable.locator(".link-tile:enabled").count(), 240);
     await verifyTideAnimations(browser);
     console.log(
-      "Link UI: 48 species, energy and swapping, all three modes completed, objectives, rotating tides, pause/resume, storage, keyboard, six languages and eight one-screen layouts verified: " +
+      (process.argv.includes("--ui-review")
+        ? "Link changed UI: removed swap, legacy saves, controls, restart confirmation, tides, pause/resume, storage, keyboard, six languages and eight layouts verified: "
+        : "Link UI: 48 species, legacy saves without swap energy, all three modes completed, objectives, rotating tides, pause/resume, storage, keyboard, six languages and eight one-screen layouts verified: ") +
         entry,
     );
   } finally {

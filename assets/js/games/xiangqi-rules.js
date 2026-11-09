@@ -170,14 +170,13 @@ WorkTimeApp.games.xiangqiRules = (() => {
 
   const material = { r: 500, h: 270, c: 270, e: 120, a: 120, p: 100 };
 
-  function terminalScore(red, outcome) {
-    if (red) return -10000;
-    return outcome === "mate" ? 10000 : -9000;
+  function terminalScore(red) {
+    return red ? -10000 : 10000;
   }
 
   function evaluate(board, red) {
     const outcome = result(board, red);
-    if (outcome !== "playing") return terminalScore(red, outcome);
+    if (outcome !== "playing") return terminalScore(red);
     let score = 0;
     for (const piece of board)
       score += (material[piece.toLowerCase()] ?? 0) * (side(piece) ? 1 : -1);
@@ -193,8 +192,7 @@ WorkTimeApp.games.xiangqiRules = (() => {
       const answers = legalMoves(after, !red);
       let score = Infinity;
       if (!answers.length) {
-        const outcome = checked(after, !red) ? "mate" : "stalemate";
-        score = direction * terminalScore(!red, outcome);
+        score = direction * terminalScore(!red);
       }
       for (const answer of answers) {
         score = Math.min(
@@ -238,7 +236,8 @@ WorkTimeApp.games.xiangqiRules = (() => {
       return {
         board,
         node: null,
-        status: outcome === "mate" ? "won" : "blackStalemate",
+        status: "won",
+        outcome,
         defense,
       };
     }

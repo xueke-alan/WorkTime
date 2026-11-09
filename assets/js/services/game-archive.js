@@ -1,6 +1,10 @@
 "use strict";
 /** Game-only transport, validation and recoverable localStorage transactions. */
 WorkTimeApp.services.gameArchive = (() => {
+  const sudokuPuzzles = (group) => [
+    ...group.puzzles,
+    ...(group.legacyPuzzles || []),
+  ];
   const PREFIX = "WORKTIME:GAMES:1:";
   const TYPE = "worktime-games";
   const MAX_BYTES = 16 * 1024 * 1024;
@@ -20,13 +24,19 @@ WorkTimeApp.services.gameArchive = (() => {
         "garden",
         "tank",
         "xiangqi",
+        "gomoku",
       ].map((id) => [
         "game-" + id,
         "worktime.games." + id + (id === "jump" ? ".best" : "") + ".v1",
       ]),
     ),
   );
-  const levelGames = ["game-sudoku", "game-sokoban", "game-xiangqi"];
+  const levelGames = [
+    "game-sudoku",
+    "game-sokoban",
+    "game-xiangqi",
+    "game-gomoku",
+  ];
   const plain = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
   const clone = (v) => JSON.parse(JSON.stringify(v));
   const stable = (v) =>
@@ -149,9 +159,15 @@ WorkTimeApp.services.gameArchive = (() => {
       return { state, best: fields(input.best, ["zen", "quest", "tide"]) };
     }
     requireValue(input.version === 1, id);
-    if (id === "game-xiangqi") {
+    if (id === "game-xiangqi" || id === "game-gomoku") {
+      const gomoku = id === "game-gomoku";
       const levels = new Map(
-        WorkTimeApp.data.xiangqi.map((level) => [level.id, level]),
+        [
+          ...(gomoku ? WorkTimeApp.data.gomoku : WorkTimeApp.data.xiangqi),
+          ...(gomoku
+            ? (WorkTimeApp.data.gomokuRetired ?? [])
+            : (WorkTimeApp.data.xiangqiRetired ?? [])),
+        ].map((level) => [level.id, level]),
       );
       const result = {
         version: 1,
@@ -165,13 +181,35 @@ WorkTimeApp.services.gameArchive = (() => {
         for (const [level, value] of Object.entries(input[kind])) {
           const entry = levels.get(level);
           const restored =
-            entry && plain(value) && G.xiangqiRules.restore(entry, value.path);
+            entry &&
+            plain(value) &&
+            (gomoku ? G.gomokuRules : G.xiangqiRules).restore(
+              entry,
+              value.path,
+            );
+          const legacyStalemate =
+            !gomoku &&
+            kind === "drafts" &&
+            restored?.status === "won" &&
+            restored.outcome === "stalemate";
           requireValue(
-            restored && (restored.status === "won") === (kind === "completed"),
+            restored &&
+              (legacyStalemate ||
+                (restored.status === "won") === (kind === "completed")),
             id,
           );
-          result[kind][level] = { path: [...value.path] };
+          result[legacyStalemate ? "completed" : kind][level] = {
+            path: [...(gomoku ? restored.path : value.path)],
+          };
         }
+      }
+      if (gomoku && input.match != null) {
+        requireValue(G.gomokuRules.restoreMatch(input.match), id);
+        result.match = {
+          difficulty: input.match.difficulty,
+          human: input.match.human,
+          path: [...input.match.path],
+        };
       }
       return fixSelection(id, result);
     }
@@ -207,7 +245,7 @@ WorkTimeApp.services.gameArchive = (() => {
     }
     const sudoku = id === "game-sudoku";
     const bank = sudoku
-      ? WorkTimeApp.data.sudoku.groups.flatMap((g) => g.puzzles)
+      ? WorkTimeApp.data.sudoku.groups.flatMap(sudokuPuzzles)
       : WorkTimeApp.data.sokoban.levels;
     // Retired levels are skipped so older backups remain importable.
     const retired = (level) => sudoku && /^fog-[1-6]$/.test(level);
@@ -292,17 +330,27 @@ WorkTimeApp.services.gameArchive = (() => {
   }
   function fixSelection(id, value) {
     if (!value.current) return value;
-    if (id === "game-xiangqi") {
-      if (!Object.hasOwn(value.drafts, value.current)) value.current = null;
+    if (id === "game-xiangqi" || id === "game-gomoku") {
+      if (
+        !Object.hasOwn(value.drafts, value.current) ||
+        !(
+          id === "game-gomoku"
+            ? WorkTimeApp.data.gomoku
+            : WorkTimeApp.data.xiangqi
+        ).some(({ id }) => id === value.current)
+      )
+        value.current = null;
       return value;
     }
     const sudoku = id === "game-sudoku";
     const group = sudoku
       ? WorkTimeApp.data.sudoku.groups.find((g) =>
-          g.puzzles.some((p) => p.id === value.current),
+          sudokuPuzzles(g).some((p) => p.id === value.current),
         )
       : null;
-    const levels = sudoku ? group.puzzles : WorkTimeApp.data.sokoban.levels;
+    const levels = sudoku
+      ? sudokuPuzzles(group)
+      : WorkTimeApp.data.sokoban.levels;
     const index = levels.findIndex((p) => p.id === value.current);
     if (!value.drafts[value.current]) value.current = null;
     else if (sudoku) value.group = group.id;
@@ -328,10 +376,14 @@ WorkTimeApp.services.gameArchive = (() => {
       return hasProgress(id, v) || v.records.some((n) => n > 0);
     if (Object.keys(v.completed).length) return true;
     return Object.entries(v.drafts).some(([level, draft]) => {
-      if (id === "game-sokoban" || id === "game-xiangqi")
+      if (
+        id === "game-sokoban" ||
+        id === "game-xiangqi" ||
+        id === "game-gomoku"
+      )
         return draft.path.length > 0;
       const puzzle = WorkTimeApp.data.sudoku.groups
-        .flatMap((g) => g.puzzles)
+        .flatMap(sudokuPuzzles)
         .find((p) => p.id === level);
       return (
         draft.elapsed > 0 ||
@@ -355,7 +407,6 @@ WorkTimeApp.services.gameArchive = (() => {
           v.state.phase !== "playing" ||
           v.state.hints < 3 ||
           v.state.shuffles < 2 ||
-          v.state.energy < 3 ||
           v.state.board.some((tile) => tile === 0))
       );
     if (id === "game-garden") {
@@ -629,7 +680,6 @@ WorkTimeApp.services.gameArchive = (() => {
           );
         case "game-sudoku":
         case "game-sokoban":
-        case "game-xiangqi":
           return summary(
             "completed",
             values(save.completed).filter(plain).length,
@@ -639,6 +689,55 @@ WorkTimeApp.services.gameArchive = (() => {
                 : Array.isArray(draft?.path) && draft.path.length > 0,
             ),
           );
+        case "game-gomoku": {
+          const active = (record) =>
+            Object.entries(plain(record) ? record : {})
+              .filter(([id]) => {
+                const legacy = /^gm-(\d+)$/.exec(id);
+                return !legacy;
+              })
+              .map(([, value]) => value);
+          return summary(
+            "completed",
+            active(save.completed).filter(plain).length,
+            active(save.drafts).some((draft) => draft?.path?.length > 0),
+          );
+        }
+        case "game-xiangqi": {
+          // Menu summaries run before the lazy puzzle bank is loaded. These
+          // stable IDs are permanently retired; retain their backup records.
+          const retired = new Set([
+            "xq-35",
+            "xq-36",
+            "xq-37",
+            "xq-38",
+            "xq-39",
+            "xq-40",
+            "xq-41",
+            "xq-42",
+            "xq-43",
+            "xq-44",
+            "xq-67",
+            "xq-68",
+            "xq-69",
+            "xq-70",
+            "xq-71",
+            "xq-96",
+            "xq-97",
+            "xq-98",
+            "xq-99",
+            "xq-100",
+          ]);
+          const active = (record) =>
+            Object.entries(plain(record) ? record : {})
+              .filter(([id]) => !retired.has(id))
+              .map(([, value]) => value);
+          return summary(
+            "completed",
+            active(save.completed).filter(plain).length,
+            active(save.drafts).some((draft) => draft?.path?.length > 0),
+          );
+        }
         case "game-garden":
           return summary(
             "completed",
@@ -661,7 +760,9 @@ WorkTimeApp.services.gameArchive = (() => {
     function restoreRaw(raw) {
       // Journals created before Xiangqi have no entry for its storage key.
       const ids = Object.keys(keys).filter(
-        (id) => id !== "game-xiangqi" || Object.hasOwn(raw ?? {}, id),
+        (id) =>
+          !["game-xiangqi", "game-gomoku"].includes(id) ||
+          Object.hasOwn(raw ?? {}, id),
       );
       requireValue(
         plain(raw) &&

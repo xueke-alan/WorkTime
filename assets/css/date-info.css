@@ -17,7 +17,7 @@ body .editor > .notification-tabs {
   margin: 0;
   border-top: 1px solid var(--line);
   border-bottom: 0;
-  background: #fbfdfb;
+  background: var(--theme-surface-paper, #fbfdfb);
 }
 body .editor > .notification-tabs .notification-tab {
   position: relative;
@@ -69,7 +69,11 @@ body .editor > .notification-tabs .notification-tab::before {
   inset: 0 -8px auto;
   width: calc(100% + 16px);
   height: 100%;
-  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2086%2028%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%200H86C78%200%2078%207%2078%2010V18Q78%2028%2068%2028H18Q8%2028%208%2018V10C8%207%208%200%200%200Z%22%20fill%3D%22%23e7f2ed%22%2F%3E%3C%2Fsvg%3E")
+  /* Mask the shared tab shape so its fill can follow the active palette. */
+  background: var(--theme-tab-active, #e7f2ed);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2086%2028%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%200H86C78%200%2078%207%2078%2010V18Q78%2028%2068%2028H18Q8%2028%208%2018V10C8%207%208%200%200%200Z%22%2F%3E%3C%2Fsvg%3E")
+    center/100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2086%2028%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%200H86C78%200%2078%207%2078%2010V18Q78%2028%2068%2028H18Q8%2028%208%2018V10C8%207%208%200%200%200Z%22%2F%3E%3C%2Fsvg%3E")
     center/100% 100% no-repeat;
   border-radius: 0;
   box-shadow: none;
@@ -558,7 +562,7 @@ body .editor > .notification-tabs .notification-badge {
   height: 5px;
   border-radius: 50%;
   background: #dba13d;
-  box-shadow: 0 0 0 1px #fbfdfb;
+  box-shadow: 0 0 0 1px var(--theme-surface-paper, #fbfdfb);
   z-index: 2;
   pointer-events: none;
 }

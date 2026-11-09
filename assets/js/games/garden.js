@@ -65,7 +65,10 @@ WorkTimeApp.games.register({
       state.layoutVersion,
     ).tiles;
     const root = node("section", "game-garden game-session", container);
-    const header = node("div", "garden-header", root);
+    const play = node("div", "garden-play", root);
+    const arena = node("div", "garden-arena", play);
+    const sidebar = node("div", "garden-sidebar", play);
+    const header = node("div", "garden-header", sidebar);
     const tools = node("div", "garden-tools", header);
     function button(parent, action, callback) {
       const element = node("button", "game-button", parent);
@@ -101,11 +104,11 @@ WorkTimeApp.games.register({
     picker.setAttribute("aria-controls", "garden-level-page");
     const progress = node("div", "garden-progress game-sr-only", root);
     progress.setAttribute("role", "progressbar");
-    const field = node("div", "garden-field", root);
+    const field = node("div", "garden-field", arena);
     const stage = node("div", "garden-stage", field);
     const board = node("div", "garden-board", stage);
     board.setAttribute("role", "group");
-    const cover = node("section", "garden-cover", stage);
+    const cover = node("section", "garden-cover", arena);
     const coverTitle = node("h3", "", cover),
       coverText = node("p", "", cover);
     const levels = WorkTimeApp.games.createLevelPage(
@@ -153,7 +156,13 @@ WorkTimeApp.games.register({
       render();
       restart.focus();
     });
-    const trayBlock = node("div", "garden-tray-block", root);
+    const paintRestartCover = WorkTimeApp.games.createRestartCover({
+      cover: cover,
+      cancel: cancel,
+      accept: primary,
+      signal,
+    });
+    const trayBlock = node("div", "garden-tray-block", arena);
     const trayHeader = node("div", "garden-tray-heading", trayBlock);
     const trayTitle = node("strong", "", trayHeader),
       trayCount = node("span", "", trayHeader);
@@ -167,7 +176,7 @@ WorkTimeApp.games.register({
     const fence = node("div", "garden-fence", tray);
     fence.setAttribute("aria-hidden", "true");
     for (let i = 0; i < 8; i++) node("i", "", fence);
-    const footer = node("div", "garden-footer", root);
+    const footer = node("div", "garden-footer", sidebar);
     const reserveRow = node("div", "garden-reserve-row", field);
     const reserveTitle = node("strong", "game-sr-only", reserveRow);
     const reserve = node("div", "garden-reserve", reserveRow);
@@ -270,6 +279,36 @@ WorkTimeApp.games.register({
       "#ad9293",
       "#977ba8",
     ];
+    // Sprite bounds in the original 1011 × 1017 Sheep a Sheep atlas.
+    const artworkFrames = [
+      [702, 511, 89, 98, 1],
+      [803, 286, 92, 92, 0],
+      [717, 714, 91, 93, 0],
+      [797, 500, 87, 98, 1],
+      [555, 3, 99, 92, 1],
+      [831, 192, 96, 87, 1],
+      [522, 301, 94, 96, 0],
+      [516, 641, 94, 95, 0],
+      [452, 3, 97, 94, 1],
+      [523, 846, 96, 62, 1],
+      [514, 199, 95, 96, 1],
+      [765, 3, 100, 88, 1],
+      [871, 3, 96, 86, 0],
+      [510, 530, 86, 105, 0],
+      [711, 615, 92, 93, 1],
+      [648, 910, 74, 104, 0],
+      [345, 2, 102, 96, 0],
+      [336, 103, 98, 100, 0],
+      [438, 102, 104, 90, 0],
+      [659, 4, 101, 91, 0],
+      [510, 418, 97, 97, 0],
+      [2, 506, 104, 107, 0],
+      [211, 616, 103, 104, 0],
+      [2, 394, 104, 108, 0],
+      [614, 195, 108, 87, 0],
+      [726, 192, 100, 89, 0],
+      [656, 100, 106, 88, 0],
+    ];
     const symbolName = (type) => t("symbol" + type);
     let tileNodes = [];
     function buildBoard() {
@@ -298,14 +337,10 @@ WorkTimeApp.games.register({
           art = node("span", "garden-art", element);
           art.setAttribute("aria-hidden", "true");
         }
-        art.style.backgroundPosition =
-          (tile.type % 3) * 50 +
-          "% " +
-          (tile.type < 9
-            ? [0, 0, 0, 50, 50, 50, 96, 100, 100][tile.type]
-            : [0, 0, 0, 50, 50, 50, 98, 96, 100][tile.type % 9]) +
-          "%";
-        art.dataset.atlas = Math.floor(tile.type / 9);
+        const [x, y, width, height, rotated] = artworkFrames[tile.type];
+        art.style.backgroundSize = `${(1011 / width) * 100}% ${(1017 / height) * 100}%`;
+        art.style.backgroundPosition = `${(x / (1011 - width)) * 100}% ${(y / (1017 - height)) * 100}%`;
+        art.style.transform = rotated ? "rotate(-90deg)" : "none";
       } else element.replaceChildren();
       element.style.setProperty(
         "--garden-color",
@@ -669,6 +704,7 @@ WorkTimeApp.games.register({
       picker.title = t("choose");
       picker.setAttribute("aria-expanded", String(choosing));
       root.dataset.choosing = String(choosing);
+      play.hidden = choosing;
       levels.page.hidden = !choosing;
       header.hidden =
         field.hidden =
@@ -676,7 +712,6 @@ WorkTimeApp.games.register({
         footer.hidden =
           choosing;
       levels.refresh();
-      levels.summary.textContent = t("chooseText");
       closeLevels.setAttribute("aria-label", t("cancel"));
       closeLevels.title = t("cancel");
       picker.setAttribute(
@@ -831,6 +866,7 @@ WorkTimeApp.games.register({
       cancel.hidden = !confirming;
       cancel.textContent = t("cancel");
       help.refresh();
+      paintRestartCover(confirming);
     }
     listen(board, "click", (event) => {
       const tile = event.target.closest("[data-tile]");

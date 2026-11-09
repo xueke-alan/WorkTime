@@ -103,7 +103,9 @@ WorkTimeApp.services.pwaInstall = (() => {
   document.addEventListener(
     "worktime:ready",
     () => {
-      const host = document.querySelector(".auto-backup-settings");
+      const host =
+        document.querySelector(".motion-settings-row") ||
+        document.querySelector(".auto-backup-settings");
       if (!host) return;
       const service = WorkTimeApp.services.pwaInstall;
       const heading = document.createElement("label");
@@ -113,7 +115,7 @@ WorkTimeApp.services.pwaInstall = (() => {
       const button = document.createElement("button");
       button.id = "appInstallButton";
       button.type = "button";
-      button.className = "ui-button icon-only";
+      button.className = "ui-button";
       const icon = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "svg",

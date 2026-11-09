@@ -1,4 +1,65 @@
 "use strict";
+// Presentation pacing is independent of search strength and motion preferences.
+WorkTimeApp.games.createThinkTurn = function ({
+  simple = false,
+  advanced = false,
+} = {}) {
+  const [minimum, maximum] = simple
+    ? [600, 900]
+    : advanced
+      ? [1000, 1600]
+      : [800, 1300];
+  const duration = minimum + Math.random() * (maximum - minimum);
+  let started = performance.now();
+  let timer = null;
+  let callback = null;
+  let paused = false;
+  let cancelled = false;
+  function schedule() {
+    clearTimeout(timer);
+    if (cancelled || paused || !callback) return;
+    const remaining = duration - (performance.now() - started);
+    if (remaining <= 0) {
+      const done = callback;
+      callback = null;
+      cancelled = true;
+      done();
+    } else timer = setTimeout(schedule, remaining);
+  }
+  return {
+    wait(done) {
+      if (cancelled) return;
+      callback = done;
+      schedule();
+    },
+    pause() {
+      paused = true;
+      clearTimeout(timer);
+    },
+    resume() {
+      if (!paused || cancelled) return;
+      paused = false;
+      started = performance.now();
+      schedule();
+    },
+    cancel() {
+      cancelled = true;
+      callback = null;
+      clearTimeout(timer);
+    },
+  };
+};
+WorkTimeApp.games.paintDetailNumbers = function (element, text) {
+  element.replaceChildren();
+  for (const part of text.split(/(\d+)/u)) {
+    if (/^\d+$/u.test(part)) {
+      const number = document.createElement("strong");
+      number.className = "game-detail-number";
+      number.textContent = part;
+      element.append(number);
+    } else element.append(document.createTextNode(part));
+  }
+};
 WorkTimeApp.games.setIcon = function (element, name) {
   if (
     element.querySelector("svg > use")?.getAttribute("href") !==
@@ -23,10 +84,26 @@ WorkTimeApp.games.createLevelPage = function (root, id, signal) {
   const page = node(root, "section", "game-level-page");
   page.id = id;
   const header = node(page, "header", "game-level-page-header");
-  const title = node(header, "h3", "game-level-page-title");
+  const heading = node(header, "div", "game-level-page-heading");
+  const back = node(
+    heading,
+    "button",
+    "game-button game-icon-button game-level-return",
+  );
+  back.type = "button";
+  back.hidden = true;
+  back.append(WorkTimeApp.games.createIcon("chevron-left"));
+  let returnToGame = null;
+  back.addEventListener(
+    "click",
+    () => {
+      if (!signal?.aborted) returnToGame?.();
+    },
+    { signal },
+  );
+  const title = node(heading, "h3", "game-level-page-title");
   title.id = id + "-title";
   page.setAttribute("aria-labelledby", title.id);
-  const summary = node(page, "div", "game-level-page-summary");
   const body = node(page, "div", "game-level-page-body");
   const categories = node(body, "div", "game-level-categories");
   categories.setAttribute("role", "group");
@@ -97,19 +174,35 @@ WorkTimeApp.games.createLevelPage = function (root, id, signal) {
     page,
     header,
     body,
-    summary,
     categories,
     entries,
     selectCategory,
     addRanges,
+    back,
+    setReturn(callback) {
+      returnToGame = callback;
+      back.hidden = !callback;
+    },
     refresh() {
       title.textContent = WorkTimeApp.i18n.t("games.levelStatus.choose");
+      const label = WorkTimeApp.i18n.t("games.levelStatus.returnGame");
+      back.title = label;
+      back.setAttribute("aria-label", label);
     },
   };
 };
 WorkTimeApp.games.paintLevelCard = function (
   button,
-  { number, label, complete, draft, locked, current, stars = 0 },
+  {
+    number,
+    text: displayText,
+    label,
+    complete,
+    draft,
+    locked,
+    current,
+    stars = 0,
+  },
 ) {
   const status = locked
     ? "locked"
@@ -124,7 +217,7 @@ WorkTimeApp.games.paintLevelCard = function (
       : current && status === "available"
         ? "current"
         : status;
-  const text = String(number).padStart(2, "0");
+  const text = displayText ?? String(number).padStart(2, "0");
   let badge = button.querySelector(".game-level-badge");
   if (!badge) {
     button.classList.add("game-level-card");
@@ -399,12 +492,25 @@ WorkTimeApp.games.createCelebration = function (signal) {
     celebration?.remove();
     celebration = null;
   }
-  function play() {
+  function play(target = null) {
     stop();
     if (reduced.matches || document.hidden || signal.aborted) return;
+    const bounds = target?.getBoundingClientRect();
+    if (bounds && (!bounds.width || !bounds.height)) return;
     const layer = document.createElement("div");
     layer.className = "game-celebration";
     layer.setAttribute("aria-hidden", "true");
+    if (bounds) {
+      Object.assign(layer.style, {
+        inset: "auto",
+        left: bounds.left + "px",
+        top: bounds.top + "px",
+        width: bounds.width + "px",
+        height: bounds.height + "px",
+        borderRadius: getComputedStyle(target).borderRadius,
+      });
+      layer.classList.add("game-celebration-ribbons");
+    }
     document.body.append(layer);
     celebration = layer;
     const colors = [
@@ -415,23 +521,31 @@ WorkTimeApp.games.createCelebration = function (signal) {
       "#a583cd",
       "#f4d779",
     ];
-    const width = window.innerWidth,
-      height = window.innerHeight;
+    const width = bounds?.width || window.innerWidth,
+      height = bounds?.height || window.innerHeight;
     for (let i = 0; i < 120; i++) {
       const piece = document.createElement("i");
       piece.className = "game-confetti";
       layer.append(piece);
-      piece.style.background = colors[i % colors.length];
-      piece.style.borderRadius = i % 3 === 0 ? "50%" : "2px";
+      piece.style.background =
+        colors[(bounds ? Math.floor(i / 2) : i) % colors.length];
+      piece.style.borderRadius = bounds ? "1px" : i % 3 === 0 ? "50%" : "2px";
+      if (bounds) {
+        piece.style.width = 5 + (i % 4) * 2 + "px";
+        piece.style.height = 16 + (i % 5) * 3 + "px";
+      }
       const side = i % 2,
         startX = side ? width + 12 : -12;
-      const targetX = width * (0.08 + Math.random() * 0.84);
+      const targetX =
+        width *
+        (bounds ? 0.35 + Math.random() * 0.3 : 0.08 + Math.random() * 0.84);
       const startY = height * (0.7 + Math.random() * 0.2);
       const peakY = height * (0.02 + Math.random() * 0.28);
       const rotation = (Math.random() - 0.5) * 1440;
       const frames = Array.from({ length: 9 }, (_, step) => {
         const p = step / 8;
-        const x = startX + (targetX - startX) * p;
+        const travel = bounds ? 1 - Math.pow(1 - p, 2) : p;
+        const x = startX + (targetX - startX) * travel;
         const y =
           startY * (1 - p) +
           (height + 40) * p -
@@ -464,6 +578,250 @@ WorkTimeApp.games.createCelebration = function (signal) {
     unlisten();
     signal.removeEventListener("abort", dispose);
   }
+  window.addEventListener("resize", stop, { signal });
   signal.addEventListener("abort", dispose, { once: true });
   return { play, stop, dispose };
+};
+
+/** Shared translucent pause state; the original HUD resumes play. */
+WorkTimeApp.games.createPauseCover = (cover, signal) => {
+  const content = document.createElement("div");
+  content.className = "game-pause-content";
+  const icon = WorkTimeApp.games.createIcon("hourglass-pause");
+  icon.classList.add("game-pause-icon");
+  icon.setAttribute("aria-hidden", "true");
+  const caption = document.createElement("span");
+  caption.className = "game-pause-caption";
+  content.append(icon, caption);
+  cover.prepend(content);
+  const compat = WorkTimeApp.ui.animationCompat;
+  const reduced = compat.preference();
+  let previous = false,
+    animation = null,
+    outgoing = null;
+  function clearMotion() {
+    animation?.cancel();
+    animation = null;
+    outgoing?.remove();
+    outgoing = null;
+  }
+  const unlisten = compat.listen(reduced, () => {
+    if (reduced.matches) clearMotion();
+  });
+  signal.addEventListener(
+    "abort",
+    () => {
+      clearMotion();
+      unlisten();
+    },
+    { once: true },
+  );
+  const paint = (paused, label) => {
+    if (signal.aborted) return;
+    caption.textContent = WorkTimeApp.i18n.t("games.pauseOverlay");
+    if (paused !== previous) {
+      clearMotion();
+      if (!reduced.matches && !signal.aborted && !document.hidden) {
+        if (paused) {
+          animation = compat.animate(cover, [{ opacity: 0 }, { opacity: 1 }], {
+            duration: 220,
+            easing: "ease-out",
+          });
+        } else if (!cover.hidden) {
+          // The game can hide its real result/confirmation cover immediately.
+          // A noninteractive snapshot finishes the pause fade without blocking input.
+          const ghost = cover.cloneNode(false);
+          ghost.hidden = false;
+          ghost.classList.add("game-pause-outgoing");
+          ghost.removeAttribute("role");
+          ghost.removeAttribute("aria-label");
+          ghost.setAttribute("aria-hidden", "true");
+          ghost.inert = true;
+          ghost.append(content.cloneNode(true));
+          cover.after(ghost);
+          outgoing = ghost;
+          animation = compat.animate(ghost, [{ opacity: 1 }, { opacity: 0 }], {
+            duration: 180,
+            easing: "ease-in",
+          });
+          void animation.finished.then(() => {
+            ghost.remove();
+            if (outgoing === ghost) outgoing = null;
+          });
+        }
+      }
+      previous = paused;
+    }
+    cover.classList.toggle("game-pause-cover", paused);
+    if (paused) {
+      cover.setAttribute("role", "img");
+      cover.setAttribute("aria-label", label);
+    } else {
+      cover.removeAttribute("role");
+      cover.removeAttribute("aria-label");
+    }
+  };
+  // A new board or catalog is a new presentation, not a resume animation.
+  paint.reset = () => {
+    clearMotion();
+    previous = false;
+    cover.classList.remove("game-pause-cover");
+    cover.removeAttribute("role");
+    cover.removeAttribute("aria-label");
+    cover.hidden = true;
+  };
+  return paint;
+};
+
+/** Reuse real game actions while presenting every restart inside its board. */
+WorkTimeApp.games.createRestartCover = function ({
+  cover,
+  cancel,
+  accept,
+  signal,
+}) {
+  const content = document.createElement("div");
+  content.className = "game-restart-content";
+  const icon = WorkTimeApp.games.createIcon("restart-alt");
+  icon.classList.add("game-restart-icon");
+  const actions = document.createElement("div");
+  actions.className = "game-restart-actions";
+  content.append(icon, actions);
+  cover.append(content);
+  const buttons = [cancel, accept];
+  const places = buttons.map(() => document.createComment("restart action"));
+  let showing = false;
+  let previousLabels = [];
+  function paint(value) {
+    value = !!value;
+    cover.classList.toggle("game-restart-cover", value);
+    content.hidden = !value;
+    if (value !== showing) {
+      showing = value;
+      if (value) {
+        previousLabels = buttons.map((button) =>
+          button.getAttribute("aria-label"),
+        );
+        buttons.forEach((button, i) => {
+          button.before(places[i]);
+          actions.append(button);
+        });
+        cover.setAttribute("role", "dialog");
+        cover.setAttribute("aria-modal", "true");
+      } else {
+        buttons.forEach((button, i) => {
+          places[i].replaceWith(button);
+          if (previousLabels[i] === null) button.removeAttribute("aria-label");
+          else button.setAttribute("aria-label", previousLabels[i]);
+        });
+        cover.removeAttribute("role");
+        cover.removeAttribute("aria-modal");
+      }
+    }
+    if (!value) return;
+    cover.setAttribute("aria-label", WorkTimeApp.i18n.t("games.restartNew"));
+    buttons.forEach((button, i) => {
+      const label = WorkTimeApp.i18n.t(
+        i ? "games.restartNew" : "games.restartCancel",
+      );
+      const text = button.querySelector(".button-label");
+      if (text) text.textContent = label;
+      else button.textContent = label;
+      button.setAttribute("aria-label", label);
+      button.hidden = false;
+    });
+  }
+  cover.addEventListener(
+    "keydown",
+    (event) => {
+      if (!showing) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        cancel.click();
+      } else if (event.key === "Tab") {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        (document.activeElement === cancel ? accept : cancel).focus();
+      } else event.stopPropagation();
+    },
+    { capture: true, signal },
+  );
+  return paint;
+};
+/** Confirmation for games whose restart previously took effect immediately. */
+WorkTimeApp.games.createRestartPrompt = function ({
+  host,
+  signal,
+  onOpen,
+  onCancel,
+  onConfirm,
+}) {
+  host.classList.add("game-restart-host");
+  const cover = document.createElement("div");
+  cover.className = "game-restart-panel";
+  cover.hidden = true;
+  const cancel = document.createElement("button");
+  const accept = document.createElement("button");
+  for (const [button, action] of [
+    [cancel, "cancel"],
+    [accept, "new"],
+  ]) {
+    button.type = "button";
+    button.className = "game-button";
+    button.dataset.gameRestart = action;
+    cover.append(button);
+  }
+  host.append(cover);
+  const paint = WorkTimeApp.games.createRestartCover({
+    cover,
+    cancel,
+    accept,
+    signal,
+  });
+  let opened = false,
+    source = null,
+    savedInert = [];
+  function close(confirmed) {
+    if (!opened) return;
+    opened = false;
+    cover.hidden = true;
+    paint(false);
+    savedInert.forEach(([element, inert]) => {
+      element.inert = inert;
+    });
+    savedInert = [];
+    if (confirmed) onConfirm();
+    else {
+      onCancel?.();
+      source?.focus({ preventScroll: true });
+    }
+  }
+  cancel.addEventListener("click", () => close(false), { signal });
+  accept.addEventListener("click", () => close(true), { signal });
+  document.addEventListener("worktime:languagechange", () => paint(opened), {
+    signal,
+  });
+  return {
+    open(trigger) {
+      if (opened || signal.aborted) return;
+      source = trigger;
+      onOpen?.();
+      opened = true;
+      let branch = cover;
+      const root = host.closest(".game-session");
+      while (branch.parentElement && branch !== root) {
+        for (const sibling of branch.parentElement.children) {
+          if (sibling === branch) continue;
+          savedInert.push([sibling, sibling.inert]);
+          sibling.inert = true;
+        }
+        branch = branch.parentElement;
+      }
+      cover.hidden = false;
+      paint(true);
+      cancel.focus({ preventScroll: true });
+    },
+    isOpen: () => opened,
+  };
 };

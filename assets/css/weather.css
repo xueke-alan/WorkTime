@@ -52,43 +52,21 @@ body #dateInfoPanel .weather-forecast-tabs button .button-label { translate: non
 .weather-day .weather-day-uv .weather-uv-value[data-level="very-high"] { color: #c22d1a; }
 .weather-day .weather-day-uv .weather-uv-value[data-level="extreme"] { color: #8a3e85; }
 body #dateInfoPanel.weather-panel .date-info-source { margin: 0; font-size: 0.75rem; line-height: 1.3; }
+body #dateInfoPanel.weather-panel .weather-time { font-size: 0.68rem; line-height: 1.2; }
 .weather-panel .weather-stale { color: #95631b; }
-.weather-panel .weather-time { margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.weather-panel .weather-time { align-self: flex-end; margin-bottom: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.weather-panel > .date-info-empty { text-align: center; }
+.weather-panel.is-weather-empty > .date-info-empty { display: flex; flex: 1 1 auto; align-items: center; justify-content: center; margin: 0; }
 
 .weather-footer .weather-forecast-tabs { margin-inline-end: auto; }
-.weather-panel > .weather-source-info { align-self: flex-end; margin-top: auto; }
-.weather-source-info {
-  display: inline-flex;
-  align-items: center;
-  align-self: center;
-  flex: none;
-  padding: 0.2rem;
+.weather-source-label {
+  min-width: 0;
+  overflow: hidden;
+  flex: 0 1 auto;
   color: var(--muted);
-  font-size: 0.9rem;
-  text-decoration: none;
-}
-/* Match the visible digit center above the font line-box center. */
-.weather-source-info .ui-icon { width: 1rem; height: 1rem; translate: 0 -0.1em; }
-.weather-source-tooltip {
-  position: absolute;
-  z-index: 5;
-  bottom: 2.3rem;
-  inset-inline: 1rem;
-  padding: 0.65rem 0.8rem;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--paper);
-  box-shadow: var(--shadow);
-  color: var(--ink);
-  font-size: 0.8rem;
-  font-weight: 400;
-  line-height: 1.6;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
-.weather-source-info:hover + .weather-source-tooltip,
-.weather-source-info:focus + .weather-source-tooltip {
-  visibility: visible;
-  opacity: 1;
+  align-self: flex-end;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

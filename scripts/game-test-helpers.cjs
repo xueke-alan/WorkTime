@@ -33,4 +33,13 @@ async function launchGame(
   });
 }
 
-module.exports = { launchGame };
+async function continueGame(page, game, action = "start") {
+  const prefix = game === "minesweeper" ? "mine" : game;
+  const paused = await page
+    .locator(`.game-${game} .game-pause-cover:not(.game-pause-outgoing)`)
+    .isVisible();
+  await page
+    .locator(`[data-${prefix}-action="${paused ? "pause" : action}"]`)
+    .click();
+}
+module.exports = { launchGame, continueGame };

@@ -172,6 +172,13 @@ async function main() {
       viewport: { width: 1440, height: 1080 },
       reducedMotion: "reduce",
     });
+    // Keep folder setup, which has its own suite, outside game interaction tests.
+    await context.addInitScript(() => {
+      const showModal = HTMLDialogElement.prototype.showModal;
+      HTMLDialogElement.prototype.showModal = function () {
+        if (this.id !== "onboardingDialog") showModal.call(this);
+      };
+    });
     const page = await context.newPage(),
       errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
@@ -209,6 +216,9 @@ async function main() {
       const result = await page.evaluate(() => {
         const content = document.querySelector(".game-content");
         const bounds = content.getBoundingClientRect();
+        const arena = document
+          .querySelector(".garden-arena")
+          .getBoundingClientRect();
         const elements = [
           ".garden-header",
           ".garden-stage",
@@ -216,6 +226,7 @@ async function main() {
           ".garden-footer",
         ];
         return {
+          square: Math.abs(arena.width - arena.height) < 1,
           viewport: [innerWidth, innerHeight],
           boxes: elements.map((selector) => ({
             selector,
@@ -240,7 +251,10 @@ async function main() {
         };
       });
       assert.ok(
-        result.scrollX <= 1 && result.scrollY <= 1 && result.visible,
+        result.square &&
+          result.scrollX <= 1 &&
+          result.scrollY <= 1 &&
+          result.visible,
         JSON.stringify(result),
       );
     }
@@ -273,21 +287,8 @@ async function main() {
       const image = new Image();
       image.src = source.slice(5, -2);
       await image.decode();
-      for (const atlas of ["garden-woodland.png", "garden-pond.png"]) {
-        const added = new Image();
-        added.src = new URL("assets/images/games/" + atlas, location.href).href;
-        await added.decode();
-        if (
-          added.naturalWidth < 900 ||
-          added.naturalWidth !== added.naturalHeight
-        )
-          throw Error("Invalid added illustration atlas");
-      }
-      if (
-        image.naturalWidth < 900 ||
-        image.naturalHeight !== image.naturalWidth
-      )
-        throw Error("Garden illustration atlas is missing or invalid");
+      if (image.naturalWidth !== 1011 || image.naturalHeight !== 1017)
+        throw Error("Sheep illustration atlas is missing or invalid");
     });
     assert.equal(await page.locator(".garden-tile").count(), 24);
     const first = Number(
@@ -518,6 +519,13 @@ async function verifyMotion(browser) {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
     reducedMotion: "no-preference",
+  });
+  // Keep folder setup, which has its own suite, outside game interaction tests.
+  await context.addInitScript(() => {
+    const showModal = HTMLDialogElement.prototype.showModal;
+    HTMLDialogElement.prototype.showModal = function () {
+      if (this.id !== "onboardingDialog") showModal.call(this);
+    };
   });
   const page = await context.newPage(),
     errors = [];

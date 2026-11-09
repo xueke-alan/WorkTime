@@ -22,7 +22,14 @@ const { launchGame } = require("./game-test-helpers.cjs");
         () => document.documentElement.dataset.appState === "ready",
       );
       await page.locator("#date-tab-games").click();
-      for (const game of ["sudoku", "sokoban", "xiangqi", "tank", "garden"]) {
+      for (const game of [
+        "sudoku",
+        "sokoban",
+        "xiangqi",
+        "gomoku",
+        "tank",
+        "garden",
+      ]) {
         await launchGame(page, "game-" + game);
         if (game === "tank")
           await page.locator('[data-tank-action="choose-stage"]').click();
@@ -36,6 +43,38 @@ const { launchGame } = require("./game-test-helpers.cjs");
           );
           return catalog?.style.getPropertyValue("--game-level-content-end");
         });
+        if (game === "tank") {
+          assert.equal(
+            await catalog.locator(".game-level-categories").count(),
+            0,
+          );
+          assert.equal(
+            await catalog.locator(".tank-stage-grid > button").count(),
+            36,
+          );
+          assert.equal(
+            await catalog
+              .locator(".tank-stage-grid")
+              .evaluate(
+                (grid) =>
+                  getComputedStyle(grid).gridTemplateColumns.split(" ").length,
+              ),
+            6,
+          );
+          assert.equal(
+            await catalog
+              .locator(".tank-stage-grid > button")
+              .last()
+              .getAttribute("data-tank-action"),
+            "editor",
+          );
+          await page.locator("#gameExitButton").click();
+          await page.waitForFunction(
+            () =>
+              document.querySelector("#gameShell").dataset.state === "closed",
+          );
+          continue;
+        }
         const geometry = await catalog.evaluate((element) => {
           const categories = element.querySelector(".game-level-categories");
           const entries = element.querySelector(".game-level-entries");
@@ -43,6 +82,9 @@ const { launchGame } = require("./game-test-helpers.cjs");
           const right = entries.getBoundingClientRect();
           const title = element
             .querySelector(".game-level-page-title")
+            .getBoundingClientRect();
+          const heading = element
+            .querySelector(".game-level-page-heading")
             .getBoundingClientRect();
           const firstCategory = categories
             .querySelector("button")
@@ -57,10 +99,9 @@ const { launchGame } = require("./game-test-helpers.cjs");
               ? null
               : control.getBoundingClientRect();
           const summary = element.querySelector(".game-level-page-summary");
-          const summaryStyle = getComputedStyle(summary);
           return {
             aligned:
-              Math.abs(title.left - firstCategory.left) < 1 &&
+              Math.abs(heading.left - firstCategory.left) < 1 &&
               (!button ||
                 (Math.abs(
                   button.right - Math.max(...cards.map((card) => card.right)),
@@ -71,11 +112,7 @@ const { launchGame } = require("./game-test-helpers.cjs");
                       title.top -
                       title.height / 2,
                   ) < 1)) &&
-              Math.abs(
-                summary.getBoundingClientRect().right -
-                  parseFloat(summaryStyle.paddingRight) -
-                  Math.max(...cards.map((card) => card.right)),
-              ) < 1,
+              summary === null,
             split:
               left.right <= right.left && Math.abs(left.top - right.top) < 1,
             fits: [element, categories, entries].every(
@@ -95,7 +132,11 @@ const { launchGame } = require("./game-test-helpers.cjs");
           await catalog.evaluate((element) => {
             const cards = [
               ...element.querySelectorAll(".game-level-categories button"),
-            ];
+            ].filter(
+              (card) =>
+                card.dataset.xiangqiAction !== "versus" &&
+                card.dataset.gomokuAction !== "ai",
+            );
             const allBoxes = cards.map((card) => card.getBoundingClientRect());
             const difficultyCount = element.querySelectorAll(
               ".sudoku-difficulties button",
@@ -132,7 +173,7 @@ const { launchGame } = require("./game-test-helpers.cjs");
               )
             );
           }),
-          game + " equal category cards in two columns at " + width,
+          game + " equal puzzle category cards at " + width,
         );
         for (const reduced of [false, true]) {
           await page.emulateMedia({
@@ -197,7 +238,7 @@ const { launchGame } = require("./game-test-helpers.cjs");
       await page.close();
     }
     console.log(
-      "Five level catalogs: split layout, category contents, animation, rapid switching and reduced motion verified at desktop and mobile widths offline.",
+      "Six level catalogs: split layout, category contents, animation, rapid switching and reduced motion verified at desktop and mobile widths offline.",
     );
   } finally {
     await browser.close();

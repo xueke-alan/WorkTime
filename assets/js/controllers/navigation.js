@@ -30,8 +30,17 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   function commitPageTransition(transition) {
     if (transition.committed) return;
     transition.committed = true;
+    const wasYearMode = model.yearMode;
     transition.update();
     actions.render();
+    if (wasYearMode !== model.yearMode && $("settingsPane").hidden) {
+      const content = document.querySelector(".editor > .editor-content");
+      WorkTimeApp.ui.motion?.stop(content);
+      WorkTimeApp.ui.motion?.play(
+        content,
+        model.yearMode ? "motion-sidebar-forward" : "motion-sidebar-back",
+      );
+    }
     transition.afterRender?.();
     // Page transitions own the entire content surface; suppress nested reveals.
     for (const element of $("panelContent").querySelectorAll("*"))
@@ -57,6 +66,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     update,
     afterRender,
     onComplete,
+    sidebarTransition = false,
   }) {
     if (resettingBatch || model.batchMode || pageTransition) return;
     actions.closeImport();
@@ -70,6 +80,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       committed: false,
       animations: [],
       elements: new Map(),
+      sidebarTransition: sidebarTransition || model.yearMode,
     };
     pageTransition = transition;
     const play = (entering) => {
@@ -84,15 +95,17 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         elements = [
           content,
           ...document.querySelectorAll(".calendar-footer > :not(.site-meta)"),
-          ...[
-            ...document.querySelectorAll(
-              "#dayForm, #analysisSidebar > .analysis-sidebar-section, #agendaDayDetails, #agendaEditor .agenda-editor-body",
-            ),
-          ].filter(
-            (element) =>
-              element.getClientRects().length &&
-              getComputedStyle(element).display !== "none",
-          ),
+          ...(transition.sidebarTransition
+            ? []
+            : [
+                ...document.querySelectorAll(
+                  "#dayForm, #analysisSidebar > .analysis-sidebar-section, #agendaDayDetails, #agendaEditor .agenda-editor-body",
+                ),
+              ].filter(
+                (element) =>
+                  element.getClientRects().length &&
+                  getComputedStyle(element).display !== "none",
+              )),
         ];
       transition.animations = elements.map((element) => {
         if (!transition.elements.has(element))
@@ -134,7 +147,12 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (pageTransition === transition) stopPageTransition();
     }
   }
-  function transitionAnalysis(target, beforeRender = null, afterRender = null) {
+  function transitionAnalysis(
+    target,
+    beforeRender = null,
+    afterRender = null,
+    { focusAttendance = false } = {},
+  ) {
     return transitionPage({
       direction: target ? 1 : -1,
       update() {
@@ -143,13 +161,26 @@ WorkTimeApp.ui.createNavigationController = function (options) {
           model.yearMode = false;
         }
         model.analysisMode = target;
+        if (!target) {
+          if (focusAttendance)
+            model.selected = model.calendarSelected =
+              WorkTimeApp.domain.calendar.attendanceFocusDate(
+                model.month,
+                clock.today(),
+                model.state.days,
+              );
+          else model.calendarSelected = null;
+        }
         beforeRender?.();
       },
       afterRender,
     });
   }
   function toggleAnalysis() {
-    return transitionAnalysis(!model.analysisMode);
+    const target = !model.analysisMode;
+    return transitionAnalysis(target, null, null, {
+      focusAttendance: !target,
+    });
   }
   function highlightToday() {
     stopTodayAttention();
@@ -818,6 +849,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (resettingBatch || model.batchMode || model.analysisMode) return;
       return transitionPage({
         direction: model.yearMode ? -1 : 1,
+        sidebarTransition: true,
         update() {
           if (model.yearMode) {
             model.yearMode = false;
@@ -825,6 +857,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
           } else {
             model.yearMode = true;
             model.viewYear = Number(model.month.slice(0, 4));
+            model.yearViewMode = "heatmap";
             model.returnMonth = model.month;
             model.batchMode = false;
             model.batchDays.clear();
@@ -834,27 +867,63 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       });
     });
     events.listen($("calendar"), "click", (e) => {
+      const monthButton = e.target.closest("[data-year-month-switch]");
+      if (monthButton) {
+        if (resettingBatch || model.batchMode || !model.yearMode) return;
+        const month = monthButton.dataset.yearMonthSwitch;
+        if (
+          !/^\d{4}-\d{2}$/.test(month) ||
+          Number(month.slice(0, 4)) !== model.viewYear ||
+          !C.validDate(month + "-01") ||
+          month === model.month
+        )
+          return;
+        model.month = month;
+        model.returnMonth = month;
+        // Refresh the whole workspace so the left month label, summary cards,
+        // target figures and year calendar all follow the selected month.
+        actions.render();
+        return;
+      }
       const button = e.target.closest("[data-year-date]");
-      if (!button || model.batchMode) return;
-      const month = button.dataset.yearDate.slice(0, 7);
-      return transitionPage({
-        direction: -1,
-        update() {
-          model.yearMode = false;
-          model.month = month;
-          model.selected = model.calendarSelected = button.dataset.yearDate;
-        },
-        afterRender() {
-          if (!$("settingsPane").hidden) actions.refreshSettings();
-        },
-        onComplete() {
-          $("calendar")
-            .querySelector(
-              "[data-date=" + JSON.stringify(model.selected) + "] .day-select",
-            )
-            ?.focus({ preventScroll: true });
-        },
-      });
+      if (button) {
+        if (model.batchMode) return;
+        const month = button.dataset.yearDate.slice(0, 7);
+        return transitionPage({
+          direction: -1,
+          update() {
+            model.yearMode = false;
+            model.month = month;
+            model.selected = model.calendarSelected = button.dataset.yearDate;
+          },
+          afterRender() {
+            if (!$("settingsPane").hidden) actions.refreshSettings();
+          },
+          onComplete() {
+            $("calendar")
+              .querySelector(
+                "[data-date=" +
+                  JSON.stringify(model.selected) +
+                  "] .day-select",
+              )
+              ?.focus({ preventScroll: true });
+          },
+        });
+      }
+      const monthSection = e.target.closest(".year-month");
+      if (!monthSection || resettingBatch || model.batchMode || !model.yearMode)
+        return;
+      const month = monthSection.dataset.yearMonth;
+      if (
+        !/^\d{4}-\d{2}$/.test(month || "") ||
+        Number(month.slice(0, 4)) !== model.viewYear ||
+        !C.validDate(month + "-01") ||
+        month === model.month
+      )
+        return;
+      model.month = month;
+      model.returnMonth = month;
+      actions.render();
     });
     events.handler($("prevMonth"), "onclick", () => {
       stopPageTransition();
@@ -863,8 +932,12 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (model.yearMode) {
         if (model.viewYear > 1900)
           animateMonth(-1, () => {
+            const monthNumber = model.month.slice(5);
             model.viewYear--;
+            model.month = model.viewYear + "-" + monthNumber;
+            model.returnMonth = model.month;
             retainCalendarSelection();
+            actions.renderStats();
             actions.renderCalendar();
           });
         return;
@@ -880,8 +953,12 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (model.yearMode) {
         if (model.viewYear < 9999)
           animateMonth(1, () => {
+            const monthNumber = model.month.slice(5);
             model.viewYear++;
+            model.month = model.viewYear + "-" + monthNumber;
+            model.returnMonth = model.month;
             retainCalendarSelection();
+            actions.renderStats();
             actions.renderCalendar();
           });
         return;

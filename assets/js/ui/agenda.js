@@ -119,6 +119,83 @@ WorkTimeApp.ui.createAgenda = function ({
   viewToggle.setAttribute("aria-controls", "calendar");
   viewToggle.innerHTML =
     '<svg class="ui-icon" aria-hidden="true"><use href="#ms-calendar-month"/></svg>';
+  const yearViewToggle = document.createElement("button");
+  yearViewToggle.id = "yearViewToggle";
+  yearViewToggle.type = "button";
+  yearViewToggle.className = "ui-button icon-only year-view-toggle";
+  yearViewToggle.setAttribute("aria-controls", "calendar");
+  yearViewToggle.setAttribute("aria-pressed", "false");
+  yearViewToggle.hidden = true;
+  yearViewToggle.innerHTML =
+    '<svg class="ui-icon" aria-hidden="true"><use href="#ms-local-fire-department"/></svg>';
+  let yearIconAnimation = null;
+  let yearWatermarkTimer = null;
+  function updateYearViewToggle(animate = false) {
+    const detail = model.yearViewMode === "calendar";
+    const use = yearViewToggle.querySelector("use"),
+      href = detail ? "#ms-calendar" : "#ms-local-fire-department",
+      changed = use.getAttribute("href") !== href;
+    use.setAttribute("href", href);
+    yearViewToggle.title = WorkTimeApp.i18n.t(
+      detail ? "yearView.toHeatmap" : "yearView.toCalendar",
+    );
+    yearViewToggle.setAttribute(
+      "aria-label",
+      WorkTimeApp.i18n.t(
+        detail ? "yearView.calendarMode" : "yearView.heatmapMode",
+      ),
+    );
+    yearViewToggle.setAttribute("aria-pressed", String(detail));
+    yearViewToggle.dataset.yearMode = detail ? "calendar" : "heatmap";
+    if (!changed || !animate || !canAnimate()) return;
+    yearIconAnimation?.cancel();
+    const icon = yearViewToggle.querySelector("svg"),
+      angle = detail ? 65 : -65,
+      animation = animationCompat.animate(
+        icon,
+        [
+          { opacity: 0.2, transform: "scale(0.55) rotate(" + angle + "deg)" },
+          { opacity: 1, transform: "scale(1) rotate(0deg)" },
+        ],
+        {
+          duration: 280,
+          easing: "cubic-bezier(0.2, 0.7, 0.3, 1)",
+          fill: "both",
+        },
+      );
+    yearIconAnimation = animation;
+    animation.finished
+      .then(() => {
+        if (yearIconAnimation !== animation) return;
+        yearIconAnimation = null;
+        animation.cancel();
+      })
+      .catch(() => {});
+  }
+  yearViewToggle.addEventListener("click", () => {
+    if (!model.yearMode || busy) return;
+    actions.finishCalendarNavigation?.();
+    const detail = model.yearViewMode !== "calendar";
+    model.yearViewMode = detail ? "calendar" : "heatmap";
+    document.dispatchEvent(new Event("worktime:yearviewchange"));
+    // Toggle presentation only; keep every year card untouched so colours,
+    // text and positions animate in place.
+    $("calendar").classList.toggle("year-calendar-detail", detail);
+    const legend = $("yearLegend");
+    legend.classList.remove("hidden");
+    legend.classList.toggle("is-inactive", detail);
+    legend.setAttribute("aria-hidden", String(detail));
+    const watermark = $("yearWatermark");
+    watermark.classList.remove("is-mode-transition");
+    if (yearWatermarkTimer !== null) window.clearTimeout(yearWatermarkTimer);
+    watermark.classList.add("is-mode-transition");
+    watermark.classList.toggle("is-visible", detail);
+    yearWatermarkTimer = window.setTimeout(() => {
+      yearWatermarkTimer = null;
+      watermark.classList.remove("is-mode-transition");
+    }, 620);
+    updateYearViewToggle(true);
+  });
   const toolbarSlot = document.createElement("div");
   toolbarSlot.className = "agenda-toolbar-slot";
   const toolbarRegion = document.createElement("div");
@@ -128,7 +205,7 @@ WorkTimeApp.ui.createAgenda = function ({
   toolbarDivider.setAttribute("aria-hidden", "true");
   $("batchToggle").before(toolbarRegion);
   toolbarRegion.append(toolbarSlot, toolbarDivider);
-  toolbarSlot.append($("batchToggle"), viewToggle);
+  toolbarSlot.append($("batchToggle"), viewToggle, yearViewToggle);
   let toolbarKey = null;
   let toolbarAnimations = [];
   let toolbarClone = null;
@@ -3043,6 +3120,8 @@ WorkTimeApp.ui.createAgenda = function ({
   function stopToolbarMotion() {
     viewIconAnimation?.cancel();
     viewIconAnimation = null;
+    yearIconAnimation?.cancel();
+    yearIconAnimation = null;
     for (const animation of toolbarAnimations) animation.cancel();
     toolbarAnimations = [];
     toolbarClone?.remove();
@@ -3153,13 +3232,22 @@ WorkTimeApp.ui.createAgenda = function ({
     ];
     const mode = model.analysisMode
       ? "analysis"
-      : active
-        ? "agenda"
-        : "attendance";
-    const key = mode;
+      : model.yearMode
+        ? "attendance"
+        : active
+          ? "agenda"
+          : "attendance";
+    // Year view swaps the attendance bulk-edit action for its display switch.
+    const key = mode === "attendance" && model.yearMode ? "year" : mode;
     const changed = toolbarKey !== null && toolbarKey !== key;
     const incoming =
-      mode === "analysis" ? null : active ? viewToggle : $("batchToggle");
+      key === "analysis"
+        ? null
+        : key === "agenda"
+          ? viewToggle
+          : key === "year"
+            ? yearViewToggle
+            : $("batchToggle");
     const animate = changed && canAnimate();
     const regionWidth = animate
       ? toolbarRegion.getBoundingClientRect().width
@@ -3234,10 +3322,16 @@ WorkTimeApp.ui.createAgenda = function ({
     if (incoming) incoming.dataset.toolbarSource = key;
     if (changed || !toolbarAnimations.length)
       toolbarRegion.hidden = key === "analysis";
-    for (const button of [viewToggle, $("batchToggle")]) {
+    for (const button of [viewToggle, yearViewToggle, $("batchToggle")]) {
       const hidden = button !== incoming;
       if (hidden && button.contains(document.activeElement))
-        $(key === "analysis" ? "analysisToggle" : "agendaMode").focus({
+        $(
+          key === "analysis"
+            ? "analysisToggle"
+            : key === "year"
+              ? "monthTitle"
+              : "agendaMode",
+        ).focus({
           preventScroll: true,
         });
       button.hidden = hidden;
@@ -3277,6 +3371,8 @@ WorkTimeApp.ui.createAgenda = function ({
       });
     viewToggle.setAttribute("aria-label", viewToggle.title);
     viewToggle.disabled = busy;
+    updateYearViewToggle();
+    yearViewToggle.disabled = busy;
     if (!animate) return;
     toolbarRegion.hidden = false;
     const expandedWidth = toolbarRegion.getBoundingClientRect().width;
@@ -3893,6 +3989,13 @@ WorkTimeApp.ui.createAgenda = function ({
       setActive(!active);
       model.yearMode = model.analysisMode = false;
       model.month = model.selected.slice(0, 7);
+      if (!active)
+        model.selected = model.calendarSelected =
+          WorkTimeApp.domain.calendar.attendanceFocusDate(
+            model.month,
+            clock.today(),
+            model.state.days,
+          );
       switchingMode = true;
       preparingWeekLayout = !!weekLayout;
       try {
@@ -4065,6 +4168,7 @@ WorkTimeApp.ui.createAgenda = function ({
             "monthTitle",
             "analysisToggle",
             "batchToggle",
+            "yearViewToggle",
           ].includes(id)
         )
           return;
@@ -4082,7 +4186,12 @@ WorkTimeApp.ui.createAgenda = function ({
         }
         if (
           busy ||
-          ["monthTitle", "analysisToggle", "batchToggle"].includes(id)
+          [
+            "monthTitle",
+            "analysisToggle",
+            "batchToggle",
+            "yearViewToggle",
+          ].includes(id)
         )
           return;
         if (id === "todayButton") {
@@ -4351,6 +4460,7 @@ WorkTimeApp.ui.createAgenda = function ({
         summary,
         controls,
         viewToggle,
+        yearViewToggle,
         toolbarSlot,
         toolbarDivider,
         toolbarRegion,

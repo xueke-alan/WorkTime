@@ -36,6 +36,7 @@ async function main() {
       viewport: { width: 1280, height: 900 },
     });
     await context.addInitScript(() => {
+      localStorage.setItem("worktime.installReminder.dismissed.v1", "true");
       window.runtimeTest = {
         folder: "test-workspace",
         cancel: false,
@@ -296,7 +297,7 @@ async function main() {
       );
       await page.reload();
       await page.waitForFunction(
-        () => WorkTimeApp.services.runtimeFolder.state.status === "available",
+        () => WorkTimeApp.services.runtimeFolder?.state.status === "available",
       );
       await page.locator("#readerOpen").click();
       await page.waitForFunction(() =>
@@ -384,6 +385,36 @@ async function main() {
         player.snapshot().current.name !== "Legacy.wav"
       )
         throw Error("Import interrupted playback");
+      const runtime = WorkTimeApp.services.runtimeFolder;
+      const root = await navigator.storage.getDirectory();
+      const source = await root.getDirectoryHandle(runtime.state.name);
+      const selected = await root.getDirectoryHandle("migrated-media", {
+        create: true,
+      });
+      const book = await (
+        await source.getDirectoryHandle("ebooks")
+      ).getFileHandle("Book.txt");
+      window.beforeBook = await (await book.getFile()).text();
+      await runtime.changeFolder({ source, selected }, { migrate: true });
+    });
+    await page.waitForFunction(() => {
+      const player = window.runtimeTestPlayer;
+      return (
+        !player.snapshot().readingTags &&
+        !player.snapshot().busy &&
+        player.snapshot().current?.name === "Legacy.wav" &&
+        player.isFavorite(player.snapshot().current) &&
+        player.snapshot().position >= 7 &&
+        player.snapshot().paused
+      );
+    });
+    await page.evaluate(async () => {
+      const book = await (
+        await WorkTimeApp.services.runtimeFolder.getDirectory("ebooks")
+      ).getFileHandle("Book.txt");
+      if ((await (await book.getFile()).text()) !== window.beforeBook)
+        throw Error("Reading content identity changed during migration");
+      const player = window.runtimeTestPlayer;
       player.dispose();
       document.getElementById("runtimeTestPlay").remove();
     });

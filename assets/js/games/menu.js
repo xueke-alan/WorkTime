@@ -18,6 +18,59 @@ WorkTimeApp.ui.renderGameMenu = function (
   list.className = "game-menu-list";
   list.setAttribute("role", "group");
   list.setAttribute("aria-label", t("games.menu"));
+  const scrollArea = document.createElement("div");
+  scrollArea.className = "game-menu-scroll";
+  const scrollTrack = document.createElement("div");
+  scrollTrack.className = "game-menu-scroll-track";
+  scrollTrack.setAttribute("aria-hidden", "true");
+  const scrollThumb = document.createElement("div");
+  scrollThumb.className = "game-menu-scroll-thumb";
+  scrollTrack.append(scrollThumb);
+  scrollArea.append(list, scrollTrack);
+  function syncScrollbar() {
+    const height = list.clientHeight;
+    const range = list.scrollHeight - height;
+    scrollTrack.hidden = range <= 1 || height === 0;
+    if (scrollTrack.hidden) return;
+    const trackHeight = scrollTrack.clientHeight;
+    const thumbHeight = Math.min(
+      trackHeight,
+      Math.max(24, (height / list.scrollHeight) * trackHeight),
+    );
+    scrollThumb.style.height = thumbHeight + "px";
+    scrollThumb.style.transform =
+      "translateY(" +
+      (list.scrollTop / range) * (trackHeight - thumbHeight) +
+      "px)";
+  }
+  list.addEventListener("scroll", syncScrollbar, { passive: true });
+  const scrollObserver = new ResizeObserver(syncScrollbar);
+  scrollObserver.observe(list);
+  let drag = null;
+  scrollTrack.onpointerdown = (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const bounds = scrollThumb.getBoundingClientRect();
+    const travel = scrollTrack.clientHeight - bounds.height;
+    if (travel <= 0) return;
+    const ratio = (list.scrollHeight - list.clientHeight) / travel;
+    if (event.target !== scrollThumb)
+      list.scrollTop =
+        (event.clientY -
+          scrollTrack.getBoundingClientRect().top -
+          bounds.height / 2) *
+        ratio;
+    drag = { y: event.clientY, top: list.scrollTop, ratio };
+    scrollTrack.setPointerCapture(event.pointerId);
+    scrollArea.classList.add("is-dragging");
+  };
+  scrollTrack.onpointermove = (event) => {
+    if (drag) list.scrollTop = drag.top + (event.clientY - drag.y) * drag.ratio;
+  };
+  scrollTrack.onlostpointercapture = () => {
+    drag = null;
+    scrollArea.classList.remove("is-dragging");
+  };
   const detail = document.createElement("section");
   detail.className = "game-menu-detail";
   const detailHeader = document.createElement("header");
@@ -29,6 +82,8 @@ WorkTimeApp.ui.renderGameMenu = function (
   detailHeader.append(detailArtwork, detailTitle);
   const description = document.createElement("p");
   description.className = "game-menu-description";
+  // Scrollable text must not become an extra native Tab stop before Play.
+  description.tabIndex = -1;
   const play = document.createElement("button");
   play.type = "button";
   play.className = "ui-button primary game-menu-play";
@@ -62,6 +117,7 @@ WorkTimeApp.ui.renderGameMenu = function (
       (a, b) => positions.get(a.dataset.game) - positions.get(b.dataset.game),
     );
     for (const button of buttons) list.append(button);
+    syncScrollbar();
   }
   function setTabStop(active) {
     for (const button of buttons) button.tabIndex = button === active ? 0 : -1;
@@ -101,9 +157,11 @@ WorkTimeApp.ui.renderGameMenu = function (
       select(entry.id);
       onSelect(entry.id);
     };
+    button.ondblclick = () => onLaunch(entry.id);
     button.onfocus = () => setTabStop(button);
     buttons.push(button);
     list.append(button);
+    scrollObserver.observe(button);
   }
   list.onkeydown = (event) => {
     const current = buttons.indexOf(event.target);
@@ -119,7 +177,7 @@ WorkTimeApp.ui.renderGameMenu = function (
     buttons[next].focus();
   };
   if (entries.length) {
-    library.append(list, detail);
+    library.append(scrollArea, detail);
     select(
       entries.some((entry) => entry.id === selectedId)
         ? selectedId
@@ -127,5 +185,12 @@ WorkTimeApp.ui.renderGameMenu = function (
     );
   } else library.textContent = t("games.empty");
   container.replaceChildren(header, library);
-  return { select, refreshProgress, refreshOrder };
+  return {
+    select,
+    refreshProgress,
+    refreshOrder,
+    dispose() {
+      scrollObserver.disconnect();
+    },
+  };
 };

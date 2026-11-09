@@ -19,15 +19,15 @@ body .sidebar-actions > #importOpen {
   position: relative;
 }
 body #importOpen .import-main {
-  /* Reserve the external action's width without shifting the leading icon. */
-  padding-inline-end: calc(var(--button-icon-inset) + var(--oa-action-size)) !important;
+  /* The symmetric grid reserves both icon slots and keeps the label centered. */
+  padding-inline-end: 0 !important;
   transition: background 160ms ease;
 }
 body .sidebar-actions .import-secondary-actions {
   transition: transform 280ms var(--motion-ease), opacity 280ms var(--motion-ease), visibility 0s;
 }
 body #importOpen.is-return .import-main {
-  padding-inline-end: var(--button-icon-inset) !important;
+  padding-inline-end: 0 !important;
 }
 body .sidebar-actions:has(#importOpen.is-return) .import-secondary-actions {
   transform: translateX(100%);
@@ -295,6 +295,9 @@ body .leave-popover:not(.hidden) {
   :where(html:where([data-reduced-motion="true"])) body .motion-year-month {
     animation: none !important;
   }
+:where(html:where([data-reduced-motion="true"])) body .year-watermark {
+  transition: none;
+}
 
 /* Odometer transitions animate digit strips while the final value stays accessible. */
 .number-roll-up {

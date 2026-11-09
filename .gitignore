@@ -84,9 +84,21 @@ __pycache__/
 !/scripts/import-sudoku.cjs
 !/scripts/import-sokoban.cjs
 !/scripts/verify-sokoban.cjs
+!/scripts/verify-sokoban-motion.cjs
 !/scripts/build-xiangqi.cjs
+!/scripts/solve-xiangqi.cjs
+!/scripts/xiangqi-classics-source.json
+!/scripts/xiangqi-classics-solutions.json
+!/scripts/xiangqi-retired.json
+!/scripts/xiangqi-solver/
 !/scripts/xiangqi-positions.json
 !/scripts/verify-xiangqi.cjs
+!/scripts/verify-gomoku.cjs
+!/scripts/build-gomoku.cjs
+!/scripts/finalize-gomoku.cjs
+!/scripts/pack-gomoku.cjs
+!/scripts/gomoku-search.cjs
+!/scripts/gomoku-curated.json
 !/scripts/verify-link.cjs
 !/scripts/verify-garden.cjs
 !/scripts/verify-tank.cjs
@@ -186,6 +198,7 @@ Thumbs.db
 !/scripts/verify-analysis-summary.cjs
 !/scripts/verify-analysis-persistence.cjs
 !/scripts/verify-analysis-sidebar.cjs
+!/scripts/verify-view-focus.cjs
 !/scripts/verify-auto-backup.cjs
 
 !/scripts/verify-backup-cache.cjs
@@ -197,10 +210,12 @@ Thumbs.db
 !/scripts/verify-level-layout.cjs
 
 !/scripts/generate-sudoku-variants.cjs
+!/scripts/generate-sudoku-extensions.cjs
 !/scripts/verify-sudoku-variants.cjs
 !/scripts/verify-sudoku-hover.cjs
 
 !/scripts/verify-auto-backup-folder.cjs
+!/scripts/verify-runtime-migration.cjs
 
 !/scripts/lib/backup-test-file.cjs
 !/scripts/lib/browser-test-setup.cjs
@@ -211,3 +226,18 @@ Thumbs.db
 !/scripts/verify-reader-minimize.cjs
 
 !/scripts/verify-motion-settings.cjs
+!/scripts/verify-game-pause.cjs
+!/scripts/verify-game-restart.cjs
+!/scripts/verify-sudoku-celebration.cjs
+!/scripts/verify-level-return.cjs
+!/scripts/verify-gomoku-results.cjs
+!/scripts/verify-game-button-contrast.cjs
+!/scripts/verify-ai-thinking.cjs
+!/scripts/verify-xiangqi-engine.cjs
+!/scripts/verify-year-detail.cjs
+!/scripts/verify-garden-motion.cjs
+!/scripts/verify-link-review.cjs
+!/scripts/verify-sokoban-motion.cjs
+
+!/scripts/pikafish-browser/
+!/scripts/pikafish-browser/**

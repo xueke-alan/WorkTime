@@ -31,6 +31,7 @@ function checkI18n() {
     "jump",
     "sokoban",
     "xiangqi",
+    "gomoku",
     "link",
     "garden",
     "tank",
