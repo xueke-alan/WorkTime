@@ -601,6 +601,9 @@ async function verifyComponentMotion(browser, url, input) {
     window.restBandWidth = window.keptRestBand.getAttribute("width");
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });
+  // The paused clock must deliver the media-query change before CSS and JS
+  // animations are sampled together.
+  await page.clock.runFor(32);
   const initial = await page.evaluate(() => ({
     x: Number(document.querySelector('[data-key="date-0"]').getAttribute("x")),
     y: Number(document.querySelector(".analysis-connector").getAttribute("y2")),
