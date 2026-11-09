@@ -129,12 +129,25 @@ const setRange = require("./lib/agenda-test-range.cjs");
       });
       const original = Element.prototype.animate;
       Element.prototype.animate = function (frames, options) {
+        const animation = original.call(this, frames, options);
+        let midpoint;
+        // Sample the real browser effect before IPC/frame delays can finish it.
+        if (
+          this.matches(".agenda-overflow-exit") &&
+          frames[0].opacity !== undefined
+        ) {
+          animation.pause();
+          animation.currentTime = (options.delay || 0) + options.duration / 2;
+          midpoint = Number(getComputedStyle(this).opacity);
+          animation.currentTime = 0;
+          animation.play();
+        }
         if (
           document.querySelector("#calendar")?.contains(this) ||
           this.id === "calendar"
         )
-          window.modeFrames.push({ node: this, frames, options });
-        return original.call(this, frames, options);
+          window.modeFrames.push({ node: this, frames, options, midpoint });
+        return animation;
       };
     });
     const mark = () =>
@@ -143,7 +156,7 @@ const setRange = require("./lib/agenda-test-range.cjs");
       });
     const frames = () =>
       page.evaluate(() =>
-        window.modeFrames.map(({ node, frames, options }) => ({
+        window.modeFrames.map(({ node, frames, options, midpoint }) => ({
           page: node.id === "calendar",
           day: node.matches(".day"),
           lower: node.matches(".timetable-bottom-card"),
@@ -154,6 +167,7 @@ const setRange = require("./lib/agenda-test-range.cjs");
           id: node.dataset.agendaEdit,
           frames,
           options,
+          midpoint,
         })),
       );
     await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -336,16 +350,12 @@ const setRange = require("./lib/agenda-test-range.cjs");
         .count(),
       1,
     );
-    await page.waitForTimeout(60);
     assert.ok(
-      await page
-        .locator(".agenda-overflow-exit")
-        .first()
-        .evaluate((node) => {
-          const opacity = Number(getComputedStyle(node).opacity);
-          return opacity > 0 && opacity < 1;
-        }),
-      "Overflow cards remain visible during their fade",
+      outgoing.every(
+        (animation) => animation.midpoint > 0 && animation.midpoint < 1,
+      ),
+      "Overflow cards remain visible at the midpoint of their fade: " +
+        JSON.stringify(outgoing),
     );
     assert.equal(
       await page

@@ -8,6 +8,19 @@ const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 const root = path.resolve(__dirname, "..");
 const entry = path.resolve(process.argv[2] || root, "index.html");
+async function setMotion(page, value) {
+  // Rendering under a controlled clock uses the explicit site preference.
+  // Live OS media changes are covered separately by verify-motion-settings.
+  await page.emulateMedia({ reducedMotion: value });
+  const saved = await page.evaluate(
+    (value) =>
+      WorkTimeApp.services.preferences.page.saveMotionMode(
+        value === "reduce" ? "reduce" : "full",
+      ),
+    value,
+  );
+  assert.equal(saved.persisted, true, "Motion test preference persists");
+}
 const key = "worktime.games.snake.v1";
 const sandbox = vm.createContext({ WorkTimeApp: { games: {} } });
 vm.runInContext(
@@ -334,7 +347,7 @@ async function verifyBrowser() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await page.clock.install();
-    await page.emulateMedia({ reducedMotion: "reduce" });
+    await setMotion(page, "reduce");
     await page.locator("#date-tab-games").click();
     async function open() {
       await launchGame(page, "game-snake");
@@ -468,13 +481,7 @@ async function verifyBrowser() {
     collision.eaten = 1;
     collision.score = 10;
     for (const motion of ["no-preference", "reduce"]) {
-      await page.emulateMedia({ reducedMotion: motion });
-      await page.waitForFunction(
-        (motion) =>
-          document.documentElement.dataset.reducedMotion ===
-          String(motion === "reduce"),
-        motion,
-      );
+      await setMotion(page, motion);
       await seed(collision);
       await open();
       // Keep browser/IPC time between assertions from advancing the impact.
@@ -538,7 +545,7 @@ async function verifyBrowser() {
       await close();
     }
     // Leaving during the impact must cancel its frame loop and not replay it.
-    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await setMotion(page, "no-preference");
     await seed(collision);
     await open();
     await action("start").click();
@@ -566,7 +573,7 @@ async function verifyBrowser() {
     ];
     cornerState.eaten = 3;
     cornerState.score = 30;
-    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await setMotion(page, "no-preference");
     await seed(cornerState);
     await open();
     await action("start").click();
@@ -608,7 +615,7 @@ async function verifyBrowser() {
       animations: "allow",
     });
     await close();
-    await page.emulateMedia({ reducedMotion: "reduce" });
+    await setMotion(page, "reduce");
     foodState.food = { x: 10, y: 10 };
     await seed(foodState);
     await open();
@@ -754,7 +761,7 @@ async function verifyBrowser() {
       () => document.documentElement.dataset.appState === "ready",
     );
     await touch.clock.install();
-    await touch.emulateMedia({ reducedMotion: "no-preference" });
+    await setMotion(touch, "no-preference");
     const touchState = fixture();
     touchState.bonus = { x: 9, y: 9, ttl: 65 };
     await touch.evaluate(

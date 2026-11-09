@@ -1,4 +1,4 @@
-const CACHE = "worktime-shell-3.0.0";
+const CACHE = "worktime-shell-3.0.1";
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.add("./index.html")));
 });
