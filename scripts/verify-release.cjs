@@ -3,6 +3,8 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const root = path.resolve(__dirname, "..");
 const failures = [];
+// Explicit, one-run release scope; the default gate retains every check below.
+const focused = process.env.WORKTIME_RELEASE_PROFILE === "focused";
 function run(
   script,
   args = [],
@@ -156,6 +158,58 @@ try {
     "performance-budget",
   ])
     verify(feature, false, true);
+  if (focused) {
+    console.log(
+      "Focused release profile: core/data/lifecycle coverage; exhaustive animation combinations and game levels are not rerun.",
+    );
+    for (const feature of [
+      "agenda",
+      "agenda-states",
+      "agenda-timetable",
+      "batch-month",
+      "rest-overtime",
+      "source-priority",
+      "analysis",
+      "analysis-persistence",
+      "music",
+      "reader",
+      "game-archive",
+      "backup-clipboard",
+      "backup-cache",
+      "auto-backup",
+      "auto-backup-folder",
+      "games",
+      "settings-tabs",
+      "onboarding",
+    ])
+      verify(feature);
+    run(path.join(root, "scripts/prepare-site.cjs"));
+    for (const feature of [
+      "startup",
+      "loading",
+      "media-loading",
+      "motion-settings",
+      "runtime-folder",
+      "review-browser",
+      "performance-budget",
+    ])
+      verify(feature, true, true);
+    for (const feature of [
+      "agenda",
+      "backup-clipboard",
+      "music",
+      "reader",
+      "games",
+      "analysis-persistence",
+    ])
+      verify(feature, true);
+    if (failures.length)
+      throw Error("Focused release checks failed: " + failures.join(", "));
+    console.log(
+      "\nAll focused release checks passed. Exhaustive animation/game reruns excluded explicitly.",
+    );
+    process.exit(0);
+  }
   for (const feature of [
     ...agendaChecks,
     "calendar-date",
