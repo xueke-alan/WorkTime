@@ -370,67 +370,77 @@ async function state(page, value) {
     value,
   );
 }
-async function sampleMotion(page, moments) {
-  return page.evaluate((moments) => {
-    const workspace = document.querySelector(".workspace");
-    const targets = {
-      left: workspace.querySelector(".summary-sidebar"),
-      right: workspace.querySelector(".editor"),
-      center: workspace.querySelector("section.panel"),
-      shell: document.getElementById("gameShell"),
-      surface: workspace.querySelector(".game-surface"),
-      toolbar: workspace.querySelector(".game-toolbar"),
-      content: workspace.querySelector(".game-content"),
-    };
-    const running = Object.entries(targets).flatMap(([target, element]) =>
-      element.getAnimations().map((animation) => ({
-        target,
-        animation,
-        time: animation.currentTime,
-      })),
-    );
-    const read = (element) => {
-      const style = getComputedStyle(element);
-      const matrix = new DOMMatrixReadOnly(
-        style.transform === "none" ? undefined : style.transform,
+async function sampleMotion(page, moments, trigger) {
+  return page.evaluate(
+    ({ moments, trigger }) => {
+      if (trigger) document.querySelector(trigger).click();
+      const workspace = document.querySelector(".workspace");
+      const targets = {
+        left: workspace.querySelector(".summary-sidebar"),
+        right: workspace.querySelector(".editor"),
+        center: workspace.querySelector("section.panel"),
+        shell: document.getElementById("gameShell"),
+        surface: workspace.querySelector(".game-surface"),
+        toolbar: workspace.querySelector(".game-toolbar"),
+        content: workspace.querySelector(".game-content"),
+      };
+      const running = Object.entries(targets).flatMap(([target, element]) =>
+        element
+          .getAnimations()
+          .filter((animation) => !("transitionProperty" in animation))
+          .map((animation) => ({
+            target,
+            animation,
+            time: animation.currentTime,
+          })),
       );
-      return {
-        opacity: Number(style.opacity),
-        x: matrix.m41,
-        y: matrix.m42,
-        scaleX: matrix.m11,
-        scaleY: matrix.m22,
-        clip: style.clipPath,
+      const read = (element) => {
+        const style = getComputedStyle(element);
+        const matrix = new DOMMatrixReadOnly(
+          style.transform === "none" ? undefined : style.transform,
+        );
+        return {
+          opacity: Number(style.opacity),
+          x: matrix.m41,
+          y: matrix.m42,
+          scaleX: matrix.m11,
+          scaleY: matrix.m22,
+          clip: style.clipPath,
+        };
       };
-    };
-    const timing = running.map(({ target, animation }) => ({
-      target,
-      start: animation.startTime,
-      ...animation.effect.getTiming(),
-    }));
-    running.forEach(({ animation }) => animation.pause());
-    const samples = moments.map((at) => {
-      running.forEach(({ animation }) => (animation.currentTime = at));
-      return {
-        at,
-        ...Object.fromEntries(
-          Object.entries(targets).map(([key, element]) => [key, read(element)]),
-        ),
-      };
-    });
-    for (const { animation, time } of running) {
-      animation.currentTime = time;
-      animation.play();
-    }
-    return { timing, samples };
-  }, moments);
+      const timing = running.map(({ target, animation }) => ({
+        target,
+        start: animation.startTime,
+        ...animation.effect.getTiming(),
+      }));
+      running.forEach(({ animation }) => animation.pause());
+      const samples = moments.map((at) => {
+        running.forEach(({ animation }) => (animation.currentTime = at));
+        return {
+          at,
+          ...Object.fromEntries(
+            Object.entries(targets).map(([key, element]) => [
+              key,
+              read(element),
+            ]),
+          ),
+        };
+      });
+      for (const { animation, time } of running) {
+        animation.currentTime = time;
+        animation.play();
+      }
+      return { timing, samples };
+    },
+    { moments, trigger },
+  );
 }
 function assertMotion(result, opening) {
   const { timing, samples } = result;
   assert.equal(
     timing.length,
-    9,
-    "Three background opacity, two slide, shell, surface, toolbar and content tracks",
+    10,
+    "Three background opacity, two slide, shell, surface, toolbar and two content tracks",
   );
   assert.equal(
     new Set(timing.map((track) => track.start)).size,
@@ -569,10 +579,14 @@ async function verify() {
     await page.screenshot({
       path: path.join(root, "test-results/games/menu.png"),
     });
-    await page.evaluate(() =>
-      document.querySelector("#gamesPanel .game-menu-play").click(),
+    assertMotion(
+      await sampleMotion(
+        page,
+        [80, 180, 280, 410],
+        "#gamesPanel .game-menu-play",
+      ),
+      true,
     );
-    assertMotion(await sampleMotion(page, [80, 180, 280, 410]), true);
     await state(page, "open");
     const box = await page.locator("#gameShell").boundingBox();
     for (const key of ["x", "y", "width", "height"])
@@ -632,8 +646,10 @@ async function verify() {
       await page.locator("#gameShell [data-game]").count(),
       await page.evaluate(() => WorkTimeApp.games.list().length),
     );
-    await page.keyboard.press("Escape");
-    assertMotion(await sampleMotion(page, [80, 180, 350]), false);
+    assertMotion(
+      await sampleMotion(page, [80, 180, 350], "#gameExitButton"),
+      false,
+    );
     await page.waitForTimeout(240);
     assert.equal(
       await page

@@ -859,11 +859,13 @@ async function miniChecks(browser) {
     await page.locator("#musicOpen").click();
     assert.equal(await page.locator("#musicPanel").isVisible(), true);
     const longFolder = path.join(output, "long-library");
+    // Keep the full fixture path below legacy Windows file-picker limits even
+    // when this suite runs in the pre-push temporary snapshot directory.
     const longTitle =
-      "A long song title with enough words to test safe ellipsis and a complete hover label "
-        .repeat(2)
-        .trim();
+      "A long song title with enough words to test safe ellipsis and a complete hover label";
     fs.mkdirSync(longFolder, { recursive: true });
+    for (const name of fs.readdirSync(longFolder))
+      if (name.endsWith(".wav")) fs.unlinkSync(path.join(longFolder, name));
     fs.writeFileSync(path.join(longFolder, longTitle + ".wav"), wav());
     await page.locator("#musicMiniExpand").click();
     await page

@@ -469,8 +469,18 @@ async function verifyBrowser() {
     collision.score = 10;
     for (const motion of ["no-preference", "reduce"]) {
       await page.emulateMedia({ reducedMotion: motion });
+      await page.waitForFunction(
+        (motion) =>
+          document.documentElement.dataset.reducedMotion ===
+          String(motion === "reduce"),
+        motion,
+      );
       await seed(collision);
       await open();
+      // Keep browser/IPC time between assertions from advancing the impact.
+      await page.clock.pauseAt(
+        new Date(await page.evaluate(() => Date.now() + 100)),
+      );
       await action("start").click();
       await page.clock.runFor(1850);
       await page.keyboard.press("ArrowRight");
@@ -524,6 +534,7 @@ async function verifyBrowser() {
         await page.locator(".game-snake").getAttribute("data-status"),
         "ready",
       );
+      await page.clock.resume();
       await close();
     }
     // Leaving during the impact must cancel its frame loop and not replay it.

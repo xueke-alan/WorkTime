@@ -405,6 +405,9 @@ async function verify() {
     }
     await page.setViewportSize({ width: 1480, height: 1000 });
     await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.waitForFunction(
+      () => document.documentElement.dataset.reducedMotion === "false",
+    );
     const opening = await page.evaluate(async () => {
       const area = document.querySelector(".date-info-area");
       document.querySelector("#date-tab-notifications").click();
@@ -541,10 +544,28 @@ async function verify() {
         const widths = [title.getBoundingClientRect().width];
         const weekTops = [];
         document.querySelector("#agendaViewToggle").click();
+        // Flush the changed style, then sample the actual CSS transition at
+        // controlled times instead of relying on frame delivery under load.
+        title.getBoundingClientRect();
+        const widthTransition = title
+          .getAnimations()
+          .find((animation) => animation.transitionProperty === "width");
+        widthTransition?.pause();
+        const widthDuration = widthTransition?.effect.getTiming().duration || 0;
+        if (widthTransition) {
+          widthTransition.currentTime = widthDuration / 2;
+          widths.push(title.getBoundingClientRect().width);
+          widthTransition.currentTime = 0;
+        }
         const start = performance.now();
         let stable = true,
           rolling = false;
         while (performance.now() - start < 480) {
+          if (widthTransition)
+            widthTransition.currentTime = Math.min(
+              widthDuration,
+              ((performance.now() - start) / 360) * widthDuration,
+            );
           slots.forEach((node, index) => {
             const r = node.getBoundingClientRect();
             if (
@@ -563,12 +584,18 @@ async function verify() {
           if (week) weekTops.push(week.getBoundingClientRect().top);
           await new Promise(requestAnimationFrame);
         }
+        if (widthTransition) {
+          widthTransition.finish();
+          widths.push(title.getBoundingClientRect().width);
+        }
         return {
           stable,
           rolling,
           widths,
           weekTops,
           view: document.querySelector("#agendaViewToggle").dataset.view,
+          transition: getComputedStyle(title).transition,
+          reduced: document.documentElement.dataset.reducedMotion,
         };
       });
       assert.equal(titleMotion.view, view);
@@ -595,7 +622,7 @@ async function verify() {
               width > Math.min(start, end) + 1 &&
               width < Math.max(start, end) - 1,
           ),
-          "Title width changes gradually",
+          "Title width changes gradually: " + JSON.stringify(titleMotion),
         );
     }
     await page.emulateMedia({ reducedMotion: "reduce" });
