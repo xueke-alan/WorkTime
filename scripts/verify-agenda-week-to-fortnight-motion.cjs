@@ -198,10 +198,14 @@ const { chromium } = require("playwright");
         await page.locator("#calendar > .day[data-agenda-week]").count(),
         21,
       );
-      await page.emulateMedia({ reducedMotion: "reduce" });
-      await page.waitForFunction(
-        () => document.documentElement.dataset.reducedMotion === "true",
-      );
+      // Rendering uses an explicit preference; live OS changes are covered by
+      // verify-motion-settings, which also runs in the release gate.
+      await page.evaluate(async () => {
+        const saved =
+          await WorkTimeApp.services.preferences.page.saveMotionMode("reduce");
+        if (!saved.persisted)
+          throw Error("Motion test preference did not persist");
+      });
       for (let index = 0; index < 2; index++)
         await page.locator("#agendaViewToggle").click();
       assert.equal(
@@ -524,11 +528,13 @@ const { chromium } = require("playwright");
         0,
         "Interrupting the transition removes outgoing copies",
       );
-      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.evaluate(async () => {
+        const saved =
+          await WorkTimeApp.services.preferences.page.saveMotionMode("reduce");
+        if (!saved.persisted)
+          throw Error("Motion test preference did not persist");
+      });
       for (let index = 0; index < 3; index++) {
-        await page.waitForFunction(
-          () => document.documentElement.dataset.reducedMotion === "true",
-        );
         await page.locator("#agendaViewToggle").click();
         if (index === 1) {
           assert.equal(await page.locator(".timetable-divider").count(), 1);

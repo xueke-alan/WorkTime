@@ -144,6 +144,9 @@ async function verify() {
     assert.equal(await button.getAttribute("aria-pressed"), "true");
     await card("2026-10-18").click();
     await view.emulateMedia({ reducedMotion: "no-preference" });
+    await view.waitForFunction(
+      () => document.documentElement.dataset.reducedMotion === "false",
+    );
     await button.click();
     const artwork = await card("2026-10-18").evaluate((node) => ({
       outgoing: node.querySelectorAll(".calendar-artwork-outgoing").length,
