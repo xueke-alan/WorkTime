@@ -400,6 +400,7 @@ WorkTimeApp.games.register({
       playReplay();
     });
     const replayExit = button(replayActions, "replay-exit", closeReplay);
+    const ruleText = node("p", "sudoku-rule", play);
     const feedback = node("p", "sudoku-feedback", root);
     feedback.setAttribute("role", "status");
     for (const control of [choose, restart, menuReplay])
@@ -1000,6 +1001,9 @@ WorkTimeApp.games.register({
       if (signal.aborted) return;
       root.dataset.playing = String(!choosing);
       const group = groups.find((g) => g.id === selectedGroup);
+      const ruleKey =
+        categoryOrder.get(group.id) < 4 ? "classicRule" : group.id + "Rule";
+      ruleText.textContent = t(ruleKey);
       title.textContent =
         t(group.id) +
         " · " +
@@ -1143,14 +1147,15 @@ WorkTimeApp.games.register({
       const { width, height } = availableSize;
       const wide = width >= 700 && height >= 440;
       root.dataset.layout = wide ? "wide" : "compact";
+      const rootGap = parseFloat(window.getComputedStyle(root).rowGap) || 0;
+      const boardHeight =
+        height - feedback.offsetHeight - (saveFailed ? rootGap : 0);
+      root.style.setProperty("--sudoku-height", Math.floor(boardHeight) + "px");
       if (!wide) return;
       const style = window.getComputedStyle(play);
       const columns = style.gridTemplateColumns.split(" ").map(parseFloat);
       const gap = parseFloat(style.columnGap) || 0;
       const boardWidth = width - columns[1] - gap;
-      const rootGap = parseFloat(window.getComputedStyle(root).rowGap) || 0;
-      const boardHeight =
-        height - feedback.offsetHeight - (saveFailed ? rootGap : 0);
       root.style.setProperty(
         "--sudoku-size",
         Math.floor(Math.max(260, Math.min(boardWidth, boardHeight))) + "px",

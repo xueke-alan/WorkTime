@@ -17,6 +17,12 @@ const { data, games } = sandbox.WorkTimeApp;
 const rules = games.sudokuRules;
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const groupById = (id) => data.sudoku.groups.find((group) => group.id === id);
+function skipOnboarding() {
+  const show = HTMLDialogElement.prototype.showModal;
+  HTMLDialogElement.prototype.showModal = function () {
+    if (this.id !== "onboardingDialog") show.call(this);
+  };
+}
 function verifyBank() {
   assert.equal(data.sudoku.groups.length, 24);
   const seen = new Set();
@@ -182,10 +188,11 @@ async function main() {
     });
     const page = await context.newPage(),
       errors = [];
+    await page.addInitScript(skipOnboarding);
     page.on("pageerror", (error) => errors.push(error.message));
     await page.route(/^https?:/, (route) => route.abort());
     await page.addInitScript((key) => {
-      localStorage.setItem("worktime.onboarding.v1", "dismissed");
+      localStorage.setItem("worktime.onboarding.v1", "done");
       const fixture = localStorage.getItem(key + ".fixture");
       if (fixture) {
         localStorage.setItem(key, fixture);
@@ -207,8 +214,8 @@ async function main() {
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
-      await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
       await page.locator("#date-tab-games").click();
+      await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
       await launchGame(page, "game-sudoku");
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
@@ -233,6 +240,43 @@ async function main() {
     }
     await launch();
     assert.equal(await page.locator(".sudoku-categories button").count(), 24);
+    for (const group of data.sudoku.groups) {
+      await action(group.id).click();
+      const ruleKey = ["easy", "medium", "hard", "expert"].includes(group.id)
+        ? "classicRule"
+        : group.id + "Rule";
+      const expected = await page.evaluate(
+        (key) => WorkTimeApp.i18n.t("games.sudoku." + key),
+        ruleKey,
+      );
+      assert.ok(expected && !expected.includes("games.sudoku."), group.id);
+      assert.equal(
+        await page.locator(".sudoku-catalog .sudoku-rule").count(),
+        0,
+      );
+      await action("level-1").click();
+      assert.equal(
+        await page.locator(".sudoku-play .sudoku-rule").textContent(),
+        expected,
+      );
+      assert.equal(
+        await page.locator(".sudoku-play .sudoku-rule").isVisible(),
+        true,
+      );
+      await action("choose").click();
+    }
+    if (process.env.WORKTIME_SUDOKU_RULES_ONLY === "1") {
+      console.log(
+        "Sudoku: all 24 categories show their rules only inside the game.",
+      );
+      return;
+    }
+    // Leave the original interaction checks with a fresh classic level.
+    await page.evaluate(
+      (key) => localStorage.setItem(key + ".fixture", '{"version":1}'),
+      key,
+    );
+    await launch();
     assert.equal(
       await page
         .locator(
@@ -366,7 +410,7 @@ async function main() {
       assert.equal(
         await page
           .locator(
-            ".sudoku-options, .sudoku-controls, .sudoku-source, .sudoku-rule, .game-sudoku [data-game-help]",
+            ".sudoku-options, .sudoku-controls, .sudoku-source, .game-sudoku [data-game-help]",
           )
           .count(),
         0,
@@ -763,6 +807,7 @@ async function main() {
     await context.close();
     const blocked = await browser.newContext({ reducedMotion: "reduce" });
     const noStorage = await blocked.newPage();
+    await noStorage.addInitScript(skipOnboarding);
     await noStorage.addInitScript(() => {
       Storage.prototype.getItem = () => {
         throw Error("blocked");
