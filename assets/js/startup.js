@@ -33,6 +33,7 @@
           WorkTimeApp.ui.motion?.play(element, "motion-startup", index * 45),
         );
       document.documentElement.classList.remove("app-loading");
+      WorkTimeApp.ui.secondaryControllers?.afterIntro();
       numberTimer = setTimeout(() => {
         numberTimer = null;
         if (!disposed) WorkTimeApp.ui.numbers?.reveal();

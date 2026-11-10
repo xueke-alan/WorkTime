@@ -239,6 +239,7 @@ Thumbs.db
 !/scripts/verify-link-review.cjs
 !/scripts/measure-startup.cjs
 !/scripts/verify-startup-critical.cjs
+!/scripts/verify-secondary-startup.cjs
 !/scripts/lib/startup-test-server.cjs
 !/scripts/verify-sokoban-motion.cjs
 

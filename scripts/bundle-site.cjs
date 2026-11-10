@@ -45,6 +45,7 @@ function bundleSite(root) {
         "assets/js/ui/date-runtime.min.js",
         "assets/js/ui/view-runtime.min.js",
         "assets/js/ui/startup-runtime.min.js",
+        "assets/js/ui/secondary-runtime.min.js",
         "assets/js/auto-backup-folder.js",
         "assets/js/services/music-library.js",
         "assets/js/services/music-storage.js",

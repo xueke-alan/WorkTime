@@ -381,7 +381,7 @@ async function verify() {
         );
         await guide.locator("#date-tab-notifications").click();
         await guide.locator("#setupButton").click();
-        assert.equal(await guide.locator("#settingsPane").isVisible(), true);
+        await guide.locator("#settingsPane").waitFor({ state: "visible" });
         assert.equal(
           await guide.locator("#settingsWorkTab").getAttribute("aria-selected"),
           "true",

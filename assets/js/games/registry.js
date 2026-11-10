@@ -33,11 +33,16 @@ WorkTimeApp.games = (() => {
       throw Error("Unknown game: " + id);
     }
     await WorkTimeApp.services.assets.scripts(definition.rules);
-    if (!rulesOnly)
+    if (!rulesOnly) {
+      await WorkTimeApp.services.assets.script(
+        "assets/js/ui/secondary-runtime.min.js",
+        { fetchPriority: "high" },
+      );
       await Promise.all([
         WorkTimeApp.services.assets.style(definition.style),
         WorkTimeApp.services.assets.script(definition.source),
       ]);
+    }
     return entries.get(id);
   }
   // Minimal menu artwork: a shared 32px grid and uniform rounded outlines.

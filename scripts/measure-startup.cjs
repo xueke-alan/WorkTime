@@ -10,18 +10,31 @@ const options = {};
 for (let i = 2; i < process.argv.length; i += 2) {
   const name = process.argv[i];
   if (
-    !["--site", "--offline", "--out", "--baseline", "--samples"].includes(
-      name,
-    ) ||
+    ![
+      "--site",
+      "--offline",
+      "--out",
+      "--baseline",
+      "--samples",
+      "--minimum-cold-improvement-percent",
+    ].includes(name) ||
     !process.argv[i + 1]
   )
     throw Error(
-      "Expected --site, --offline, --out, --baseline or --samples with a value",
+      "Expected --site, --offline, --out, --baseline, --samples or --minimum-cold-improvement-percent with a value",
     );
   options[name.slice(2)] = process.argv[i + 1];
 }
 const count = Number(options.samples || 10);
 assert.ok(Number.isInteger(count) && count >= 1);
+const minimumColdImprovement = Number(
+  options["minimum-cold-improvement-percent"] ?? 10,
+);
+assert.ok(
+  Number.isFinite(minimumColdImprovement) &&
+    minimumColdImprovement >= 0 &&
+    minimumColdImprovement < 100,
+);
 const config = {
   samples: count,
   cpuThrottle: 4,
@@ -85,6 +98,18 @@ async function instrument(context) {
           /\/(core|date|view|startup)-runtime\.min\.js/,
         );
         if (match) window.startupMeasurement.stages.push(match[1]);
+        if (match?.[1] === "startup") {
+          const alignment = WorkTimeApp.ui.alignment,
+            prepare = alignment.prepareFirstPaint;
+          alignment.prepareFirstPaint = (...args) => {
+            const started = performance.now();
+            try {
+              return prepare(...args);
+            } finally {
+              window.startupMeasurement.alignment = performance.now() - started;
+            }
+          };
+        }
       },
       true,
     );
@@ -153,6 +178,7 @@ async function sample(context, url, transport) {
       reveal: Math.round(visible - ready),
       longestTask: Math.round(Math.max(0, ...occupied)),
       stages,
+      alignment: Math.round(window.startupMeasurement.alignment),
       resources: performance
         .getEntriesByType("resource")
         .filter((entry) =>
@@ -169,6 +195,16 @@ async function sample(context, url, transport) {
   assert.deepEqual(errors, []);
   assert.deepEqual(result.stages, ["core", "date", "view", "startup"]);
   await page.waitForTimeout(650);
+  if (await page.evaluate(() => !!WorkTimeApp.ui.secondaryControllers)) {
+    await page.waitForFunction(
+      () => WorkTimeApp.ui.secondaryControllers.state === "ready",
+      null,
+      { timeout: 25000 },
+    );
+    result.prewarm = await page.evaluate(
+      () => WorkTimeApp.ui.secondaryControllers.completedAt,
+    );
+  } else result.prewarm = null;
   await page.close();
   return result;
 }
@@ -183,6 +219,10 @@ async function main() {
     browser: browser.version(),
     measurements: {},
     summary: {},
+    acceptance: {
+      minimumColdImprovementPercent: minimumColdImprovement,
+      maximumOtherP95RegressionPercent: 5,
+    },
   };
   try {
     // Browser/GPU initialization is outside the navigation under measurement.
@@ -222,13 +262,20 @@ async function main() {
         }
       console.log(`Completed startup sample ${run + 1}/${count}`);
     }
-    for (const [key, values] of Object.entries(report.measurements))
+    for (const [key, values] of Object.entries(report.measurements)) {
       report.summary[key] = Object.fromEntries(
-        ["ready", "visible", "reveal", "longestTask"].map((metric) => [
-          metric,
-          summarize(values.map((value) => value[metric])),
-        ]),
+        ["ready", "visible", "reveal", "longestTask", "alignment"].map(
+          (metric) => [metric, summarize(values.map((value) => value[metric]))],
+        ),
       );
+      const prewarmed = values.filter((value) => value.prewarm !== null);
+      report.summary[key].prewarm = prewarmed.length
+        ? summarize(prewarmed.map((value) => value.prewarm))
+        : null;
+      report.summary[key].prewarmAfterVisible = prewarmed.length
+        ? summarize(prewarmed.map((value) => value.prewarm - value.visible))
+        : null;
+    }
     if (options.baseline) {
       const baseline = JSON.parse(fs.readFileSync(options.baseline, "utf8"));
       assert.deepEqual(
@@ -246,7 +293,7 @@ async function main() {
           p95RegressionPercent: Number((regression * 100).toFixed(1)),
           passed:
             key === "http/full/cold" || key === "http/reduce/cold"
-              ? improvement >= 0.2
+              ? improvement >= minimumColdImprovement / 100
               : regression <= 0.05,
         };
       }

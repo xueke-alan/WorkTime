@@ -1,6 +1,6 @@
 "use strict";
 /** settings controller. Instantiate once, then bind after all actions are connected. */
-WorkTimeApp.ui.createSettingsController = function (options) {
+WorkTimeApp.ui.secondary.settings = function (options) {
   const events = WorkTimeApp.ui.createEventScope();
   const breakEvents = WorkTimeApp.ui.createEventScope();
   const {

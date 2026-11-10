@@ -6,10 +6,17 @@ WorkTimeApp.services.assets = (() => {
   const root = new URL(source.slice(0, source.lastIndexOf("/assets/js/") + 1));
   const versions = WorkTimeApp.data.assetVersions || {};
   const pending = new Map();
-  function load(path, style = false) {
-    if (pending.has(path)) return pending.get(path);
+  const elements = new Map();
+  function load(path, style = false, { fetchPriority = "auto" } = {}) {
+    if (pending.has(path)) {
+      if (fetchPriority === "high" && elements.has(path))
+        elements.get(path).fetchPriority = "high";
+      return pending.get(path);
+    }
     const task = new Promise((resolve, reject) => {
       const element = document.createElement(style ? "link" : "script");
+      element.fetchPriority = fetchPriority;
+      elements.set(path, element);
       const url = new URL(path, root);
       if (versions[path]) url.searchParams.set("v", versions[path]);
       if (style) {
@@ -23,6 +30,7 @@ WorkTimeApp.services.assets = (() => {
       function finish(error) {
         clearTimeout(timer);
         element.onload = element.onerror = null;
+        elements.delete(path);
         if (error) {
           element.remove();
           reject(error);
@@ -41,7 +49,7 @@ WorkTimeApp.services.assets = (() => {
     for (const path of paths) await load(path);
   }
   return {
-    script: (path) => load(path),
+    script: (path, options) => load(path, false, options),
     style: (path) => load(path, true),
     scripts,
   };

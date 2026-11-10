@@ -144,6 +144,12 @@ WorkTimeApp.ui.createSidebarPanels = function ({
   }
   function openSettings(tab = activeTab) {
     if (disposed) return;
+    if (
+      WorkTimeApp.ui.secondaryControllers?.deferSettings(() =>
+        openSettings(tab),
+      )
+    )
+      return;
     const opening = settings.hidden;
     if (opening) {
       leaveBatch();
