@@ -81,6 +81,7 @@ function verify(feature, published = false, required = false) {
           "performance-budget",
           "lunar-runtime",
           "startup-critical",
+          "secondary-startup",
         ].includes(feature),
         env: {
           ...process.env,
@@ -193,6 +194,7 @@ try {
           "onboarding",
           "sudoku-celebration",
           "startup-critical",
+          "secondary-startup",
         ].includes(feature)
       )
         verify(feature, true);
@@ -255,6 +257,7 @@ try {
       "lunar-runtime",
       "startup",
       "startup-critical",
+      "secondary-startup",
       "loading",
       "media-loading",
       "motion-settings",

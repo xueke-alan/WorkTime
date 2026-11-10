@@ -1,5 +1,16 @@
 "use strict";
 for (const [language, labels] of Object.entries({
+  "zh-CN": ["正在加载，请稍候…", "加载失败，请重试。"],
+  "zh-TW": ["正在載入，請稍候…", "載入失敗，請重試。"],
+  "zh-HK": ["正在載入，請稍候…", "載入失敗，請重試。"],
+  en: ["Loading, please wait…", "Loading failed. Please retry."],
+  ja: ["読み込み中です…", "読み込めませんでした。再試行してください。"],
+  ko: ["불러오는 중입니다…", "불러오지 못했습니다. 다시 시도하세요."],
+})) {
+  WorkTimeApp.data.locales[language]["secondary.loading"] = labels[0];
+  WorkTimeApp.data.locales[language]["secondary.failed"] = labels[1];
+}
+for (const [language, labels] of Object.entries({
   "zh-CN": ["可选", "进行中", "已通关", "未解锁", "选择关卡", "关闭"],
   "zh-TW": ["可選", "進行中", "已通關", "未解鎖", "選擇關卡", "關閉"],
   "zh-HK": ["可選", "進行中", "已通關", "未解鎖", "選擇關卡", "關閉"],

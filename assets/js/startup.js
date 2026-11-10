@@ -74,6 +74,7 @@
           WorkTimeApp.ui.motion?.play(element, "motion-startup", index * 45),
         );
       document.documentElement.classList.remove("app-loading");
+      WorkTimeApp.ui.secondaryControllers?.afterIntro();
       prefetch();
       numberTimer = setTimeout(() => {
         numberTimer = null;

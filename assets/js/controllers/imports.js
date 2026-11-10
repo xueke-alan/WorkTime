@@ -1,6 +1,6 @@
 "use strict";
 /** imports controller. Instantiate once, then bind after all actions are connected. */
-WorkTimeApp.ui.createImportController = function (options) {
+WorkTimeApp.ui.secondary.imports = function (options) {
   const events = WorkTimeApp.ui.createEventScope();
   const {
     element: $,
@@ -14,11 +14,9 @@ WorkTimeApp.ui.createImportController = function (options) {
     hydrateImports,
     clipboard,
   } = options;
-  let holdAction = null;
   let preview = null;
   let disposed = false;
   let importParseTimer = null;
-  let oaNavigationTimer = null;
   let resultsMode = "history";
   function anomalyReason(record) {
     if (!record.start && !record.end)
@@ -282,14 +280,14 @@ WorkTimeApp.ui.createImportController = function (options) {
       : WorkTimeApp.i18n.t("copy.d6971aab23");
   }
   let detailId = null;
-  async function showImportDetail(id) {
+  async function showImportDetail(id, valid = () => true) {
     try {
       await hydrateImports();
     } catch (error) {
       actions.toast(WorkTimeApp.i18n.message(error.message), "error");
       return;
     }
-    if (disposed) return;
+    if (disposed || !valid()) return;
     const logs = importHistoryByTime(),
       index = logs.findIndex((log) => log.id === id),
       log = logs[index];
@@ -344,14 +342,14 @@ WorkTimeApp.ui.createImportController = function (options) {
       WorkTimeApp.ui.motion?.play($("sourceBody"), "motion-sidebar-forward");
     WorkTimeApp.ui.alignment?.refresh([pane]);
   }
-  async function showSources() {
+  async function showSources(valid = () => true) {
     try {
       await hydrateImports();
     } catch (error) {
       actions.toast(WorkTimeApp.i18n.message(error.message), "error");
       return;
     }
-    if (disposed) return;
+    if (disposed || !valid()) return;
     const day = model.state.days[model.selected] || {},
       logs = importIndex.logsForDate(model.state.imports, model.selected),
       log =
@@ -367,38 +365,18 @@ WorkTimeApp.ui.createImportController = function (options) {
       actions.toast(WorkTimeApp.i18n.t("copy.184ad4d4ad"));
       return;
     }
-    showImportDetail(log.id);
-    actions.open("sourceDialog");
+    await showImportDetail(log.id, valid);
+    if (!disposed && valid()) actions.open("sourceDialog");
   }
-  const oaShortcut = $("oaShortcut");
   function editOALink() {
     $("oaLinkInput").value = model.state.oaUrl || "";
     $("oaLinkError").textContent = "";
     actions.open("oaLinkDialog");
     $("oaLinkInput").focus();
   }
-  function openOAWebsite() {
-    if (!model.state.oaUrl) {
-      editOALink();
-      return;
-    }
-    try {
-      const url = new URL(model.state.oaUrl);
-      if (!["http:", "https:"].includes(url.protocol))
-        throw Error(WorkTimeApp.i18n.t("copy.617fe2d78b"));
-      // A popup may suspend painting before blur/visibilitychange is delivered.
-      // Leave the sidebar at its final state before handing focus to OA.
-      actions.finishSidebarNavigation();
-      window.open(url.href, "_blank", "noopener,noreferrer");
-    } catch (error) {
-      if (disposed) return;
-      editOALink();
-      $("oaLinkError").textContent = WorkTimeApp.i18n.message(error.message);
-    }
-  }
-  function cancelOANavigation() {
-    clearTimeout(oaNavigationTimer);
-    oaNavigationTimer = null;
+  function openImport(openOptions) {
+    parseImport();
+    actions.open("importDialog", openOptions);
   }
   let bound = false;
   function bind() {
@@ -421,7 +399,6 @@ WorkTimeApp.ui.createImportController = function (options) {
       if ($("sourceDialog").open && detailId) showImportDetail(detailId);
     });
     events.listen($("importDialog"), "close", resetImportInput);
-    events.listen($("importDialog"), "close", cancelOANavigation);
     events.listen($("importDialog"), "sidebar-open", renderImportHistory);
     events.handler($("importHistoryList"), "onclick", async (e) => {
       await hydrateImports();
@@ -471,30 +448,7 @@ WorkTimeApp.ui.createImportController = function (options) {
       renderImportHistory();
       actions.saveFeedback(saved, WorkTimeApp.i18n.t("copy.5986f6bd33"));
     });
-    events.handler($("sourceOpen"), "onclick", showSources);
-    events.handler($("importOASite"), "onclick", () => {
-      parseImport();
-      actions.open("importDialog", { motionDuration: 0 });
-      cancelOANavigation();
-      // Give the browser time to paint the settled sidebar before OA takes focus.
-      oaNavigationTimer = setTimeout(() => {
-        oaNavigationTimer = null;
-        if (!disposed && $("importDialog").open) openOAWebsite();
-      }, 10);
-    });
     events.listen($("sourceDialog"), "click", detailClick);
-    events.handler($("importOpen"), "onclick", () => {
-      parseImport();
-      actions.open("importDialog");
-    });
-    holdAction = WorkTimeApp.ui.createHoldAction({
-      button: oaShortcut,
-      enabled: () => !!model.state.oaUrl,
-      onShort: openOAWebsite,
-      onLong: editOALink,
-      cancelShortAfterFeedback: true,
-    });
-    events.listen($("importDialog"), "close", () => holdAction.cancel());
     events.handler($("oaLinkForm"), "onsubmit", async (event) => {
       event.preventDefault();
       try {
@@ -581,13 +535,11 @@ WorkTimeApp.ui.createImportController = function (options) {
     $("sourceDialog").removeEventListener("click", detailClick);
     disposed = true;
     $("importDialog").removeEventListener("sidebar-open", renderImportHistory);
-    holdAction?.dispose();
     clearTimeout(importParseTimer);
-    cancelOANavigation();
   }
   const hasDraft = () =>
     !!$("pasteText").value.trim() ||
     ($("oaLinkDialog").open &&
       $("oaLinkInput").value.trim() !== model.state.oaUrl);
-  return { bind, dispose, hasDraft };
+  return { bind, dispose, hasDraft, openImport, showSources, editOALink };
 };

@@ -87,6 +87,17 @@
     }
     return remember(textMetrics, key, context.measureText(text), 512);
   }
+  function readFont(element) {
+    const style = getComputedStyle(element);
+    // Snapshot live computed properties once; repeated getters may synchronize style.
+    return {
+      fontStyle: style.fontStyle,
+      fontWeight: style.fontWeight,
+      fontSize: style.fontSize,
+      fontFamily: style.fontFamily,
+      fontStretch: style.fontStretch,
+    };
+  }
   function dateInkHeight(style, text) {
     const scale = devicePixelRatio || 1,
       key = [context.font, style.fontStretch, text, scale].join("|");
@@ -115,17 +126,29 @@
       ink.fontStretch = canvasFontStretch(style.fontStretch);
     ink.fillText(text, 4, size * 2);
     const pixels = ink.getImageData(0, 0, raster.width, raster.height).data;
-    let first = raster.height,
+    const bounds = pixelBounds(
+      pixels,
+      raster.width,
+      raster.width,
+      raster.height,
+      0,
+      scale,
+      size,
+    );
+    return remember(dateInkHeights, key, bounds, 128);
+  }
+  function pixelBounds(pixels, stride, width, rasterHeight, top, scale, size) {
+    let first = rasterHeight,
       last = -1,
-      left = raster.width,
+      left = width,
       right = -1;
     // Only each row's outer pixels affect the bounds; skip the glyph interior.
-    for (let y = 0; y < raster.height; y++) {
-      const row = y * raster.width * 4;
+    for (let y = 0; y < rasterHeight; y++) {
+      const row = (y + top) * stride * 4;
       let start = 0;
-      while (start < raster.width && !pixels[row + start * 4 + 3]) start++;
-      if (start === raster.width) continue;
-      let end = raster.width - 1;
+      while (start < width && !pixels[row + start * 4 + 3]) start++;
+      if (start === width) continue;
+      let end = width - 1;
       while (end > start && !pixels[row + end * 4 + 3]) end--;
       first = Math.min(first, y);
       last = y;
@@ -133,12 +156,110 @@
       right = Math.max(right, end);
     }
     const height = last >= first ? (last - first + 1) / scale : size;
-    const bounds = {
+    return {
       height,
       center: last >= first ? (first + last + 1) / (2 * scale) - size * 2 : 0,
       centerX: right >= left ? (left + right + 1) / (2 * scale) - 4 : 0,
     };
-    return remember(dateInkHeights, key, bounds, 128);
+  }
+  function inkRequest(style, text) {
+    const scale = devicePixelRatio || 1,
+      size = parseFloat(style.fontSize);
+    return {
+      style,
+      text,
+      scale,
+      size,
+      font: context.font,
+      stretch: canvasFontStretch(style.fontStretch),
+      key: [context.font, style.fontStretch, text, scale].join("|"),
+      width: Math.ceil(
+        Math.max(size * 5, cachedMetrics(style, text).width + 8) * scale,
+      ),
+      height: Math.ceil(size * 3 * scale),
+    };
+  }
+  function measureInkRequests(measurements) {
+    const groups = new Map(),
+      bounds = new Map(dateInkHeights);
+    for (const { ink } of measurements) {
+      if (!ink) continue;
+      if (bounds.has(ink.key)) {
+        const cached = bounds.get(ink.key);
+        if (cached) remember(dateInkHeights, ink.key, cached, 128);
+        continue;
+      }
+      bounds.set(ink.key, null);
+      const key = [ink.font, ink.stretch, ink.size, ink.scale].join("|");
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(ink);
+    }
+    function flush(batch, width, height) {
+      if (!batch.length) return;
+      if (!dateRaster) {
+        dateRaster = document.createElement("canvas");
+        dateRasterContext = dateRaster.getContext("2d", {
+          willReadFrequently: true,
+        });
+      }
+      const raster = dateRaster,
+        ink = dateRasterContext;
+      if (raster.width !== width) raster.width = width;
+      if (raster.height !== height) raster.height = height;
+      ink.setTransform(1, 0, 0, 1, 0, 0);
+      ink.clearRect(0, 0, width, height);
+      ink.font = batch[0].font;
+      if ("fontStretch" in ink) ink.fontStretch = batch[0].stretch;
+      for (const item of batch) {
+        // Integer device-pixel row origins preserve each original glyph's hinting.
+        ink.save();
+        ink.setTransform(1, 0, 0, 1, 0, 0);
+        ink.beginPath();
+        ink.rect(0, item.top, item.width, item.height);
+        ink.clip();
+        ink.setTransform(item.scale, 0, 0, item.scale, 0, item.top);
+        ink.fillText(item.text, 4, item.size * 2);
+        ink.restore();
+      }
+      const pixels = ink.getImageData(0, 0, width, height).data;
+      for (const item of batch) {
+        const value = pixelBounds(
+          pixels,
+          width,
+          item.width,
+          item.height,
+          item.top,
+          item.scale,
+          item.size,
+        );
+        bounds.set(item.key, value);
+        remember(dateInkHeights, item.key, value, 128);
+      }
+    }
+    for (const items of groups.values()) {
+      let batch = [],
+        width = 0,
+        height = 0;
+      for (const item of items) {
+        if (item.width > 1024 || item.height > 1024) {
+          context.font = item.font;
+          if ("fontStretch" in context) context.fontStretch = item.stretch;
+          bounds.set(item.key, dateInkHeight(item.style, item.text));
+          continue;
+        }
+        if (height + item.height > 1024) {
+          flush(batch, width, height);
+          batch = [];
+          width = height = 0;
+        }
+        batch.push({ ...item, top: height });
+        width = Math.max(width, item.width);
+        height += item.height;
+      }
+      flush(batch, width, height);
+    }
+    for (const item of measurements)
+      item.dateBounds = item.ink ? bounds.get(item.ink.key) : null;
   }
   let scheduled = false;
   let frame = 0;
@@ -171,7 +292,7 @@
     }
     const measurements = [];
     for (const element of visible) {
-      const style = getComputedStyle(element);
+      const style = readFont(element);
       // Ink offsets describe one baseline. Apply no offset to wrapped labels,
       // headings or footers; measuring their combined text as one canvas line
       // would move the whole paragraph and can clip the first/last line.
@@ -216,10 +337,10 @@
         element,
         metrics: cachedMetrics(style, text),
         // Mixed Latin/CJK legends also need hinted pixel bounds, not outline metrics.
-        dateBounds: element.matches(
+        ink: element.matches(
           ".day-date .daynum-text,.calendar .daykind,.agenda-chip-title-text,.agenda-chip-time,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span,.sidebar-year-month-number,.onboarding-node-text,.onboarding-install-dismiss span",
         )
-          ? dateInkHeight(style, text)
+          ? inkRequest(style, text)
           : null,
         baselineProbe: probe.cloneNode(),
         baselineHost,
@@ -228,6 +349,7 @@
           : null,
       });
     }
+    measureInkRequests(measurements);
     // Apply date geometry and add every zero-size baseline probe in one write phase.
     for (const item of measurements) {
       if (item.dateBounds && item.element.matches(".day-date .daynum-text"))
@@ -350,7 +472,7 @@
         subtitle = heading.querySelector(".sidebar-brand-subtitle");
       if (!name || !subtitle) continue;
       const descent = (element) => {
-        const style = getComputedStyle(element);
+        const style = readFont(element);
         context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
         if ("fontStretch" in context)
           context.fontStretch = canvasFontStretch(style.fontStretch);

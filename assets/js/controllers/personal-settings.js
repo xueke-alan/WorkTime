@@ -1,6 +1,6 @@
 "use strict";
 /** Personal profile and city picker own their form, independent of schedule drafts. */
-WorkTimeApp.ui.createPersonalSettingsController = function ({
+WorkTimeApp.ui.secondary.personal = function ({
   core: C,
   element: $,
   model,
