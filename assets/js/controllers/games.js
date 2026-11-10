@@ -9,6 +9,91 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   const origin = workspace.querySelector("section.panel");
   const panels = [...workspace.children];
   const sidebar = document.getElementById("gamesPanel");
+  const idleCover = document.createElement("div");
+  idleCover.className = "game-idle-cover";
+  idleCover.setAttribute("aria-hidden", "true");
+  const idleTime = document.createElement("time");
+  idleTime.className = "game-idle-time";
+  const idleDate = document.createElement("div");
+  idleDate.className = "game-idle-date";
+  const idleMotto = document.createElement("div");
+  idleMotto.className = "game-idle-motto";
+  idleMotto.textContent = "好好上班 拒绝摸鱼";
+  idleCover.append(idleTime, idleDate, idleMotto);
+  const hoverDevice = window.matchMedia(
+    "(any-hover: hover) and (any-pointer: fine)",
+  );
+  let idleDelay = null,
+    idleTick = null,
+    idleVisible = false,
+    idleWasCovered = true;
+  function updateIdleClock() {
+    const now = new Date();
+    const locale = WorkTimeApp.i18n.locale;
+    idleTime.dateTime = now.toISOString();
+    idleTime.textContent = new Intl.DateTimeFormat(locale, {
+      timeZone: "Asia/Shanghai",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    }).format(now);
+    idleDate.textContent = new Intl.DateTimeFormat(locale, {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
+    }).format(now);
+  }
+  function hideIdleCover() {
+    window.clearTimeout(idleDelay);
+    window.clearInterval(idleTick);
+    idleDelay = idleTick = null;
+    idleVisible = false;
+    idleCover.classList.remove("is-visible", "is-initial");
+  }
+  function canShowIdleCover() {
+    return (
+      !disposed &&
+      ["closed", "closing"].includes(state) &&
+      !workspace.classList.contains("is-game-expanded") &&
+      !sidebar.hidden &&
+      !document.hidden &&
+      hoverDevice.matches &&
+      !sidebar.matches(":hover") &&
+      !sidebar.querySelector(":focus-visible")
+    );
+  }
+  function refreshIdleCover() {
+    const covered =
+      sidebar.hidden ||
+      workspace.classList.contains("is-game-expanded") ||
+      !["closed", "closing"].includes(state);
+    const enteringTab = idleWasCovered && !covered && !document.hidden;
+    idleWasCovered = covered;
+    if (!canShowIdleCover()) {
+      hideIdleCover();
+      return;
+    }
+    if (idleVisible || idleDelay !== null) return;
+    if (enteringTab) {
+      showIdleCover(true);
+      return;
+    }
+    idleDelay = window.setTimeout(() => {
+      idleDelay = null;
+      if (!canShowIdleCover()) return;
+      showIdleCover();
+    }, 500);
+  }
+  function showIdleCover(immediate = false) {
+    updateIdleClock();
+    idleVisible = true;
+    idleCover.classList.toggle("is-initial", immediate);
+    idleCover.classList.add("is-visible");
+    idleTick = window.setInterval(updateIdleClock, 1000);
+  }
   const archiveUI = WorkTimeApp.ui.createGameArchiveController({
     document,
     window,
@@ -76,6 +161,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   const setState = (value) => {
     state = value;
     shell.dataset.state = value;
+    refreshIdleCover();
   };
   setState("closed");
   function stopMotion() {
@@ -326,7 +412,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   function renderMenu(container) {
     if (container === sidebar) sidebarMenu?.dispose();
     else shellMenu?.dispose();
-    return WorkTimeApp.ui.renderGameMenu(container, {
+    const menu = WorkTimeApp.ui.renderGameMenu(container, {
       selectedId,
       onSelect(id) {
         selectedId = id;
@@ -335,6 +421,11 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       onLaunch: launch,
       archiveUI,
     });
+    if (container === sidebar) {
+      sidebar.append(idleCover);
+      if (idleVisible) updateIdleClock();
+    }
+    return menu;
   }
   function showMenu() {
     if (state !== "open") return;
@@ -389,8 +480,6 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       instance = entry.create({ container: content, signal: abort.signal });
       if (!instance || typeof instance.dispose !== "function")
         throw Error("Game must return a disposable instance");
-      WorkTimeApp.games.recordPlay(id);
-      sidebarMenu?.refreshOrder();
       notifySize();
       call(document.hidden ? "pause" : "resume");
     } catch (error) {
@@ -449,6 +538,27 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     if (selector) menu?.querySelector(selector)?.focus();
   }
   events.listen(exitButton, "click", exit);
+  events.listen(sidebar, "pointerenter", (event) => {
+    if (event.pointerType !== "touch") hideIdleCover();
+  });
+  events.listen(sidebar, "pointerleave", refreshIdleCover);
+  events.listen(sidebar, "focusin", hideIdleCover);
+  events.listen(sidebar, "focusout", () => {
+    window.queueMicrotask(refreshIdleCover);
+  });
+  events.listen(document, "visibilitychange", refreshIdleCover);
+  const idleObserver = new window.MutationObserver(refreshIdleCover);
+  idleObserver.observe(sidebar, {
+    attributes: true,
+    attributeFilter: ["hidden"],
+  });
+  // Shared expansion covers games, music and reader. Prepare the clock as soon
+  // as the underlying workspace starts returning, before the shell has closed.
+  idleObserver.observe(workspace, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+  const unlistenHover = compat.listen(hoverDevice, refreshIdleCover);
   events.listen(shell, "keydown", (event) => {
     if (archiveUI.isOpen()) return;
     if (event.key === "Escape") {
@@ -535,6 +645,9 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     dispose() {
       if (disposed) return;
       disposed = true;
+      hideIdleCover();
+      idleObserver.disconnect();
+      unlistenHover();
       revision++;
       stopMotion();
       releaseGame();

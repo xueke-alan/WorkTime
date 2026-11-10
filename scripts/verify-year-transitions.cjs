@@ -114,8 +114,31 @@ async function verify() {
             0,
           );
         }
+        // Sample the cold first switch: ink measurement used to repeatedly
+        // cancel/restart the year transform while the new calendar mounted.
+        const titleMotion = await page.evaluateHandle(() => {
+          const events = [];
+          const year = document.getElementById("monthTitleYear");
+          for (const type of ["transitionrun", "transitioncancel"])
+            year.addEventListener(type, (event) => {
+              if (event.target === year && event.propertyName === "transform")
+                events.push(event.type);
+            });
+          return events;
+        });
         if (target === "monthTitle") await page.locator("#importOpen").click();
         await switchPage("#monthTitle", 1);
+        await page.locator("#monthTitleYear").evaluate(async (year) => {
+          await Promise.allSettled(
+            year.getAnimations().map((animation) => animation.finished),
+          );
+        });
+        assert.deepEqual(
+          await titleMotion.jsonValue(),
+          ["transitionrun"],
+          "First year-title travel runs once without alignment restarting it",
+        );
+        await titleMotion.dispose();
         assert.equal(await page.locator("#calendar.year-calendar").count(), 1);
         assert.equal(await page.locator("#importDialog").isVisible(), false);
         assert.equal(

@@ -8,24 +8,6 @@
 WorkTimeApp.games = (() => {
   const entries = new Map();
   const definitions = new Map();
-  const usageKey = "worktime.games.usage.v1";
-  let usage = {};
-  try {
-    const saved = JSON.parse(localStorage.getItem(usageKey) || "{}");
-    if (saved && typeof saved === "object" && !Array.isArray(saved))
-      usage = Object.fromEntries(
-        Object.entries(saved).filter(
-          ([, value]) =>
-            value &&
-            Number.isSafeInteger(value.count) &&
-            value.count > 0 &&
-            Number.isSafeInteger(value.lastPlayed) &&
-            value.lastPlayed >= 0,
-        ),
-      );
-  } catch {
-    // Storage restrictions must not prevent opening the game library.
-  }
   async function load(id, rulesOnly = false) {
     const definition = definitions.get(id);
     if (!definition) {
@@ -43,6 +25,11 @@ WorkTimeApp.games = (() => {
   // Minimal menu artwork: a shared 32px grid and uniform rounded outlines.
   // Inline SVG keeps the offline entry self-contained and crisp at any scale.
   const gameIcons = {
+    "game-ultimate-ttt": `<rect x="3" y="3" width="26" height="26" rx="3"/><path d="M12 3v26M20 3v26M3 12h26M3 20h26M6 6l3 3m0-3L6 9"/><circle cx="24.5" cy="24.5" r="2"/>`,
+    "game-lights-out": `<rect x="3" y="3" width="26" height="26" rx="5"/><g fill="currentColor" stroke="none"><circle cx="16" cy="9" r="2.5"/><circle cx="9" cy="16" r="2.5"/><circle cx="16" cy="16" r="2.5"/><circle cx="23" cy="16" r="2.5"/><circle cx="16" cy="23" r="2.5"/></g><g stroke-width="1.4"><circle cx="9" cy="9" r="2.5"/><circle cx="23" cy="9" r="2.5"/><circle cx="9" cy="23" r="2.5"/><circle cx="23" cy="23" r="2.5"/></g>`,
+    shuffle: `<path d="M5 8h3c7 0 9 16 16 16h3m-5-5 5 5-5 5M5 24h3c7 0 9-16 16-16h3m-5-5 5 5-5 5"/>`,
+    "game-sliding-puzzle": `<rect x="4" y="4" width="24" height="24" rx="3"/><path d="M12 4v24M20 4v16M4 12h24M4 20h16"/>`,
+    "game-jungle": `<path d="M8 17c-2-3 0-6 3-4l5 3 5-3c3-2 5 1 3 4l3 6c1 4-3 6-6 4l-5-2-5 2c-3 2-7 0-6-4Z"/><ellipse cx="7" cy="8" rx="2" ry="3"/><ellipse cx="14" cy="6" rx="2" ry="3"/><ellipse cx="21" cy="7" rx="2" ry="3"/><ellipse cx="27" cy="11" rx="2" ry="3"/>`,
     "game-gomoku": `<path d="M4 10h2m8 0h14M4 22h14m8 0h2M10 4v2m0 8v14M22 4v14m0 8v2"/><circle cx="10" cy="10" r="4" fill="currentColor"/><circle cx="22" cy="22" r="4"/>`,
     "game-tank": `<rect x="5" y="15" width="22" height="11" rx="4"/><path d="M10 15v-5h10l3 5M17 10V5h10M10 21h12"/><circle cx="10" cy="21" r="1"/><circle cx="22" cy="21" r="1"/>`,
     "game-garden": `<path d="M8 23a5 5 0 0 1-4-8 5 5 0 0 1 3-8 5 5 0 0 1 8-2 5 5 0 0 1 8 4M9 23v5m10-5v5"/><path d="M20 13c-5-5-8-1-5 2m10-2c5-5 7-1 4 2M17 14h10v5a5 5 0 0 1-10 0Zm3 3v1m4-1v1M8 23h12"/>`,
@@ -90,23 +77,14 @@ WorkTimeApp.games = (() => {
         throw Error("Invalid or duplicate game registration");
       entries.set(entry.id, Object.freeze({ ...entry }));
     },
-    list: () =>
-      [...entries.values()].sort(
+    list() {
+      const { t, locale } = WorkTimeApp.i18n;
+      const collator = new Intl.Collator(locale, { numeric: true });
+      return [...entries.values()].sort(
         (a, b) =>
-          (usage[b.id]?.count || 0) - (usage[a.id]?.count || 0) ||
-          (usage[b.id]?.lastPlayed || 0) - (usage[a.id]?.lastPlayed || 0),
-      ),
-    recordPlay(id) {
-      if (!entries.has(id)) return;
-      usage[id] = {
-        count: Math.min(Number.MAX_SAFE_INTEGER, (usage[id]?.count || 0) + 1),
-        lastPlayed: Date.now(),
-      };
-      try {
-        localStorage.setItem(usageKey, JSON.stringify(usage));
-      } catch {
-        // Keep the current session's order when persistence is unavailable.
-      }
+          collator.compare(t(a.nameKey), t(b.nameKey)) ||
+          a.id.localeCompare(b.id),
+      );
     },
     get: (id) => entries.get(id),
     createIcon(icon = "sports-esports") {

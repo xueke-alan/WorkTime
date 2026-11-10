@@ -156,6 +156,50 @@ WorkTimeApp.games.xiangqiRules = (() => {
     return checked(board, red) ? "mate" : "stalemate";
   }
 
+  // Program play: the same board AND side to move appearing three times.
+  // Only perpetual check is adjudicated here; chase/mixed-threat cases need
+  // their own piece-identity and protection analysis, not a check counter.
+  function repetition(initialBoard, path, occurrences = 3) {
+    let board = initialBoard;
+    const boards = [board];
+    const checks = [];
+    for (let index = 0; index < path.length; index++) {
+      board = apply(board, path[index]);
+      boards.push(board);
+      checks.push(checked(board, index % 2 !== 0));
+    }
+    const matches = [];
+    for (let index = path.length; index >= 0; index -= 2) {
+      if (boards[index] === board) matches.push(index);
+      if (matches.length === occurrences) break;
+    }
+    if (matches.length < occurrences) return null;
+    const start = matches[occurrences - 1];
+    const perpetual = [true, false].map((red) => {
+      for (let index = start; index < path.length; index++)
+        if ((index % 2 === 0) === red && !checks[index]) return false;
+      return true;
+    });
+    return perpetual[0] !== perpetual[1]
+      ? { outcome: "perpetualCheck", loser: perpetual[0] }
+      : { outcome: "repetition", loser: null };
+  }
+
+  function avoidPerpetualCheck(initialBoard, path, move) {
+    const red = path.length % 2 === 0;
+    // Change course on the second occurrence, before a third can end the game.
+    const repeatsCheck = (candidate) =>
+      repetition(initialBoard, [...path, candidate], 2)?.loser === red;
+    if (!repeatsCheck(move)) return move;
+    let board = initialBoard;
+    for (const played of path) board = apply(board, played);
+    const alternatives = legalMoves(board, red).filter(
+      (value) => !repeatsCheck(value),
+    );
+    // With no alternative the move is played and the referee awards the loss.
+    return suggest(board, red, alternatives) ?? move;
+  }
+
   // Each node stores [distance to forced mate, red moves]. A red move
   // maps to null for mate, or to a map of all legal black replies.
   function reply(replies) {
@@ -183,11 +227,11 @@ WorkTimeApp.games.xiangqiRules = (() => {
     return score;
   }
 
-  function suggest(board, red) {
+  function suggest(board, red, moves = legalMoves(board, red)) {
     let best = null;
     let bestScore = -Infinity;
     const direction = red ? 1 : -1;
-    for (const move of legalMoves(board, red)) {
+    for (const move of moves) {
       const after = apply(board, move);
       const answers = legalMoves(after, !red);
       let score = Infinity;
@@ -281,6 +325,8 @@ WorkTimeApp.games.xiangqiRules = (() => {
     destinations,
     legalMoves,
     result,
+    repetition,
+    avoidPerpetualCheck,
     reply,
     suggest,
     playRound,

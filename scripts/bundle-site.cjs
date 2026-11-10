@@ -37,6 +37,8 @@ function bundleSite(root) {
       "assets/data",
       "assets/vendor/reader",
       "assets/vendor/pikafish",
+      "assets/vendor/misty-jungle",
+      "assets/vendor/utttai",
     ]
       .flatMap(dynamicFiles)
       .concat([
@@ -59,6 +61,8 @@ function bundleSite(root) {
         "assets/js/ui/reader.js",
         "assets/js/ui/reader-runtime.min.js",
         "assets/js/services/runtime-import.js",
+        "assets/js/services/xiangqi-prefetch.js",
+        "assets/js/services/utttai-prefetch.js",
         "assets/js/services/runtime-migration.js",
         "assets/js/ui/runtime-folder-change.js",
       ])

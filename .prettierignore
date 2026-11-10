@@ -14,5 +14,6 @@ assets/js/ui/application-runtime.min.js
 assets/js/ui/date-runtime.min.js
 assets/js/ui/view-runtime.min.js
 assets/js/ui/startup-runtime.min.js
+assets/js/ui/secondary-runtime.min.js
 assets/js/ui/music-runtime.min.js
 assets/js/ui/reader-runtime.min.js

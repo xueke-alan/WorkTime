@@ -1307,8 +1307,13 @@ body .month-controls .month-title {
   overflow: hidden;
 }
 body .month-controls .month-title > :is(.month-title-year, .month-title-divider, .month-title-month) {
-  transform: translate(0, var(--ui-ink-offset, 0px));
+  transform: translateX(0);
   transition: transform 360ms var(--motion-ease);
+}
+/* Alignment temporarily resets ink offsets while measuring. Keep it off the
+   moving layer so those measurements cannot cancel/restart title travel. */
+body .month-controls .month-title > :is(.month-title-year, .month-title-month) > .summary-number {
+  transform: translateY(var(--ui-ink-offset, 0px));
 }
 /* Lower the SVG slightly to match the rasterized digits' optical center. */
 body .month-controls .month-title > .month-title-divider {
@@ -1324,7 +1329,7 @@ body .month-controls .month-title > :is(.month-title-divider, .month-title-month
     visibility 0s;
 }
 body .month-controls .month-title.is-year-title > :is(.month-title-year, .month-title-divider, .month-title-month) {
-  transform: translate(calc(var(--month-label-width, 2ch) / 2 + 0.25em + var(--month-item-gap)), var(--ui-ink-offset, 0px));
+  transform: translateX(calc(var(--month-label-width, 2ch) / 2 + 0.25em + var(--month-item-gap)));
 }
 body .month-controls .month-title.is-year-title > .month-title-divider {
   transform: translate(calc(var(--month-label-width, 2ch) / 2 + 0.25em + var(--month-item-gap)), 0.035em);
@@ -1558,7 +1563,7 @@ body .workspace .calendar.year-calendar {
   z-index: 0;
   top: 50%;
   left: 50%;
-  color: var(--accent);
+  color: #b08a5a;
   font-family:
     "Bodoni 72", "Bodoni MT", Didot, "Cormorant Garamond", "Times New Roman",
     serif;
@@ -1640,21 +1645,22 @@ body .workspace .calendar.year-calendar {
 }
 .year-month-dot {
   display: block;
-  width: 0.62rem;
-  height: 0.62rem;
+  position: relative;
+  /* Whole-pixel geometry avoids fractional scaling of this small circle. */
+  top: -2px;
+  width: 12px;
+  height: 12px;
   min-height: 0;
-  flex: 0 0 0.62rem;
+  flex: 0 0 12px;
   aspect-ratio: 1;
   box-sizing: border-box;
   border-radius: 50%;
-  background: var(--accent);
+  background: color-mix(in srgb, var(--accent) 45%, #fff);
   opacity: 0;
-  transform: scale(0.8);
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition: opacity 180ms ease;
 }
 .year-month-switch[aria-pressed="true"] .year-month-dot {
   opacity: 1;
-  transform: scale(1);
 }
 .year-month-stats {
   display: flex;
@@ -1693,7 +1699,7 @@ body .year-day {
   --year-card-height: 34px;
   --year-detail-stack: 26px;
   --year-detail-offset: 1px;
-  --year-card-background: var(--year-detail-bg, var(--theme-surface-paper, #f8fbf9));
+  --year-card-background: var(--year-detail-bg, var(--theme-surface-soft, #edf4f0));
   position: relative;
   display: block;
   min-width: 0;
@@ -1708,7 +1714,7 @@ body .year-day {
   font-size: 11px;
   line-height: 1.15;
   color: var(--theme-text, #35453e);
-  background-color: var(--year-detail-bg, var(--theme-surface-paper, #f8fbf9));
+  background-color: var(--year-detail-bg, var(--theme-surface-soft, #edf4f0));
   transition:
     background-color 360ms ease,
     color 360ms ease,

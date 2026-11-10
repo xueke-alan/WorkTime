@@ -33,6 +33,10 @@
   align-self: start;
 }
 .xiangqi-difficulties { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; width: 100%; max-width: 17rem; }
+.xiangqi-handicap-setup { display: grid; gap: .75rem; }
+.xiangqi-handicap-setup .xiangqi-start-title { margin: 0; }
+.xiangqi-handicaps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; width: 100%; max-width: 17rem; }
+.game-xiangqi .xiangqi-handicaps .game-button { min-width: 0; min-height: max(44px, 2.75rem); padding: .5rem .3rem; justify-content: center; white-space: normal; overflow-wrap: anywhere; }
 .game-xiangqi .xiangqi-difficulties .game-button { aspect-ratio: 1; width: 100%; height: auto; min-width: 0; padding: .3rem; justify-content: center; }
 .xiangqi-setup-title { margin: 0 0 .25rem; font-size: 1.5rem; font-weight: 700; line-height: 1.35; }
 .xiangqi-start-title { margin: .5rem 0 0; font-size: var(--text-small); font-weight: 500; }
@@ -98,14 +102,22 @@
   container-type: size;
 }
 .xiangqi-stage {
+  --xiangqi-stage-gap: 2.5rem;
   display: grid;
+  grid-template-columns: minmax(0, .3333333333fr) minmax(0, 1fr);
+  gap: var(--xiangqi-stage-gap);
   place-items: center;
   min-width: 0;
   min-height: 0;
   flex: none;
-  width: min(calc(100cqw - 20rem), 90cqh);
+  width: min(calc(100cqw - 20rem), calc(120cqh + var(--xiangqi-stage-gap)));
   container-type: inline-size;
 }
+.xiangqi-captures { position: relative; z-index: 1; display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); align-self: stretch; justify-self: stretch; gap: .5rem; padding-block: var(--capture-inset, 0px); min-width: 0; pointer-events: none; }
+.xiangqi-capture-top, .xiangqi-capture-bottom { display: grid; grid-template-columns: repeat(3, var(--capture-size)); grid-auto-rows: max-content; column-gap: var(--capture-column-gap, 0px); row-gap: var(--capture-row-gap, 0px); min-width: 0; align-content: start; justify-content: end; }
+.xiangqi-capture-bottom { align-content: end; }
+.xiangqi-piece.xiangqi-captured-piece { width: var(--capture-size); font-size: var(--capture-font); color: var(--xiangqi-black); opacity: .6; }
+.xiangqi-piece.xiangqi-captured-piece.is-red { color: var(--xiangqi-red); }
 .xiangqi-controls {
   display: flex;
   flex-direction: column;
@@ -151,7 +163,8 @@
   border-radius: 0.8rem;
   background: color-mix(in srgb, var(--paper) 64%, var(--accent-light));
   color: var(--xiangqi-grid);
-  container-type: inline-size;
+  /* Share the stage stacking context so board pieces cover captured pieces. */
+  container-type: normal;
   overflow: clip;
   touch-action: manipulation;
 }
@@ -212,6 +225,7 @@
 }
 .xiangqi-cell {
   position: relative;
+  z-index: 2;
   display: grid;
   place-items: center;
   min-width: 0;
@@ -249,10 +263,6 @@
 }
 .game-xiangqi .xiangqi-cell:focus-visible {
   z-index: 4;
-  outline: 2px dashed var(--ink);
-  outline-offset: -2px;
-}
-.game-xiangqi .xiangqi-board[data-pointer-entry] .xiangqi-cell:focus-visible {
   outline: none;
 }
 .xiangqi-piece {
@@ -270,7 +280,7 @@
     inset 0 0 0 3px color-mix(in srgb, currentColor 45%, #fcfcf9),
     0 1px 2px rgb(20 31 28 / 15%);
   font: 700 1.15rem/1 "Microsoft JhengHei", "Microsoft YaHei", sans-serif;
-  font-size: 5.7cqi;
+  font-size: calc((100cqi - var(--xiangqi-stage-gap)) * .04275);
   pointer-events: none;
 }
 .xiangqi-piece:empty {

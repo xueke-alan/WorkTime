@@ -105,7 +105,6 @@ WorkTimeApp.data.locales["ja"] = {
     "バックアップの準備ができました。確認して復元してください。",
   "copy.9f71e85dd5":
     "クリップボードのバックアップを読み込めません。ファイルを選択してください。",
-
   "copy.d3ca375f67": "リセットを保存できません： ",
   "copy.c3b5086f19": "バックアップが100 MiBを超えています。",
   "copy.49deaf7da2": "ファイル",
@@ -354,7 +353,7 @@ WorkTimeApp.data.locales["ja"] = {
     'h</span><span title="平均残業（平日残業 ÷ 出勤日数）" aria-label="平均残業時間">',
   "copy.6d332ee4da": " · ",
   "copy.06ce537cae": " 日完了",
-  "copy.cd4a0376cd": "予定を取消",
+  "copy.cd4a0376cd": "キャンセル",
   "copy.0bfc077a0c": " ・週",
   "copy.dbdd3a728e": '<span class="schedule-work" title="予定勤務時間">',
   "copy.55debd2786": '</span><span class="schedule-break" title="休憩">',
@@ -792,7 +791,6 @@ WorkTimeApp.data.locales["ja"] = {
   "copy.3e413a048b":
     "年月日を入力するか、2000-9-9または20000909を貼り付けてください。",
   "copy.acb666728b": "勤務地の都市",
-
   "copy.e638050747": "勤務スケジュール",
   "copy.ab9e21f1dc": "開始時刻",
   "copy.7af358a422": "終了時刻",
@@ -865,7 +863,6 @@ WorkTimeApp.data.locales["ja"] = {
   "copy.cdb66f2811":
     "この取込の打刻を削除します。重複する日は別の取込記録を残します。手入力・休暇・テンプレートは保持されます。",
   "copy.3c06abe116": "削除",
-
   "copy.00ecd909a7": "テーマの保存を再試行",
   "copy.c7cd96dadb":
     "このブラウザーの全記録・テンプレート・スケジュールを置き換えます。先にスナップショットを保存します。バックアップのダウンロードも可能です。ローカルファイルとWebサイトの保存領域は別です。ファイルの移動やブラウザーの変更前に書き出してください。",

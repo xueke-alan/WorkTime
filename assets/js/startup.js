@@ -5,6 +5,46 @@
   let frame = 0;
   let numberTimer = null;
   let finishWaiting = null;
+  const prefetchAbort = new AbortController();
+  let prefetchRetried = false;
+  function prefetch() {
+    if (disposed || !/^https?:$/.test(location.protocol)) return;
+    if (document.readyState !== "complete") {
+      window.addEventListener("load", prefetch, {
+        once: true,
+        signal: prefetchAbort.signal,
+      });
+      return;
+    }
+    void WorkTimeApp.services.assets
+      .whenIdle({ signal: prefetchAbort.signal })
+      .then(() => {
+        if (disposed) return;
+        return Promise.all(
+          ["xiangqi-prefetch", "utttai-prefetch"].map((name) =>
+            WorkTimeApp.services.assets.script(
+              "assets/js/services/" + name + ".js",
+              { fetchPriority: "low" },
+            ),
+          ),
+        );
+      })
+      .then(() => {
+        if (!disposed) {
+          WorkTimeApp.services.xiangqiPrefetch.start();
+          WorkTimeApp.services.utttaiPrefetch.start();
+        }
+      })
+      .catch(() => {
+        if (!disposed && !prefetchRetried) {
+          prefetchRetried = true;
+          window.addEventListener("online", prefetch, {
+            once: true,
+            signal: prefetchAbort.signal,
+          });
+        }
+      });
+  }
   function schedule(callback) {
     frame = requestAnimationFrame(() => {
       frame = 0;
@@ -14,6 +54,7 @@
   function dispose() {
     if (disposed) return;
     disposed = true;
+    prefetchAbort.abort();
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     clearTimeout(numberTimer);
@@ -33,6 +74,7 @@
           WorkTimeApp.ui.motion?.play(element, "motion-startup", index * 45),
         );
       document.documentElement.classList.remove("app-loading");
+      prefetch();
       numberTimer = setTimeout(() => {
         numberTimer = null;
         if (!disposed) WorkTimeApp.ui.numbers?.reveal();

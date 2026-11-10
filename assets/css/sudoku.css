@@ -102,9 +102,20 @@
   flex-direction: column;
   width: 100%;
   align-self: center;
+  min-height: var(--sudoku-height, auto);
 }
 .sudoku-tools {
   display: contents;
+}
+.sudoku-rule {
+  margin: auto 0 0;
+  padding-top: 1rem;
+  padding-bottom: 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  order: 3;
 }
 .sudoku-stage {
   order: 0;
@@ -491,6 +502,12 @@ body .sudoku-cell:focus-visible {
 .game-sudoku[data-layout="wide"] .sudoku-actions {
   margin: 0;
 }
+.game-sudoku[data-layout="wide"] .sudoku-rule {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: end;
+  padding-top: 0;
+}
 .game-sudoku[data-layout="wide"] .sudoku-stage {
   grid-column: 1;
   grid-row: 1 / 4;
@@ -553,6 +570,8 @@ body .sudoku-board.is-multi .sudoku-notes { font-size: clamp(0.3rem, calc(14cqw 
   padding: 0;
 }
 .sudoku-session-meta { flex-wrap: wrap; }
+.sudoku-levels .game-level-card:has(.sudoku-level-difficulty) { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 0.2rem; }
+.sudoku-level-difficulty { display: block; font-size: 0.85rem; line-height: 1.2; font-weight: 500; }
 @media (max-width: 540px) {
   .sudoku-hud { flex-wrap: wrap; }
   .sudoku-session-meta { margin-inline-start: auto; justify-content: flex-end; }

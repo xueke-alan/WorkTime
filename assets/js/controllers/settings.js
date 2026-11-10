@@ -250,7 +250,7 @@ WorkTimeApp.ui.createSettingsController = function (options) {
     );
     if (!target) return;
     const keepSettings = target.matches(
-      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle",
+      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton",
     );
     if (keepSettings && !hasScheduleDraft()) return;
     event.preventDefault();

@@ -35,6 +35,7 @@ async function center(page, index) {
 }
 
 function verifyRules() {
+  require("./verify-xiangqi-repetition.cjs");
   function board(pieces) {
     const squares = Array(90).fill(".");
     for (const [index, piece] of Object.entries({ 4: "k", 85: "K", ...pieces }))

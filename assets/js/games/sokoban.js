@@ -9,20 +9,37 @@ WorkTimeApp.games.register({
     const rules = WorkTimeApp.games.sokobanRules;
     const bank = WorkTimeApp.data.sokoban;
     const levels = bank.levels;
+    const chaptersConfig = bank.chapters;
     const maps = levels.map(rules.parse);
     const key = "worktime.games.sokoban.v1";
     const compat = WorkTimeApp.ui.animationCompat;
     const reduced = compat.preference();
     let animations = [],
-      pendingMoves = [],
+      pendingMove = null,
       moving = false,
       motionRevision = 0;
+    const stepDuration = 120;
+    let heldKey = null,
+      repeatTimer;
+    function releaseKey() {
+      clearTimeout(repeatTimer);
+      heldKey = null;
+      if (pendingMove?.repeat) pendingMove = null;
+    }
+    function repeatMove() {
+      if (!heldKey) return;
+      move(heldKey.direction, true);
+      repeatTimer = setTimeout(repeatMove, stepDuration);
+    }
     function stopMotion(clearQueue = true) {
       motionRevision++;
       animations.forEach((animation) => animation.cancel());
       animations = [];
       moving = false;
-      if (clearQueue) pendingMoves = [];
+      if (clearQueue) {
+        releaseKey();
+        pendingMove = null;
+      }
     }
     const releasePreference = compat.listen(reduced, () => stopMotion());
     signal.addEventListener("abort", () => stopMotion(), { once: true });
@@ -54,7 +71,7 @@ WorkTimeApp.games.register({
         if (
           Number.isInteger(saved.chapter) &&
           saved.chapter >= 0 &&
-          saved.chapter < 3
+          saved.chapter < chaptersConfig.length
         )
           chapter = saved.chapter;
         const index = levels.findIndex((level) => level.id === saved.current);
@@ -80,29 +97,57 @@ WorkTimeApp.games.register({
     // Small, original vector sprites stay crisp on every tile size and work offline.
     const forestBox =
       '<rect x="7" y="7" width="50" height="50" rx="6" fill="var(--soko-wood-edge)"/><rect x="11" y="11" width="42" height="42" rx="3" fill="var(--soko-wood)"/><path d="M12 25h40M12 39h40" stroke="var(--soko-wood-edge)" stroke-width="2"/><path d="m14 14 36 36m0-36L14 50" stroke="var(--soko-wood-edge)" stroke-width="8"/><path d="m14 14 36 36m0-36L14 50" stroke="var(--soko-wood-brace)" stroke-width="5"/><path d="M15 15h.1M49 15h.1M15 49h.1M49 49h.1" stroke="var(--soko-wood-edge)" stroke-width="3" stroke-linecap="round"/>';
-    const skins = ["forest", "desert", "space"];
+    const skins = chaptersConfig.map((entry) => entry.skin);
     const skinArt = {
       forest: {
-        wall: '<rect x="2" y="5" width="60" height="56" rx="10" fill="#71836a"/><path d="M4 32h56M26 7v24m16 2v27" stroke="#b2bca1" stroke-width="3"/><path d="M3 17V9q0-7 9-7h40q10 0 10 9v8l-9-6-9 6-11-7-12 7-9-5Z" fill="#4e7744"/><path d="m10 8 8-2m21 1 10 1" stroke="#8fac62" stroke-width="3" stroke-linecap="round"/>',
+        wall: '<rect x="2" y="5" width="60" height="56" rx="10" fill="#a5b697"/><path d="M4 32h56M26 7v24m16 2v27" stroke="#d8e0c9" stroke-width="3"/><path d="M3 17V9q0-7 9-7h40q10 0 10 9v8l-9-6-9 6-11-7-12 7-9-5Z" fill="#8bac79"/><path d="m10 8 8-2m21 1 10 1" stroke="#c5d9a8" stroke-width="3" stroke-linecap="round"/>',
         box: forestBox,
         player:
-          '<ellipse cx="32" cy="58" rx="20" ry="4" fill="#354c3d" opacity=".2"/><path d="M20 47h10v13H17zm14 0h10l3 13H34" fill="#344c40"/><rect x="14" y="31" width="36" height="23" rx="9" fill="#c79049"/><path d="M23 34v16m18-16v16" stroke="#576e40" stroke-width="5"/><circle cx="11" cy="43" r="5" fill="#f4d4ac"/><circle cx="53" cy="43" r="5" fill="#f4d4ac"/><rect x="17" y="12" width="30" height="26" rx="12" fill="#f4d4ac"/><path d="M18 18 22 5h20l5 13" fill="#57783f"/><path d="M11 19h42" stroke="#37523c" stroke-width="5" stroke-linecap="round"/><path d="m37 11 9-8" stroke="#d0dca1" stroke-width="3"/><path d="M25 26v2m14-2v2" stroke="#344c40" stroke-width="3" stroke-linecap="round"/><path d="m27 34 5 7 5-7" fill="#a44f36"/>',
-        goal: '<circle cx="32" cy="32" r="17" fill="#d9e7b5" stroke="#476a3b" stroke-width="3"/><path d="m17 26 8-9m14 0 8 9m0 12-8 9m-14 0-8-9" stroke="#7c984b" stroke-width="6" stroke-linecap="round"/><path d="m32 24 3 5 6 3-6 3-3 5-3-5-6-3 6-3Z" fill="#476a3b"/>',
+          '<path d="M21 47h9v13H18zm13 0h9l3 13H34" fill="#344C40"/><rect x="16" y="31" width="32" height="23" rx="8" fill="#C79049"/><path d="M24 32h16v22H24Z" fill="#6D8752"/><circle cx="13" cy="43" r="4" fill="#F4D4AC"/><circle cx="51" cy="43" r="4" fill="#F4D4AC"/><circle cx="32" cy="25" r="12" fill="#F4D4AC"/><path d="m15 18 7-12h20l7 12H15Z" fill="#6D8752"/><path d="M13 19h38M27 26v1m10-1v1" stroke="#344C40" stroke-width="2.5" stroke-linecap="round"/>',
+        goal: '<circle cx="32" cy="32" r="13" fill="#E8EFCF" stroke="#587843" stroke-width="2.5"/><path d="M27 37q-3-12 10-11 1 12-10 11Z" fill="#6F8D52"/>',
       },
       desert: {
-        wall: '<path d="M3 8 13 3h40l8 8v49H3Z" fill="#b87961"/><path d="M5 12h54v18H5zm0 22h25v23H5zm29 0h25v23H34Z" fill="#dda88d"/><path d="m40 15-6 7 7 3m-24 15 5 5-6 7" fill="none" stroke="#be8068" stroke-width="3"/><path d="M5 59h54" stroke="#9e604f" stroke-width="4"/>',
+        wall: '<path d="M3 8 13 3h40l8 8v49H3Z" fill="#d3a28d"/><path d="M5 12h54v18H5zm0 22h25v23H5zm29 0h25v23H34Z" fill="#f0cdb8"/><path d="m40 15-6 7 7 3m-24 15 5 5-6 7" fill="none" stroke="#bd8c75" stroke-width="3"/><path d="M5 59h54" stroke="#b7816c" stroke-width="4"/>',
         box: '<rect x="7" y="7" width="50" height="50" rx="4" fill="#356f70"/><rect x="11" y="11" width="42" height="42" rx="2" fill="#72b9af"/><path d="M12 25h40M12 39h40" stroke="#55978f" stroke-width="2"/><path d="M17 9v46M47 9v46" stroke="#d8e8d5" stroke-width="7"/><path d="M17 16v1m0 30v1m30-32v1m0 30v1" stroke="#356f70" stroke-width="3" stroke-linecap="round"/><path d="m32 23 7 9-7 9-7-9Z" fill="#347b75"/>',
         player:
-          '<ellipse cx="32" cy="58" rx="20" ry="4" fill="#356f70" opacity=".2"/><path d="M20 48h10v12H16zm14 0h10l4 12H34" fill="#4e4a62"/><path d="M19 31h26l8 23H11Z" fill="#666c9c"/><path d="M23 34h18l-3 20H26Z" fill="#cbd4ea"/><circle cx="12" cy="44" r="5" fill="#dba77b"/><circle cx="52" cy="44" r="5" fill="#dba77b"/><path d="M15 37V17Q15 3 32 3t17 14v23l-8-6H23Z" fill="#7778b2"/><rect x="20" y="16" width="24" height="20" rx="9" fill="#dba77b"/><path d="M17 17h30" stroke="#4e527d" stroke-width="5"/><path d="M26 25v2m12-2v2" stroke="#593f35" stroke-width="3" stroke-linecap="round"/><path d="M21 32h22l-5 9H26Z" fill="#514e83"/>',
-        goal: '<path d="m32 10 22 22-22 22L10 32Z" fill="#d9eee3" stroke="#367e79" stroke-width="3"/><path d="m32 19 13 13-13 13-13-13Z" fill="none" stroke="#6aa997" stroke-width="2"/><path d="M26 32h12m-6-6v12" stroke="#367e79" stroke-width="3"/>',
+          '<path d="M21 47h9v13H18zm13 0h9l3 13H34" fill="#4E4A62"/><path d="M20 32h24l8 23H12Z" fill="#7778B2"/><path d="m26 34 6 9 6-9" fill="#DCE2EF"/><circle cx="14" cy="44" r="4" fill="#DBA77B"/><circle cx="50" cy="44" r="4" fill="#DBA77B"/><path d="M16 35V19a16 16 0 0 1 32 0v16Z" fill="#7778B2"/><rect x="21" y="15" width="22" height="21" rx="9" fill="#DBA77B"/><path d="M27 25v1m10-1v1" stroke="#593F35" stroke-width="2.5" stroke-linecap="round"/>',
+        goal: '<path d="m32 18 14 14-14 14-14-14Z" fill="#E5F1E9" stroke="#367E79" stroke-width="2.5"/><circle cx="32" cy="32" r="3" fill="#367E79"/>',
       },
       space: {
         wall: '<rect x="2" y="2" width="60" height="60" rx="5" fill="#a7bac2"/><path d="M7 7h50v19H7zm0 23h50v27H7Z" fill="#edf2ef"/><path d="m9 9 7 7h32l7-7M9 54l8-8h30l8 8" fill="none" stroke="#c3d1d2" stroke-width="2"/><path d="M12 34h18m-18 5h18" stroke="#9eb4bc" stroke-width="3"/><path d="M43 35h9" stroke="#60aaa3" stroke-width="3" stroke-linecap="round"/>',
         box: '<rect x="6" y="6" width="52" height="52" rx="9" fill="#b8795c"/><path d="M13 10h38l3 12v20l-3 12H13l-3-12V22Z" fill="#edac8a"/><path d="M15 13h34M15 51h34" stroke="#ffe5bd" stroke-width="3"/><path d="m32 17 13 8v15l-13 8-13-8V25Z" fill="#fff1d8" stroke="#c58260" stroke-width="2"/><path d="m34 22-9 12h7l-2 9 10-14h-8Z" fill="#b7764e"/>',
         player:
-          '<ellipse cx="32" cy="59" rx="21" ry="4" fill="#7f9ba6" opacity=".35"/><rect x="10" y="27" width="44" height="22" rx="7" fill="#849daf"/><path d="M20 46h11v14H17zm13 0h11l3 14H33" fill="#638499"/><rect x="17" y="30" width="30" height="24" rx="8" fill="#db776b"/><rect x="25" y="36" width="14" height="10" rx="2" fill="#f4ded0"/><path d="M28 40h8" stroke="#a85450" stroke-width="3"/><circle cx="12" cy="46" r="6" fill="#638499"/><circle cx="52" cy="46" r="6" fill="#638499"/><rect x="13" y="3" width="38" height="33" rx="15" fill="#db776b"/><rect x="18" y="10" width="28" height="20" rx="9" fill="#547e92"/><path d="M23 16h13" stroke="#d4efed" stroke-width="4" stroke-linecap="round"/><path d="M39 22h2" stroke="#fff9ed" stroke-width="3"/>',
-        goal: '<rect x="12" y="12" width="40" height="40" rx="8" fill="#e2f0dc" stroke="#609c87" stroke-width="2"/><path d="M12 23V12h11m18 0h11v11m0 18v11H41m-18 0H12V41" fill="none" stroke="#4a8877" stroke-width="4"/><circle cx="32" cy="32" r="8" fill="none" stroke="#609c87" stroke-width="3"/><circle cx="32" cy="32" r="2" fill="#4a8877"/>',
+          '<path d="M21 47h9v13H18zm13 0h9l3 13H34" fill="#638499"/><rect x="17" y="31" width="30" height="23" rx="7" fill="#DB776B"/><circle cx="13" cy="44" r="5" fill="#638499"/><circle cx="51" cy="44" r="5" fill="#638499"/><rect x="14" y="5" width="36" height="31" rx="14" fill="#DB776B"/><rect x="20" y="12" width="24" height="18" rx="8" fill="#547E92"/><path d="M25 18h10" stroke="#D4EFED" stroke-width="3" stroke-linecap="round"/>',
+        goal: '<rect x="18" y="18" width="28" height="28" rx="5" fill="#E8F3E3" stroke="#4A8877" stroke-width="2.5"/><circle cx="32" cy="32" r="3" fill="#4A8877"/>',
       },
+    };
+    skinArt.glacier = {
+      wall: '<path d="M3 12 13 3h39l9 12-3 46H4Z" fill="#94B5D5"/><path d="m14 4 12 18-8 17 13 21m-5-38 18-5 13 11M18 39 5 44m26-8 12 8 15-6" fill="none" stroke="#DDEBF6" stroke-width="3"/><path d="m38 5 6 12-3 12" fill="none" stroke="#F8FCFF" stroke-width="2"/>',
+      box: '<rect x="7" y="7" width="50" height="50" rx="3" fill="#98642D"/><rect x="11" y="11" width="42" height="42" rx="2" fill="#D69A50"/><path d="M12 25h40M12 39h40" stroke="#98642D" stroke-width="2"/><path d="m14 14 36 36m0-36L14 50" stroke="#FFF0CB" stroke-width="6"/><path d="M16 16h1m30 0h1m-32 32h1m30 0h1" stroke="#98642D" stroke-width="3" stroke-linecap="round"/>',
+      goal: '<path d="m32 18 14 14-14 14-14-14Z" fill="#F3EDFB" stroke="#7655A3" stroke-width="2.5"/><path d="m32 27 5 5-5 5-5-5Z" fill="#7655A3"/>',
+      player:
+        '<path d="M21 47h9v13H18zm13 0h9l3 13H34" fill="#235A63"/><rect x="16" y="31" width="32" height="24" rx="8" fill="#4E969C"/><circle cx="13" cy="44" r="4" fill="#4E969C"/><circle cx="51" cy="44" r="4" fill="#4E969C"/><rect x="16" y="5" width="32" height="33" rx="15" fill="#4E969C" stroke="#D8EFF2" stroke-width="2"/><rect x="22" y="14" width="20" height="20" rx="8" fill="#FFE8CC"/><path d="M27 24v1m10-1v1" stroke="#235A63" stroke-width="2.5" stroke-linecap="round"/>',
+    };
+    skinArt.forge = {
+      wall: '<rect x="2" y="2" width="60" height="60" rx="3" fill="#BAA9A4"/><path d="M4 32h56M32 4v26M20 34v26" stroke="#E7DAD0" stroke-width="2"/><path d="m9 15 7 6-3 6m31 19 5 5-2 7" fill="none" stroke="#D98957" stroke-width="2"/><g fill="#8E7F84"><circle cx="9" cy="9" r="2"/><circle cx="55" cy="9" r="2"/><circle cx="9" cy="55" r="2"/><circle cx="55" cy="55" r="2"/></g>',
+      box: '<path d="M13 6h38l7 7v38l-7 7H13l-7-7V13Z" fill="#3F7D88"/><rect x="11" y="11" width="42" height="42" rx="3" fill="#72B3B9"/><path d="M17 10v44m30-44v44" stroke="#E6F4E7" stroke-width="5"/><path d="m32 21 9 11-9 11-9-11Z" fill="#3F7D88" stroke="#E6F4E7" stroke-width="2"/><g fill="#E1F2ED"><circle cx="17" cy="17" r="2"/><circle cx="47" cy="17" r="2"/><circle cx="17" cy="47" r="2"/><circle cx="47" cy="47" r="2"/></g>',
+      goal: '<circle cx="32" cy="32" r="14" fill="#FCEAE1" stroke="#A95246" stroke-width="3"/>',
+      player:
+        '<path d="M21 47h9v13H18zm13 0h9l3 13H34" fill="#4B4A52"/><rect x="17" y="31" width="30" height="24" rx="7" fill="#FFD46A"/><path d="M25 33h14v22H25Z" fill="#A88B58"/><circle cx="13" cy="43" r="4" fill="#FFD46A"/><circle cx="51" cy="43" r="4" fill="#FFD46A"/><rect x="21" y="14" width="22" height="22" rx="9" fill="#FFE9CD"/><path d="M16 18v-3a16 11 0 0 1 32 0v3Z" fill="#FFD46A" stroke="#8C703F" stroke-width="2"/><path d="M13 19h38" stroke="#8C703F" stroke-width="3" stroke-linecap="round"/><rect x="25" y="24" width="14" height="5" rx="2" fill="#4B4A52"/>',
+    };
+    skinArt.greenhouse = {
+      wall: '<rect x="3" y="3" width="58" height="58" rx="7" fill="#95BCAA"/><rect x="7" y="7" width="50" height="50" rx="4" fill="#D3EADF"/><path d="M32 6v52M6 32h52" stroke="#95BCAA" stroke-width="4"/><path d="m11 11 13 13m15 15 13 13M12 42l9 9" stroke="#F5FCF6" stroke-width="4" stroke-linecap="round"/><path d="M7 58h50" stroke="#78A28E" stroke-width="3"/>',
+      box: '<rect x="7" y="8" width="50" height="49" rx="5" fill="#AD7743"/><rect x="11" y="12" width="42" height="41" rx="2" fill="#E3B979"/><path d="M12 25h40M12 40h40" stroke="#C79658" stroke-width="2"/><path d="M17 11v43m30-43v43" stroke="#FFF0CF" stroke-width="5"/><path d="M32 45V24m0 11q-11 0-11-10 11 0 11 10m0 4q11 0 11-10-11 0-11 10" fill="#678D61" stroke="#496C4B" stroke-width="1.5"/>',
+      goal: '<path d="M32 26C24 14 14 24 26 32C14 40 24 50 32 38C40 50 50 40 38 32C50 24 40 14 32 26Z" fill="#F5CCC3" stroke="#B45C58" stroke-width="2.5"/><circle cx="32" cy="32" r="2.5" fill="#B45C58"/>',
+      player:
+        '<path d="M21 47h9v13H18zm13 0h9l3 13H34" fill="#425F60"/><rect x="17" y="31" width="30" height="24" rx="7" fill="#CF8996"/><path d="M25 33h14v22H25Z" fill="#FFF2D9"/><circle cx="13" cy="43" r="4" fill="#FFE6CB"/><circle cx="51" cy="43" r="4" fill="#FFE6CB"/><circle cx="32" cy="25" r="12" fill="#FFE6CB"/><path d="m13 19 8-3 3-10h16l3 10 8 3Z" fill="#F4DCA2" stroke="#C09B5D" stroke-width="2" stroke-linejoin="round"/><path d="M27 26v1m10-1v1" stroke="#6E5144" stroke-width="2.5" stroke-linecap="round"/>',
+    };
+    skinArt.palace = {
+      wall: '<rect x="3" y="3" width="58" height="58" rx="4" fill="#D8CDBA"/><path d="M8 12h48v39H8Z" fill="#F4EFE3"/><path d="M15 14v34m8-34v34m18-34v34m8-34v34" stroke="#E1D7C5" stroke-width="2"/><path d="M5 5h54v8H5Zm0 46h54v8H5Z" fill="#E5D3A2"/><path d="M8 7h48M8 54h48" stroke="#FFF7DE" stroke-width="2"/><path d="M29 15h6v33h-6Z" fill="#D5BC7C"/><path d="m27 25 5-5 5 5-5 5Z" fill="#FFF7DE"/>',
+      box: '<rect x="6" y="6" width="52" height="52" rx="7" fill="#456E99"/><rect x="10" y="10" width="44" height="44" rx="4" fill="#83AFD3"/><path d="M11 20v-9h9m24 0h9v9m0 24v9h-9m-24 0h-9v-9" fill="none" stroke="#F6DFA5" stroke-width="5"/><path d="M12 30h40" stroke="#456E99" stroke-width="2"/><rect x="27" y="23" width="10" height="18" rx="3" fill="#F6DFA5" stroke="#A78443" stroke-width="1.5"/><circle cx="32" cy="30" r="2" fill="#456E99"/>',
+      goal: '<path d="m32 18 14 14-14 14-14-14Z" fill="#FFFAE8" stroke="#B58B3F" stroke-width="2.5"/><circle cx="32" cy="32" r="3.5" fill="#5E98A7"/>',
+      player:
+        '<path d="M23 49h7v11h-7zm11 0h7v11h-7Z" fill="#507492"/><path d="M22 32q10-5 20 0l9 23q-9 4-19-1-10 5-19 1Z" fill="#FFF4D9" stroke="#C8B477" stroke-width="1.5" stroke-linejoin="round"/><rect x="20" y="32" width="24" height="23" rx="7" fill="#83AFD3"/><circle cx="32" cy="25" r="12" fill="#FFE6CF"/><path d="m24 15-1-7 5 3 4-6 4 6 5-3-1 7Z" fill="#D9B861"/><path d="M27 25v1m10-1v1" stroke="#5B6272" stroke-width="2.5" stroke-linecap="round"/>',
     };
     function sprite(parent, name, skin = root.dataset.skin) {
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -144,6 +189,7 @@ WorkTimeApp.games.register({
       chapterButtons[chapter].focus();
     });
     const undo = toolbarButton(controls, "undo", "undo", () => {
+      releaseKey();
       move("undo");
       board.focus({ preventScroll: true });
     });
@@ -161,7 +207,7 @@ WorkTimeApp.games.register({
     catalog.page.classList.add("sokoban-catalog");
     const chapters = catalog.categories;
     chapters.setAttribute("role", "group");
-    const chapterNames = ["easy", "medium", "hard"];
+    const chapterNames = chaptersConfig.map((entry) => entry.id);
     const chapterButtons = chapterNames.map((_, index) =>
       button(chapters, "chapter-" + index, () => {
         chapter = index;
@@ -176,8 +222,18 @@ WorkTimeApp.games.register({
     const play = node("div", "sokoban-play", root);
     const sidebar = node("div", "sokoban-sidebar", play);
     sidebar.append(hud);
+    const theorySection = node("div", "sokoban-theory-section", sidebar);
+    const theoryCard = node("div", "sokoban-theory-card", theorySection);
+    const theoryStats = ["moves", "pushes"].map((name) => {
+      const element = node("div", "game-stat", theoryCard);
+      return {
+        name,
+        label: node("span", "", element),
+        value: node("strong", "", element),
+      };
+    });
     const meters = node("div", "sokoban-meters", sidebar);
-    const stats = ["moves", "pushes", "best"].map((name) => {
+    const stats = ["moves", "pushes"].map((name) => {
       const element = node("div", "game-stat", meters);
       return {
         name,
@@ -186,9 +242,6 @@ WorkTimeApp.games.register({
       };
     });
     const stage = node("div", "sokoban-stage", play);
-    const goalCard = node("div", "game-stat sokoban-goal-progress", meters);
-    const goalLabel = node("span", "", goalCard);
-    const goalProgress = node("strong", "", goalCard);
     const board = node("div", "sokoban-board", stage);
     board.tabIndex = 0;
     board.setAttribute("role", "group");
@@ -211,7 +264,7 @@ WorkTimeApp.games.register({
     const feedback = node("div", "sokoban-feedback", play);
     const status = node("p", "sokoban-status", feedback);
     status.setAttribute("role", "status");
-    const next = button(feedback, "next", () => {
+    const next = toolbarButton(feedback, "next", "arrow-forward", () => {
       if (current < levels.length - 1) open(current + 1);
       else {
         choosing = true;
@@ -286,7 +339,7 @@ WorkTimeApp.games.register({
       render();
       board.focus({ preventScroll: true });
     }
-    function move(direction) {
+    function move(direction, repeat = false) {
       if (
         choosing ||
         confirming ||
@@ -297,7 +350,13 @@ WorkTimeApp.games.register({
       )
         return;
       if (moving) {
-        if (pendingMoves.length < 8) pendingMoves.push(direction);
+        // Throttle to one step per animation, retaining only the latest tap.
+        // Explicit taps take priority over held repeats; undo cannot be overwritten.
+        if (
+          (!repeat || !pendingMove) &&
+          (direction === "undo" || pendingMove?.direction !== "undo")
+        )
+          pendingMove = { direction, repeat };
         return;
       }
       const changed =
@@ -376,7 +435,17 @@ WorkTimeApp.games.register({
         catalog.selectCategory(chapter);
         chapters.setAttribute("aria-label", t("catalog"));
         chapterButtons.forEach((element, index) => {
-          element.textContent = t(chapterNames[index]);
+          element.replaceChildren();
+          node("span", "sokoban-category-difficulty", element).textContent = t(
+            chapterNames[index],
+          );
+          node("span", "sokoban-category-scene", element).textContent = t(
+            chaptersConfig[index].skin,
+          );
+          element.setAttribute(
+            "aria-label",
+            t(chapterNames[index]) + " · " + t(chaptersConfig[index].skin),
+          );
           element.setAttribute("aria-pressed", String(index === chapter));
         });
         const chapterLevels = levels.slice(chapter * 20, (chapter + 1) * 20);
@@ -412,31 +481,35 @@ WorkTimeApp.games.register({
       const map = maps[current],
         value = state(),
         position = rules.position(map, value);
-      const record = completed[levels[current].id];
+      theoryCard.title = t(
+        bank.optima?.[levels[current].id]?.moves?.basis === "public-record"
+          ? "publicOptimaHelp"
+          : "optimaHelp",
+      );
+      theoryStats.forEach(({ name, label, value: element }) => {
+        label.textContent = t(name === "moves" ? "minMoves" : "minPushes");
+        const minimum =
+          name === "moves"
+            ? bank.optima?.[levels[current].id]?.moves?.value
+            : bank.optima?.[levels[current].id]?.moves?.pushes;
+        element.textContent =
+          minimum == null ? t("unverified") : String(minimum);
+        element.classList.toggle("is-unverified", minimum == null);
+      });
       stats.forEach(({ name, label, value: element }) => {
         label.textContent = t(name);
-        WorkTimeApp.games.paintCounter(
-          element,
-          name === "best" ? (record?.pushes ?? "—") : value[name],
-        );
+        WorkTimeApp.games.paintCounter(element, value[name]);
       });
       const won = rules.won(map, value);
       root.classList.toggle("is-won", won);
-      goalLabel.textContent = t("goalsLabel");
-      goalProgress.textContent = `${position.boxes.filter((box) => map.goals.has(box)).length} / ${map.goals.size}`;
       undo.disabled = !value.moves;
       next.disabled = !won;
       next.setAttribute("aria-hidden", String(!won));
       next.tabIndex = won ? 0 : -1;
-      next.textContent =
+      next.actionLabel.textContent =
         current === levels.length - 1 ? t("finish") : t("next");
-      status.textContent = won
-        ? Object.keys(completed).length === levels.length
-          ? t("allWon")
-          : t("won")
-        : rules.deadlocked(map, value)
-          ? t("deadlock")
-          : "";
+      status.textContent =
+        !won && rules.deadlocked(map, value) ? t("deadlock") : "";
       directionButtons.forEach(({ element }) => (element.disabled = won));
       board.style.setProperty("--columns", map.width);
       board.style.setProperty("--rows", map.height);
@@ -541,7 +614,7 @@ WorkTimeApp.games.register({
                 { transform: "translate(0px, 0px)" },
               ],
               {
-                duration: 120,
+                duration: stepDuration,
                 easing: "linear",
                 fill: "both",
               },
@@ -557,7 +630,11 @@ WorkTimeApp.games.register({
           if (token !== motionRevision || disposed || signal.aborted) return;
           animations = [];
           moving = false;
-          while (pendingMoves.length && !moving) move(pendingMoves.shift());
+          if (pendingMove) {
+            const entry = pendingMove;
+            pendingMove = null;
+            move(entry.direction, entry.repeat);
+          }
         });
     }
     listen(root, "keydown", (event) => {
@@ -581,9 +658,12 @@ WorkTimeApp.games.register({
       }[keyName];
       if (direction && !event.ctrlKey && !event.metaKey) {
         event.preventDefault();
-        // Buffer only one OS repeat so a held key stops promptly on release.
-        if (event.repeat && moving && pendingMoves.length) return;
+        // Own the repeat cadence instead of mixing OS timing with animation timing.
+        if (event.repeat) return;
+        releaseKey();
         move(direction);
+        heldKey = { key: keyName, direction };
+        repeatTimer = setTimeout(repeatMove, 180);
       } else if (keyName === "z" && !event.repeat) {
         event.preventDefault();
         undo.click();
@@ -596,6 +676,16 @@ WorkTimeApp.games.register({
         event.preventDefault();
         restart.click();
       }
+    });
+    listen(window, "keyup", (event) => {
+      if (event.key.toLowerCase() === heldKey?.key) releaseKey();
+    });
+    listen(window, "blur", releaseKey);
+    listen(root, "focusout", (event) => {
+      if (!board.contains(event.relatedTarget)) releaseKey();
+    });
+    listen(document, "visibilitychange", () => {
+      if (document.hidden) releaseKey();
     });
     let touch = null;
     listen(board, "pointerdown", (event) => {

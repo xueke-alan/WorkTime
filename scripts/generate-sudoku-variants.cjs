@@ -158,7 +158,7 @@ for (const id of ids) {
   // Keep existing level IDs and layouts stable so saved games and replays survive.
   const puzzles = [
     ...(data.sudoku.groups.find((g) => g.id === id)?.puzzles || []),
-  ].slice(0, 20);
+  ].slice(0, id === "killer" ? 30 : 20);
   let attempt = 0;
   while (puzzles.length < 20) {
     if (++attempt > 300)

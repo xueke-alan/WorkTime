@@ -27,18 +27,27 @@ async function main() {
       if (document.querySelector("#gamesPanel").hidden)
         document.querySelector("#date-tab-games").click();
       if (document.querySelector("#gamesPanel").hidden) return false;
-      // Launch in the same task so unrelated startup notices cannot steal the
-      // sidebar between selecting the game and pressing Play.
+      return true;
+    });
+    await page.waitForFunction(() => {
+      const shell = document.querySelector("#gameShell");
+      if (
+        shell.dataset.state === "open" &&
+        document.querySelector(".game-sokoban")
+      )
+        return true;
+      if (shell.dataset.state !== "closed") return false;
+      document.querySelector("#date-tab-games").click();
       document.querySelector('#gamesPanel [data-game="game-sokoban"]').click();
       document.querySelector("#gamesPanel .game-menu-play").click();
-      return true;
+      return false;
     });
     await page.locator(".sokoban-catalog").waitFor({ state: "visible" });
     const action = (name) =>
       page.locator('[data-sokoban-action="' + name + '"]');
     const board = page.locator(".sokoban-board");
     const reports = [];
-    for (let chapter = 0; chapter < 3; chapter++) {
+    for (let chapter = 0; chapter < 7; chapter++) {
       if (chapter) await action("choose").click();
       await action("chapter-" + chapter).click();
       await action("level-19").click();
@@ -64,6 +73,12 @@ async function main() {
           const start = performance.now();
           board.dispatchEvent(
             new KeyboardEvent("keydown", {
+              key: directions[direction],
+              bubbles: true,
+            }),
+          );
+          board.dispatchEvent(
+            new KeyboardEvent("keyup", {
               key: directions[direction],
               bubbles: true,
             }),
@@ -125,6 +140,9 @@ async function main() {
       board.dispatchEvent(
         new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
       );
+      board.dispatchEvent(
+        new KeyboardEvent("keyup", { key: "ArrowRight", bubbles: true }),
+      );
       const tracks = board.getAnimations({ subtree: true });
       tracks.forEach((track) => {
         track.pause();
@@ -144,11 +162,20 @@ async function main() {
       push.every((track) => track.x < -1),
       "midpoint does not jump to destination",
     );
-    // Queue undo while the push is paused; both logical and visual state settle.
+    // A queued undo overrides rapid directions and survives subsequent taps.
     await board.evaluate((board) => {
-      board.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "z", bubbles: true }),
-      );
+      for (const key of [
+        "ArrowDown",
+        "ArrowLeft",
+        "z",
+        "ArrowRight",
+        "ArrowUp",
+      ]) {
+        board.dispatchEvent(
+          new KeyboardEvent("keydown", { key, bubbles: true }),
+        );
+        board.dispatchEvent(new KeyboardEvent("keyup", { key, bubbles: true }));
+      }
       board.getAnimations({ subtree: true }).forEach((track) => track.finish());
     });
     await page.waitForFunction(() => {
@@ -194,22 +221,49 @@ async function main() {
         u: "ArrowUp",
         d: "ArrowDown",
       };
-      for (const direction of burst)
+      for (const [index, direction] of [...burst].entries()) {
         board.dispatchEvent(
           new KeyboardEvent("keydown", { key: keys[direction], bubbles: true }),
         );
+        board.dispatchEvent(
+          new KeyboardEvent("keyup", { key: keys[direction], bubbles: true }),
+        );
+        if (!index) {
+          board.getAnimations({ subtree: true }).forEach((track) => {
+            track.pause();
+            track.currentTime = 60;
+          });
+        }
+      }
+      const tracks = board.getAnimations({ subtree: true });
+      if (tracks.length !== 1 || tracks[0].currentTime !== 60)
+        throw Error("rapid taps must preserve the active animation");
+      tracks.forEach((track) => track.finish());
     }, burst);
-    await page.waitForFunction((burst) => {
+    const throttledPath = burst[0] + burst.at(-1);
+    await page.waitForFunction((throttledPath) => {
       const save = JSON.parse(
         localStorage.getItem("worktime.games.sokoban.v1"),
       );
       return (
-        save.drafts[WorkTimeApp.data.sokoban.levels[1].id].path === burst &&
+        save.drafts[WorkTimeApp.data.sokoban.levels[1].id].path ===
+          throttledPath &&
         !document
           .querySelector(".sokoban-board")
           .getAnimations({ subtree: true }).length
       );
-    }, burst);
+    }, throttledPath);
+    await page.waitForTimeout(400);
+    assert.equal(
+      await page.evaluate(
+        () =>
+          JSON.parse(localStorage.getItem("worktime.games.sokoban.v1")).drafts[
+            WorkTimeApp.data.sokoban.levels[1].id
+          ].path,
+      ),
+      throttledPath,
+      "rapid taps retain only one latest direction without a delayed input tail",
+    );
     await board.press("z");
     await page.setViewportSize({ width: 1000, height: 800 });
     await page.waitForFunction(
@@ -220,37 +274,71 @@ async function main() {
     );
     await action("restart").click();
     await action("reset").click();
-    await board.evaluate((board) => {
-      board.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
-      );
-      for (let i = 0; i < 8; i++)
-        board.dispatchEvent(
-          new KeyboardEvent("keydown", {
-            key: "ArrowDown",
-            repeat: true,
-            bubbles: true,
-          }),
-        );
-    });
+    await board.press("ArrowRight");
     await page.waitForFunction(
       () =>
         !document
           .querySelector(".sokoban-board")
           .getAnimations({ subtree: true }).length,
     );
-    const heldPath = await page.evaluate(() => {
-      const save = JSON.parse(
-        localStorage.getItem("worktime.games.sokoban.v1"),
-      );
-      return save.drafts[WorkTimeApp.data.sokoban.levels[1].id].path;
-    });
-    if (!baseline)
-      assert.equal(
-        heldPath,
-        "rd",
-        "held keys do not accumulate a long input tail",
-      );
+    const heldStart = Date.now();
+    await page.keyboard.down("ArrowDown");
+    // No OS repeat events: the game must supply its own second step.
+    await page.waitForFunction(
+      () => {
+        const saved = JSON.parse(
+          localStorage.getItem("worktime.games.sokoban.v1"),
+        );
+        return (
+          saved.drafts[WorkTimeApp.data.sokoban.levels[1].id].path.length >= 3
+        );
+      },
+      null,
+      { timeout: 1000 },
+    );
+    assert.ok(
+      Date.now() - heldStart < 500,
+      "held movement starts without the OS repeat delay",
+    );
+    await page.keyboard.up("ArrowDown");
+    const releasedPath = await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("worktime.games.sokoban.v1")).drafts[
+          WorkTimeApp.data.sokoban.levels[1].id
+        ].path,
+    );
+    await page.waitForTimeout(400);
+    const heldPath = await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("worktime.games.sokoban.v1")).drafts[
+          WorkTimeApp.data.sokoban.levels[1].id
+        ].path,
+    );
+    assert.equal(
+      heldPath,
+      releasedPath,
+      "release removes repeat input queued behind animation",
+    );
+    await page.keyboard.down("ArrowUp");
+    await board.evaluate(() => window.dispatchEvent(new Event("blur")));
+    const blurredPath = await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("worktime.games.sokoban.v1")).drafts[
+          WorkTimeApp.data.sokoban.levels[1].id
+        ].path,
+    );
+    await page.waitForTimeout(400);
+    await page.keyboard.up("ArrowUp");
+    assert.equal(
+      await page.evaluate(
+        () =>
+          JSON.parse(localStorage.getItem("worktime.games.sokoban.v1")).drafts[
+            WorkTimeApp.data.sokoban.levels[1].id
+          ].path,
+      ),
+      blurredPath,
+      "blur stops held movement",
+    );
     assert.deepEqual(errors, []);
     fs.mkdirSync(path.join(root, "test-results/sokoban"), { recursive: true });
     fs.writeFileSync(

@@ -1,0 +1,132 @@
+.game-ultimate-ttt{--uttt-x:#216c86;--uttt-o:#b44d45;--uttt-size:600px;width:100%;min-height:100%;position:relative;color:var(--text-primary,#273c48)}
+.game-ultimate-ttt [hidden]{display:none!important}
+.uttt-play{display:flex;align-items:center;justify-content:center;gap:28px;min-height:100%;padding:12px 0}
+.uttt-stage{width:var(--uttt-size);max-width:100%;flex-shrink:0}
+.uttt-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:clamp(5px,1.2vw,12px);aspect-ratio:1;padding:8px;border-radius:18px;background:rgba(89,120,139,.14)}
+.uttt-region{position:relative;min-width:0;border-radius:10px;background:rgba(255,255,255,.35);border:2px solid transparent;padding:4px;transition:border-color .15s,background .15s}
+.uttt-region.is-active{border-color:var(--uttt-x);background:rgba(216,240,243,.65)}
+.uttt-marks{height:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:3px}
+.uttt-cell{position:relative;display:grid;place-items:center;min-height:0;min-width:0;padding:0;border:0;border-radius:5px;background:rgba(255,255,255,.58);color:var(--uttt-x);font:600 clamp(14px,3.4vw,32px)/1 system-ui;cursor:pointer;touch-action:manipulation}
+.uttt-cell[data-side="-1"]{color:var(--uttt-o)}
+.uttt-cell[aria-disabled="true"]{cursor:default}
+.uttt-cell[aria-disabled="false"]:hover{background:rgba(135,202,211,.45)}
+.uttt-cell:focus-visible{outline:3px solid #b08728;outline-offset:-3px;z-index:2}
+.uttt-cell.is-last::after{content:"";position:absolute;top:5px;right:5px;width:11px;height:11px;border-top:2px solid currentColor;border-right:2px solid currentColor;pointer-events:none}
+.uttt-owner{display:none;position:absolute;inset:0;place-items:center;border-radius:8px;font:600 clamp(40px,10vw,115px)/1 system-ui;pointer-events:none;background:rgba(226,240,243,.88);color:var(--uttt-x)}
+.uttt-region[data-owner="1"] .uttt-owner,.uttt-region[data-owner="-1"] .uttt-owner,.uttt-region[data-owner="2"] .uttt-owner{display:grid}
+.uttt-region[data-owner="-1"] .uttt-owner{color:var(--uttt-o);background:rgba(246,229,224,.9)}
+.uttt-region[data-owner="2"] .uttt-owner{color:#70818b;background:rgba(230,234,237,.9)}
+.uttt-controls{width:250px;max-width:100%;display:flex;flex-direction:column;gap:12px}
+.uttt-controls h3,.uttt-controls p,.uttt-setup h3,.uttt-setup p{margin:0}
+.uttt-muted{opacity:.78;font-size:.9rem;line-height:1.65}
+
+.uttt-status{font-weight:650;line-height:1.65}
+
+.uttt-actions{display:flex;flex-wrap:wrap;gap:8px}
+.uttt-options{border:0;padding:0;margin:0;display:grid;gap:10px}
+.uttt-options legend{padding:0;margin-bottom:10px;font-weight:600}
+.uttt-options [aria-pressed="true"]{background:var(--uttt-x);color:#fff}
+.uttt-setup{display:grid;gap:24px;max-width:600px;margin:0 auto;padding:20px}
+.uttt-checkbox{display:flex;gap:10px;align-items:center;font-weight:600;cursor:pointer}
+.uttt-checkbox input{width:20px;height:20px;accent-color:var(--uttt-x)}
+.uttt-engine-error,.uttt-save-error{color:var(--uttt-o);line-height:1.6}
+.uttt-guide{font-size:.85rem;line-height:1.75}
+.uttt-guide summary{cursor:pointer;font-weight:600}
+.uttt-guide p{margin-top:10px}
+.uttt-ghost{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.game-ultimate-ttt[data-compact="true"] .uttt-play{flex-direction:column;gap:18px;justify-content:flex-start}
+.game-ultimate-ttt[data-compact="true"] .uttt-controls{width:var(--uttt-size)}
+@media(prefers-reduced-motion:reduce){.uttt-region{transition:none}}
+.uttt-symbol{display:block;width:64%;height:64%;overflow:visible;fill:none;stroke:currentColor;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}.uttt-owner .uttt-symbol{width:70%;height:70%}.uttt-ghost[data-side="-1"]{color:var(--uttt-o)}.uttt-ghost[data-side="1"]{color:var(--uttt-x)}
+
+/* Match the shared board-game sidebar and keep the board vertically centered. */
+.game-ultimate-ttt{height:100%;min-height:0;overflow:auto;box-sizing:border-box}
+.uttt-play{min-height:100%;box-sizing:border-box;padding:24px 8px;gap:28px}
+.uttt-board{box-sizing:border-box}
+.uttt-controls{height:var(--uttt-size);box-sizing:border-box;padding:8px 0 20px;gap:14px;flex:0 0 250px}
+.uttt-objective{display:grid;gap:7px}
+.uttt-objective h3{font-size:1.45rem;letter-spacing:-.02em}
+.uttt-score{display:grid;gap:8px}
+ .uttt-score-row{display:flex;align-items:center;gap:10px;min-height:34px}
+.uttt-score-symbol{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;color:var(--uttt-x)}
+.uttt-score-symbol .uttt-symbol{width:100%;height:100%}
+.uttt-score-row>span:not(.uttt-score-symbol){font:600 1.5rem/1 var(--font-numeric);color:var(--muted)}
+.uttt-score-row>strong{font:700 1.8rem/1 var(--font-numeric);font-variant-numeric:tabular-nums;color:var(--uttt-x);min-width:1ch}
+.uttt-score-row[data-mark="O"] .uttt-score-symbol,.uttt-score-row[data-mark="O"]>strong{color:var(--uttt-o)}
+.uttt-preview-note{height:3.2em;min-height:3.2em;flex:none;font-size:.8rem;line-height:1.6;color:var(--uttt-preview-ink,#927027)}
+.uttt-controls>.uttt-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem;margin-top:auto}
+.uttt-controls>.uttt-actions>.game-button{width:100%;height:auto;min-width:0;min-height:3.6rem;flex-direction:column;gap:.4rem;padding:.5rem .15rem;border-color:transparent;background:transparent;white-space:normal;text-align:center;font-size:.75rem;justify-content:center}
+.uttt-controls>.uttt-actions .ui-icon{width:1.3rem;height:1.3rem}
+.uttt-guide{border-top:1px solid var(--line);padding-top:16px;line-height:1.7;color:var(--muted)}
+.uttt-guide h4{margin:0;font-size:.75rem;font-weight:600;letter-spacing:.05em}
+.uttt-guide p{margin-top:8px;font-size:.8rem}
+.uttt-region::after{content:"";position:absolute;inset:4px;border:2px dashed color-mix(in srgb,var(--uttt-x) 72%,transparent);border-radius:5px;background:color-mix(in srgb,var(--uttt-x) 10%,transparent);opacity:0;pointer-events:none;transition:opacity 180ms ease;z-index:2}
+.uttt-region.is-preview::after{opacity:1;animation:uttt-preview-breathe 2.4s ease-in-out 180ms infinite}
+@keyframes uttt-preview-breathe{0%,100%{opacity:1}50%{opacity:.75}}
+html[data-reduced-motion="true"] .uttt-region::after{transition:none;animation:none}
+@media(prefers-reduced-motion:reduce){.uttt-region::after{transition:none;animation:none}}
+.uttt-cell:focus-visible{z-index:1}
+.game-ultimate-ttt[data-compact="true"] .uttt-play{padding:16px 0 24px;min-height:100%;justify-content:safe center}
+.game-ultimate-ttt[data-compact="true"] .uttt-controls{height:auto;min-height:0;flex:none;padding:0 8px 20px}
+.game-ultimate-ttt[data-compact="true"] .uttt-controls>.uttt-actions{margin-top:0}
+
+.uttt-thinking {
+  align-self: flex-start;
+  flex: none;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: color-mix(in srgb, var(--accent) 78%, var(--ink));
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.96);
+  transition:
+    opacity 220ms ease,
+    transform 260ms cubic-bezier(.2,.75,.25,1),
+    visibility 260ms;
+  pointer-events: none;
+}
+.uttt-thinking[data-active] {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+.uttt-thinking[data-side="o"] {
+  color: var(--uttt-o);
+}
+.uttt-thinking[data-side="x"] {
+  color: var(--uttt-x);
+}
+.uttt-thinking-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: currentColor;
+}
+.uttt-thinking[data-active] .uttt-thinking-icon {
+  animation: uttt-thinking-breathe 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+.uttt-thinking[data-active] .uttt-thinking-gear {
+  animation: uttt-thinking-spin 3s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes uttt-thinking-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+@keyframes uttt-thinking-spin {
+  to { transform: rotate(360deg); }
+}
+:where(html:where([data-reduced-motion="true"])) .uttt-thinking-icon,
+:where(html:where([data-reduced-motion="true"])) .uttt-thinking-gear {
+  animation: none !important;
+}
+:where(html:where([data-reduced-motion="true"])) .uttt-thinking {
+  transition: none;
+}
+
+@media(prefers-reduced-motion:reduce){.uttt-thinking,.uttt-thinking-icon,.uttt-thinking-gear{animation:none!important;transition:none!important}}

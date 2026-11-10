@@ -14,7 +14,7 @@ self.addEventListener("activate", (event) => {
       const cache = await caches.open(CACHE);
       // Retire the previous monolithic engine and any shell-cached binaries.
       for (const request of await cache.keys())
-        if (new URL(request.url).pathname.includes("/assets/vendor/pikafish/"))
+        if (/\/assets\/vendor\/(pikafish|utttai)\//.test(new URL(request.url).pathname))
           await cache.delete(request);
       await self.clients.claim();
     }),
@@ -25,8 +25,8 @@ self.addEventListener("fetch", (event) => {
   // The engine manages its binary cache and optional runtime-folder copy itself.
   // Bypass shell caching to avoid duplicate 50 MB models and network-first reads.
   const url = new URL(event.request.url);
-  if (url.pathname.includes("/assets/vendor/pikafish/")) {
-    if (!/\/(manifest|worker)\.js$/.test(url.pathname)) return;
+  if (/\/assets\/vendor\/(pikafish|utttai)\//.test(url.pathname)) {
+    if (!/\/(manifest|worker|worker-source)\.js$/.test(url.pathname)) return;
     event.respondWith((async () => {
       const cache = await caches.open(CACHE);
       const cached = await cache.match(event.request);

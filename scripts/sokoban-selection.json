@@ -1,0 +1,1432 @@
+{
+  "ranking": "Local rubric: pushes + 3 * box switches + 12 * goal withdrawals + 5 * boxes. Sort all 140 levels by this score, then stable ID; group into seven chapters of 20. Raw scores are not Cosmos author scores; the seven labels and ranges are adopted as a local classification. No optimality claim for new solution paths.",
+  "levels": [
+    {
+      "id": "microban-79",
+      "source": "microban",
+      "sourceNumber": 79,
+      "solution": "llldllurrluurddrrrdrulllluurrdullddrrdrrulllrrrruuldrdll",
+      "solutionPushes": 18,
+      "searchNodes": 53
+    },
+    {
+      "id": "sasquatch-1-8",
+      "source": "sasquatch-1",
+      "sourceNumber": 8,
+      "solution": "urrrruurrrrddrduulullllddrddlludrruuluurrrrddrdrddddlllllllulululuurrrdrlulllddrdrdrdrrrrrrruuuuluulullllddllldrurruurrrrddrdrddddlluurdrudlldlllllulululuurrrruurrrrddrdddrddlruulldrddlulllllulululur",
+      "solutionPushes": 17,
+      "searchNodes": 41598,
+      "solutionId": 353,
+      "boxSwitches": 14,
+      "difficultyScore": 170.72130613664865
+    },
+    {
+      "id": "sasquatch-2-34",
+      "source": "sasquatch-2",
+      "sourceNumber": 34,
+      "solution": "rulrdrrulrurrddlllrrddlludrruululldurrdrddlluuruldlllllddlluurrrldrurrlllluurrdullddrr",
+      "solutionPushes": 22,
+      "searchNodes": 1175,
+      "boxSwitches": 11,
+      "difficultyScore": 145.99836172418182
+    },
+    {
+      "id": "microban-63",
+      "source": "microban",
+      "sourceNumber": 63,
+      "solution": "llllllulllllllulldrurdrrrrrrrddlurulllllllulldrrrddlururrrrrurdlllllllulldrrrrrrrrdrudrrrrrdrrullllll",
+      "solutionPushes": 50,
+      "searchNodes": 135
+    },
+    {
+      "id": "sasquatch-5-13",
+      "source": "sasquatch-5",
+      "sourceNumber": 13,
+      "solution": "dddrruurrllddlluuururldldddrruurrdlululldrrllddrrudlluuuruurdlddlddrrurruuulrdrrulldddruluurrdluldurruullddrdddllldlluuuruurrlldddlddrrurrruuuruulld",
+      "solutionPushes": 20,
+      "searchNodes": 5137,
+      "boxSwitches": 12
+    },
+    {
+      "id": "sasquatch-7-5",
+      "source": "sasquatch-7",
+      "sourceNumber": 5,
+      "solution": "rrdrrddrdrruuullulddurrrdddlllrrruuulllllulldrdurrrddrdrruuulluldlllddrdlldlurruuurrrrrrdddllullrrdrruuulllllldddrdrururrddlulllluuurrrdduullldddrrrrdru",
+      "solutionPushes": 29,
+      "searchNodes": 5864,
+      "boxSwitches": 15,
+      "difficultyScore": 171.58957696457935
+    },
+    {
+      "id": "microban-96",
+      "source": "microban",
+      "sourceNumber": 96,
+      "solution": "rrdrrulllrrdddlldlluruuullulldrrrruuruldddrrdrrulllrrdddlldllurrrlluuuuuruuldddduuuulldrurdd",
+      "solutionPushes": 37,
+      "searchNodes": 957
+    },
+    {
+      "id": "sasquatch-4-5",
+      "source": "sasquatch-4",
+      "sourceNumber": 5,
+      "solution": "uuludrruluulldrurdddllururdrdrrululruldrdl",
+      "solutionPushes": 19,
+      "searchNodes": 2680,
+      "solutionId": 634,
+      "boxSwitches": 12
+    },
+    {
+      "id": "sasquatch-6-2",
+      "source": "sasquatch-6",
+      "sourceNumber": 2,
+      "solution": "ululluurrdullddrdrrrrruruullldurrrddldllllluluurrddldrdrrurruruullldlrurrrddldlldlluulluurrdullddrdrdrrullrrrruruullldduurrrddldlluuurrdllddrrurulluldrrddlldlluulldruluurrdrrduurrdluld",
+      "solutionPushes": 25,
+      "searchNodes": 594,
+      "boxSwitches": 14
+    },
+    {
+      "id": "sasquatch-7-8",
+      "source": "sasquatch-7",
+      "sourceNumber": 8,
+      "solution": "ldllrrurudldllulldrururruulldurrdddrrdluluuurrdluldulldllurr",
+      "solutionPushes": 12,
+      "searchNodes": 3821,
+      "boxSwitches": 8
+    },
+    {
+      "id": "microban-87",
+      "source": "microban",
+      "sourceNumber": 87,
+      "solution": "lurluurdllluruulurrrrdllldddrruldluudrdddrudrrulldluluurrdullddrdrrululrddluruulluulurrrdrrruuldrdlllurdrruuldrdllullldddrrddludluuuulurrrrdrruuldrdlullllddddrruldluuulurrrrrurd",
+      "solutionPushes": 53,
+      "searchNodes": 4667
+    },
+    {
+      "id": "sasquatch-5-2",
+      "source": "sasquatch-5",
+      "sourceNumber": 2,
+      "solution": "ldrrdddrruuulrdddlldllluurrllddrrurrruuulldduulrddldruuulddrddllluurrllddrruruddllluurruurrrdddlruuulllulldrr",
+      "solutionPushes": 20,
+      "searchNodes": 538,
+      "boxSwitches": 14
+    },
+    {
+      "id": "sasquatch-7-20",
+      "source": "sasquatch-7",
+      "sourceNumber": 20,
+      "solution": "uuruulddllurdrruuluurdlllurdrddrrruulldurrddlluurdrdluuruuuruulddddrdldlluuldllurdrrdrruuuuulllldduurrrrddddldlu",
+      "solutionPushes": 27,
+      "searchNodes": 7599,
+      "boxSwitches": 14
+    },
+    {
+      "id": "sasquatch-5-1",
+      "source": "sasquatch-5",
+      "sourceNumber": 1,
+      "solution": "rdluuuuulldrurddddllurdrrddluruluuuruldlluurdldrurddddrruldlurdddluruulllddrrdruruulluuruldlluurdrddddullddrrurlddrululuruuulldrurdddrdlddru",
+      "solutionPushes": 41,
+      "searchNodes": 1755,
+      "boxSwitches": 16
+    },
+    {
+      "id": "sasquatch-4-7",
+      "source": "sasquatch-4",
+      "sourceNumber": 7,
+      "solution": "dllllluurrrrudlllluurduuurrrrrrrrddlllllllrrrrrrruullllllllddrrrrrrrrrddlllludrrrruulduuullllllllddrrrrrrrllllllluurrrrrrrrddrdrruululrdrddllullllddrrrllluullllllddddrrrrrrrrrruulllluullddlllrrruulllldlluururldlddrrurrrrrrddrrrrddlllllllllluu",
+      "solutionPushes": 18,
+      "searchNodes": 133706,
+      "solutionId": 693,
+      "boxSwitches": 10,
+      "difficultyScore": 183.143577358313
+    },
+    {
+      "id": "sasquatch-7-7",
+      "source": "sasquatch-7",
+      "sourceNumber": 7,
+      "solution": "ullluuruuldrrrdduulldduurrddlddrudllluuulldrurrurrdrdlddlllurdrruuuulldduurrddlrddllluulurdddrrruuuulluldrrrddddllluurudllurdddrrruuldrdl",
+      "solutionPushes": 22,
+      "searchNodes": 950,
+      "boxSwitches": 17
+    },
+    {
+      "id": "microban-65",
+      "source": "microban",
+      "sourceNumber": 65,
+      "solution": "uuuulrddddlluururuuldulldrurrdddduuuulldrurdddllddrdrrullluurrdullddrdrrullruulldllurrrldllddruluurrdllurrruruulldrdrduluurdlddldldrrdrrulllullddrulururrrduluurdldllddrrdrrulllrruuluurdddullldlddrurrdrrulllldlu",
+      "solutionPushes": 49,
+      "searchNodes": 396
+    },
+    {
+      "id": "sasquatch-4-10",
+      "source": "sasquatch-4",
+      "sourceNumber": 10,
+      "solution": "dluulllddrurlluurduluururuulrddldlddddruuluururuulduullddrddddrddluuuudddrrrruuldrdllrrddlulrruuldrdlullulduuuu",
+      "solutionPushes": 27,
+      "searchNodes": 7081,
+      "solutionId": 647,
+      "boxSwitches": 14,
+      "difficultyScore": 167.94970564195458
+    },
+    {
+      "id": "microban-100",
+      "source": "microban",
+      "sourceNumber": 100,
+      "solution": "lddrduluurdrrrdldddrruulrddlluurrdluuullllddrudlddruuluurrrurdddlurdrddlludrruuluulrddrddlluurrdluuullluldddrulurrrurdddlurdrddlluurrdluuulllulddurrrrddlurullluldrrrrddddluuurulll",
+      "solutionPushes": 52,
+      "searchNodes": 2560
+    },
+    {
+      "id": "microban-89",
+      "source": "microban",
+      "sourceNumber": 89,
+      "solution": "urrddlruulldddddlluuuurlddddrrruluurruullddddrddlruuluuulllulldrrrrlddddrruuurruullddullddddrrurudldlluuuurrdduullddddrrdruudllluuuurrdddrdluuuuurrddlruullddddruluuurrddlddddluruuuruulldlldddddrluuuuurrurrddldddlldluudrrruuldururuulldddrddlldlurrruuldrdllrrdll",
+      "solutionPushes": 47,
+      "searchNodes": 5060
+    },
+    {
+      "id": "sasquatch-7-9",
+      "source": "sasquatch-7",
+      "sourceNumber": 9,
+      "solution": "urrrrurrdddlllrrruuulldlllldddrrdrullluuurrdduurrurrdddlludldlurrrruuulldllllddrrlldruluurrrruuldrrrdddlluu",
+      "solutionPushes": 16,
+      "searchNodes": 4891,
+      "boxSwitches": 12
+    },
+    {
+      "id": "sasquatch-4-1",
+      "source": "sasquatch-4",
+      "sourceNumber": 1,
+      "solution": "uuuluurddddrrruuldrdllddlluruuuururrdulldldddrruurrululldllurddddrruururrrddlullddllluuuurrldldddrruurrrruldllddllluuuurrurddulldldddrruurddlllddruluuuuurrrddddlldlurruurrrurdlllddllluuururrdrlulldllurrrurdlldldddrruurrrrrdlulllddllluuuurrrdulldldddrruurr",
+      "solutionPushes": 43,
+      "searchNodes": 2639,
+      "solutionId": 576,
+      "boxSwitches": 17,
+      "difficultyScore": 165.83161107122908
+    },
+    {
+      "id": "sasquatch-1-20",
+      "source": "sasquatch-1",
+      "sourceNumber": 20,
+      "solution": "ulldddrrurldlluuurrdulldddrrrururdululldrurdrrulruuldddllddllluurrllddrurururrdrullldrrllldllurrrrllddrulurlllurrrrr",
+      "solutionPushes": 36,
+      "searchNodes": 912787,
+      "solutionId": 698,
+      "boxSwitches": 18,
+      "difficultyScore": 233.9996014987313
+    },
+    {
+      "id": "sasquatch-6-3",
+      "source": "sasquatch-6",
+      "sourceNumber": 3,
+      "solution": "ulullllldlddrdrrruulduuulldrllddrrurrdlrddlururdlllluluururrrdduurrdlulllldlddrdrrrruuddlllluluururrrrrdrddl",
+      "solutionPushes": 14,
+      "searchNodes": 5307,
+      "boxSwitches": 11
+    },
+    {
+      "id": "microban-69",
+      "source": "microban",
+      "sourceNumber": 69,
+      "solution": "urrrurrrdrrddludluudrrululuurddllluldrdllrrddllluluurdrrurrrrdrddluludrrulullluldrdlurrrrddlurullldddllluuudddrrruullrruuldrdddllluluurdrrlluluurddldrdldrr",
+      "solutionPushes": 41,
+      "searchNodes": 922
+    },
+    {
+      "id": "sasquatch-1-15",
+      "source": "sasquatch-1",
+      "sourceNumber": 15,
+      "solution": "dddddrdddrruuuuurrddlruulldddddlluuulldrurrrdddlluuddrruuulldlluururduluurdlddlddruuuurdldddrddrruuulldlluururdllddruuddrddrruuullulldlldrrrluurrdrrdddlluuludrddrruuulllrrruurrddlllluuulldurruuld",
+      "solutionPushes": 36,
+      "searchNodes": 500294,
+      "solutionId": 697,
+      "boxSwitches": 18,
+      "difficultyScore": 219.66209754197973
+    },
+    {
+      "id": "microban-77",
+      "source": "microban",
+      "sourceNumber": 77,
+      "solution": "ddddrruldluuuddrrrrrulrdrruldlllllluururrrrrddrdlllllrrurdlllurrdlldlluuururrrrrddrdlllurlllddlluuururrrrrddrdluuullllldllurrdldddrruldluuururrrllldllurrrrlldlddrrurrdlurrrdlulldlurrrdlulldlrurrdlldlluuulurrdldddrruldluuururldllurr",
+      "solutionPushes": 55,
+      "searchNodes": 1531
+    },
+    {
+      "id": "sasquatch-5-10",
+      "source": "sasquatch-5",
+      "sourceNumber": 10,
+      "solution": "luuurrrrdulldrullldrlddruluuururrrrrdrdddlddldlllluluuruurrdlurrrdllulllddddrdrrrruruuruuulullllldldddrdrrrudllluluurlddrdrrruuddllluluurdlddrrrruululrdrddlllluuuururrrrrdrdddlddldlllluluuururrdlrrrulll",
+      "solutionPushes": 23,
+      "searchNodes": 1373,
+      "boxSwitches": 18
+    },
+    {
+      "id": "microban-84",
+      "source": "microban",
+      "sourceNumber": 84,
+      "solution": "urlddrluurdrdduuruluullllddddddrrrruuullurdrdddlllluuuuuurrrrddddulldruuruullllddddddrrrrrrdrrullllllldluuuuuluurrrrrddrddlduulldrurduuuulllllddrddddrrrrrrdrrulllllldlluuuuuluurrrrrddddduuuuulllllddruddddddrruldluuuuuluurrrlllddrulurrlddddddrrrrrrdrrullllllldluuuuuulur",
+      "solutionPushes": 70,
+      "searchNodes": 2030
+    },
+    {
+      "id": "microban-80",
+      "source": "microban",
+      "sourceNumber": 80,
+      "solution": "lddrudrruluuullluuddrrrudddddllurdrruuluullluuluurdrrdrddllluuddrrruurrurddulllddddrddluuuuuddddllurdruuullluuluurdrrdrrrdrudlddruluullddllluuddrrrddrddluuuuudllluuluurdrrdrddllluulurdddrrruurr",
+      "solutionPushes": 46,
+      "searchNodes": 2250
+    },
+    {
+      "id": "microban-76",
+      "source": "microban",
+      "sourceNumber": 76,
+      "solution": "rddrddrrrruulduuuurrdluldddrddlruuudddllldlurrrruuuluurrdlddddlllludrrrruuuuuldrddddlllluluuuuurrddddlddrrrruuldrdllldluuluuluuurrrddddlruuuulldlddruluurrrddddldluluurudlddruuluurlddrddrddrrruuruuldddrdllldluuluuuluururrdddddldluluuuurrllddrulururrdduulldddlddruluuururrddduuulldrurddulldlddruulurrurd",
+      "solutionPushes": 56,
+      "searchNodes": 571
+    },
+    {
+      "id": "microban-85",
+      "source": "microban",
+      "sourceNumber": 85,
+      "solution": "luuuurrurrdrullldllurdrrurrdllllurrllldddduuurrrrrurrdllllurrdrruuldrdllulldlurrrdlullllddddldrrrrlddrruulllluuuuurrdlurrrdllullddddldrrruurrddlruullddlluuuuurrdlulddddldrrrllddrrrruuurulddddlllluurrdullddrr",
+      "solutionPushes": 57,
+      "searchNodes": 898
+    },
+    {
+      "id": "microban-78",
+      "source": "microban",
+      "sourceNumber": 78,
+      "solution": "uurruulldrurrrddduuulllddrrlluurdldruurrdduullddrlullldrddrrrrrrlllllluuuurrrrdrdlduuullddrluurrddllurllldddrrrrlllluurlddrrrrrllllluuurrrdrduluurdllldlddrrrdrruldllulluuurrrrdullldrllddrrdrruldlluluuurrrrdduulldllddrdrrurdlllurlluurrrurdd",
+      "solutionPushes": 35,
+      "searchNodes": 439
+    },
+    {
+      "id": "sasquatch-4-21",
+      "source": "sasquatch-4",
+      "sourceNumber": 21,
+      "solution": "uluulldldlddrrurldlluurururrddrddlulldllurrrrdddlluulurrldddrruurrddrrudlluullddlluuuluurdldrdddrruurruuldrdddrrururuulldlrurrddldldlluuluuruurrddrdluuullddlddrudddrrurudldlluuuuddddrrururuulldlrurrddldldlluuluurdrrurrdlllruuulldurrdddrddlurul",
+      "solutionPushes": 32,
+      "searchNodes": 825440,
+      "solutionId": 672,
+      "boxSwitches": 18,
+      "difficultyScore": 224.2740278691404
+    },
+    {
+      "id": "sasquatch-1-21",
+      "source": "sasquatch-1",
+      "sourceNumber": 21,
+      "solution": "luulllddlldlluurlddrrulurdrruurrrddllllluurlddrruldrrrruuldrdlllululdrrdrruulldllllllulldrrlddrrlluurrrlllddrrrllluurrrrrlllllddrulurrrrlllddrrudlluurr",
+      "solutionPushes": 36,
+      "searchNodes": 237044,
+      "solutionId": 700,
+      "boxSwitches": 17,
+      "difficultyScore": 216.2740071849791
+    },
+    {
+      "id": "microban-92",
+      "source": "microban",
+      "sourceNumber": 92,
+      "solution": "uuullllllrrddllulurrrrrrllllldlldllurrrurrrddllulurddrruurrrruurrddlruullddllllddlluurrrrrlllllluluurdddrdlldllurrrurrrddllulurddrruurrrrddrruulrddlluullllddlluurrrrrrddrruulrddlddluu",
+      "solutionPushes": 50,
+      "searchNodes": 386
+    },
+    {
+      "id": "sasquatch-7-19",
+      "source": "sasquatch-7",
+      "sourceNumber": 19,
+      "solution": "ulullddldurduuurrdlullddrdrulluurrrdrddlruulullldddldlluuurrlldddrruuddllurdldlddrudrruluddlluururd",
+      "solutionPushes": 16,
+      "searchNodes": 1460,
+      "boxSwitches": 15,
+      "difficultyScore": 168.5637023140175
+    },
+    {
+      "id": "sasquatch-2-1",
+      "source": "sasquatch-2",
+      "sourceNumber": 1,
+      "solution": "lllldrullldrrllddrrrruurullrdddlllluurrrlllddrrrruullluuuuuulldrurdddddldrrllddrrrruuruuulluullrrddrruulrdddddlddlllluurrrurldlllddrrrruullluuuuuulldrurdddddldrrllddrrrruuruldddlllluurrrlllddrrrruullluuuuurrddrruulllrrrddduuullllulldrurdddd",
+      "solutionPushes": 45,
+      "searchNodes": 8950,
+      "boxSwitches": 16,
+      "difficultyScore": 183.6391657650549
+    },
+    {
+      "id": "sasquatch-7-10",
+      "source": "sasquatch-7",
+      "sourceNumber": 10,
+      "solution": "urlddrurrrdddlluuddrruuuurdlllrrrrruuulllldldururrrrdddllldddlluulluurlddrrddrruuurrruuullllddrdddrulurddldlluurlddrruruuulluurrrrdddlruuullllddrdduullrrddlluruuldrddllluurrllddrrruu",
+      "solutionPushes": 23,
+      "searchNodes": 7067,
+      "boxSwitches": 18,
+      "difficultyScore": 170.93543162275807
+    },
+    {
+      "id": "sasquatch-4-3",
+      "source": "sasquatch-4",
+      "sourceNumber": 3,
+      "solution": "ldddldruuuurrdrdluullddddrrrllluuuurrdrrrdlullullddddrrrdruuuruuulldlddlruururrdddlddlllluurrrluurdrlldllddrrrruurullrdddlllluurrruuurrdulldddlllddrrrruuluullldddldrrrrdrulllluurrrrruldllllddrrrrudlllluuuurrrurrdulldlllddddrrrruu",
+      "solutionPushes": 37,
+      "searchNodes": 8278,
+      "solutionId": 588,
+      "boxSwitches": 21,
+      "difficultyScore": 185.0762040166634
+    },
+    {
+      "id": "sasquatch-6-5",
+      "source": "sasquatch-6",
+      "sourceNumber": 5,
+      "solution": "rddrruruuulluldrrrdddldlluulluulldldddrrdruuulluldrrrrrddrruruuulllddrrdrullllllluurrdullddrrrrrrddlludrruullllrruurrdurrdlulllddddrrurudldlluullddlluuddrruulrddllllurdrrruurrddrrurulddlluuuurrdduullddrluurrrrdl",
+      "solutionPushes": 36,
+      "searchNodes": 6115,
+      "boxSwitches": 16,
+      "difficultyScore": 176.89186345680403
+    },
+    {
+      "id": "sasquatch-5-4",
+      "source": "sasquatch-5",
+      "sourceNumber": 4,
+      "solution": "uuuuuldrddddldlluluuruurrurdddduuulllddlddrdrrululuuurrrdddrdluuuulllddlludrrdrddluluruuurrrddlurdddldlluuuuurrurdddduuullldddddrrurldllurluuuldllurdrruurrrddddldlluuullurdrdddrruruuuullldduurrrddddldlluludrdrruruuuulllddlddrrlluuulluurdlddrluurdrrddldruuuldulldrrurdduld",
+      "solutionPushes": 44,
+      "searchNodes": 34421,
+      "boxSwitches": 26
+    },
+    {
+      "id": "sasquatch-4-2",
+      "source": "sasquatch-4",
+      "sourceNumber": 2,
+      "solution": "luuuurrrlllddrrrllduluurdurrrurrdldddllulldluruurrrlllddrrdrrulllluurrrurddullllddrrrruulllllldrurrrrrddlllldlddruulurrrdrruuullllddlddruluruuld",
+      "solutionPushes": 32,
+      "searchNodes": 3111,
+      "solutionId": 596,
+      "boxSwitches": 14
+    },
+    {
+      "id": "sasquatch-7-17",
+      "source": "sasquatch-7",
+      "sourceNumber": 17,
+      "solution": "ldllddddluruulrurrrddlddrudrrulldluddlddlluruudddruluuluuruurrrdddlddlruuruuulllddlddrurlddrddluurrururrdluluuulllddllluurdldrrdrddrddluurruruuuullldduurrrdddrrdlluuuulllddllur",
+      "solutionPushes": 36,
+      "searchNodes": 20703,
+      "boxSwitches": 22
+    },
+    {
+      "id": "sasquatch-5-7",
+      "source": "sasquatch-5",
+      "sourceNumber": 7,
+      "solution": "ullllllllddrururrdlrddluururrdlurrrdlullldlddrruururrdlrddluuruldllddllurlurrlddrululllruuuruulddddldrldlluurrlldrr",
+      "solutionPushes": 33,
+      "searchNodes": 36084,
+      "boxSwitches": 18
+    },
+    {
+      "id": "sasquatch-1-11",
+      "source": "sasquatch-1",
+      "sourceNumber": 11,
+      "solution": "rrrdduullddddlluuururrrddlruulldlldddrrrrrruullduuulldlldddrruuudlulduruuldllddrrurrdddrrlluuululdrrdddrruuuulldlldruluurdrrrddddlluurlddrruurrddlruullllddrdrulluulluurrddllurdllluurlddrruruuld",
+      "solutionPushes": 30,
+      "searchNodes": 49352,
+      "solutionId": 362,
+      "boxSwitches": 20,
+      "difficultyScore": 197.95425081695856
+    },
+    {
+      "id": "sasquatch-4-13",
+      "source": "sasquatch-4",
+      "sourceNumber": 13,
+      "solution": "lluuuuurrrrrllllllldrurrrrrrdddddllllluuuulurdddddrrrrruuuuullldlrurrruuldrddddddllllluuuurrurrurdllldllddddrrrrruuuludrdddllllluuuurrurrddrdddrruldlllllluuuurrurrddrddrdluuuluulldllddddrrrurldlllddruluuuuurrurrddrddlldllrrurruuluulldllddrduluurruuldrdlurrrddrruldludrddllddrulur",
+      "solutionPushes": 28,
+      "searchNodes": 1036671,
+      "solutionId": 696,
+      "boxSwitches": 19,
+      "difficultyScore": 244.91764035582548
+    },
+    {
+      "id": "sasquatch-4-11",
+      "source": "sasquatch-4",
+      "sourceNumber": 11,
+      "solution": "llllldlddldruuururrdrrddddrddluuuuuulldddlddrrlluuruulddduuuruulldldddrluuururrdrrddddrddlulldllurrllururuuldduururrdddduuuuruldlldddlduuuruulldldddrluuururrdrrulllrdrrddddrddluuuuuullddldldddrrurldlluuuruururrruldlldddllddrluuruururruldldddllddrrlluuruururrddddrddluuuuuulldddllddrrrllluuruururrddddrddluudlllluuruururulddddllddrrrruuddlllluuruururrrulldldddllddrrrruuudddlllluurdlddrrurruuuuddddlldllurrrlluuuurururrdlddddrddluuuuuurul",
+      "solutionPushes": 65,
+      "searchNodes": 75852,
+      "solutionId": 629,
+      "boxSwitches": 31,
+      "difficultyScore": 264.0545931000121
+    },
+    {
+      "id": "microban-88",
+      "source": "microban",
+      "sourceNumber": 88,
+      "solution": "rrruulduruulduruuldrddlduruuldrddddlldllurrrruulduruuldduuuuurrrdddddddldluuuuuudddddlldllurrruruuldduuuuuurrrdddddddldluuuudddlldllurrruuuuuuurrrdddddddldluuluuuurudlddrudlddruluurudlddruluuuurrurdddddduuuuulllddrudlddruuluurrurdddduuulllddrulurrurdd",
+      "solutionPushes": 67,
+      "searchNodes": 2122
+    },
+    {
+      "id": "sasquatch-5-8",
+      "source": "sasquatch-5",
+      "sourceNumber": 8,
+      "solution": "ulllldddluururrdluldlddrruururrdlllddlluururrlldlddrruulldrurrrrrrdddldllllllluluuurldddrdrrrrrrruruuullllllurdrrrrrdddldllllllluluuuruuuruulddddrdrrrrrrrdddldllllllluluuulurddddrdrrrrrrruruuullllllddlururuldddruurrruuldrdllrrddlurul",
+      "solutionPushes": 33,
+      "searchNodes": 76594,
+      "boxSwitches": 18
+    },
+    {
+      "id": "sasquatch-1-9",
+      "source": "sasquatch-1",
+      "sourceNumber": 9,
+      "solution": "uullllldrrrurrdddlllrrruuulldrurrddldlddlluluuddrdrrululrddlururruruulllllldrrrurrrddldldllluuudddrruldlurrrruruullldlllurdrrurrrddldlllludrrrruruullldllurdldddrddluuuuururdllddrrrruruuldllulldddrrrrurulull",
+      "solutionPushes": 40,
+      "searchNodes": 66054,
+      "solutionId": 67,
+      "boxSwitches": 21,
+      "difficultyScore": 208.05690074615148
+    },
+    {
+      "id": "sasquatch-4-19",
+      "source": "sasquatch-4",
+      "sourceNumber": 19,
+      "solution": "lluuuluurrrlllddrdddddruluuuuluurrrddldlddrrruruulddrrrddllulllrrrudllldllluurrurdlllddrruudrrrurrrddlldlurrruulldlllrruuurdlddlluuurlddlduruuruulllddrdrddrruururuull",
+      "solutionPushes": 32,
+      "searchNodes": 442431,
+      "solutionId": 661,
+      "boxSwitches": 21,
+      "difficultyScore": 223.7754810515359
+    },
+    {
+      "id": "sasquatch-7-2",
+      "source": "sasquatch-7",
+      "sourceNumber": 2,
+      "solution": "ulldduuluurrdullddrddrruullddllurdrrruulldurrddlddllurlluurduludrruruuurrdluldllddrrrddlluuluurrdullddrddrruuluullddlddrluullddrluurrruuld",
+      "solutionPushes": 21,
+      "searchNodes": 5758,
+      "boxSwitches": 15
+    },
+    {
+      "id": "sasquatch-1-7",
+      "source": "sasquatch-1",
+      "sourceNumber": 7,
+      "solution": "ulldrrrrrrrllllllldduulldrurrrrrrrrruururrrddldllrdrruudrrulldlllluururrrdullldlddlruururrrddrdlllrruuullldlddllllrrrruururrrdddllurdllluururrrddrdlllurruullldlddllddlldllldlluruulururrddrurrrddlldlllrrrurruurlllllulldrrrrrrddlldllldluuulururrddlruulldrdrrurrrddlldlllluururrrrlldllllurrrrrlluurdldr",
+      "solutionPushes": 62,
+      "searchNodes": 1187585,
+      "solutionId": 699,
+      "boxSwitches": 29,
+      "difficultyScore": 279.89800280239047
+    },
+    {
+      "id": "sasquatch-1-13",
+      "source": "sasquatch-1",
+      "sourceNumber": 13,
+      "solution": "uluurrrrdrddddllrdlrddrdrddluuullullllluuddrrrdddrrrudllluuurrdruuuldrddddllluuurrllllluurdldrrrdddrrrurrddlulllluuurldddrrruuudddllluuurruurruuuulullllddlddddullurdddrrrdddrrruuluuurruuuulullllddlddldddrrrrldddrrruuludrddrruldlllluuulluluurdlddrrruurrllddllluurdldrrrrldddrrrudludlluuurulur",
+      "solutionPushes": 46,
+      "searchNodes": 14247553,
+      "solutionId": 703,
+      "boxSwitches": 24,
+      "difficultyScore": 286.82105462447436
+    },
+    {
+      "id": "sasquatch-4-20",
+      "source": "sasquatch-4",
+      "sourceNumber": 20,
+      "solution": "uuluuddrruuddlddrruldludlurruuuluulldldddldllludrrruruuururrrdduullldrlldddldlurruuurrrdrduluurddulllldddldllluruuludduuluurdrdurdullldrddrddluuuuddddrrruldlurrruuurrdulldddlllluuuluurddduurrdluld",
+      "solutionPushes": 36,
+      "searchNodes": 1352781,
+      "solutionId": 694,
+      "boxSwitches": 24,
+      "difficultyScore": 269.83748968968644
+    },
+    {
+      "id": "sasquatch-7-6",
+      "source": "sasquatch-7",
+      "sourceNumber": 6,
+      "solution": "llluururrrulddrullldrrurrruluulldduurrdddlldlluurlddrrurruuullddrdrullllddlddrrrrruuddllllluurrrruulllluurdldrddrrruululldrlddruuddrrulrurrdlduldllllddrulurrrllddrrrruuddlllluurrruulrrrdld",
+      "solutionPushes": 36,
+      "searchNodes": 48569,
+      "boxSwitches": 23
+    },
+    {
+      "id": "sasquatch-4-29",
+      "source": "sasquatch-4",
+      "sourceNumber": 29,
+      "solution": "drruurrruuurldddlllddllddrrrrrdrrruruuuuuuuulluldrrrddddddddldlllullllluurruurrrrruuldldlllddllddrrrrrdrrruruuuuuuuullldurrrddddddddldlllullllluurrrrrrrudllllluurrrurruuddlldlllddrruldrrrruuullddldruuurrddlldlluurlddrrulrrruulldlddllllddrrrrrdrrruruuuuuuuullrrddddddddldlllullllluurrrruururrddlldlllllddrrrrrdrrruruuuuuuuulldlduldurrurrddddddddldlllullllluurrrrrurruuudddlldlllllddrrrrrdrrruruuuuuuuullulddurrrddddddddldlllullllluurrrrrurruuuuddddlldlllllddrrrrrdrrruruuuuuuuulldllddduuurrddddddluruuuuuuuld",
+      "solutionPushes": 31,
+      "searchNodes": 721741,
+      "solutionId": 688,
+      "boxSwitches": 24,
+      "difficultyScore": 245.30561842865876
+    },
+    {
+      "id": "sasquatch-7-14",
+      "source": "sasquatch-7",
+      "sourceNumber": 14,
+      "solution": "lluulrddllullluurrrdrrddlldddrrudlluulurrruullduulllddrrddrddrruuurruullrrddlldddlluulurlulluurrrddlddrddrruuurruulllrrrddrruullllrrddlldddlluuluurdrrdddlluuddrruuullullluurrrdddrrrruulllrrrddllllullluurrrdrrrrddlldddlluuludrddrruuullrrrruurrddllllrruulllldduurrrrddlllrrruulllldlduruulllddrluurrrdrrrrddlllluurrdurrddlll",
+      "solutionPushes": 48,
+      "searchNodes": 24405,
+      "boxSwitches": 29,
+      "difficultyScore": 232.87474122401113
+    },
+    {
+      "id": "microban-83",
+      "source": "microban",
+      "sourceNumber": 83,
+      "solution": "urruuuululldddddrrruulurdddllluuurrdrdddlldluuudrrruululluurrduldrrddddllluuudddrrruuuulullldrddddrrrrdluuulurdddllluuurrlluurdurdrdduulllddddrrrdlulluuuurrrdddduulurdddllluuurrluurdrdduulldrlldddrrrrdlullluuurrdrdululldddrrrlllddrulurluuurrdrdddlruuuluurddddldruuuulllddddrlur",
+      "solutionPushes": 53,
+      "searchNodes": 829
+    },
+    {
+      "id": "sasquatch-4-4",
+      "source": "sasquatch-4",
+      "sourceNumber": 4,
+      "solution": "uruulduulllddrluurrrddrddlldludrddlulrruuldurrruulduuulllddrrlluurrrdrddddlluludrdddllurdruurruuuululllddrdddrrruuludrddllluuurudldddrrruuuldrddllddllururrruuuululrdddrddlllddlllurdrruurrudllddrudlllurruuuuluur",
+      "solutionPushes": 29,
+      "searchNodes": 40405,
+      "solutionId": 660,
+      "boxSwitches": 24,
+      "difficultyScore": 217.51140959128657
+    },
+    {
+      "id": "sasquatch-5-12",
+      "source": "sasquatch-5",
+      "sourceNumber": 12,
+      "solution": "lldrurrdullddddlddrrlluurrduluuuurrddldldduururuulldrddlddrudrruluddlluuudddrruulrddlluurrdrdddluruulullddlddruluururrdrddllrruulduulldruuuurrdluldddrduluuulldr",
+      "solutionPushes": 27,
+      "searchNodes": 45017,
+      "boxSwitches": 22
+    },
+    {
+      "id": "sasquatch-6-21",
+      "source": "sasquatch-6",
+      "sourceNumber": 21,
+      "solution": "rdrrulldldlddrurudlluurdulullldrdrluurrdlrrdrulluurduuuldldurrddlurddrruulrddllurdddluruulldldruurrdddldlurruuulldrd",
+      "solutionPushes": 22,
+      "searchNodes": 23477,
+      "boxSwitches": 20
+    },
+    {
+      "id": "sasquatch-3-5",
+      "source": "sasquatch-3",
+      "sourceNumber": 5,
+      "solution": "lulrdrrddldldllullllllluluuuururrrrrrrrdulllllllldlddddrdrrrrrrrdrrururuulldllllulllrrrdrrulllullddrrulrrrdrrrulllrrrrrddldldllullllllluluuuururrrrrrrrddrddllulurdlllurrddrrrulllullddrluurrdlrrrrrrddldldllullllllluluuuururrrrrrrrddrddllulurddrrullrrrrddldldllullllllluluuuururrrrrrrrddldrruluulllllllldlddddrdrrrrrrrdrruluuluullddrluurrdldruurrdlluruulllllllldlddddrdrrrrrrrdrruluuruldddrruruulrddldlluuuuuulllllllldlddddrdrrrrrrrdruuu",
+      "solutionPushes": 53,
+      "searchNodes": 929405,
+      "solutionId": 687,
+      "boxSwitches": 29,
+      "difficultyScore": 284.1297471648709
+    },
+    {
+      "id": "sasquatch-5-3",
+      "source": "sasquatch-5",
+      "sourceNumber": 3,
+      "solution": "lluuddrruldluruulluuurrddddullulldddrdrluluuurrdrrddluruuuullddlldddrdrdruurrdluuuuuulldddluruurrdddllrrddluruuuullddlllddrdrdrdruudlluluuddrdrruruuuuulldddluruurrdddllrrdddlllululuurrllddruddrdrruruulllrrrdddlllululuurdrrrrddlurullulrdrruuulld",
+      "solutionPushes": 41,
+      "searchNodes": 323,
+      "boxSwitches": 26,
+      "difficultyScore": 180.69925001442311
+    },
+    {
+      "id": "sasquatch-1-22",
+      "source": "sasquatch-1",
+      "sourceNumber": 22,
+      "solution": "rrddrruldlluurdrddrrrddlurulullddlllulrdrrrrluuulldrurrdrdrddluludrruldlllllululldrdrrrrrrlllllldddrrrrrrddrdrruluurrruuuuuullllllrrddduuullldlurrrrdddllurdlludlllldddrrrrrrddrluulllllluuuuurdlddddrrrrrrddrdrruluurrruuuuuulllllldulllur",
+      "solutionPushes": 36,
+      "searchNodes": 3173373,
+      "solutionId": 702,
+      "boxSwitches": 22,
+      "difficultyScore": 249.98793065168286
+    },
+    {
+      "id": "sasquatch-4-37",
+      "source": "sasquatch-4",
+      "sourceNumber": 37,
+      "solution": "dldlddrurruurdrruluullrrddlruulluruuldlldduurrdrdrdddllddrulururrdluuuluulllddlulldrrlddrrlddrululldruuuurruuldrrrrddrrul",
+      "solutionPushes": 30,
+      "searchNodes": 19274,
+      "boxSwitches": 22
+    },
+    {
+      "id": "microban-36",
+      "source": "microban",
+      "sourceNumber": 36,
+      "solution": "dllllllllllluurdldrrrrulldlluurdldrrurrdrrulllldrllluurdldrurrdrullldrurrrrdrrullllllrrrrrrdrrurrdlulldllullldrullldrurrrrdrrullllllrrdrullldrurrdrullldrllllluurdldrrrurrdlurrrdlurrrdlurrrdlulllllllldlluurdrrrdlurrrdlurrrdlurrrdlulllldlurrrdlurrrdlulldlurrrdll",
+      "solutionPushes": 65,
+      "searchNodes": 19226
+    },
+    {
+      "id": "sasquatch-6-6",
+      "source": "sasquatch-6",
+      "sourceNumber": 6,
+      "solution": "ulluullddrlldllrrurrrllldllulldrrurrruullldurrrddllluurrrrrddlrrddlludrruuluulllllddrrdrullluurrrrrddlruullllldddrrulluurrrrrddllrrrddlludrruuluulllllddrdrruldlluuurrrrrddllrrrdrruldldllulurdlllluuurrrdullldddllur",
+      "solutionPushes": 34,
+      "searchNodes": 7511,
+      "boxSwitches": 25,
+      "difficultyScore": 203.37490673826886
+    },
+    {
+      "id": "sasquatch-3-7",
+      "source": "sasquatch-3",
+      "sourceNumber": 7,
+      "solution": "uuurrudlddrurrdrrdddllldllurdrurrruuullullluurrdullddrddddrrrddrrruruuuuuuulullllulldurrdrrrrdrdddddddldllluuruuullulrdrrdddlllddlururrruuulldlrurrdddllludrrruuulldrurdduulluluuluurrdrrrrdrdddddddldllluuurrdluuulluluuluurrdrrrrdrdddddddldlludrruruuuuuuulullllullddrddldlluuurdldr",
+      "solutionPushes": 26,
+      "searchNodes": 19271,
+      "boxSwitches": 19
+    },
+    {
+      "id": "sasquatch-4-26",
+      "source": "sasquatch-4",
+      "sourceNumber": 26,
+      "solution": "rddurrllulldddlllddrrrrurdllllluurrruuurrdddrduuurrlldddduuuurrdddlruuulllulldddlllddrrrrrrurruuulldlddrrrduuuururrdllllrddddduuuuulldlddldlllluurrruuurrddurrrdddddrddluuuuuuddlllldlllluurrruuurrddduuulldddlllddrrrruruuurrrrurrdllllldlddldlllluurrruuurrdrrrdddlldlllrrrurruuullddldldlllrrrururuurrdddlldllrruulduruuldrddlldllrrurruuldrddlllrrruuldldlddrrruuddllluururuuurrrdddlldllrruuldrdlurrruuldululddrrrdlulduld",
+      "solutionPushes": 75,
+      "searchNodes": 485702,
+      "solutionId": 666,
+      "boxSwitches": 38,
+      "difficultyScore": 318.4485743589825
+    },
+    {
+      "id": "sasquatch-4-9",
+      "source": "sasquatch-4",
+      "sourceNumber": 9,
+      "solution": "rrdldddrdrruuuruuldrdddldlluuluurdlddrdrruuruuldurrrdddrddluuruuluurdllldddldlldlurrruruuurrrdullldddldllludrrruruuurrdrduullldddldlluluddrrruruuurrdrddluruullldddlddrullluluudddrrrruuudddllluluurdlddrrruruuldrddlllluuuruulldrddddrrrruuulurddddlllluurdldrrrdruuuldrdllldluudrrruuuurrrlllddddlluuuluurddddluddrrrdruuluuurrrurddullllddddlluuluruulldrddddrrruuuurrrrdduullllddddlluuuluurddddldrrrdruluuuurrrrddlurullluldrrrdddddrruldluuuruuldullldurrrdrdduuulllldduurrrdrddluuddddrruldluruuuulllulddurrrddrddluuurullluld",
+      "solutionPushes": 90,
+      "searchNodes": 275073,
+      "solutionId": 646,
+      "boxSwitches": 38,
+      "difficultyScore": 324.34730128485427
+    },
+    {
+      "id": "sasquatch-1-4",
+      "source": "sasquatch-1",
+      "sourceNumber": 4,
+      "solution": "dddlludrullllluurrdullddrruulllldrurrrddlldlurrruuldrddldduururrlldlddrdlluldurruuruulddddrdlllullddrulurrdrruuuulldruruuldrddddrdlllullddrulurdrrruuullururddddrdlllrruuuurrrdrrulllldldddllluldldrurrrruuuluurddddrdllllullddrurrrruuuurrrrruulldurrddllllulddddrdluuuurrrrruldllldldddlllldlurrrrruuuurrrruuldrdlllulddddrdluuuuuullldrrurdlddrdddlllrrruuuluurddddrdlll",
+      "solutionPushes": 95,
+      "searchNodes": 4839852,
+      "solutionId": 524,
+      "boxSwitches": 24,
+      "difficultyScore": 323.03265899383956
+    },
+    {
+      "id": "sasquatch-4-12",
+      "source": "sasquatch-4",
+      "sourceNumber": 12,
+      "solution": "uuuluuullullddldlddrluururrdldddddrddlluruuuulluururuurrdrrdddrddludrddlulrruuldldlldluuulluururrdluuurrdrrdddrddlldllluuuuuuddddddrrrurruuluuulluullldrurrddrrdddrdddllurruuldrddlllrrruulduuuuulluullddddrrdrlululuuurrddrrdddrddlldlldluuuuuudrrdrrrdddllllrrurruuldrddlllldluuddddruluuuuddrrrrruuldldllluulluururrdrdrrddrdllllrruruullululldlddrrdduulluururrdlddlluururrdrdrrdddlllludrrruruullululdrrdrruuulluulldduurrdluld",
+      "solutionPushes": 66,
+      "searchNodes": 168742,
+      "solutionId": 650,
+      "boxSwitches": 34,
+      "difficultyScore": 284.82234065115694
+    },
+    {
+      "id": "sasquatch-1-16",
+      "source": "sasquatch-1",
+      "sourceNumber": 16,
+      "solution": "luluulrdddlrdduullrrdddrllddrururldlluruuulldrurduuuululldrdrurdulllldrurrdrdrddlduruuluullldrurrddrdluuulldrurdulluurdldrdrdrddluuddllurdrudllllurrrdrddlddruuuddrruldldddrdrrululdludrrrrulldlluuluruddddrruldludrrddlurulululuurdduurrdluldurrrrdrrulldlruldlruldlrul",
+      "solutionPushes": 68,
+      "searchNodes": 54266972,
+      "solutionId": 705,
+      "boxSwitches": 45,
+      "difficultyScore": 386.46785550959623
+    },
+    {
+      "id": "sasquatch-3-1",
+      "source": "sasquatch-3",
+      "sourceNumber": 1,
+      "solution": "lurdrddddddllddrrudllullurdrdrruuuuddddlluluuuuurudldddddrdrruuuuruulddddllrruuuuuululldrddlddddrrruuuuuurullrdddddddllluuuuruururdlllurrdrdduullddlddruuudddlddrrruuruuluululldrddddlddrrruuruuluurullrdddrddlddllddrululldrruluuuuruururrdlddrddlddlldlluruuuuruururdllddddldddrdrrudlluluuuuuruulur",
+      "solutionPushes": 42,
+      "searchNodes": 177895,
+      "solutionId": 640,
+      "boxSwitches": 23,
+      "difficultyScore": 228.20337273170065
+    },
+    {
+      "id": "sasquatch-1-3",
+      "source": "sasquatch-1",
+      "sourceNumber": 3,
+      "solution": "luuuuurrrdddrrrululrddlluurulllulddddddrdllullddrulurrdruuuluruurrrdddruruldlurullluldddldruuurrrdddrrrrrullldluruldlurulllulddddddrdllullddrurullrrruuuuurrrddrrrrullldlurulllulddddddrdllullddrulurrrrluuuuurrrdrrrulllllulddddddrdllllurrruuuuurrrrrrurddlddrruldluurullllllulddddddrdllullddrururuuuuurrrrrrururuuldddddlddrruldluurullllllulddddddrdllldlurruruuuuurrrrrruruulddrdllllllulddddddrdlllruruuuuurrrrrrrruuluurrdluldddrdlllllllulddddddrdlluruuuuurrrddrrrrruuuuluurrdluldddrdlllllllulddddddrdlrrrulll",
+      "solutionPushes": 195,
+      "searchNodes": 0,
+      "solutionId": 62,
+      "boxSwitches": 12,
+      "difficultyScore": 281
+    },
+    {
+      "id": "sasquatch-4-23",
+      "source": "sasquatch-4",
+      "sourceNumber": 23,
+      "solution": "ululuuruuldrdduullllrrrrddddrdluuuuulllldlrurrrrdddddlruuuuulllldldlddrddrrrurruuulludrdrddlldllluuluurururrrurdlllldldlddrrrdrdlurrruuulluurrddduuuldrdddrdllruuuuulllldldldllurururrlldlddrurururrdrruuldllldldllururrrrrlllllddrururrddrluulldldlddrddluurrrddlruullluluurrrurrddrdrddllrruululuurdrdduulullldlllddrdrrrdullluluurrrurrdrrdddrdluuuulullldlllddrddddruluuuluurrrurrdrrddddllrruuuulldrurdddrdllruuuulullldlllddrdddrrrudllluuuluurrrurrddrdrddllrruuuuluurdddduuulllldllurdllddrulururrllddrururrddrdrduuuuuldrddddrdllruuuuulllldllurrrrrdldrurduluurdlddrdduuluurdlddrdrdluuluurdduuulllldldlddrduluuuurrrrddrdrduuuulllldldlddddrr",
+      "solutionPushes": 98,
+      "searchNodes": 16161761,
+      "solutionId": 673,
+      "boxSwitches": 56,
+      "difficultyScore": 425.7304057873996
+    },
+    {
+      "id": "sasquatch-4-6",
+      "source": "sasquatch-4",
+      "sourceNumber": 6,
+      "solution": "drrrrruuuurrdllrrrrrddlurullldrulullddrlddruluuullddrluurrddduuurrdlulllddrrdruddlllrruulluurrddrddllllrrrruuluurrdldddllllllluuuuullldddddrdruuuudddrrrrrrrruulduruuldrdddllllllluuuuullldddddrdrurrrrrrruruuldrddllllluulluluddrddludrrrrrrrruuldrdlllllulldllluuuuurrurddullldddddrruuddlluuuuurrdrddludrrdrdluulldrurrddlluuuuullldddddrdruudrrrrrrruuurrrdlulldddlllluulluludrdddrrrrrruuurrdluldrddlllllllllluuuuurrddrdddrrrrrrruuldrdllruullurdrddllllllrrrrrruuluurddrddllllllluluruuluurdllldddddrdruruuludrddllluuuuurrrdullldddddrrrrrrrrrruuldrdllllluullluuddrddludlluuuuurrlldddddrrururrddlruulldluddlluuuuurrdrduluurdllldddddrruuurdlddlluuuuurrrdullldddddrruuuuddddlluuuuurrdddrrrddllrrrrrruuurrrrrdllulldddllllluullluurdululldddddrdrurrrrrrruuurrrdlluldrddlllllllllluuuuurrurdllldddddrruuuuddddlluuuuurrdddrlddrrrrrrrruuldrdlllllllluuuuulldddddrdrurrruulrddllluuudddrrruulluludrdrrddllluuudddrrurullrddlluurrdldlu",
+      "solutionPushes": 138,
+      "searchNodes": 3235144,
+      "solutionId": 658,
+      "boxSwitches": 67,
+      "difficultyScore": 477.1269947247003
+    },
+    {
+      "id": "sasquatch-4-27",
+      "source": "sasquatch-4",
+      "sourceNumber": 27,
+      "solution": "ullllldurrdurrrddludrrrdddddrdlllrruuuuuulululddrrrddddddllluuuurudldlllullluurruurrdrrlluurdrddrluulldrulllddllddrrrdrrurrurldldddlduruuululuuddrddrdddddlluruuruuululuururrdulldlddrddrdddlddruluuruuululuururrdrdrdulululldlddrddrddlddruuuuluuluururrdrdrdddddrdlllrruuuuuulululldrllddrddllullluurrrluurrdrrdrlullullddllddrrrdrruululluurrurdrddrddlrurluluurdrdrdddddrdluuuuuulululllllddllddrrrdrrrddlddruuuulllullluurruurrrrdrrdrddddddllrruuuuuulululllllddllddrrrdrrrddlddrurrruuuuuululldrdrluurdrdddddrdlllluldrddllururrrruuuuuulldrurddduuulululllllddrrurrdrdrrddddrdllllulddurrrruuuuuullluurdrddrdddddlllldldruurrrruuuuuululllldlluurrdrrdrurdulllluurdrddrdrurddddduuuuulululllddllllddrrrdrrrdulllullluurrrrurrdrdrrddddrdluuuuuullluurdldrdrrdddddllrruuuuulluurdrddddddlllrrruuuuuulldrurdulullllddrdulullllurdrrruulldldlddrrrdrrllullluurrrlllddrrrdrruuluudlluurrurdrddrdrrdduuululullldrrdrdrrddddrdluuuuuullluurdldrdrrdddddlruuuuulldlrurrdddddllrruuuuulluurdldrurdddddrdluuuuuulullllddrdrdululullllddrrrdrrurrurrdddddl",
+      "solutionPushes": 151,
+      "searchNodes": 19488455,
+      "solutionId": 680,
+      "boxSwitches": 74,
+      "difficultyScore": 534.0805822990803
+    }
+  ],
+  "legacySha256": "c53341e1d5ea45052bf1ddae36bbe620dec5ac3d7baad4c0234b29858568121c",
+  "excluded": [
+    "sasquatch-7-11",
+    "sasquatch-7-12"
+  ],
+  "exclusionReason": "Original source marks these as derived from SokHard; omitted to keep author provenance unambiguous.",
+  "previousOrder": [
+    "microban-44",
+    "microban-2",
+    "microban-21",
+    "microban-30",
+    "microban-31",
+    "microban-56",
+    "microban-5",
+    "microban-40",
+    "microban-25",
+    "microban-4",
+    "microban-52",
+    "microban-1",
+    "microban-51",
+    "microban-38",
+    "microban-34",
+    "microban-46",
+    "microban-17",
+    "microban-28",
+    "microban-24",
+    "microban-32",
+    "microban-9",
+    "microban-26",
+    "microban-14",
+    "microban-33",
+    "microban-27",
+    "microban-23",
+    "microban-58",
+    "microban-12",
+    "microban-45",
+    "microban-15",
+    "microban-53",
+    "microban-3",
+    "microban-41",
+    "microban-18",
+    "microban-48",
+    "microban-22",
+    "microban-42",
+    "microban-20",
+    "microban-11",
+    "microban-50",
+    "microban-19",
+    "microban-13",
+    "microban-49",
+    "microban-61",
+    "microban-10",
+    "microban-43",
+    "microban-47",
+    "microban-29",
+    "microban-57",
+    "microban-37",
+    "microban-55",
+    "microban-39",
+    "microban-6",
+    "microban-62",
+    "microban-54",
+    "microban-35",
+    "microban-8",
+    "microban-16",
+    "microban-60",
+    "microban-59",
+    "sasquatch-2-34",
+    "sasquatch-4-1",
+    "sasquatch-4-10",
+    "sasquatch-7-19",
+    "sasquatch-1-8",
+    "sasquatch-7-10",
+    "sasquatch-7-5",
+    "sasquatch-6-5",
+    "sasquatch-5-3",
+    "sasquatch-4-7",
+    "sasquatch-2-1",
+    "sasquatch-4-3",
+    "sasquatch-1-11",
+    "sasquatch-6-6",
+    "sasquatch-1-9",
+    "sasquatch-1-21",
+    "sasquatch-4-21",
+    "sasquatch-4-29",
+    "sasquatch-1-22",
+    "sasquatch-4-20",
+    "sasquatch-4-4",
+    "sasquatch-1-15",
+    "sasquatch-4-19",
+    "sasquatch-3-1",
+    "sasquatch-7-14",
+    "sasquatch-1-20",
+    "sasquatch-4-13",
+    "sasquatch-4-11",
+    "sasquatch-1-7",
+    "sasquatch-1-3",
+    "sasquatch-3-5",
+    "sasquatch-4-12",
+    "sasquatch-1-13",
+    "sasquatch-4-26",
+    "sasquatch-1-4",
+    "sasquatch-4-9",
+    "sasquatch-1-16",
+    "sasquatch-4-23",
+    "sasquatch-4-6",
+    "sasquatch-4-27"
+  ],
+  "previousLevels": [
+    {
+      "id": "microban-44",
+      "sha256": "f798003467865258cec60a3ee5d7a67822508f6e840b99688d5d8c01352405ba"
+    },
+    {
+      "id": "microban-2",
+      "sha256": "6e1458ccfc8498c8b5f0f62e17e6b56f7508e0faffea8d1d997578dc634ffbcf"
+    },
+    {
+      "id": "microban-21",
+      "sha256": "161c313bd1ed1e5e919f9578ff2eaa5aa56ddf4a901d030aac19d7290eb34493"
+    },
+    {
+      "id": "microban-30",
+      "sha256": "5e21b84603a0bca675041db6cf9803c22cad06c914dc5ec0a3679e77c54728b0"
+    },
+    {
+      "id": "microban-31",
+      "sha256": "c9254d570cb75324df5d3996d2f41b97f7bc3e046b6eba4d5272c3eff18a694a"
+    },
+    {
+      "id": "microban-56",
+      "sha256": "a3eabcb12145658cef2b802f749f6f4d4973a09e8bebbff8e8edd5902ee01e1e"
+    },
+    {
+      "id": "microban-5",
+      "sha256": "a424b5ae119d2993cfde8995eec195fb52fa493d8257454772aa50ddd1f1eb6d"
+    },
+    {
+      "id": "microban-40",
+      "sha256": "cd29bc0867ab852046128df75089812a6c9f7af2c01bcd4d7ae5c551207b70a3"
+    },
+    {
+      "id": "microban-25",
+      "sha256": "8e5de22e6d15219bc9b26301a2d4bfaba84c8ad5c4dfbcfc9edf6784e280bf07"
+    },
+    {
+      "id": "microban-4",
+      "sha256": "cdcb165bbad2aa30bc0065c4a179ba49b2ad2397dfc425bce68c6ab1824718cf"
+    },
+    {
+      "id": "microban-52",
+      "sha256": "caf155b82af06a0cc976bac90627b5e3dadaf923791fa6a5630c3b5b5ee53967"
+    },
+    {
+      "id": "microban-1",
+      "sha256": "e544cabc44b2ff53837af5097500f5daeeaa23f14f68ee6f8adc070a9250c968"
+    },
+    {
+      "id": "microban-51",
+      "sha256": "f66fc2e2a9bad030d69816f2a342de8a70dc045b7410dfef886b01f47a6cfdd6"
+    },
+    {
+      "id": "microban-38",
+      "sha256": "00b8dc9c59336e9d829ff37c30bfe9c1873612d42d4c9da4795b829b352b6b56"
+    },
+    {
+      "id": "microban-34",
+      "sha256": "2605cc07b8f60790a345c2dd6425ef97e4cedca641e8527cde4ba64b1fd99e26"
+    },
+    {
+      "id": "microban-46",
+      "sha256": "044a82fe6acfa35e0f68cc3e8d59499dfd78c1cf19a28db922c4f92b67938511"
+    },
+    {
+      "id": "microban-17",
+      "sha256": "5d3f28aaa1f5325a6f4daadedcea56988e226821f1482a8be7bb049503ca3a9d"
+    },
+    {
+      "id": "microban-28",
+      "sha256": "6f5224dbed53a4cbe4f3b7b41f7b26ba9d209fb5fe0de3342e659167365d0b24"
+    },
+    {
+      "id": "microban-24",
+      "sha256": "eb3a047129f4cd57dd2666950a3090f78fc16cb72f8995426c4a594fa005f838"
+    },
+    {
+      "id": "microban-32",
+      "sha256": "94a8ce01e116753f53422286d930cbbab00c42d4d19458423bc7ebcc81547d58"
+    },
+    {
+      "id": "microban-9",
+      "sha256": "d2ef3b292e04eb00fb37cbbe4acc70f8a7fe8564e46066afe6afdb6796d14133"
+    },
+    {
+      "id": "microban-26",
+      "sha256": "43dcc8b4a32860a0ad4f0d9700a04683a6a078ce1d7888e6cff569c00ad80155"
+    },
+    {
+      "id": "microban-14",
+      "sha256": "32fedc99387ba0f35588cd9a0baff4fa67551b6bb354714fedcffe7c823326e5"
+    },
+    {
+      "id": "microban-33",
+      "sha256": "83b7cec8b91563bedcf015f77f62d8fbe2356fb389c0e5f063c68f72aa65a3f4"
+    },
+    {
+      "id": "microban-27",
+      "sha256": "14ab74ec8bc61345d8ea8a346bee2ab491273022a1279c9539718c3acdc857c9"
+    },
+    {
+      "id": "microban-23",
+      "sha256": "91fd8726d8d2083c2fec1eef0bc2b4508fd8ac25740991f62afc917d9d0129d0"
+    },
+    {
+      "id": "microban-58",
+      "sha256": "de9b3e999f7653f226a044e0fe62a122e84809587eafbfe7ffe7eca5c0b83e81"
+    },
+    {
+      "id": "microban-12",
+      "sha256": "7e30c3184c3a467352f61d30ec64bda813a26cceda337301b9f04e14c717a0fe"
+    },
+    {
+      "id": "microban-45",
+      "sha256": "04a4f52e2dde28b5f68bb256e560cc82ea3c1997e3ad5097da067e6dc0736169"
+    },
+    {
+      "id": "microban-15",
+      "sha256": "cbab063385c48b55c0e3e1a75bf00fea9764af3d90375937c3ad435e1f9a6387"
+    },
+    {
+      "id": "microban-53",
+      "sha256": "66821336bee67380fcba6cde4a465b84e2e9ebd9246c40b60dc2962e7eeea4ca"
+    },
+    {
+      "id": "microban-3",
+      "sha256": "326ff3c69e1fb79bcb33b15aed262ff97e8fbd775a783e44266296f4d333f550"
+    },
+    {
+      "id": "microban-41",
+      "sha256": "7053b25eb86bc62a85c4e147f140da66856fb1fc485d84cc15af63d04472e867"
+    },
+    {
+      "id": "microban-18",
+      "sha256": "3988ab83de41fdf0272ef5e558392efd03a4e9354e742929fd1f4acadb877308"
+    },
+    {
+      "id": "microban-48",
+      "sha256": "f1b5b9374df6858a768772fcca3ee866575545a871fffda2aba04594fa6aa964"
+    },
+    {
+      "id": "microban-22",
+      "sha256": "413a2f753e8dd044a84ee5dfe0a1bd9a48ad5bed57e9b533fa3fc91eff9ab451"
+    },
+    {
+      "id": "microban-42",
+      "sha256": "0ce711579e47be944056cbdf549dbb7d665d25d3c09956d5beb4d8dc72e7ad53"
+    },
+    {
+      "id": "microban-20",
+      "sha256": "0f288caa3bb894b1aa952b6b308e7e7339ae307e818a401dab86889afa53b5fa"
+    },
+    {
+      "id": "microban-11",
+      "sha256": "203b055937293e5a56eab9dcde9a1fb12d746fe873939fd378e48f18a50c482e"
+    },
+    {
+      "id": "microban-50",
+      "sha256": "f22708ffa1822213021273795f96f4e34ac2f4fb48085f17e0e417b16fcb7432"
+    },
+    {
+      "id": "microban-19",
+      "sha256": "3a43af71c3888640b1aafc525d7dffe9f100ecaea057f9488682f2b9393dac3a"
+    },
+    {
+      "id": "microban-13",
+      "sha256": "fb34ae133d9d7b6a7ca25096b1f9de4cb8bb70d5cc33daee5d09cc8238574c3c"
+    },
+    {
+      "id": "microban-49",
+      "sha256": "c0c89c6b85b4dafc9305060335c4759580827c89ce6840bcb050f9b3dd24ae51"
+    },
+    {
+      "id": "microban-61",
+      "sha256": "84b26fa4c307051cbff4b4f957c970e487a7299c01118426466b23dfa10f5d81"
+    },
+    {
+      "id": "microban-10",
+      "sha256": "45892783dc0b164c4e5ce93526bb9d15ebd7337334dd41dd250331381a923d5e"
+    },
+    {
+      "id": "microban-43",
+      "sha256": "51c9988a080d051e48815beab5d971e62277203575b6167419b8b32ab26b22e4"
+    },
+    {
+      "id": "microban-47",
+      "sha256": "8a476c67936af53404590bc802d02453fdee75259fafdbe4bdff9c16f26c6a8a"
+    },
+    {
+      "id": "microban-29",
+      "sha256": "c67baded0832134c8c166956c16ea417d47cfc3505476adcd4da67132324e319"
+    },
+    {
+      "id": "microban-57",
+      "sha256": "c87048d462126bf222e40d0aa23b8633107f970b1ce2cf8ebe8a0308b7d46dfd"
+    },
+    {
+      "id": "microban-37",
+      "sha256": "a3b3d21fcd55f6374aa300664e90e5f3ab36f4950c3e0a52316ee4d2ded98cb3"
+    },
+    {
+      "id": "microban-55",
+      "sha256": "bf45ca0299916a9a593110007b782732d9b46093eae9fe0a14c1c083fa2af996"
+    },
+    {
+      "id": "microban-39",
+      "sha256": "d3ba7001c3618b193e9bbd5a47300627b57d31d6dc0ad03635b4bf1ca37a920c"
+    },
+    {
+      "id": "microban-6",
+      "sha256": "3180f960bb74683b243b55017d3db7b0fc23e82f6b5c886756cf6eca8d8b832c"
+    },
+    {
+      "id": "microban-62",
+      "sha256": "5d95b71bd7678d9a433fcb14ac93203972f4550641949b020015e8fc796c245e"
+    },
+    {
+      "id": "microban-54",
+      "sha256": "affd2f9b62dcabb18b83fa2c724d8052b076a11b5125a0560b1d12b91252a113"
+    },
+    {
+      "id": "microban-35",
+      "sha256": "ad0c51cba6bdc85c1e9b1aef1e2fd814175265fd10ece86926c451bd4fc7b2df"
+    },
+    {
+      "id": "microban-8",
+      "sha256": "c063a56f24788fc9dbfe2314a8ba4d2d7a38fed8bb308626f78a11c84be7607c"
+    },
+    {
+      "id": "microban-16",
+      "sha256": "d04911b60eefef3f1a99becd815f2f1d25684d7a392658a51838ba434c44fb6b"
+    },
+    {
+      "id": "microban-60",
+      "sha256": "ca2d32d6115a7f7b1c41b805ea23674e40ff72d0f4389292d64b80874204ae66"
+    },
+    {
+      "id": "microban-59",
+      "sha256": "de8d2dca8c43054aab5de8fb4d2dcee3444e46a5f8a5768901b0bcf81611500c"
+    },
+    {
+      "id": "sasquatch-2-34",
+      "sha256": "0c1d829235cebd2b964d4f0fd5ea6f6f4b074627f4fe77a57062d4862ff64f2a"
+    },
+    {
+      "id": "sasquatch-4-1",
+      "sha256": "95737c53b42b6b254cc1b00103b87a112b1974560b494ddb82111e0372b0c469"
+    },
+    {
+      "id": "sasquatch-4-10",
+      "sha256": "9e496cd8dabf1d25baa1e49212624cb6ac29770afde57fa0d88c004847a7435e"
+    },
+    {
+      "id": "sasquatch-7-19",
+      "sha256": "a2a84c0bd1b6898f7d7257bbeab9810d417eaa61e71a9826745eb3ea2d9a2605"
+    },
+    {
+      "id": "sasquatch-1-8",
+      "sha256": "3d95bd47d094098507a4d2a653bb2d822900702d0a5fe8b50026538b08b86768"
+    },
+    {
+      "id": "sasquatch-7-10",
+      "sha256": "1d605fa566b7486ba01852c13427bd14d23cf6d95a61f16e706e72f8497b8438"
+    },
+    {
+      "id": "sasquatch-7-5",
+      "sha256": "4ee76b17029815cb96964a83c98966695fd353fa9961e037b2ad4dc476f15bcc"
+    },
+    {
+      "id": "sasquatch-6-5",
+      "sha256": "a2980eda505b6cc9fb51ffbe4afc754e8da25a99300eca489faec6d796a4ca19"
+    },
+    {
+      "id": "sasquatch-5-3",
+      "sha256": "0d4f21f3598c07663c9c696d193cf006d23d43bd4e21dc3758b7e597c30ea9f2"
+    },
+    {
+      "id": "sasquatch-4-7",
+      "sha256": "131e6d3df822c79aee7100a4b828531ecca0c1eb05ef0724dfed6315a2ae08ad"
+    },
+    {
+      "id": "sasquatch-2-1",
+      "sha256": "5d99e249f171c1d33784e159d9a053173a8169771a7e44342fae01e22e3614ca"
+    },
+    {
+      "id": "sasquatch-4-3",
+      "sha256": "502b5f7de1af41425fdc00e1638b40559ba4ae65b31c961df75be0d9005c0633"
+    },
+    {
+      "id": "sasquatch-1-11",
+      "sha256": "1335e2d8fa4b47db228df2ec7cb32b448a1e2f1d223c7f1a492256bb714ce8ae"
+    },
+    {
+      "id": "sasquatch-6-6",
+      "sha256": "f56fb44118ba2a81c3722fee3e0c40f02b43620b22caa121a9144e009f5c85f4"
+    },
+    {
+      "id": "sasquatch-1-9",
+      "sha256": "9728e86dbb55e8e13b6dfdd475a6a749037bc3495d966667af5b6021e0471bb0"
+    },
+    {
+      "id": "sasquatch-1-21",
+      "sha256": "7e15bbd7b3738db20caf3febcb7cbe07091177a45ae72dc766f1e7e3500da6c2"
+    },
+    {
+      "id": "sasquatch-4-21",
+      "sha256": "0175f7b32e46a48d9a2f8d02b9b1ae4627bf732bf1cebfd1d4ff3d792de046c8"
+    },
+    {
+      "id": "sasquatch-4-29",
+      "sha256": "12cdddcbb7ede1e48093048edf55847043f87e3d58856f965edc79b59fc8f335"
+    },
+    {
+      "id": "sasquatch-1-22",
+      "sha256": "3a1e557e955322f06bec77f5537479e64d6fc56d4c14fcd58f353ae87bdaf904"
+    },
+    {
+      "id": "sasquatch-4-20",
+      "sha256": "adc3bd3c9f14721bfe7daa890fcf28e5ad314757f58c4353d60948e3d36895ec"
+    },
+    {
+      "id": "sasquatch-4-4",
+      "sha256": "149e8b68c006c29d43c777201cb360461382a6c1d1553d7369c9437783a66587"
+    },
+    {
+      "id": "sasquatch-1-15",
+      "sha256": "cf7d81017fe3c8781bb05c885286c5bf296ea098320685a6c1a6737a8d83b2f9"
+    },
+    {
+      "id": "sasquatch-4-19",
+      "sha256": "c544009cb266d3712893b82c0f25819a223dcba0ad6a8ef880d4f6b4b269550f"
+    },
+    {
+      "id": "sasquatch-3-1",
+      "sha256": "a506236ba39dbe09747147ba581cc833a87d7e8a13e94a63f78e34cdec703a9d"
+    },
+    {
+      "id": "sasquatch-7-14",
+      "sha256": "bfedc5e3d8242da03fdfe24b17b0d2513f75836855e46d78546351283b29f171"
+    },
+    {
+      "id": "sasquatch-1-20",
+      "sha256": "02910cf553ec32998395ed1d929fbf7508f59e4a1df3c2c13029b1c21aedcd79"
+    },
+    {
+      "id": "sasquatch-4-13",
+      "sha256": "c98636d16230316ce3236a9df2d9d99349a1f333071d6f129799b93ff1905453"
+    },
+    {
+      "id": "sasquatch-4-11",
+      "sha256": "be362764e32071df3a676a00f0e75acdb9ad86317a7a91b1b9f3510a9f8ddd2f"
+    },
+    {
+      "id": "sasquatch-1-7",
+      "sha256": "75044e386df1a402558aa7e0fe52dd4c55a02748c31b6986af855c98df451b86"
+    },
+    {
+      "id": "sasquatch-1-3",
+      "sha256": "841fdb4da8e678c94810cce76c93a2ed544c6c08db87c0643cf3b4e8412c1c62"
+    },
+    {
+      "id": "sasquatch-3-5",
+      "sha256": "6caec9a9dc1665fd96b8f6567e409095012b14aa74c9f3531f3df1028f9cc53e"
+    },
+    {
+      "id": "sasquatch-4-12",
+      "sha256": "4637b3d6b851e0380719579d0292fa2b75ebe7e1ab65804ec4d88018f8ead860"
+    },
+    {
+      "id": "sasquatch-1-13",
+      "sha256": "dad7f844716c6aafe8c749d1764b4fb74eef4fd1b5bac8a422bbceaa5e220605"
+    },
+    {
+      "id": "sasquatch-4-26",
+      "sha256": "a080c935359e62e5c2be91a29eee7ec0a09f7958e7a11af9eb07fe3be4f84a57"
+    },
+    {
+      "id": "sasquatch-1-4",
+      "sha256": "e5994601db55ce059f0208a8e8ff1b3ddf2c0381d1611a39e0377a54c4e999f1"
+    },
+    {
+      "id": "sasquatch-4-9",
+      "sha256": "1df609ab230f5d5003aef1324ccbb2be811a5bb9d540f9cd108bdd1a823e18cb"
+    },
+    {
+      "id": "sasquatch-1-16",
+      "sha256": "63e273cd5dd822e19f9aa8e02acaa4540b9e2473ed4ca3c5cd96b1a78e320880"
+    },
+    {
+      "id": "sasquatch-4-23",
+      "sha256": "976cbb7f06ba217db298a21b70286075ba3aaf656beaea06aad8def06ff4fb20"
+    },
+    {
+      "id": "sasquatch-4-6",
+      "sha256": "2c6feccfe10b6fb26c0b49dd80633f5c75aa5e58204a40cad8e35c327c62b46d"
+    },
+    {
+      "id": "sasquatch-4-27",
+      "sha256": "12643dbc292696965e9e1f29b6fd0d83e4269ef5602fce4de79cbff1ee7da21c"
+    }
+  ],
+  "order": [
+    "microban-44",
+    "microban-2",
+    "microban-24",
+    "microban-30",
+    "microban-25",
+    "microban-3",
+    "microban-40",
+    "microban-9",
+    "microban-56",
+    "microban-45",
+    "microban-1",
+    "microban-12",
+    "microban-21",
+    "microban-51",
+    "microban-33",
+    "microban-27",
+    "microban-38",
+    "microban-5",
+    "microban-17",
+    "microban-31",
+    "microban-28",
+    "microban-4",
+    "microban-46",
+    "microban-22",
+    "microban-20",
+    "microban-52",
+    "microban-18",
+    "microban-13",
+    "microban-19",
+    "microban-15",
+    "microban-55",
+    "microban-50",
+    "microban-26",
+    "microban-34",
+    "microban-11",
+    "microban-48",
+    "microban-8",
+    "microban-39",
+    "microban-14",
+    "microban-23",
+    "microban-58",
+    "microban-61",
+    "microban-42",
+    "microban-10",
+    "microban-43",
+    "microban-6",
+    "microban-62",
+    "microban-16",
+    "microban-41",
+    "microban-32",
+    "microban-53",
+    "microban-49",
+    "microban-57",
+    "microban-47",
+    "microban-37",
+    "microban-54",
+    "microban-79",
+    "sasquatch-1-8",
+    "sasquatch-2-34",
+    "microban-63",
+    "sasquatch-5-13",
+    "microban-60",
+    "sasquatch-7-5",
+    "microban-29",
+    "microban-96",
+    "sasquatch-4-5",
+    "microban-35",
+    "sasquatch-6-2",
+    "sasquatch-7-8",
+    "microban-87",
+    "sasquatch-5-2",
+    "sasquatch-7-20",
+    "sasquatch-5-1",
+    "microban-59",
+    "sasquatch-4-7",
+    "sasquatch-7-7",
+    "microban-65",
+    "sasquatch-4-10",
+    "microban-100",
+    "microban-89",
+    "sasquatch-7-9",
+    "sasquatch-4-1",
+    "sasquatch-1-20",
+    "sasquatch-6-3",
+    "microban-69",
+    "sasquatch-1-15",
+    "microban-77",
+    "sasquatch-5-10",
+    "microban-84",
+    "microban-80",
+    "microban-76",
+    "microban-85",
+    "microban-78",
+    "sasquatch-4-21",
+    "sasquatch-1-21",
+    "microban-92",
+    "sasquatch-7-19",
+    "sasquatch-2-1",
+    "sasquatch-7-10",
+    "sasquatch-4-3",
+    "sasquatch-6-5",
+    "sasquatch-5-4",
+    "sasquatch-4-2",
+    "sasquatch-7-17",
+    "sasquatch-5-7",
+    "sasquatch-1-11",
+    "sasquatch-4-13",
+    "sasquatch-4-11",
+    "microban-88",
+    "sasquatch-5-8",
+    "sasquatch-1-9",
+    "sasquatch-4-19",
+    "sasquatch-7-2",
+    "sasquatch-1-7",
+    "sasquatch-1-13",
+    "sasquatch-4-20",
+    "sasquatch-7-6",
+    "sasquatch-4-29",
+    "sasquatch-7-14",
+    "microban-83",
+    "sasquatch-4-4",
+    "sasquatch-5-12",
+    "sasquatch-6-21",
+    "sasquatch-3-5",
+    "sasquatch-5-3",
+    "sasquatch-1-22",
+    "sasquatch-4-37",
+    "microban-36",
+    "sasquatch-6-6",
+    "sasquatch-3-7",
+    "sasquatch-4-26",
+    "sasquatch-4-9",
+    "sasquatch-1-4",
+    "sasquatch-4-12",
+    "sasquatch-1-16",
+    "sasquatch-3-1",
+    "sasquatch-1-3",
+    "sasquatch-4-23",
+    "sasquatch-4-6",
+    "sasquatch-4-27"
+  ]
+}

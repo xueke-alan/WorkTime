@@ -81,6 +81,66 @@ async function unit() {
     puzzle = group.puzzles[0];
   const nextPuzzle = group.puzzles[1];
 
+  // Keep the v1 transport for all seven Sokoban chapters, including old saves.
+  for (const chapter of [0, 1, 2, 3, 4, 5, 6]) {
+    const level = app.data.sokoban.levels[chapter * 20 + 19];
+    const save = {
+      version: 1,
+      chapter,
+      current: level.id,
+      completed: {},
+      drafts: { [level.id]: { path: level.solution.slice(0, -1) } },
+    };
+    const restored = S.normalize("game-sokoban", copy(save));
+    assert.equal(restored.version, 1);
+    assert.equal(restored.chapter, chapter);
+    assert.equal(restored.current, level.id);
+    assert.equal(restored.drafts[level.id].path, save.drafts[level.id].path);
+    assert.deepEqual(
+      copy(S.normalize("game-sokoban", copy(restored))),
+      copy(restored),
+    );
+  }
+  {
+    const previousIds = require("./sokoban-selection.json").previousOrder;
+    const oldCurrent = previousIds[99];
+    const oldLevel = app.data.sokoban.levels.find(
+      (level) => level.id === oldCurrent,
+    );
+    const completed = Object.fromEntries(
+      previousIds.slice(0, 99).map((id) => [
+        id,
+        {
+          path: app.data.sokoban.levels.find((level) => level.id === id)
+            .solution,
+        },
+      ]),
+    );
+    const migrated = S.normalize("game-sokoban", {
+      version: 1,
+      chapter: 4,
+      current: oldCurrent,
+      completed,
+      drafts: { [oldCurrent]: { path: oldLevel.solution.slice(0, -1) } },
+    });
+    assert.equal(migrated.current, oldCurrent);
+    assert.equal(Object.keys(migrated.completed).length, 99);
+    assert.equal(
+      migrated.chapter,
+      Math.floor(app.data.sokoban.levels.indexOf(oldLevel) / 20),
+    );
+    assert.equal(migrated.version, 1);
+  }
+  assert.throws(() =>
+    S.normalize("game-sokoban", {
+      version: 1,
+      chapter: 7,
+      current: null,
+      drafts: {},
+      completed: {},
+    }),
+  );
+
   {
     const triple = app.data.sudoku.groups.find((g) => g.id === "triple");
     assert.equal(triple.puzzles.length, 20);

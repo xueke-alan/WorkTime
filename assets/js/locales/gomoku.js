@@ -2,6 +2,14 @@
 (() => {
   const locales = ["zh-CN", "en", "zh-TW", "zh-HK", "ko", "ja"];
   const strings = {
+    engineName: [
+      "内置五子棋引擎 提供运算",
+      "Powered by the built-in Gomoku engine",
+      "內建五子棋引擎 提供運算",
+      "內置五子棋引擎 提供運算",
+      "내장 오목 엔진으로 연산",
+      "内蔵の五目並べエンジンで演算",
+    ],
     ai: [
       "人机对战",
       "Play computer",

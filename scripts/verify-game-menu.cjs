@@ -7,7 +7,22 @@ const { chromium } = require("playwright");
 
 const languages = ["zh-CN", "en", "zh-TW", "zh-HK", "ja", "ko"];
 
+async function checkNameOrder(menu) {
+  const { names, locale } = await menu.evaluate((panel) => ({
+    names: [...panel.querySelectorAll(".game-menu-name")].map(
+      (element) => element.textContent,
+    ),
+    locale: WorkTimeApp.i18n.locale,
+  }));
+  assert.deepEqual(
+    names,
+    [...names].sort(new Intl.Collator(locale, { numeric: true }).compare),
+    "Games follow localized name order",
+  );
+}
+
 async function checkLayout(menu, context) {
+  await checkNameOrder(menu);
   const result = await menu.evaluate((panel) => {
     const list = panel.querySelector(".game-menu-list");
     const detail = panel.querySelector(".game-menu-detail");
@@ -118,13 +133,17 @@ async function checkLayout(menu, context) {
       const shell = page.locator("#gameShell");
       const entries = sidebar.locator(".game-menu-entry");
       const play = sidebar.locator(".game-menu-play");
-      assert.equal(await entries.count(), 11);
+      assert.equal(
+        await entries.count(),
+        await page.evaluate(() => WorkTimeApp.games.list().length),
+      );
       assert.equal(await entries.first().getAttribute("aria-pressed"), "true");
       const progress = sidebar.locator(".game-menu-progress p");
       assert.equal(
         await progress.textContent(),
         await page.evaluate(() => WorkTimeApp.i18n.t("games.progress.empty")),
       );
+      await page.locator("#date-tab-games").click();
       if (viewport.width === 320) {
         const jump = sidebar.locator('[data-game="game-jump"]');
         await page.evaluate(() => {
@@ -144,7 +163,6 @@ async function checkLayout(menu, context) {
         await entries.first().click();
       }
 
-      await page.locator("#date-tab-games").click();
       await entries.first().focus();
       await page.keyboard.press("ArrowDown");
       assert.equal(
@@ -164,6 +182,7 @@ async function checkLayout(menu, context) {
       assert.equal(await entries.first().getAttribute("aria-pressed"), "true");
       await page.keyboard.press("Enter");
       assert.equal(await entries.last().getAttribute("aria-pressed"), "true");
+      const selectedId = await entries.last().getAttribute("data-game");
       await page.keyboard.press("Tab");
       assert.equal(
         await play.evaluate((el) => el === document.activeElement),
@@ -173,7 +192,12 @@ async function checkLayout(menu, context) {
       for (const language of languages) {
         await page.evaluate((id) => WorkTimeApp.i18n.setLanguage(id), language);
         await checkLayout(sidebar, { viewport, language, menu: "sidebar" });
-        assert.equal(await entries.last().getAttribute("aria-pressed"), "true");
+        assert.equal(
+          await sidebar
+            .locator(`[data-game="${selectedId}"]`)
+            .getAttribute("aria-pressed"),
+          "true",
+        );
         assert.equal(
           await play.evaluate((el) => el === document.activeElement),
           true,
@@ -216,19 +240,26 @@ async function checkLayout(menu, context) {
         assert.equal(await snake.getAttribute("aria-pressed"), "true");
       }
       assert.ok(gameRequests.every((url) => !url.endsWith("/snake.js")));
+      const nameOrder = await entries.evaluateAll((buttons) =>
+        buttons.map((button) => button.dataset.game),
+      );
       await shell.locator(".game-menu-play").click();
       await page.locator(".game-snake").waitFor();
       await page.keyboard.press("Escape");
       await snake.waitFor();
-      assert.equal(
-        await shellEntries.first().getAttribute("data-game"),
-        "game-snake",
-        "Equally played games put the most recent first",
+      assert.deepEqual(
+        await shellEntries.evaluateAll((buttons) =>
+          buttons.map((button) => button.dataset.game),
+        ),
+        nameOrder,
+        "Playing a game leaves the expanded menu in name order",
       );
-      assert.equal(
-        await entries.first().getAttribute("data-game"),
-        "game-snake",
-        "The sidebar follows the expanded menu's play order",
+      assert.deepEqual(
+        await entries.evaluateAll((buttons) =>
+          buttons.map((button) => button.dataset.game),
+        ),
+        nameOrder,
+        "Playing a game leaves the sidebar in name order",
       );
       assert.equal(await snake.getAttribute("aria-pressed"), "true");
       assert.equal(
@@ -246,28 +277,29 @@ async function checkLayout(menu, context) {
           .getAttribute("aria-pressed"),
         "true",
       );
-      const frequent = await page.evaluate(() => {
-        WorkTimeApp.games.recordPlay("game-2048");
-        WorkTimeApp.games.recordPlay("game-jump");
-        return WorkTimeApp.games.list()[0].id;
+      await page.evaluate(() => {
+        localStorage.setItem(
+          "worktime.games.usage.v1",
+          JSON.stringify({
+            "game-jump": { count: 99999, lastPlayed: Date.now() },
+          }),
+        );
       });
-      assert.equal(
-        frequent,
-        "game-2048",
-        "Frequency takes priority over recency",
-      );
       await page.reload();
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
-      assert.equal(
+      await page.evaluate(() => WorkTimeApp.i18n.setLanguage("ko"));
+      assert.deepEqual(
         await sidebar
           .locator(".game-menu-entry")
-          .first()
-          .getAttribute("data-game"),
-        "game-2048",
-        "Play order persists across reloads",
+          .evaluateAll((buttons) =>
+            buttons.map((button) => button.dataset.game),
+          ),
+        nameOrder,
+        "Name order persists across reloads and ignores old play history",
       );
+      await checkNameOrder(sidebar);
       assert.deepEqual(errors, []);
       console.log(
         `${viewport.width}px: six languages, split layout, scrolling, keyboard, and both launch surfaces passed.`,

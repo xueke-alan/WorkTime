@@ -15,6 +15,8 @@ WorkTimeApp.services.gameArchive = (() => {
     Object.fromEntries(
       [
         "2048",
+        "sliding-puzzle",
+        "lights-out",
         "minesweeper",
         "snake",
         "sudoku",
@@ -25,6 +27,8 @@ WorkTimeApp.services.gameArchive = (() => {
         "tank",
         "xiangqi",
         "gomoku",
+        "jungle",
+        "ultimate-ttt",
       ].map((id) => [
         "game-" + id,
         "worktime.games." + id + (id === "jump" ? ".best" : "") + ".v1",
@@ -36,6 +40,7 @@ WorkTimeApp.services.gameArchive = (() => {
     "game-sokoban",
     "game-xiangqi",
     "game-gomoku",
+    "game-lights-out",
   ];
   const plain = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
   const clone = (v) => JSON.parse(JSON.stringify(v));
@@ -79,6 +84,26 @@ WorkTimeApp.services.gameArchive = (() => {
       fail("version", id);
     const G = WorkTimeApp.games;
     let result;
+    if (id === "game-lights-out") {
+      result = G.lightsOutRules.restore(input);
+      requireValue(result, id);
+      return result;
+    }
+    if (id === "game-sliding-puzzle") {
+      result = G.slidingPuzzleRules.restore(input);
+      requireValue(result, id);
+      return result;
+    }
+    if (id === "game-ultimate-ttt") {
+      result = G.ultimateTttRules.restore(input);
+      requireValue(result, id);
+      return result;
+    }
+    if (id === "game-jungle") {
+      result = G.jungleRules.restore(input);
+      requireValue(result, id);
+      return result;
+    }
     if (["game-2048", "game-minesweeper", "game-snake"].includes(id)) {
       const rules =
         id === "game-2048"
@@ -311,7 +336,11 @@ WorkTimeApp.services.gameArchive = (() => {
           WorkTimeApp.data.sudoku.groups.some((g) => g.id === input.group),
         id,
       );
-    else requireValue(integer(input.chapter, 2), id);
+    else
+      requireValue(
+        integer(input.chapter, WorkTimeApp.data.sokoban.chapters.length - 1),
+        id,
+      );
     result = {
       version: 1,
       ...(sudoku
@@ -358,6 +387,12 @@ WorkTimeApp.services.gameArchive = (() => {
     return value;
   }
   function hasContent(id, v) {
+    if (id === "game-lights-out")
+      return Object.keys(v.completed).length > 0 || hasProgress(id, v);
+    if (id === "game-sliding-puzzle")
+      return Object.keys(v.best).length > 0 || hasProgress(id, v);
+    if (id === "game-jungle" || id === "game-ultimate-ttt")
+      return v.state.path.length > 0;
     if (id === "game-jump") return v > 0;
     if (id === "game-tank")
       return v.best > 0 || v.custom !== null || v.muted === true;
@@ -394,6 +429,10 @@ WorkTimeApp.services.gameArchive = (() => {
     });
   }
   function hasProgress(id, v) {
+    if (id === "game-sliding-puzzle")
+      return Object.values(v.sessions).some((s) => s.started);
+    if (id === "game-jungle" || id === "game-ultimate-ttt")
+      return v.state.path.length > 0;
     if (id === "game-jump") return false;
     if (id === "game-tank") return v.custom !== null || v.muted !== undefined;
     if (id === "game-2048") return v.state.score > 0 || v.previous !== null;
@@ -484,6 +523,7 @@ WorkTimeApp.services.gameArchive = (() => {
     }
   }
   function progress(id, v) {
+    if (id === "game-sliding-puzzle") return fields(v, ["size", "sessions"]);
     if (id === "game-jump") return null;
     if (id === "game-tank") return fields(v, ["custom", "muted"]);
     if (levelGames.includes(id))
@@ -539,7 +579,32 @@ WorkTimeApp.services.gameArchive = (() => {
             ? incoming
             : local;
     let out = clone(preferred);
-    if (id === "game-jump") out = Math.max(local, incoming);
+    if (id === "game-lights-out") {
+      out.drafts = { ...local.drafts, ...incoming.drafts, ...preferred.drafts };
+      out.completed = clone(local.completed);
+      for (const [level, record] of Object.entries(incoming.completed))
+        if (
+          WorkTimeApp.games.lightsOutRules.better(record, out.completed[level])
+        )
+          out.completed[level] = clone(record);
+    } else if (id === "game-sliding-puzzle") {
+      for (const size of WorkTimeApp.games.slidingPuzzleRules.sizes) {
+        const a = local.best[size],
+          b = incoming.best[size];
+        if (a || b)
+          out.best[size] = {
+            moves: Math.min(a?.moves ?? Infinity, b?.moves ?? Infinity),
+            time: Math.min(a?.time ?? Infinity, b?.time ?? Infinity),
+          };
+        out.sessions[size] = clone(
+          preferred.sessions[size] ||
+            local.sessions[size] ||
+            incoming.sessions[size] ||
+            null,
+        );
+        if (!out.sessions[size]) delete out.sessions[size];
+      }
+    } else if (id === "game-jump") out = Math.max(local, incoming);
     else if (["game-2048", "game-tank"].includes(id)) {
       out.best = Math.max(local.best, incoming.best);
       if (id === "game-tank") {
@@ -571,7 +636,7 @@ WorkTimeApp.services.gameArchive = (() => {
       out.records = local.records.map((n, i) =>
         Math.max(n, incoming.records[i]),
       );
-    else {
+    else if (id !== "game-jungle" && id !== "game-ultimate-ttt") {
       out.drafts = {
         ...(source === "incoming" ? local.drafts : incoming.drafts),
         ...preferred.drafts,
@@ -652,6 +717,19 @@ WorkTimeApp.services.gameArchive = (() => {
       if (!plain(save) || (save.version !== undefined && save.version !== 1))
         return { kind: "empty" };
       switch (id) {
+        case "game-sliding-puzzle":
+          return summary(
+            "completed",
+            values(save.best).filter(plain).length,
+            values(save.sessions).some((s) => s?.started),
+          );
+        case "game-ultimate-ttt":
+        case "game-jungle":
+          return summary(
+            "best",
+            0,
+            Array.isArray(save.state?.path) && save.state.path.length > 0,
+          );
         case "game-2048":
           return summary(
             "best",
@@ -678,6 +756,19 @@ WorkTimeApp.services.gameArchive = (() => {
               ? positive(save.state?.ticks)
               : positive(save.state?.score) || positive(save.state?.level),
           );
+        case "game-lights-out": {
+          const active = (record) =>
+            Object.entries(plain(record) ? record : {})
+              .filter(([id]) =>
+                /^lights-hard-[4-7]-(0[1-9]|1\d|2[0-5])$/.test(id),
+              )
+              .map(([, value]) => value);
+          return summary(
+            "completed",
+            active(save.completed).filter(plain).length,
+            active(save.drafts).some((draft) => draft?.started),
+          );
+        }
         case "game-sudoku":
         case "game-sokoban":
           return summary(
@@ -761,8 +852,14 @@ WorkTimeApp.services.gameArchive = (() => {
       // Journals created before Xiangqi have no entry for its storage key.
       const ids = Object.keys(keys).filter(
         (id) =>
-          !["game-xiangqi", "game-gomoku"].includes(id) ||
-          Object.hasOwn(raw ?? {}, id),
+          ![
+            "game-xiangqi",
+            "game-gomoku",
+            "game-jungle",
+            "game-ultimate-ttt",
+            "game-sliding-puzzle",
+            "game-lights-out",
+          ].includes(id) || Object.hasOwn(raw ?? {}, id),
       );
       requireValue(
         plain(raw) &&

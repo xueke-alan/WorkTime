@@ -103,7 +103,6 @@ WorkTimeApp.data.locales["ko"] = {
   "copy.c4eb94d079": "클립보드",
   "copy.32936d1ceb": "백업 준비 완료. 확인하면 복원합니다.",
   "copy.9f71e85dd5": "클립보드의 백업을 읽지 못했습니다. 파일을 선택하세요.",
-
   "copy.d3ca375f67": "초기화를 저장하지 못했습니다: ",
   "copy.c3b5086f19": "백업이 100 MiB를 초과합니다.",
   "copy.49deaf7da2": "파일",
@@ -347,7 +346,7 @@ WorkTimeApp.data.locales["ko"] = {
     'h</span><span title="평균 초과근무 (평일 초과근무 ÷ 출근일수)" aria-label="평균 초과근무">',
   "copy.6d332ee4da": " · ",
   "copy.06ce537cae": " 일 완료",
-  "copy.cd4a0376cd": "계획 취소",
+  "copy.cd4a0376cd": "취소",
   "copy.0bfc077a0c": " · 주",
   "copy.dbdd3a728e": '<span class="schedule-work" title="예정 근무 시간">',
   "copy.55debd2786": '</span><span class="schedule-break" title="휴게">',
@@ -785,7 +784,6 @@ WorkTimeApp.data.locales["ko"] = {
   "copy.3e413a048b":
     "연월일을 입력하거나 2000-9-9 또는 20000909를 붙여넣으세요.",
   "copy.acb666728b": "근무 도시",
-
   "copy.e638050747": "근무 일정",
   "copy.ab9e21f1dc": "시작 시간",
   "copy.7af358a422": "종료 시간",
@@ -857,7 +855,6 @@ WorkTimeApp.data.locales["ko"] = {
   "copy.cdb66f2811":
     "이 묶음의 타각을 제거합니다. 중복 날짜에는 다른 가져오기 기록을 유지합니다. 수동 기록, 휴가 및 템플릿은 유지됩니다.",
   "copy.3c06abe116": "삭제",
-
   "copy.00ecd909a7": "테마 저장 재시도",
   "copy.c7cd96dadb":
     "이 브라우저의 모든 기록, 템플릿, 일정을 교체합니다. 먼저 스냅샷이 저장되며 백업도 다운로드할 수 있습니다. 로컬 파일과 웹사이트의 저장소는 별개입니다. 파일 이동이나 브라우저 변경 전에 내보내세요.",

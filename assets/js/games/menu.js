@@ -109,16 +109,6 @@ WorkTimeApp.ui.renderGameMenu = function (
   }
 
   const buttons = [];
-  function refreshOrder() {
-    const order = WorkTimeApp.games.list();
-    const positions = new Map(order.map((entry, index) => [entry.id, index]));
-    entries.splice(0, entries.length, ...order);
-    buttons.sort(
-      (a, b) => positions.get(a.dataset.game) - positions.get(b.dataset.game),
-    );
-    for (const button of buttons) list.append(button);
-    syncScrollbar();
-  }
   function setTabStop(active) {
     for (const button of buttons) button.tabIndex = button === active ? 0 : -1;
   }
@@ -188,7 +178,6 @@ WorkTimeApp.ui.renderGameMenu = function (
   return {
     select,
     refreshProgress,
-    refreshOrder,
     dispose() {
       scrollObserver.disconnect();
     },

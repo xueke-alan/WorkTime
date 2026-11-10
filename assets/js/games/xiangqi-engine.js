@@ -5,16 +5,17 @@ WorkTimeApp.games.pikafishResources = (() => {
   const base = "assets/vendor/pikafish/";
   const cacheName = "worktime-pikafish-binaries-v1";
   let manifestLoading;
-  let resourcesLoading;
+  const inFlight = new Map();
   function url(path) {
     const version = WorkTimeApp.data.assetVersions?.[path];
     return new URL(path + (version ? "?v=" + version : ""), document.baseURI)
       .href;
   }
-  function manifest() {
+  function manifest(priority = "auto") {
     if (!manifestLoading)
       manifestLoading = new Promise((resolve, reject) => {
         const script = document.createElement("script");
+        script.fetchPriority = priority;
         const timer = setTimeout(() => {
           script.onload = script.onerror = null;
           script.remove();
@@ -64,7 +65,7 @@ WorkTimeApp.games.pikafishResources = (() => {
       return null;
     }
   }
-  async function resource(info) {
+  async function readResource(info, priority) {
     const target = url(base + info.name);
     const disk = await directory(async (folder) => {
       try {
@@ -97,6 +98,7 @@ WorkTimeApp.games.pikafishResources = (() => {
       const response = await fetch(target, {
         cache: "no-store",
         signal: AbortSignal.timeout(120000),
+        priority,
       });
       if (!response.ok) throw Error("Unable to download engine resource");
       bytes = await response.arrayBuffer();
@@ -119,49 +121,98 @@ WorkTimeApp.games.pikafishResources = (() => {
         return true;
       });
       if (saved) await storage?.delete(target);
-      else if (storage) await storage.put(target, new Response(blob));
-    })().catch(() => {});
+      else if (storage)
+        await storage.put(
+          target,
+          new Response(blob, {
+            headers: { "Content-Length": String(info.size) },
+          }),
+        );
+      else throw Error("Unable to persist engine resources");
+    })();
     return { bytes, persistence };
   }
-  async function load() {
-    // Only coalesce concurrent loads; detached buffers must never be reused.
-    if (!resourcesLoading)
-      resourcesLoading = (async () => {
-        const assets = await manifest();
-        const [wasm, net] = await Promise.all([
-          resource(assets.wasm),
-          resource(assets.net),
-        ]);
-        void Promise.all([wasm.persistence, net.persistence])
-          .then(async () => {
-            const keep = new Set(
-              Object.values(assets).map((info) => info.name),
-            );
-            const storage = await cache();
-            if (storage)
-              for (const request of await storage.keys())
-                if (!keep.has(new URL(request.url).pathname.split("/").pop()))
-                  await storage.delete(request);
-            await directory(async (folder) => {
-              for await (const [name, entry] of folder.entries())
-                if (
-                  entry.kind === "file" &&
-                  /^(wasm|net)-[a-f0-9]{16}\.(wasm|nnue)$/.test(name) &&
-                  !keep.has(name)
-                )
-                  await folder.removeEntry(name);
-            });
-          })
-          .catch(() => {});
-        return { wasm: wasm.bytes, net: net.bytes };
-      })().finally(() => {
-        resourcesLoading = null;
-      });
-    // Every consumer owns its buffers; one transfer must not detach another load.
-    const bytes = await resourcesLoading;
-    return { wasm: bytes.wasm.slice(0), net: bytes.net.slice(0) };
+  function resource(info, priority) {
+    if (inFlight.has(info.name)) return inFlight.get(info.name);
+    const task = readResource(info, priority);
+    inFlight.set(info.name, task);
+    const release = () => {
+      if (inFlight.get(info.name) === task) inFlight.delete(info.name);
+    };
+    // Retain shared bytes until saving ends, including when a foreground load joins.
+    task.then((result) => result.persistence).then(release, release);
+    return task;
   }
-  return { load, url };
+  async function cached(info) {
+    const target = url(base + info.name);
+    const disk = await directory(async (folder) => {
+      try {
+        return (
+          (await (await folder.getFileHandle(info.name)).getFile()).size ===
+          info.size
+        );
+      } catch {
+        return false;
+      }
+    });
+    const storage = await cache();
+    if (disk) {
+      await storage?.delete(target).catch(() => {});
+      return true;
+    }
+    try {
+      const response = await storage?.match(target);
+      if (!response) return false;
+      const size = response.headers.get("Content-Length");
+      return size !== null
+        ? Number(size) === info.size
+        : (await response.blob()).size === info.size;
+    } catch {
+      return false;
+    }
+  }
+  async function cleanup(assets) {
+    const keep = new Set(Object.values(assets).map((info) => info.name));
+    const storage = await cache();
+    if (storage)
+      for (const request of await storage.keys())
+        if (!keep.has(new URL(request.url).pathname.split("/").pop()))
+          await storage.delete(request);
+    await directory(async (folder) => {
+      for await (const [name, entry] of folder.entries())
+        if (
+          entry.kind === "file" &&
+          /^(wasm|net)-[a-f0-9]{16}\.(wasm|nnue)$/.test(name) &&
+          !keep.has(name)
+        )
+          await folder.removeEntry(name);
+    });
+  }
+  async function prefetch() {
+    if (!/^https?:$/.test(location.protocol)) return;
+    const assets = await manifest("low");
+    await Promise.all(
+      Object.values(assets).map(async (info) => {
+        if (!inFlight.has(info.name) && (await cached(info))) return;
+        const result = await resource(info, "low");
+        await result.persistence;
+      }),
+    );
+    await cleanup(assets);
+  }
+  async function load() {
+    const assets = await manifest("high");
+    const [wasm, net] = await Promise.all([
+      resource(assets.wasm, "high"),
+      resource(assets.net, "high"),
+    ]);
+    void Promise.all([wasm.persistence, net.persistence])
+      .then(() => cleanup(assets))
+      .catch(() => {});
+    // Every consumer owns its buffers; one transfer must not detach another load.
+    return { wasm: wasm.bytes.slice(0), net: net.bytes.slice(0) };
+  }
+  return { load, prefetch, url };
 })();
 
 WorkTimeApp.games.createXiangqiEngine = function () {

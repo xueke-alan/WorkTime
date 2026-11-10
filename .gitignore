@@ -45,6 +45,10 @@ __pycache__/
 /tests/
 /scripts/*
 !/scripts/check-site.cjs
+!/scripts/sokoban-optimal.cjs
+!/scripts/generate-sokoban-optima.cjs
+!/scripts/verify-sokoban-optimal.cjs
+!/scripts/sokoban-optima.json
 !/scripts/install-hooks.cjs
 !/scripts/pre-push.cjs
 !/scripts/prepare-site.cjs
@@ -68,6 +72,7 @@ __pycache__/
 !/scripts/verify-performance.cjs
 !/scripts/verify-games.cjs
 !/scripts/verify-game-menu.cjs
+!/scripts/verify-game-idle-cover.cjs
 !/scripts/verify-music.cjs
 !/scripts/verify-media-loading.cjs
 !/scripts/verify-runtime-folder.cjs
@@ -94,6 +99,9 @@ __pycache__/
 !/scripts/xiangqi-positions.json
 !/scripts/verify-xiangqi.cjs
 !/scripts/verify-gomoku.cjs
+!/scripts/verify-jungle.cjs
+!/scripts/verify-lights-out.cjs
+!/scripts/generate-lights-out.cjs
 !/scripts/build-gomoku.cjs
 !/scripts/finalize-gomoku.cjs
 !/scripts/pack-gomoku.cjs
@@ -234,6 +242,7 @@ Thumbs.db
 !/scripts/verify-game-button-contrast.cjs
 !/scripts/verify-ai-thinking.cjs
 !/scripts/verify-xiangqi-engine.cjs
+!/scripts/verify-xiangqi-repetition.cjs
 !/scripts/verify-year-detail.cjs
 !/scripts/verify-garden-motion.cjs
 !/scripts/verify-link-review.cjs
@@ -244,3 +253,24 @@ Thumbs.db
 
 !/scripts/pikafish-browser/
 !/scripts/pikafish-browser/**
+
+!/scripts/sokoban-bank.cjs
+!/scripts/sokoban-selection.json
+!/scripts/verify-sliding-puzzle.cjs
+
+# Native Sokoban build intermediates
+/tools/sokoban-solver/obj/
+/tools/sokoban-solver/bin/
+
+!/scripts/misty-jungle/
+!/scripts/misty-jungle/**
+/scripts/misty-jungle/target/
+/scripts/misty-jungle/generated/
+
+!/scripts/utttai/
+!/scripts/utttai/**
+!/scripts/verify-ultimate-ttt.cjs
+!/scripts/killer-rating.cjs
+!/scripts/generate-killer-hard.cjs
+!/scripts/verify-killer-hard.cjs
+!/scripts/killer-difficulty.json

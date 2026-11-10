@@ -259,11 +259,68 @@ body .game-session .game-select-options > .game-button:is(:hover, :active) {
   position: relative;
 }
 .games-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+}
+.game-idle-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--paper) 95%, transparent);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms var(--motion-ease),
+    visibility 0s linear 180ms;
+}
+.game-idle-cover.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    opacity 240ms ease,
+    transform 240ms var(--motion-ease),
+    visibility 0s;
+}
+.game-idle-cover.is-visible.is-initial {
+  transition: none;
+}
+.game-idle-time {
+  color: var(--accent);
+  font: 700 2.857143rem / 1.2 var(--font-countdown);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.035em;
+  white-space: nowrap;
+}
+.game-idle-date {
+  color: var(--muted);
+  font-size: var(--text-small);
+  line-height: 1.5;
+  text-align: center;
+}
+.game-idle-motto {
+  color: var(--theme-accent-deep, color-mix(in srgb, var(--accent) 70%, black));
+  font-size: 1.142857rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+html[data-reduced-motion="true"] .game-idle-cover {
+  transition: none;
+  transform: none;
 }
 .games-panel[hidden],
 .game-shell[hidden] {

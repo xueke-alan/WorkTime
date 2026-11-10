@@ -6,6 +6,7 @@ const vm = require("node:vm");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 const { launchGame } = require("./game-test-helpers.cjs");
+const { rate } = require("./killer-rating.cjs");
 const root = path.resolve(__dirname, "..");
 const ctx = vm.createContext({ WorkTimeApp: { data: {}, games: {} } });
 for (const file of ["assets/data/sudoku.js", "assets/js/games/sudoku-rules.js"])
@@ -55,14 +56,26 @@ function verifyRules() {
   );
   assert.equal(variants.length, 20);
   for (const group of variants)
-    assert.equal(group.puzzles.length, 20, group.id + " level count");
+    assert.equal(
+      group.puzzles.length,
+      group.id === "killer" ? 30 : 20,
+      group.id + " level count",
+    );
   for (const id of ids) {
     const group = plain(data.sudoku.groups.find((g) => g.id === id));
-    assert.equal(group.puzzles.length, 20);
+    assert.equal(group.puzzles.length, id === "killer" ? 30 : 20);
     for (const p of group.puzzles) {
       const values = Array.from(p.solution, Number),
         state = { ...rules.create(p), values };
-      assert.deepEqual(plain(rules.solve(p)), [p.solution], p.id + " unique");
+      assert.deepEqual(
+        plain(
+          p.difficulty === "hard" && p.cages
+            ? rate(p).solutions
+            : rules.solve(p),
+        ),
+        [p.solution],
+        p.id + " unique",
+      );
       assert.ok(rules.won(p, state));
       if (p.antiKnight) {
         for (let i = 0; i < 81; i++)
@@ -302,13 +315,18 @@ function verifyRules() {
       assert.ok(restored);
       assert.ok(rules.won(p, restored));
     }
-    console.log(id + ": twenty unique, independently validated puzzles");
+    console.log(
+      id +
+        ": " +
+        group.puzzles.length +
+        " unique, independently validated puzzles",
+    );
   }
   assert.equal(
     data.sudoku.groups
       .find((g) => g.id === "killer")
       .puzzles.filter((p) => /^0{81}$/.test(p.givens)).length,
-    17,
+    27,
   );
   const board = Array(81).fill(0);
   // Deliberately use cells in different rows, columns and boxes to isolate each extra rule.
@@ -456,7 +474,7 @@ async function verifyUI() {
       await action(id).click();
       assert.equal(
         await page.locator(".sudoku-levels button:visible").count(),
-        20,
+        id === "killer" ? 30 : 20,
       );
       await action("level-" + (id === "killer" ? 4 : 1)).click();
       if (!pooledCell) pooledCell = await action("cell-0").elementHandle();
@@ -626,7 +644,7 @@ async function verifyUI() {
       await action(group.id).click();
       assert.equal(
         await page.locator(".sudoku-levels button:visible").count(),
-        20,
+        group.id === "killer" ? 30 : 20,
       );
       await action("level-20").click();
       const last = group.puzzles[19],

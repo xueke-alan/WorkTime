@@ -60,16 +60,19 @@ body .editor .year-analysis-header > h2 {
   padding: 16px 14px;
 }
 .year-analysis-cards > .card:first-child { grid-column: 1 / -1; }
-.year-analysis-cards .card-label { display: block; overflow: hidden; font-size: 13px; font-weight: 650; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
+.year-analysis-cards .card-label { display: block; min-width: 0; font-size: 15px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
 .year-analysis-cards .metric { margin: 0; line-height: 1.2; font-size: clamp(20px, 2.1vw, 27px); overflow-wrap: anywhere; }
 .year-analysis-cards > .card.average-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
   color: var(--ink);
   background: var(--theme-surface-subtle, color-mix(in srgb, var(--accent) 4%, white));
   border-color: var(--theme-border-soft, var(--line));
   box-shadow: none;
 }
 .year-analysis-cards > .card.average-card::after { display: none; }
-.year-analysis-cards > .card.average-card .card-label { color: var(--muted); }
+.year-analysis-cards > .card.average-card .card-label { align-self: start; color: var(--muted); }
+.year-analysis-cards > .card.average-card .metric { align-self: end; min-width: 0; font-size: clamp(34px, 3vw, 42px); text-align: right; }
 .analysis-sidebar {
   margin: calc(-1 * var(--editor-gutter)) calc(-1 * var(--editor-gutter)) 0;
   color: var(--ink);

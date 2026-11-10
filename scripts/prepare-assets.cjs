@@ -312,6 +312,10 @@ function prepareAssets({ check = false } = {}) {
     "tank",
     "xiangqi",
     "gomoku",
+    "sliding-puzzle",
+    "lights-out",
+    "jungle",
+    "ultimate-ttt",
   ])
     vm.runInContext(
       fs.readFileSync(
@@ -371,6 +375,10 @@ function prepareAssets({ check = false } = {}) {
     "tank",
     "xiangqi",
     "gomoku",
+    "sliding-puzzle",
+    "lights-out",
+    "jungle",
+    "ultimate-ttt",
   ];
   const entries = games.map((id) => {
     const source = fs.readFileSync(
@@ -389,12 +397,20 @@ function prepareAssets({ check = false } = {}) {
         .map((node) => [node.key.name, node.value.value]),
     );
     const rules = [];
+    if (id === "lights-out") rules.push("assets/data/lights-out-legacy.js");
     if (id === "gomoku") rules.push("assets/data/gomoku-legacy.js");
-    if (["sudoku", "sokoban", "xiangqi", "gomoku"].includes(id))
+    if (["sudoku", "sokoban", "xiangqi", "gomoku", "lights-out"].includes(id))
       rules.push("assets/data/" + id + ".js");
     if (id === "tank") rules.push("assets/js/games/tank-stages.js");
     if (id === "gomoku") rules.push("assets/js/games/gomoku-search.js");
+    if (id === "ultimate-ttt")
+      rules.push("assets/js/games/ultimate-ttt-engine.js");
     if (id === "xiangqi") rules.push("assets/js/games/xiangqi-engine.js");
+    if (id === "jungle")
+      rules.push(
+        "assets/js/games/jungle-art.js",
+        "assets/js/games/jungle-engine.js",
+      );
     rules.push("assets/js/games/" + id + "-rules.js");
     return {
       ...metadata,

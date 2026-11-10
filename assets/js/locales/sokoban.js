@@ -1,5 +1,63 @@
 "use strict";
 (() => {
+  const optima = {
+    "zh-CN": [
+      "理论最少步数",
+      "对应推动次数",
+      "未验证",
+      "步数为已证明的理论最少步数，推动次数来自同一条最少步数解法；步数包含推动。未验证表示尚未证明最优。",
+    ],
+    "zh-TW": [
+      "理論最少步數",
+      "對應推動次數",
+      "未驗證",
+      "步數為已證明的理論最少步數，推動次數來自同一條最少步數解法；步數包含推動。未驗證表示尚未證明最優。",
+    ],
+    "zh-HK": [
+      "理論最少步數",
+      "對應推動次數",
+      "未驗證",
+      "步數為已證明的理論最少步數，推動次數來自同一條最少步數解法；步數包含推動。未驗證表示尚未證明最優。",
+    ],
+    en: [
+      "Minimum moves",
+      "Corresponding pushes",
+      "Unverified",
+      "Moves are proven minimal. Pushes belong to that same minimum-move solution. Moves include pushes. Unverified means optimality is not yet proven.",
+    ],
+    ja: [
+      "理論最少歩数",
+      "対応する押し回数",
+      "未検証",
+      "歩数は証明済みの最少値で、押し回数は同じ最少歩数の解法によるものです。歩数は押しを含みます。未検証は最適性が未証明です。",
+    ],
+    ko: [
+      "이론 최소 이동",
+      "해당 밀기 횟수",
+      "미검증",
+      "이동 수는 증명된 최솟값이며 밀기 횟수는 같은 최소 이동 해법에서 계산합니다. 이동 수에는 밀기가 포함됩니다. 미검증은 최적성이 아직 증명되지 않았다는 뜻입니다.",
+    ],
+  };
+  for (const [language, values] of Object.entries(optima))
+    ["minMoves", "minPushes", "unverified", "optimaHelp"].forEach(
+      (key, index) => {
+        WorkTimeApp.data.locales[language]["games.sokoban." + key] =
+          values[index];
+      },
+    );
+  const publicOptimaHelp = {
+    "zh-CN":
+      "本关采用公开最短成绩，推动次数来自已回放验证的同一步数路线；步数包含推动。",
+    "zh-TW":
+      "本關採用公開最短成績，推動次數來自已重播驗證的同步數路線；步數包含推動。",
+    "zh-HK":
+      "本關採用公開最短成績，推動次數來自已重播驗證的同步數路線；步數包含推動。",
+    en: "This level uses the public best move score. Pushes are counted on a replay-verified route with that move count. Moves include pushes.",
+    ja: "この面は公開最短記録を採用しています。押し回数は同じ歩数の経路を再生検証して数えています。歩数は押しを含みます。",
+    ko: "이 레벨은 공개 최단 기록을 사용합니다. 밀기 횟수는 같은 이동 수의 경로를 재생 검증하여 계산합니다. 이동 수에는 밀기가 포함됩니다.",
+  };
+  for (const [language, text] of Object.entries(publicOptimaHelp))
+    WorkTimeApp.data.locales[language]["games.sokoban.publicOptimaHelp"] = text;
   const themes = {
     "zh-CN": ["清新森林", "沙漠遗迹", "太空基地"],
     "zh-TW": ["清新森林", "沙漠遺跡", "太空基地"],
@@ -79,9 +137,9 @@
       "推箱子",
       "60 道精选关卡，从入门到进阶，自由选择",
       "选择关卡",
-      "初识仓库 · 1–20",
-      "巧妙周转 · 21–40",
-      "步步为营 · 41–60",
+      "初级",
+      "中级",
+      "高级",
       "第 {n} / {total} 关",
       "已完成 {n} / {total}",
       "选关",
@@ -120,9 +178,9 @@
       "推箱子",
       "60 道精選關卡，從入門到進階，自由選擇",
       "選擇關卡",
-      "初識倉庫 · 1–20",
-      "巧妙周轉 · 21–40",
-      "步步為營 · 41–60",
+      "初級",
+      "中級",
+      "高級",
       "第 {n} / {total} 關",
       "已完成 {n} / {total}",
       "選關",
@@ -161,9 +219,9 @@
       "推箱子",
       "60 道精選關卡，從入門到進階，自由選擇",
       "選擇關卡",
-      "初識倉庫 · 1–20",
-      "巧妙周轉 · 21–40",
-      "步步為營 · 41–60",
+      "初級",
+      "中級",
+      "高級",
       "第 {n} / {total} 關",
       "已完成 {n} / {total}",
       "選關",
@@ -202,9 +260,9 @@
       "Sokoban",
       "Choose from 60 curated puzzles, from beginner to advanced",
       "Choose a level",
-      "First steps · 1–20",
-      "Room to think · 21–40",
-      "Plan ahead · 41–60",
+      "Beginner",
+      "Intermediate",
+      "Advanced",
       "Level {n} / {total}",
       "Completed {n} / {total}",
       "Levels",
@@ -243,9 +301,9 @@
       "倉庫番",
       "入門から応用まで、60問を自由に選択",
       "ステージ選択",
-      "はじめの一歩 · 1–20",
-      "工夫と周回 · 21–40",
-      "先を読む · 41–60",
+      "初級",
+      "中級",
+      "上級",
       "ステージ {n} / {total}",
       "クリア {n} / {total}",
       "ステージ",
@@ -284,9 +342,9 @@
       "소코반",
       "입문부터 응용까지 60개 퍼즐을 자유롭게 선택",
       "레벨 선택",
-      "첫걸음 · 1–20",
-      "공간 활용 · 21–40",
-      "미리 계획 · 41–60",
+      "초급",
+      "중급",
+      "고급",
       "레벨 {n} / {total}",
       "완료 {n} / {total}",
       "레벨",
@@ -328,4 +386,145 @@
         (WorkTimeApp.data.locales[language]["games.sokoban." + key] =
           values[index]),
     );
+  const chapterLabels = {
+    "zh-CN": [
+      "入门",
+      "进阶",
+      "熟练",
+      "专家",
+      "高阶专家",
+      "极难",
+      "大师",
+      "琉璃花房",
+      "云端天宫",
+      "冰川遗迹",
+      "黄铜工坊",
+    ],
+    "zh-TW": [
+      "入門",
+      "進階",
+      "熟練",
+      "專家",
+      "高階專家",
+      "極難",
+      "大師",
+      "琉璃花房",
+      "雲端天宮",
+      "冰川遺跡",
+      "黃銅工坊",
+    ],
+    "zh-HK": [
+      "入門",
+      "進階",
+      "熟練",
+      "專家",
+      "高階專家",
+      "極難",
+      "大師",
+      "琉璃花房",
+      "雲端天宮",
+      "冰川遺跡",
+      "黃銅工坊",
+    ],
+    en: [
+      "Beginner",
+      "Initiate",
+      "Amateur",
+      "Expert",
+      "Expert+",
+      "Fanatic",
+      "Master",
+      "Glass Conservatory",
+      "Celestial Palace",
+      "Glacier Ruins",
+      "Brass Workshop",
+    ],
+    ja: [
+      "初心者",
+      "入門修了",
+      "中級者",
+      "上級者",
+      "上級者＋",
+      "超難関",
+      "達人",
+      "ガラスの温室",
+      "雲上の宮殿",
+      "氷河遺跡",
+      "黄銅の工房",
+    ],
+    ko: [
+      "입문",
+      "초보",
+      "숙련",
+      "전문가",
+      "전문가+",
+      "극한",
+      "마스터",
+      "유리 온실",
+      "구름 궁전",
+      "빙하 유적",
+      "황동 공방",
+    ],
+  };
+  const chapterKeys = [
+    "beginner",
+    "initiate",
+    "amateur",
+    "expert",
+    "expertPlus",
+    "fanatic",
+    "master",
+    "greenhouse",
+    "palace",
+    "glacier",
+    "forge",
+  ];
+  for (const [language, values] of Object.entries(chapterLabels))
+    chapterKeys.forEach((key, index) => {
+      WorkTimeApp.data.locales[language]["games.sokoban." + key] =
+        values[index];
+    });
+  const updated = {
+    "zh-CN": [
+      "140 道精选关卡，七档难度，每档 20 题，自由选择",
+      "全部 140 关已完成！可重玩挑战更好记录。",
+      "将所有箱子推到目标标记上即可通关。一次只能推一个箱子，不能拉箱。方向键、WASD、滑动或方向按钮移动，Z 撤销，R 重玩。七档各 20 题，采用本地难度评估，可自由选关。进度自动保存，记录按推箱次数、移动次数比较。",
+      "题库：Microban / Sasquatch · David W. Skinner（保留署名分发）",
+    ],
+    "zh-TW": [
+      "140 道精選關卡，七種難度，每種 20 題，自由選擇",
+      "全部 140 關已完成！可重玩挑戰更佳紀錄。",
+      "將所有箱子推到目標標記上即可過關。一次只能推一個箱子，不能拉箱。方向鍵、WASD、滑動或方向按鈕移動，Z 復原，R 重玩。七種難度各 20 題，採用本地難度評估，可自由選關。進度自動儲存，紀錄按推箱次數、移動次數比較。",
+      "題庫：Microban / Sasquatch · David W. Skinner（保留署名散布）",
+    ],
+    "zh-HK": [
+      "140 道精選關卡，七種難度，每種 20 題，自由選擇",
+      "全部 140 關已完成！可重玩挑戰更佳紀錄。",
+      "將所有箱子推到目標標記上即可過關。一次只能推一個箱子，不能拉箱。方向鍵、WASD、滑動或方向按鈕移動，Z 復原，R 重玩。七種難度各 20 題，採用本地難度評估，可自由選關。進度自動儲存，紀錄按推箱次數、移動次數比較。",
+      "題庫：Microban / Sasquatch · David W. Skinner（保留署名散布）",
+    ],
+    en: [
+      "140 curated puzzles, seven difficulties with 20 levels each",
+      "All 140 levels complete! Replay to improve your records.",
+      "Push every box onto a goal marker. Push one box at a time; pulling is not allowed. Use arrows, WASD, swipes or direction buttons; Z undoes and R restarts. Seven freely selectable difficulties contain 20 puzzles each, classified using local difficulty estimates. Progress saves automatically. Records compare pushes, then moves.",
+      "Puzzles: Microban / Sasquatch · David W. Skinner (credited redistribution)",
+    ],
+    ja: [
+      "7段階の難易度、各20問、厳選140問を自由に選択",
+      "全140問クリア！再挑戦で記録を更新できます。",
+      "すべての箱を目標マークに押すとクリアです。一度に押せる箱は1つで、引くことはできません。方向キー、WASD、スワイプ、方向ボタンで移動。Zで元に戻し、Rでやり直します。独自評価による7段階の難易度に各20問を収録し、自由に選べます。進行は自動保存され、記録は押した回数、移動回数の順に比較します。",
+      "問題: Microban / Sasquatch · David W. Skinner（作者表記付き再配布）",
+    ],
+    ko: [
+      "일곱 난이도별 20개씩, 엄선된 140개 퍼즐",
+      "140개 레벨 모두 완료! 다시 도전해 기록을 갱신하세요.",
+      "모든 상자를 목표 표시에 밀면 완료됩니다. 한 번에 하나만 밀 수 있고 당길 수 없습니다. 방향키, WASD, 스와이프 또는 방향 버튼으로 이동합니다. Z는 실행 취소, R은 다시 시작입니다. 자체 난이도 평가에 따라 일곱 단계로 분류되며 각 20개 퍼즐을 자유롭게 선택할 수 있습니다. 진행은 자동 저장되며 기록은 밀기 횟수, 이동 횟수 순으로 비교합니다.",
+      "문제: Microban / Sasquatch · David W. Skinner (저자 표기 배포)",
+    ],
+  };
+  for (const [language, values] of Object.entries(updated))
+    ["description", "allWon", "help", "source"].forEach((key, index) => {
+      WorkTimeApp.data.locales[language]["games.sokoban." + key] =
+        values[index];
+    });
 })();

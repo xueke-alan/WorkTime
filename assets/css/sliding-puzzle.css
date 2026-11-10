@@ -1,0 +1,170 @@
+.game-sliding-puzzle {
+  --sliding-stat-width: 6rem;
+  width: min(100%, 560px);
+  min-height: 100%;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  gap: 0.85rem;
+}
+.game-sliding-puzzle [hidden] {
+  display: none !important;
+}
+.sliding-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+.sliding-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.sliding-stats .game-stat:last-child {
+  width: 10rem;
+}
+.sliding-stats .game-stat:not(:last-child) {
+  width: var(--sliding-stat-width);
+}
+.sliding-stats .game-stat:last-child > strong {
+  font-size: 1.25rem;
+}
+.sliding-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(100%, calc(var(--sliding-stat-width) * 2 + 11rem));
+  margin-inline-start: auto;
+}
+.sliding-difficulty {
+  flex: 1;
+  min-width: 0;
+}
+.sliding-difficulty .game-select-trigger {
+  min-width: 0;
+}
+.sliding-difficulty .button-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sliding-cover .sliding-actions {
+  width: auto;
+  margin-inline-start: 0;
+}
+.sliding-board {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  touch-action: none;
+}
+.sliding-tiles {
+  display: grid;
+  grid-template-columns: repeat(var(--sliding-n), minmax(0, 1fr));
+  gap: clamp(3px, 1vw, 9px);
+  aspect-ratio: 1;
+}
+.sliding-tile,
+.sliding-empty {
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: 4px;
+}
+.game-sliding-puzzle .sliding-tiles .sliding-tile {
+  --sliding-tile-fill: #dfe8f0;
+  --sliding-tile-shade: #7898b3;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-family: inherit;
+  font-size: clamp(13px, calc(260px / var(--sliding-n)), 48px);
+  font-weight: 750;
+  color: #394b50;
+  background: var(--sliding-tile-fill);
+  box-shadow: none;
+  transform: none;
+  cursor: default;
+  user-select: none;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+}
+.game-sliding-puzzle .sliding-tiles .sliding-tile[data-tone="1"] {
+  --sliding-tile-fill: #e0e9df;
+  --sliding-tile-shade: #789579;
+}
+.game-sliding-puzzle .sliding-tiles .sliding-tile[data-tone="2"] {
+  --sliding-tile-fill: #eee5d6;
+  --sliding-tile-shade: #aa9068;
+}
+.game-sliding-puzzle .sliding-tile[data-movable="true"] {
+  cursor: pointer;
+}
+@media (hover: hover) and (pointer: fine) {
+  .game-sliding-puzzle .sliding-tile[data-movable="true"]:hover {
+    background: color-mix(in srgb, var(--sliding-tile-fill) 78%, var(--sliding-tile-shade));
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--sliding-tile-shade) 70%, var(--sliding-tile-fill));
+  }
+}
+.game-sliding-puzzle .sliding-tile[data-movable="true"]:active {
+  background: color-mix(in srgb, var(--sliding-tile-fill) 65%, var(--sliding-tile-shade));
+  box-shadow: inset 0 0 0 2px var(--sliding-tile-shade);
+}
+.sliding-empty {
+  background: #f0f4f7;
+}
+.sliding-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 20px;
+  border-radius: inherit;
+  background: #f4f7faf5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  text-align: center;
+  overflow: auto;
+}
+.sliding-cover h3 {
+  color: #354e66;
+  margin: 0;
+  font-size: clamp(20px, 5vw, 32px);
+}
+.sliding-cover .sliding-actions {
+  justify-content: center;
+}
+.sliding-warning {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.sliding-warning:empty {
+  display: none;
+}
+.game-sliding-puzzle :is(button, select):focus-visible {
+  outline: 2px solid #6588a5;
+  outline-offset: -3px;
+}
+.game-sliding-puzzle .sliding-board:focus-visible {
+  outline: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-sliding-puzzle .sliding-tile {
+    transition: none;
+  }
+}
+@media (max-width: 540px) {
+  .game-sliding-puzzle {
+    --sliding-stat-width: 5.1rem;
+  }
+}
+@media (max-width: 420px) {
+  .game-sliding-puzzle .sliding-tiles .sliding-tile {
+    font-size: clamp(13px, calc(170px / var(--sliding-n)), 38px);
+  }
+}

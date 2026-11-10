@@ -121,7 +121,8 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
     field.id = "autoBackupFolder";
     const label = document.createElement("label");
     label.id = "autoBackupFolderLabel";
-    label.htmlFor = "autoBackupFolderChoose";
+    // The group is named via aria-labelledby; associating this heading with
+    // the button also forwards label hover outside the button's bounds.
     const control = document.createElement("div");
     control.className = "auto-backup-folder-control";
     control.setAttribute("role", "group");

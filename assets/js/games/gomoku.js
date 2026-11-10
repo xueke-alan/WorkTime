@@ -136,6 +136,7 @@ WorkTimeApp.games.register({
       scheduleAI();
       if (keyboard) cells[focus].focus();
     }
+    const engineName = node(setup, "p", "gomoku-detail");
     const play = node(root, "div", "gomoku-play");
     const stage = node(play, "div", "gomoku-stage");
     const board = node(stage, "div", "gomoku-board");
@@ -552,6 +553,7 @@ WorkTimeApp.games.register({
       (level ? controls : root).append(warning);
       if (!level) {
         setupTitle.textContent = t("ai");
+        engineName.textContent = t("engineName");
         difficultyOptions.setAttribute("aria-label", t("difficulty"));
         difficultyButtons.forEach(({ difficulty, control }) => {
           control.textContent = t("ai" + difficulty);

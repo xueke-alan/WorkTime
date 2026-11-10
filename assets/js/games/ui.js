@@ -564,7 +564,7 @@ WorkTimeApp.games.createCelebration = function (signal) {
         }),
       );
     }
-    void Promise.all(confettiMotions.map((motion) => motion.finished)).then(
+    return Promise.all(confettiMotions.map((motion) => motion.finished)).then(
       () => {
         if (celebration === layer) stop();
       },

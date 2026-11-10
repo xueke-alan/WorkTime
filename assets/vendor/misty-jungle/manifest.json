@@ -1,0 +1,9 @@
+{
+  "name": "MistyJungle",
+  "upstream": "https://github.com/brianhliou/misty-jungle",
+  "commit": "5717f7f8db386a0ec38ec73c1df58920beb32591",
+  "upstreamSha256": "4cb3180ee3c620abe57bcc9bec7e5703d144adeb5fe3e0f7431fa1d3ee06def5",
+  "wasmSha256": "07c3f2fed68a92bc0d9198b8dc57e208be61696035df585d20535fb4685f7719",
+  "bytes": 103013,
+  "rust": "1.94.0"
+}

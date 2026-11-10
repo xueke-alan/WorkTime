@@ -1,0 +1,27 @@
+Sasquatch / Mas Sasquatch level collections
+Copyright David W. Skinner (sasquatch@bentonrea.com).
+Author page and original text downloads:
+https://www.onlinespiele-sammlung.de/sokoban/sokobangames/skinner/
+Author distribution terms: "These sets may be freely distributed provided they remain properly credited."
+Unchanged source texts s1.txt through s7.txt are preserved as sasquatch-1.txt
+through sasquatch-7.txt in assets/data/sources. Original geometry and numbers
+are preserved. The generated bank records each source URL and SHA-256.
+Sasquatch VII levels 11 and 12 are marked as SokHard derivations in the
+original source; neither is included in the selected playable bank.
+
+Historical solution data: Guy Langston / SokoSolve contributors.
+https://github.com/guylangston/SokoSolve/blob/4045224e65832e5475d9c1c781251b5c3c4d6ac0/data/Lib/solutions.json
+An unchanged copy is preserved as assets/data/sources/sasquatch-solutions.json.
+Its repository license is GNU GPL version 2; see licenses/sokosolve.txt.
+Imported historical solutions retain their SolutionId and search-node counts.
+Solutions without a SolutionId were computed by the WorkTime offline search.
+All selected paths are replay-verified and are not claimed to be optimal.
+Sokoban source maps remain credited to David W. Skinner, not public domain.
+UI, vector artwork and offline search utilities were implemented separately.
+
+The playable bank includes 62 Sasquatch levels and 78 Microban levels, for
+140 levels in seven locally assessed groups of 20. The previous 100 playable
+levels retain their stable IDs, original maps and solutions; menu numbers
+change with the new ordering. The seven labels/ranges reference:
+https://aymericdupeloux.wixsite.com/sokoban/post/welcome
+This is a classification reference only: no Cosmos levels were redistributed.

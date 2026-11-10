@@ -136,9 +136,6 @@ WorkTimeApp.ui.createAgenda = function ({
       href = detail ? "#ms-calendar" : "#ms-local-fire-department",
       changed = use.getAttribute("href") !== href;
     use.setAttribute("href", href);
-    yearViewToggle.title = WorkTimeApp.i18n.t(
-      detail ? "yearView.toHeatmap" : "yearView.toCalendar",
-    );
     yearViewToggle.setAttribute(
       "aria-label",
       WorkTimeApp.i18n.t(
