@@ -237,6 +237,9 @@ Thumbs.db
 !/scripts/verify-year-detail.cjs
 !/scripts/verify-garden-motion.cjs
 !/scripts/verify-link-review.cjs
+!/scripts/measure-startup.cjs
+!/scripts/verify-startup-critical.cjs
+!/scripts/lib/startup-test-server.cjs
 !/scripts/verify-sokoban-motion.cjs
 
 !/scripts/pikafish-browser/

@@ -144,6 +144,7 @@
   let frame = 0;
   let suspended = false;
   let disposed = true;
+  let preparingFirstPaint = false;
   const probe = document.createElement("i");
   probe.setAttribute("aria-hidden", "true");
   probe.style.cssText =
@@ -245,6 +246,9 @@
       item.box = item.element.getBoundingClientRect();
       item.baseline = item.baselineProbe.getBoundingClientRect().top;
       item.trendBox = item.trendIcon?.getBoundingClientRect();
+      item.centerBox = item.element.matches(".onboarding-node-text")
+        ? item.element.parentElement.getBoundingClientRect()
+        : item.box;
     }
     for (const {
       element,
@@ -256,6 +260,7 @@
       baseline,
       trendIcon,
       trendBox,
+      centerBox,
     } of measurements) {
       baselineProbe.remove();
       if (baselineHost !== element) baselineHost.remove();
@@ -266,9 +271,6 @@
           : (metrics.actualBoundingBoxDescent -
               metrics.actualBoundingBoxAscent) /
             2);
-      const centerBox = element.matches(".onboarding-node-text")
-        ? element.parentElement.getBoundingClientRect()
-        : box;
       const offset = centerBox.top + centerBox.height / 2 - inkCenter;
       if (trendBox) {
         const sameLine = trendBox.bottom > box.top && trendBox.top < box.bottom;
@@ -298,6 +300,14 @@
   }
   function refresh(scopes = null) {
     if (disposed || suspended || document.hidden) return;
+    if (
+      document.documentElement.classList.contains("app-loading") &&
+      !preparingFirstPaint
+    ) {
+      if (scopes) for (const scope of scopes) pendingScopes.add(scope);
+      else fullRefresh = true;
+      return;
+    }
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     scheduled = false;
@@ -357,13 +367,25 @@
     alignTexts(targets);
     observe();
   }
+  function prepareFirstPaint() {
+    preparingFirstPaint = true;
+    try {
+      refresh();
+    } finally {
+      preparingFirstPaint = false;
+    }
+  }
   function queue(scope = null) {
     // Startup reveals only after fonts and application mounting finish. Its
     // explicit refresh owns the first layout; measuring partially mounted
     // panels here forces the same text and line boxes through layout twice.
-    if (document.documentElement.dataset.appState === "initializing") return;
     if (scope) pendingScopes.add(scope);
     else fullRefresh = true;
+    if (
+      document.documentElement.dataset.appState === "initializing" ||
+      document.documentElement.classList.contains("app-loading")
+    )
+      return;
     if (!disposed && !suspended && !document.hidden && !scheduled) {
       scheduled = true;
       frame = requestAnimationFrame(() => {
@@ -452,6 +474,14 @@
       const changed = [...new Set([...before, ...after])].filter(
         (token) => before.has(token) !== after.has(token),
       );
+      // Revealing an already measured page changes visibility, not text metrics.
+      if (
+        element === document.documentElement &&
+        changed.every((token) => token === "app-loading") &&
+        !pendingScopes.size &&
+        !fullRefresh
+      )
+        return true;
       return changed.every(
         (token) =>
           motionClasses.has(token) ||
@@ -649,6 +679,6 @@
     schedule();
   }
   document.fonts.ready.then(schedule);
-  WorkTimeApp.ui.alignment = { refresh, mount, dispose };
+  WorkTimeApp.ui.alignment = { refresh, prepareFirstPaint, mount, dispose };
   mount();
 })();

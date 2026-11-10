@@ -25,7 +25,7 @@
     finishWaiting?.();
   }
   const reveal = () => {
-    WorkTimeApp.ui.alignment?.refresh();
+    WorkTimeApp.ui.alignment?.prepareFirstPaint();
     schedule(() => {
       document
         .querySelectorAll(".workspace>.panel,main.wrap>footer")

@@ -80,6 +80,7 @@ function verify(feature, published = false, required = false) {
           "review-browser",
           "performance-budget",
           "lunar-runtime",
+          "startup-critical",
         ].includes(feature),
         env: {
           ...process.env,
@@ -191,6 +192,7 @@ try {
           "xiangqi-engine",
           "onboarding",
           "sudoku-celebration",
+          "startup-critical",
         ].includes(feature)
       )
         verify(feature, true);
@@ -248,6 +250,7 @@ try {
     for (const feature of [
       "lunar-runtime",
       "startup",
+      "startup-critical",
       "loading",
       "media-loading",
       "motion-settings",

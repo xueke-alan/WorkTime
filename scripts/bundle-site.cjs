@@ -153,6 +153,18 @@ function bundleSite(root) {
           : "",
       );
   }
+  // Download independent stages in parallel; boot.js still executes them in order.
+  // Low priority lets the render-blocking stylesheet and theme finish first.
+  const preloads = ["core", "date", "view", "startup"].map(
+    (stage) =>
+      '<link rel="preload" as="script" href="assets/js/ui/' +
+      stage +
+      '-runtime.min.js" fetchpriority="low">',
+  );
+  html = html.replace(
+    '<script defer src="assets/js/site.js"></script>',
+    preloads.join("\n") + '\n<script defer src="assets/js/site.js"></script>',
+  );
   fs.writeFileSync(entry, html);
   console.log(
     `Bundled ${styles.length} styles and ${scripts.length} scripts into 3 entry bundles.`,

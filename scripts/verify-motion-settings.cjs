@@ -31,7 +31,11 @@ async function verify() {
       page.on("pageerror", (error) => errors.push(error.message));
       await page.route(/^https?:/, (route) => route.abort());
       const entry =
-        process.env.WORKTIME_ENTRY || path.resolve(__dirname, "../index.html");
+        process.env.WORKTIME_ENTRY ||
+        path.resolve(
+          process.argv[2] || path.join(__dirname, ".."),
+          "index.html",
+        );
       await page.goto(pathToFileURL(entry).href);
       const ready = async () => {
         await page.waitForFunction(
