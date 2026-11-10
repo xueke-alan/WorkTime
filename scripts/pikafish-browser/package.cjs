@@ -28,3 +28,25 @@ fs.writeFileSync(
     ";\n",
 );
 console.log("Packaged offline worker: " + Buffer.byteLength(worker) + " bytes");
+
+// Pages loads raw binaries, avoiding a large script parse and Base64 copies.
+const resources = {};
+for (const [kind, bytes, extension] of [
+  ["wasm", wasm, "wasm"],
+  ["net", net, "nnue"],
+]) {
+  const hash = crypto.createHash("sha256").update(bytes).digest("hex");
+  const name = `${kind}-${hash.slice(0, 16)}.${extension}`;
+  fs.writeFileSync(path.join(output, name), bytes);
+  resources[kind] = { name, hash, size: bytes.length };
+}
+const onlineWorker =
+  "/*! Pikafish GPL-3.0-or-later. See licenses/pikafish. */\n" +
+  factory +
+  "\n" +
+  fs.readFileSync(path.join(__dirname, "worker-online.js"), "utf8");
+fs.writeFileSync(path.join(output, "worker.js"), onlineWorker);
+fs.writeFileSync(
+  path.join(output, "manifest.js"),
+  "WorkTimeApp.games.pikafishAssets = " + JSON.stringify(resources) + ";\n",
+);

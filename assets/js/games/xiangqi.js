@@ -260,19 +260,21 @@ WorkTimeApp.games.register({
       }
     }
 
-    function cancelSearch() {
+    function cancelSearch(release = false) {
       searchGeneration++;
       thought?.cancel();
       thought = null;
       thinking = false;
       board.removeAttribute("data-replying");
-      engine?.dispose();
-      engine = null;
-      engineReady = false;
+      if (release || engine?.busy) {
+        engine?.dispose();
+        engine = null;
+        engineReady = false;
+      }
     }
 
     function switchMode(value) {
-      cancelSearch();
+      cancelSearch(!value);
       stopPresentation();
       versus = value;
       level = null;
@@ -280,6 +282,7 @@ WorkTimeApp.games.register({
       path = [];
       selected = message = null;
       render();
+      if (value) prepareEngine();
     }
 
     function startVersus(keyboard = false) {
@@ -983,17 +986,19 @@ WorkTimeApp.games.register({
     listen(window, "blur", settle);
     listen(document, "visibilitychange", () => {
       if (document.hidden) {
-        if (versus) cancelSearch();
+        if (versus) cancelSearch(true);
         settle();
-      } else if (versus) replyVersus();
-      else presentation?.thought?.resume();
+      } else if (versus) {
+        prepareEngine();
+        replyVersus();
+      } else presentation?.thought?.resume();
     });
     const unlisten = compat.listen(reduced, settle);
     signal.addEventListener(
       "abort",
       () => {
         stopPresentation();
-        cancelSearch();
+        cancelSearch(true);
         unlisten();
       },
       { once: true },
@@ -1002,19 +1007,22 @@ WorkTimeApp.games.register({
     return {
       pause() {
         paused = true;
-        if (versus) cancelSearch();
+        if (versus) cancelSearch(true);
         settle();
       },
       resume() {
         paused = false;
         presentation?.thought?.resume();
-        if (versus) replyVersus();
+        if (versus) {
+          prepareEngine();
+          replyVersus();
+        }
       },
       resize() {
         if (presentation) settle();
       },
       dispose() {
-        cancelSearch();
+        cancelSearch(true);
         stopPresentation();
         root.remove();
       },

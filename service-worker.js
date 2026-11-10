@@ -10,11 +10,38 @@ self.addEventListener("activate", (event) => {
           .filter((name) => name.startsWith("worktime-shell-") && name !== CACHE)
           .map((name) => caches.delete(name)),
       ),
-    ).then(() => self.clients.claim()),
+    ).then(async () => {
+      const cache = await caches.open(CACHE);
+      // Retire the previous monolithic engine and any shell-cached binaries.
+      for (const request of await cache.keys())
+        if (new URL(request.url).pathname.includes("/assets/vendor/pikafish/"))
+          await cache.delete(request);
+      await self.clients.claim();
+    }),
   );
 });
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  // The engine manages its binary cache and optional runtime-folder copy itself.
+  // Bypass shell caching to avoid duplicate 50 MB models and network-first reads.
+  const url = new URL(event.request.url);
+  if (url.pathname.includes("/assets/vendor/pikafish/")) {
+    if (!/\/(manifest|worker)\.js$/.test(url.pathname)) return;
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      const cached = await cache.match(event.request);
+      if (cached && url.searchParams.has("v")) return cached;
+      try {
+        const response = await fetch(event.request);
+        if (response.ok) await cache.put(event.request, response.clone());
+        return response;
+      } catch (error) {
+        if (cached) return cached;
+        throw error;
+      }
+    })());
+    return;
+  }
   event.respondWith(
     fetch(event.request).then((response) => {
         const copy = response.clone();

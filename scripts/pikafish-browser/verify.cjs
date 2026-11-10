@@ -40,6 +40,19 @@ async function main() {
         viewport: { width: 1440, height: 1000 },
         reducedMotion: "reduce",
       });
+      await context.addInitScript(() => {
+        window.engineWorkerCount = 0;
+        window.Worker = class extends Worker {
+          constructor(...args) {
+            super(...args);
+            if (
+              String(args[0]).includes("/pikafish/") ||
+              new Error().stack.includes("xiangqi-engine.js")
+            )
+              window.engineWorkerCount++;
+          }
+        };
+      });
       const page = await context.newPage();
       const errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
@@ -87,6 +100,11 @@ async function main() {
           "legal reply / undo / restart passed",
         );
       }
+      assert.equal(
+        await page.evaluate(() => window.engineWorkerCount),
+        1,
+        "prewarming, difficulty changes, undo and idle restarts reuse one Worker",
+      );
       // A pending answer must never land on a new board after restart.
       await page.screenshot({
         path: path.resolve(__dirname, "../../.cache/pikafish-setup.png"),

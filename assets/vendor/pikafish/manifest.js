@@ -1,0 +1,1 @@
+WorkTimeApp.games.pikafishAssets = {"wasm":{"name":"wasm-23f2479cfad95cf5.wasm","hash":"23f2479cfad95cf5315c2452f4eccdf45cc9039968f1f7dac14435fa6fc6dc47","size":571860},"net":{"name":"net-810ef8ecb0d06977.nnue","hash":"810ef8ecb0d0697755deac0a1d956296d762132f63b74fc4f8658f2ec5203f5b","size":50309463}};

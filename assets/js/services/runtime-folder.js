@@ -515,6 +515,29 @@ WorkTimeApp.services.runtimeFolder = (() => {
       );
     }
   }
+  // Optional, disposable dependencies never request permission or alter media status.
+  async function withDependencies(action) {
+    await initialize();
+    if (
+      closed ||
+      busy ||
+      imports ||
+      candidate ||
+      !handle ||
+      layoutVersion !== 1
+    )
+      return null;
+    const selected = handle;
+    return locked(async () => {
+      if (busy || imports || candidate || handle !== selected) return null;
+      if ((await selected.queryPermission({ mode: "readwrite" })) !== "granted")
+        return null;
+      const directory = await selected.getDirectoryHandle("dependencies", {
+        create: true,
+      });
+      return action(directory);
+    });
+  }
   function importFiles(kind, files, options = {}) {
     if (busy)
       return Promise.reject(
@@ -571,6 +594,7 @@ WorkTimeApp.services.runtimeFolder = (() => {
     authorize,
     write,
     getDirectory,
+    withDependencies,
     importFiles,
     get state() {
       return {

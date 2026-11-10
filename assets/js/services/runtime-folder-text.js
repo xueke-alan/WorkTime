@@ -285,12 +285,12 @@ WorkTimeApp.ui.runtimeFolderText = (() => {
       "작업 폴더",
     ],
     description: [
-      "将自动创建backups等文件夹以备份，管理网站的资源，数据。",
-      "將自動建立 backups、ebooks 和 music。備份及匯入的書籍、音樂儲存在此處，匯入時保留來源檔案。",
-      "將自動建立 backups、ebooks 和 music。備份及匯入的書籍、音樂儲存在此處，匯入時保留來源檔案。",
-      "Creates backups, ebooks and music folders. Backups and imported media stay here. Original files are kept.",
-      "backups、ebooks、music を作成します。バックアップと取り込んだ本・音楽を保存し、元のファイルは残します。",
-      "backups, ebooks, music 폴더를 만듭니다. 백업과 가져온 책·음악을 저장하며 원본 파일은 유지됩니다.",
+      "自动创建 backups、ebooks 和 music，保存备份及导入的书籍、音乐，保留源文件。象棋引擎按需缓存到 dependencies，可删除后重新下载。",
+      "自動建立 backups、ebooks 和 music，儲存備份及匯入的書籍、音樂，保留來源檔案。象棋引擎按需快取至 dependencies，可刪除後重新下載。",
+      "自動建立 backups、ebooks 和 music，儲存備份及匯入的書籍、音樂，保留來源檔案。象棋引擎按需快取至 dependencies，可刪除後重新下載。",
+      "Creates backups, ebooks and music folders; original files are kept. The chess engine is cached in dependencies when needed and can be deleted and downloaded again.",
+      "backups、ebooks、music にバックアップや取り込んだ本・音楽を保存し、元のファイルは残します。象棋エンジンは必要に応じて dependencies に保存され、削除後も再ダウンロードできます。",
+      "backups, ebooks, music에 백업과 가져온 책·음악을 저장하며 원본은 유지됩니다. 장기 엔진은 필요할 때 dependencies에 저장되며 삭제 후 다시 다운로드할 수 있습니다.",
     ],
     importFiles: [
       "导入文件",

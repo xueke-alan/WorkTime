@@ -1,6 +1,8 @@
 # Deterministic generated-data checks and scripts across Windows/Linux.
 * text=auto eol=lf
 *.gz -text
+*.wasm -text
+*.nnue -text
 *.png -text
 *.jpg -text
 *.jpeg -text

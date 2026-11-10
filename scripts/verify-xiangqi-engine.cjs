@@ -11,6 +11,7 @@ async function verify() {
   const context = vm.createContext({
     WorkTimeApp: { games: {}, data: {} },
     document: {
+      baseURI: "file:///worktime/index.html",
       createElement: () => ({
         remove() {
           this.removed = true;
@@ -19,7 +20,13 @@ async function verify() {
       head: { append: (script) => scripts.push(script) },
     },
     Blob: class {},
-    URL: { createObjectURL: () => "blob:engine", revokeObjectURL() {} },
+    location: { protocol: "file:" },
+    URL: class extends URL {
+      static createObjectURL() {
+        return "blob:engine";
+      }
+      static revokeObjectURL() {}
+    },
     Worker: class {
       constructor() {
         workers.push(this);
