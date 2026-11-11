@@ -132,8 +132,7 @@ async function main() {
       const existing = context.WorkTimeApp.data.sudoku.groups.find(
         (g) => g.id === group.id,
       );
-      if (existing?.puzzles.length >= 20)
-        group.puzzles = existing.puzzles.slice(0, 20);
+      if (existing?.puzzles.length >= 20) Object.assign(group, existing);
     }
     groups.push(
       ...context.WorkTimeApp.data.sudoku.groups.filter(
@@ -155,7 +154,7 @@ async function main() {
     await license.text(),
   );
   console.log(
-    "Imported classics and retained 20 levels per parity/thermometer variant; local variants preserved.",
+    "Imported classics; curated parity/thermometer and local variants preserved in full.",
   );
 }
 main().catch((error) => {

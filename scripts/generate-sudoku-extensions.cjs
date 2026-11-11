@@ -65,13 +65,14 @@ function unique(p, max = 1200) {
 for (const id of ids) {
   if (process.argv.length > 2 && !process.argv.slice(2).includes(id)) continue;
   if (
-    process.argv.length === 2 &&
     data.sudoku.groups.some(
       (g) =>
         g.id === id &&
-        g.puzzles.length === 20 &&
-        (id !== "triple" ||
-          g.puzzles.every((p) => p.id.startsWith("triple-compact-"))),
+        (g.puzzles.length > 20 ||
+          (process.argv.length === 2 &&
+            g.puzzles.length === 20 &&
+            (id !== "triple" ||
+              g.puzzles.every((p) => p.id.startsWith("triple-compact-"))))),
     )
   )
     continue;

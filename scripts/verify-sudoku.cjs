@@ -1,6 +1,7 @@
 "use strict";
 const { launchGame } = require("./game-test-helpers.cjs");
 const { rate } = require("./killer-rating.cjs");
+const { ids: expandedIds } = require("./sudoku-variant-rating.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -28,7 +29,10 @@ function verifyBank() {
   assert.equal(data.sudoku.groups.length, 24);
   const seen = new Set();
   for (const group of data.sudoku.groups) {
-    assert.equal(group.puzzles.length, group.id === "killer" ? 30 : 20);
+    assert.equal(
+      group.puzzles.length,
+      group.id === "killer" || expandedIds.includes(group.id) ? 30 : 20,
+    );
     let lastRating = 0;
     for (const puzzle of group.puzzles) {
       assert.equal(
@@ -47,7 +51,7 @@ function verifyBank() {
             ? JSON.stringify(puzzle)
             : puzzle.givens),
       );
-      if (puzzle.rating !== undefined) {
+      if (!expandedIds.includes(group.id) && puzzle.rating !== undefined) {
         assert.ok(puzzle.rating >= lastRating);
         lastRating = puzzle.rating;
       }
@@ -219,8 +223,8 @@ async function main() {
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
-      await page.locator("#date-tab-games").click();
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
+      await page.waitForTimeout(400); // Let the persisted sidebar layout settle before opening Games.
       await launchGame(page, "game-sudoku");
       await page.waitForFunction(
         () => document.querySelector("#gameShell").dataset.state === "open",
@@ -326,7 +330,7 @@ async function main() {
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
     await action("thermo").click();
-    await action("level-20").click();
+    await action("level-30").click();
     const laterPuzzle = groupById("thermo").puzzles.at(-1);
     const laterIndex = laterPuzzle.givens.indexOf("0");
     const laterDigit = laterPuzzle.solution[laterIndex];
@@ -497,7 +501,7 @@ async function main() {
     await action("skyscraper").click();
     assert.equal(
       await page.locator(".sudoku-levels button:visible").count(),
-      20,
+      30,
     );
     await action("level-1").click();
     const sky = groupById("skyscraper").puzzles[0];
@@ -836,7 +840,7 @@ async function main() {
     );
     await blocked.close();
     console.log(
-      "Sudoku: 490 unique solutions, variant constraints, free level selection, input, undo, drafts, replay, pause, direct toolbar, six languages, mobile, unavailable storage and offline loading verified.",
+      "Sudoku: 640 unique solutions, variant constraints, free level selection, input, undo, drafts, replay, pause, direct toolbar, six languages, mobile, unavailable storage and offline loading verified.",
     );
   } finally {
     await browser.close();

@@ -219,6 +219,9 @@ Thumbs.db
 
 !/scripts/generate-sudoku-variants.cjs
 !/scripts/generate-sudoku-extensions.cjs
+!/scripts/generate-sudoku-hard.cjs
+!/scripts/sudoku-variant-rating.cjs
+!/scripts/sudoku-variant-difficulty.json
 !/scripts/verify-sudoku-variants.cjs
 !/scripts/verify-sudoku-hover.cjs
 

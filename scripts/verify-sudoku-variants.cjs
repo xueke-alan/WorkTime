@@ -7,6 +7,14 @@ const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 const { launchGame } = require("./game-test-helpers.cjs");
 const { rate } = require("./killer-rating.cjs");
+const {
+  ids: expandedIds,
+  rate: rateVariant,
+  hard,
+  signature,
+  fingerprint,
+} = require("./sudoku-variant-rating.cjs");
+const difficulty = require("./sudoku-variant-difficulty.json");
 const root = path.resolve(__dirname, "..");
 const ctx = vm.createContext({ WorkTimeApp: { data: {}, games: {} } });
 for (const file of ["assets/data/sudoku.js", "assets/js/games/sudoku-rules.js"])
@@ -33,6 +41,75 @@ const ids = [
   "tenBox",
 ];
 const plain = (value) => JSON.parse(JSON.stringify(value));
+const levelCount = (id) =>
+  id === "killer" || expandedIds.includes(id) ? 30 : 20;
+function verifyExpansion() {
+  const usedIds = new Set();
+  for (const group of data.sudoku.groups) {
+    for (const p of [...group.puzzles, ...(group.legacyPuzzles || [])]) {
+      assert.ok(!usedIds.has(p.id), p.id + " unique ID");
+      usedIds.add(p.id);
+    }
+    if (!expandedIds.includes(group.id)) {
+      assert.equal(
+        fingerprint(group),
+        difficulty.untouched.find((g) => g.id === group.id).fingerprint,
+      );
+      continue;
+    }
+    const saved = difficulty.groups.find((g) => g.id === group.id);
+    const all = [...group.puzzles, ...(group.legacyPuzzles || [])];
+    const originals = saved.originals.map(({ id, fingerprint: expected }) => {
+      const p = all.find((p) => p.id === id);
+      assert.ok(p, id + " original preserved");
+      assert.equal(fingerprint(p), expected, id + " unchanged board");
+      return p;
+    });
+    assert.equal(originals.length, 20);
+    const originalIds = new Set(originals.map((p) => p.id));
+    const seen = new Set(originals.map(signature));
+    const validate = (p, row, expectedHard) => {
+      const { solutions, ...metrics } = rateVariant(p);
+      assert.deepEqual(
+        solutions,
+        [p.solution],
+        p.id + " unique rated solution",
+      );
+      assert.deepEqual({ id: p.id, ...metrics, solutionCount: 1 }, row);
+      assert.equal(hard(row), expectedHard, p.id + " difficulty");
+      assert.equal(p.difficulty, expectedHard ? "hard" : undefined);
+    };
+    assert.equal(group.puzzles.length, 30);
+    assert.deepEqual(
+      plain(
+        group.puzzles
+          .slice(0, 20)
+          .filter((p) => originalIds.has(p.id))
+          .map((p) => p.id),
+      ),
+      saved.baseline.filter((row) => !hard(row)).map((row) => row.id),
+    );
+    assert.equal(
+      saved.legacyRows.length,
+      Math.max(0, saved.baseline.filter(hard).length - 10),
+    );
+    for (const [i, p] of group.puzzles.entries()) {
+      validate(p, saved.rows[i], i >= 20);
+      if (i > 20) assert.ok(saved.rows[i - 1].score <= saved.rows[i].score);
+      if (!originalIds.has(p.id)) {
+        const key = signature(p);
+        assert.ok(
+          !seen.has(key),
+          p.id + " no duplicate clue mask under symmetry",
+        );
+        seen.add(key);
+      }
+    }
+    assert.equal((group.legacyPuzzles || []).length, saved.legacyRows.length);
+    for (const [i, p] of (group.legacyPuzzles || []).entries())
+      validate(p, saved.legacyRows[i], true);
+  }
+}
 const adjacent = (a, b) =>
   Math.abs(Math.floor(a / 9) - Math.floor(b / 9)) +
     Math.abs((a % 9) - (b % 9)) ===
@@ -58,12 +135,12 @@ function verifyRules() {
   for (const group of variants)
     assert.equal(
       group.puzzles.length,
-      group.id === "killer" ? 30 : 20,
+      levelCount(group.id),
       group.id + " level count",
     );
   for (const id of ids) {
     const group = plain(data.sudoku.groups.find((g) => g.id === id));
-    assert.equal(group.puzzles.length, id === "killer" ? 30 : 20);
+    assert.equal(group.puzzles.length, levelCount(id));
     for (const p of group.puzzles) {
       const values = Array.from(p.solution, Number),
         state = { ...rules.create(p), values };
@@ -474,7 +551,7 @@ async function verifyUI() {
       await action(id).click();
       assert.equal(
         await page.locator(".sudoku-levels button:visible").count(),
-        id === "killer" ? 30 : 20,
+        levelCount(id),
       );
       await action("level-" + (id === "killer" ? 4 : 1)).click();
       if (!pooledCell) pooledCell = await action("cell-0").elementHandle();
@@ -553,11 +630,16 @@ async function verifyUI() {
         );
         assert.equal(
           await page
-            .locator(
-              ".sudoku-rule, [data-game-help], .sudoku-source, .sudoku-options",
-            )
+            .locator("[data-game-help], .sudoku-source, .sudoku-options")
             .count(),
           0,
+        );
+        assert.equal(
+          await page.locator(".sudoku-play .sudoku-rule").textContent(),
+          await page.evaluate(
+            (id) => WorkTimeApp.i18n.t(`games.sudoku.${id}Rule`),
+            id,
+          ),
         );
       }
       const puzzle = data.sudoku.groups.find((g) => g.id === id).puzzles[
@@ -644,8 +726,15 @@ async function verifyUI() {
       await action(group.id).click();
       assert.equal(
         await page.locator(".sudoku-levels button:visible").count(),
-        group.id === "killer" ? 30 : 20,
+        levelCount(group.id),
       );
+      for (const [i, p] of group.puzzles.entries())
+        assert.equal(
+          await action("level-" + (i + 1))
+            .locator(".sudoku-level-difficulty")
+            .count(),
+          p.difficulty === "hard" ? 1 : 0,
+        );
       await action("level-20").click();
       const last = group.puzzles[19],
         cell = last.givens.indexOf("0");
@@ -662,12 +751,40 @@ async function verifyUI() {
         saved.drafts[last.id].values[cell],
         Number(last.solution[cell]),
       );
+      if (group.id === "kropki") {
+        await page.evaluate(
+          ({ givens, solution, cell }) => {
+            for (let i = 0; i < 81; i++) {
+              if (i === cell || givens[i] !== "0") continue;
+              const button = document.querySelector('[data-cell="' + i + '"]');
+              button.click();
+              button.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                  key: solution[i],
+                  bubbles: true,
+                  cancelable: true,
+                }),
+              );
+            }
+          },
+          { givens: last.givens, solution: last.solution, cell },
+        );
+        await action("accept").click();
+        assert.equal(
+          await page.evaluate(
+            () =>
+              JSON.parse(localStorage.getItem("worktime.games.sudoku.v1"))
+                .current,
+          ),
+          group.puzzles[20].id,
+        );
+      }
       await choose();
     }
-    // The compact replacement must not reinterpret saved cells from the old 21×21 layout.
-    for (const legacyGroup of ["triple"]) {
-      const legacy = data.sudoku.groups.find((g) => g.id === legacyGroup)
-        .legacyPuzzles[0];
+    // Old layouts and surplus hard puzzles must keep their original boards.
+    for (const legacyGroup of ["triple", "kropki"]) {
+      const group = data.sudoku.groups.find((g) => g.id === legacyGroup);
+      const legacy = group.legacyPuzzles[0];
       const legacyState = rules.create(legacy);
       legacyState.replay = rules.startReplay(legacy, legacyState);
       const legacyIndex = legacy.givens.lastIndexOf("0");
@@ -683,6 +800,30 @@ async function verifyUI() {
         Number(legacy.solution[legacyIndex]),
         false,
       );
+      const drafts = { [legacy.id]: legacyState },
+        completed = {};
+      const moved = legacyGroup === "kropki" ? group.puzzles[20] : null;
+      if (moved) {
+        const cell = moved.givens.indexOf("0"),
+          digit = Number(moved.solution[cell]);
+        const draft = rules.create(moved);
+        draft.replay = rules.startReplay(moved, draft);
+        rules.enter(moved, draft, cell, digit, false);
+        rules.recordEdit(draft.replay, cell, digit, false);
+        drafts[moved.id] = draft;
+        const base = {
+          ...rules.create(moved),
+          values: Array.from(moved.solution, Number),
+        };
+        base.values[cell] = 0;
+        const replay = rules.startReplay(moved, base);
+        rules.recordEdit(replay, cell, digit, false);
+        completed[moved.id] = {
+          elapsed: 10,
+          hints: 0,
+          replay: { ...replay, finishedAt: 1 },
+        };
+      }
       const legacyPage = await browser.newPage({
         viewport: { width: 1440, height: 1000 },
         reducedMotion: "reduce",
@@ -699,10 +840,10 @@ async function verifyUI() {
         },
         plain({
           version: 1,
-          group: "triple",
+          group: legacyGroup,
           current: legacy.id,
-          drafts: { [legacy.id]: legacyState },
-          completed: {},
+          drafts,
+          completed,
         }),
       );
       await legacyPage.goto(
@@ -721,7 +862,10 @@ async function verifyUI() {
         await legacyPage.locator(".game-title").innerText(),
         /第 1 关/,
       );
-      assert.equal(await legacyPage.locator(".sudoku-rule").count(), 0);
+      assert.equal(
+        await legacyPage.locator(".sudoku-play .sudoku-rule").count(),
+        1,
+      );
       const preserved = await legacyPage.evaluate(() =>
         WorkTimeApp.services.gameArchive.normalize(
           "game-sudoku",
@@ -730,13 +874,35 @@ async function verifyUI() {
       );
       assert.equal(preserved.current, legacy.id);
       assert.ok(preserved.drafts[legacy.id].replay);
+      if (moved) {
+        assert.deepEqual(
+          preserved.drafts[moved.id].values,
+          plain(drafts[moved.id].values),
+        );
+        assert.deepEqual(
+          preserved.completed[moved.id],
+          plain(completed[moved.id]),
+        );
+      }
       await legacyPage.locator('[data-sudoku-action="choose"]').click();
       assert.equal(
         await legacyPage.locator(".sudoku-levels button:visible").count(),
-        20,
+        levelCount(legacyGroup),
       );
-      await legacyPage.locator('[data-sudoku-action="level-1"]').click();
-      assert.equal(await legacyPage.locator(".sudoku-cell").count(), 180);
+      const button = legacyPage.locator(
+        `[data-sudoku-action="level-${moved ? 21 : 1}"]`,
+      );
+      if (moved)
+        assert.match(await button.getAttribute("aria-label"), /困难.*已通关/);
+      await button.click();
+      assert.equal(
+        await legacyPage.locator(".sudoku-cell").count(),
+        group.puzzles[0].givens.length,
+      );
+      if (moved) {
+        await legacyPage.locator('[data-sudoku-action="menu-replay"]').click();
+        assert.ok(await legacyPage.locator(".sudoku-replay").isVisible());
+      }
       await legacyPage.close();
     }
     assert.deepEqual(errors, []);
@@ -747,6 +913,7 @@ async function verifyUI() {
     await browser.close();
   }
 }
+verifyExpansion();
 verifyRules();
 if (!process.argv.includes("--rules-only"))
   verifyUI().catch((error) => {

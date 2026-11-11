@@ -158,7 +158,7 @@ for (const id of ids) {
   // Keep existing level IDs and layouts stable so saved games and replays survive.
   const puzzles = [
     ...(data.sudoku.groups.find((g) => g.id === id)?.puzzles || []),
-  ].slice(0, id === "killer" ? 30 : 20);
+  ];
   let attempt = 0;
   while (puzzles.length < 20) {
     if (++attempt > 300)
@@ -305,18 +305,17 @@ for (const id of ids) {
       puzzle.cages?.length ?? "-",
     );
   }
-  groups.push({ id, source: "worktime", puzzles });
+  groups.push({
+    ...data.sudoku.groups.find((g) => g.id === id),
+    id,
+    source: "worktime",
+    puzzles,
+  });
 }
 const existingIds = new Set(data.sudoku.groups.map((g) => g.id));
 const generated = new Map(groups.map((g) => [g.id, g]));
 data.sudoku.groups = [
-  ...data.sudoku.groups.map(
-    (g) =>
-      generated.get(g.id) ||
-      (["parity", "thermo"].includes(g.id)
-        ? { ...g, puzzles: g.puzzles.slice(0, 20) }
-        : g),
-  ),
+  ...data.sudoku.groups.map((g) => generated.get(g.id) || g),
   ...groups.filter((g) => !existingIds.has(g.id)),
 ];
 fs.writeFileSync(
