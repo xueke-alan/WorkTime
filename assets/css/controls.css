@@ -1,5 +1,11 @@
 /* Shared control geometry. Component layouts retain their explicit exceptions. */
 /* Focus navigation stays native; controls have no additional outline ring. */
+/* Standalone field captions name controls without extending their pointer area.
+   Keep native label associations for accessibility and labels wrapping controls
+   (such as theme choices and switches) interactive. */
+body label[for]:not(:has(input, select, textarea, button)) {
+  pointer-events: none;
+}
 body :focus,
 body :focus-visible {
   outline: 0;

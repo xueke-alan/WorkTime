@@ -28,6 +28,9 @@ const { chromium } = require("playwright");
         () => document.documentElement.dataset.appState === "ready",
       );
       console.log("App ready");
+      await page.evaluate(() =>
+        WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+      );
       await page.clock.setFixedTime(new Date("2026-11-11T15:59:58Z"));
       await page.locator("#date-tab-games").click();
       const panel = page.locator("#gamesPanel");
@@ -37,7 +40,7 @@ const { chromium } = require("playwright");
       assert.equal(await shown(), true, "First visit is covered immediately");
       assert.equal(await cover.getAttribute("aria-hidden"), "true");
       const motto = cover.locator(".game-idle-motto");
-      assert.equal(await motto.textContent(), "好好上班 拒绝摸鱼");
+      assert.equal(await motto.textContent(), "我爱上班，从不摸鱼");
       assert.ok(
         await motto.evaluate((el) => {
           const style = getComputedStyle(el);
@@ -68,12 +71,26 @@ const { chromium } = require("playwright");
         "Moving inside the card stays uncovered",
       );
       await page.mouse.move(0, 0);
-      await page.waitForTimeout(800);
-      assert.equal(await shown(), true);
+      await page.waitForTimeout(350);
+      assert.equal(await shown(), true, "Cover appears after the 300ms delay");
       console.log("Pointer transitions verified");
       await page.clock.setFixedTime(new Date("2026-11-11T16:00:01Z"));
-      await page.waitForTimeout(1100);
-      assert.equal(await cover.locator("time").textContent(), "00:00:01");
+      await page.waitForFunction(
+        () =>
+          document.querySelector(".game-idle-time .summary-number-accessible")
+            ?.textContent === "00:00:01",
+      );
+      const rolling = cover.locator(".number-roll-up, .number-roll-down");
+      if (reducedMotion === "reduce") assert.equal(await rolling.count(), 0);
+      else assert.ok((await rolling.count()) > 0, "Changed clock digits roll");
+      await page.waitForFunction(
+        () =>
+          !document.querySelector(".game-idle-time .summary-number-outgoing"),
+      );
+      assert.equal(
+        await cover.locator(".summary-number-visual").textContent(),
+        "00:00:01",
+      );
       assert.match(await cover.locator(".game-idle-date").textContent(), /12/);
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("en"));
       console.log("Clock and language verified");

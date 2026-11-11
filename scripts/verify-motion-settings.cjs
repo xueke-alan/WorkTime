@@ -99,6 +99,13 @@ async function verify() {
             .transitionDuration,
           source: WorkTimeApp.ui.animationCompat.sourceMedia(),
         }));
+      assert.equal(await page.locator("#motionMode").inputValue(), "full");
+      assert.equal((await state()).reduced, false);
+      await choose("system");
+      await page.reload();
+      await ready();
+      await clickSettingsControl(page, "#pageSettingsOpen");
+      assert.equal(await page.locator("#motionMode").inputValue(), "system");
       assert.deepEqual(await state(), {
         reduced: true,
         duration: "0s",

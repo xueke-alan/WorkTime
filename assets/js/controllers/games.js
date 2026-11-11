@@ -18,7 +18,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   idleDate.className = "game-idle-date";
   const idleMotto = document.createElement("div");
   idleMotto.className = "game-idle-motto";
-  idleMotto.textContent = "好好上班 拒绝摸鱼";
+  idleMotto.textContent = "我爱上班，从不摸鱼";
   idleCover.append(idleTime, idleDate, idleMotto);
   const hoverDevice = window.matchMedia(
     "(any-hover: hover) and (any-pointer: fine)",
@@ -31,13 +31,17 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     const now = new Date();
     const locale = WorkTimeApp.i18n.locale;
     idleTime.dateTime = now.toISOString();
-    idleTime.textContent = new Intl.DateTimeFormat(locale, {
+    const clock = new Intl.DateTimeFormat(locale, {
       timeZone: "Asia/Shanghai",
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
       hourCycle: "h23",
     }).format(now);
+    WorkTimeApp.ui.numbers.set(idleTime, clock, {
+      animateInitial: false,
+      motion: idleVisible,
+    });
     idleDate.textContent = new Intl.DateTimeFormat(locale, {
       timeZone: "Asia/Shanghai",
       year: "numeric",
@@ -51,6 +55,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     window.clearInterval(idleTick);
     idleDelay = idleTick = null;
     idleVisible = false;
+    WorkTimeApp.ui.numbers.settle(idleTime);
     idleCover.classList.remove("is-visible", "is-initial");
   }
   function canShowIdleCover() {
@@ -85,7 +90,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       idleDelay = null;
       if (!canShowIdleCover()) return;
       showIdleCover();
-    }, 500);
+    }, 300);
   }
   function showIdleCover(immediate = false) {
     updateIdleClock();

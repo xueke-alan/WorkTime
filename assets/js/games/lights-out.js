@@ -110,6 +110,7 @@ WorkTimeApp.games.register({
       },
       "restart-alt",
     );
+    const rulesText = node("p", "lights-rules", sidebar);
     const catalog = WorkTimeApp.games.createLevelPage(
       root,
       "lights-level-page",
@@ -303,6 +304,7 @@ WorkTimeApp.games.register({
       choose.disabled = choosing || confirming;
       undo.disabled = choosing || confirming || !state()?.path.length;
       restart.disabled = choosing || confirming;
+      rulesText.textContent = t("help");
       chooser.hidden = !choosing;
       boardHost.hidden = choosing;
       stats.hidden = choosing;

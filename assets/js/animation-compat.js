@@ -8,7 +8,7 @@
   const effective = new EventTarget();
   Object.defineProperty(effective, "matches", { get: () => reduced() });
   function mode() {
-    return WorkTimeApp.services.preferences.page.state.motionMode || "system";
+    return WorkTimeApp.services.preferences.page.state.motionMode || "full";
   }
   function reduced() {
     return mode() === "reduce" || (mode() === "system" && system.matches);

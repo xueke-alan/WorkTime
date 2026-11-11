@@ -228,6 +228,7 @@ async function main() {
       page.evaluate((key) => JSON.parse(localStorage.getItem(key)), key);
     const press = (index) => page.locator(`[data-cell="${index}"]`).click();
     const action = (name) => page.locator(`[data-lights-action="${name}"]`);
+    const sidebarRules = page.locator(".lights-sidebar > .lights-actions + p");
     // Test arbitrary access, all four artworks and both viewport sizes.
     const shapes = new Set();
     const screenshots = path.join(root, "test-results/lights-out");
@@ -235,6 +236,19 @@ async function main() {
     for (let chapter = 0; chapter < 4; chapter++) {
       await chooseChapter(chapter);
       await page.locator(".lights-level").last().click();
+      assert(await sidebarRules.isVisible());
+      assert.match(await sidebarRules.textContent(), /熄灭所有图案即可过关/);
+      const desktopBoard = await page.locator(".lights-board").boundingBox();
+      const desktopRules = await sidebarRules.boundingBox();
+      const buttons = await page.locator(".lights-actions").boundingBox();
+      assert(
+        Math.abs(
+          desktopRules.y +
+            desktopRules.height -
+            (desktopBoard.y + desktopBoard.height),
+        ) < 1,
+      );
+      assert(desktopRules.y - (buttons.y + buttons.height) >= 15);
       assert.equal(
         await page.locator(".lights-cell").count(),
         (chapter + 4) ** 2,
@@ -269,6 +283,9 @@ async function main() {
       await page.setViewportSize({ width: 390, height: 844 });
       const bounds = await page.locator(".lights-board").boundingBox();
       assert(bounds.x >= 0 && bounds.x + bounds.width <= 391);
+      const rulesBounds = await sidebarRules.boundingBox();
+      assert(rulesBounds.y >= bounds.y + bounds.height);
+      assert(rulesBounds.x >= 0 && rulesBounds.x + rulesBounds.width <= 391);
       assert(
         await page
           .locator(".lights-cells")
@@ -289,6 +306,7 @@ async function main() {
     assert(await page.locator(".game-level-categories").isVisible());
     assert.equal(await page.locator(".lights-header").isVisible(), false);
     assert.equal(await page.locator(".lights-actions").isVisible(), false);
+    assert.equal(await sidebarRules.isVisible(), false);
     await page.screenshot({ path: path.join(screenshots, "level-page.png") });
     await page.locator(".lights-chooser .game-level-return").click();
     assert(await page.locator(".lights-board").isVisible());
@@ -343,6 +361,11 @@ async function main() {
     await action("choose").click();
     await page.locator(".lights-level").last().click();
     assert.equal((await read()).drafts[current].path.length, 1);
+    // Open the notifications tab on reload so offline startup notices do not
+    // switch tabs while the helper is opening the game menu.
+    await page.evaluate(() =>
+      localStorage.setItem("worktime.dateInfo.activeTab", "notifications"),
+    );
     await page.reload();
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
@@ -353,6 +376,10 @@ async function main() {
       await page.evaluate(
         (language) => WorkTimeApp.i18n.setLanguage(language),
         language,
+      );
+      assert.equal(
+        await sidebarRules.textContent(),
+        await page.evaluate(() => WorkTimeApp.i18n.t("games.lights.help")),
       );
       assert.equal(
         await page

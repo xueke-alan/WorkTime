@@ -287,7 +287,7 @@
           id,
           name: i18n.t("motion." + id),
         })),
-      read: () => preferences.state.motionMode || "system",
+      read: () => preferences.state.motionMode || "full",
       save: (value) => preferences.saveMotionMode(value),
     });
     mountPicker(row, {

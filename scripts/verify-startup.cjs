@@ -286,6 +286,9 @@ async function verifyTemplates(page) {
     await page.locator("#timeTemplateList [data-template-fill]").count(),
     6,
   );
+  await page.evaluate(() =>
+    WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+  );
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.locator("#monthTitle").click();
   assert.equal(await page.locator("[data-year-date]").count(), 365);

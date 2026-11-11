@@ -269,7 +269,7 @@ const WorkTimeDomainValidation = (() => {
     )
       fail("preferences.language", "备份中的语言设置无效。");
     clean.preferences = { pageTheme: input.preferences.pageTheme, language };
-    const motionMode = input.preferences.motionMode ?? "system";
+    const motionMode = input.preferences.motionMode ?? "full";
     if (!["system", "full", "reduce"].includes(motionMode))
       fail("preferences.motionMode", "Invalid animation preference.");
     clean.preferences.motionMode = motionMode;
