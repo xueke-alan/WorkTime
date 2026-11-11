@@ -480,10 +480,11 @@ async function unit() {
   for (const variant of ["parity", "thermo"]) {
     const legacy = copy(saves["game-sudoku"]);
     legacy.group = variant;
-    legacy.current = variant + "-20";
-    for (let n = 16; n <= 20; n++) {
-      const level = app.data.sudoku.groups.find((g) => g.id === variant)
-        .puzzles[n - 1];
+    const levels = app.data.sudoku.groups
+      .find((g) => g.id === variant)
+      .puzzles.slice(15, 20);
+    legacy.current = levels.at(-1).id;
+    for (const level of levels) {
       const progress = G.sudokuRules.create(level);
       const cell = level.givens.indexOf("0");
       G.sudokuRules.enter(level, progress, cell, Number(level.solution[cell]));
@@ -491,20 +492,24 @@ async function unit() {
       legacy.completed[level.id] = { elapsed: 10, hints: 0 };
     }
     const normalized = S.normalize("game-sudoku", legacy);
-    assert.equal(normalized.current, variant + "-20");
+    assert.equal(normalized.current, levels.at(-1).id);
     assert.equal(normalized.group, variant);
-    for (let n = 16; n <= 20; n++) {
+    for (const { id } of levels) {
       assert.deepEqual(
-        copy(normalized.drafts[variant + "-" + n].values),
-        legacy.drafts[variant + "-" + n].values,
+        copy(normalized.drafts[id].values),
+        legacy.drafts[id].values,
       );
-      assert.deepEqual(copy(normalized.completed[variant + "-" + n]), {
+      assert.deepEqual(copy(normalized.completed[id]), {
         elapsed: 10,
         hints: 0,
       });
     }
     assert.throws(
-      () => S.normalize("game-sudoku", { ...legacy, current: variant + "-21" }),
+      () =>
+        S.normalize("game-sudoku", {
+          ...legacy,
+          current: variant + "-unknown",
+        }),
       { code: "invalid" },
     );
   }

@@ -407,7 +407,7 @@ async function browserTests() {
           const thinkingStyle = await page
             .locator(".jungle-thinking")
             .evaluate((el) => ({
-              width: el.getBoundingClientRect().width,
+              width: parseFloat(getComputedStyle(el).width),
               expectedWidth:
                 parseFloat(
                   getComputedStyle(document.documentElement).fontSize,

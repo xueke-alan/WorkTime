@@ -8,8 +8,11 @@ const { chromium } = require("playwright");
 
 (async () => {
   const browser = await chromium.launch({ channel: "msedge", headless: true });
+  const target = path.resolve(process.argv[2] || "index.html");
   const entry = pathToFileURL(
-    path.resolve(process.argv[2] || "index.html"),
+    fs.statSync(target).isDirectory()
+      ? path.join(target, "index.html")
+      : target,
   ).href;
   try {
     for (const reducedMotion of ["no-preference", "reduce"]) {
