@@ -62,6 +62,8 @@ WorkTimeApp.games.register({
     let difficulty = "normal";
     let humanRed = true;
     const handicaps = new Set();
+    const undoLimit = 4;
+    let undosRemaining = 0;
     let versusInitialBoard = rules.parse(initialPosition);
     const humanTurn = () => (path.length % 2 === 0) === humanRed;
     const flipped = () => versus && !humanRed;
@@ -316,6 +318,7 @@ WorkTimeApp.games.register({
       stopPresentation();
       level = versusLevel;
       path = [];
+      undosRemaining = undoLimit - handicaps.size;
       const initialBoard = rules.parse(initialPosition).split("");
       const pairs = humanRed
         ? [
@@ -674,15 +677,25 @@ WorkTimeApp.games.register({
       focusBoard();
     }
 
+    function canUndo() {
+      return (
+        path.length > (versus && !humanRed ? 1 : 0) &&
+        (!versus || undosRemaining > 0)
+      );
+    }
+
     function undoRound(keyboard) {
+      if (!canUndo()) return;
       stopPresentation();
       if (versus) cancelSearch();
       path = path.slice(
         0,
         versus ? (humanTurn() ? -2 : -1) : path.length % 2 ? -1 : -2,
       );
-      if (versus) versusPosition();
-      else updatePosition();
+      if (versus) {
+        versusPosition();
+        undosRemaining--;
+      } else updatePosition();
       render();
       if (versus) prepareEngine();
       if (keyboard || undo.disabled) focusBoard();
@@ -818,7 +831,7 @@ WorkTimeApp.games.register({
         control.textContent = t("aiHandicap" + value);
         control.setAttribute("aria-pressed", String(handicaps.has(value)));
       });
-      handicapHint.textContent = t("aiHandicapHint");
+      handicapHint.textContent = t("aiHandicapHint", { limit: undoLimit });
       startTitle.textContent = t("aiStartMatch");
       startButtons.forEach(({ red, control }) => {
         control.replaceChildren();
@@ -973,12 +986,27 @@ WorkTimeApp.games.register({
         [next, "next", "play-arrow"],
         [choose, "choose", "grid-4x4"],
       ]) {
-        control.replaceChildren(WorkTimeApp.games.createIcon(icon));
-        const label = node(control, "span", "xiangqi-action-label");
-        label.textContent = t(name);
-        control.setAttribute("aria-label", t(name));
+        const symbol = WorkTimeApp.games.createIcon(icon);
+        const caption = t(name);
+        control.replaceChildren();
+        if (control === undo && versus) {
+          const icons = node(control, "span", "xiangqi-undo-icons");
+          icons.setAttribute("aria-hidden", "true");
+          icons.append(symbol);
+          node(icons, "span", "xiangqi-undo-dot");
+          node(icons, "span", "xiangqi-undo-count").textContent =
+            String(undosRemaining);
+          control.setAttribute(
+            "aria-label",
+            t("undoRemaining", { remaining: undosRemaining }),
+          );
+        } else {
+          control.append(symbol);
+          control.setAttribute("aria-label", caption);
+        }
+        node(control, "span", "xiangqi-action-label").textContent = caption;
       }
-      undo.disabled = path.length <= (versus && !humanRed ? 1 : 0);
+      undo.disabled = !canUndo();
       next.hidden =
         versus || !won || !!presentation || index === levels.length - 1;
       if (versus) {

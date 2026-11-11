@@ -415,6 +415,10 @@ async function verifyGames(browser) {
     }
   }
   await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
+  assert.match(
+    await page.locator(".xiangqi-handicap-setup .xiangqi-detail").textContent(),
+    /每局可悔棋 4 次，电脑每让 1 子，悔棋次数减 1/,
+  );
   const rookHandicap = page.locator('[data-xiangqi-action="handicap-R"]');
   await rookHandicap.focus();
   await page.keyboard.press("Space");
@@ -432,6 +436,24 @@ async function verifyGames(browser) {
   await page.setViewportSize({ width: 1280, height: 900 });
   const boardGlyphs = () =>
     page.locator(".xiangqi-cell .xiangqi-piece").allTextContents();
+  const xiangqiUndo = page.locator('[data-xiangqi-action="undo"]');
+  async function verifyUndo(remaining, disabled) {
+    const label = `悔棋（剩 ${remaining} 次）`;
+    assert.equal(
+      await xiangqiUndo.locator(".xiangqi-action-label").textContent(),
+      "悔棋",
+    );
+    assert.equal(
+      await xiangqiUndo.locator(".xiangqi-undo-count").textContent(),
+      String(remaining),
+    );
+    assert.equal(await xiangqiUndo.getAttribute("aria-label"), label);
+    assert.equal(await xiangqiUndo.isDisabled(), disabled);
+  }
+  const dispatchUndo = () =>
+    xiangqiUndo.evaluate((button) =>
+      button.dispatchEvent(new MouseEvent("click")),
+    );
   async function verifyHandicapCaptures(mask, humanRed) {
     const expected = ["車", "馬", humanRed ? "砲" : "炮"].filter(
       (_, index) => mask & (1 << index),
@@ -481,12 +503,14 @@ async function verifyGames(browser) {
   for (const humanRed of [true, false]) {
     for (let mask = 0; mask < 8; mask++) {
       await open("xiangqi");
+      let allowance = 4;
       for (const [index, piece] of ["R", "H", "C"].entries()) {
         const control = page.locator(
           `[data-xiangqi-action="handicap-${piece}"]`,
         );
         assert.equal(await control.getAttribute("aria-pressed"), "false");
         if (mask & (1 << index)) {
+          allowance--;
           // Exercise independent toggling and cancellation before selecting.
           for (let count = 0; count < 3; count++)
             await action("xiangqi", "handicap-" + piece);
@@ -494,6 +518,7 @@ async function verifyGames(browser) {
         }
       }
       await action("xiangqi", humanRed ? "start-red" : "start-black");
+      await verifyUndo(allowance, true);
       const initial = await page.evaluate(
         ({ humanRed, mask }) => {
           const rules = WorkTimeApp.games.xiangqiRules;
@@ -541,10 +566,26 @@ async function verifyGames(browser) {
           "AI red searches the handicap opening",
         );
       const beforeHuman = await boardGlyphs();
+      await dispatchUndo();
+      await verifyUndo(allowance, true);
+      assert.deepEqual(await boardGlyphs(), beforeHuman);
       if (mask === 0) {
         for (const width of [375, 1000]) {
           await page.setViewportSize({ width, height: 900 });
           await verifyOrientation(humanRed);
+          const [icon, dot, count] = await xiangqiUndo
+            .locator(".xiangqi-undo-icons > *")
+            .evaluateAll((elements) =>
+              elements.map((element) =>
+                element.getBoundingClientRect().toJSON(),
+              ),
+            );
+          assert(icon.right < dot.left && dot.right < count.left);
+          assert(
+            Math.abs(
+              dot.top + dot.height / 2 - (count.top + count.height / 2),
+            ) < 1,
+          );
           await page.locator(".xiangqi-board").screenshot({
             path: path.join(
               previews,
@@ -570,17 +611,20 @@ async function verifyGames(browser) {
           );
         }
       }
-      const expectedSearch = await page.evaluate((humanRed) => {
-        const test = window.aiThinkingTest;
-        const rules = WorkTimeApp.games.xiangqiRules;
-        const board = humanRed
-          ? test.handicapBoard
-          : rules.apply(test.lastBoard, test.lastMove);
-        const move = rules.legalMoves(board, humanRed)[0];
-        for (const square of rules.decode(move))
-          test.mount.querySelector(`[data-square="${square}"]`).click();
-        return rules.apply(board, move);
-      }, humanRed);
+      const playOpening = () =>
+        page.evaluate((humanRed) => {
+          const test = window.aiThinkingTest;
+          const rules = WorkTimeApp.games.xiangqiRules;
+          const board = humanRed
+            ? test.handicapBoard
+            : rules.apply(test.lastBoard, test.lastMove);
+          const move = rules.legalMoves(board, humanRed)[0];
+          for (const square of rules.decode(move))
+            test.mount.querySelector(`[data-square="${square}"]`).click();
+          return rules.apply(board, move);
+        }, humanRed);
+      const expectedSearch = await playOpening();
+      await verifyUndo(allowance, false);
       await page.clock.runFor(2200);
       assert.equal(
         await page.evaluate(() => window.aiThinkingTest.lastBoard),
@@ -589,10 +633,38 @@ async function verifyGames(browser) {
       );
       assert.equal(await plies("xiangqi"), humanRed ? 2 : 3);
       await action("xiangqi", "undo");
+      await verifyUndo(allowance - 1, true);
       assert.deepEqual(await boardGlyphs(), beforeHuman);
       await verifyOrientation(humanRed);
+      if (humanRed && mask === 0) {
+        for (let remaining = allowance - 1; remaining > 0; remaining--) {
+          await playOpening();
+          assert(await replying("xiangqi"));
+          await verifyUndo(remaining, false);
+          await action("xiangqi", "undo");
+          await verifyUndo(remaining - 1, true);
+          await page.clock.runFor(2200);
+          assert.equal(await plies("xiangqi"), 0);
+        }
+        await playOpening();
+        await verifyUndo(0, true);
+        await dispatchUndo();
+        await page.clock.runFor(2200);
+        assert.equal(await plies("xiangqi"), 2);
+        await verifyUndo(0, true);
+        await page.evaluate(() => {
+          window.aiThinkingTest.instance.pause();
+          window.aiThinkingTest.instance.resume();
+        });
+        await verifyUndo(0, true);
+        await action("xiangqi", "restart");
+        await page.locator('[data-game-restart="cancel"]').click();
+        await verifyUndo(0, true);
+        assert.equal(await plies("xiangqi"), 2);
+      }
       await action("xiangqi", "restart");
       await page.locator('[data-game-restart="new"]').click();
+      await verifyUndo(allowance, true);
       assert.deepEqual(await boardGlyphs(), initial);
       await verifyHandicapCaptures(mask, humanRed);
       await verifyOrientation(humanRed);

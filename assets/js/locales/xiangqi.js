@@ -63,12 +63,12 @@
     aiHandicapH: ["让马", "Horse", "讓馬", "讓馬", "마 제외", "馬を落とす"],
     aiHandicapC: ["让炮", "Cannon", "讓炮", "讓炮", "포 제외", "炮を落とす"],
     aiHandicapHint: [
-      "可多选，电脑开局移除对应棋子",
-      "Select any combination. The AI starts without one of each selected piece.",
-      "可多選，電腦開局移除對應棋子",
-      "可多選，電腦開局移除對應棋子",
-      "여러 개를 선택할 수 있습니다. AI는 선택한 기물을 하나씩 빼고 시작합니다.",
-      "複数選択できます。AIは選んだ種類の駒を各1枚落として開始します。",
+      "可多选，电脑开局移除对应棋子。每局可悔棋 {limit} 次，电脑每让 1 子，悔棋次数减 1。",
+      "Select any combination. The AI starts without one of each selected piece. You get {limit} undos per game, minus one for each piece the AI gives up.",
+      "可多選，電腦開局移除對應棋子。每局可悔棋 {limit} 次，電腦每讓 1 子，悔棋次數減 1。",
+      "可多選，電腦開局移除對應棋子。每局可悔棋 {limit} 次，電腦每讓 1 子，悔棋次數減 1。",
+      "여러 개를 선택할 수 있습니다. AI는 선택한 기물을 하나씩 빼고 시작합니다. 한 판에 {limit}번 무를 수 있으며, AI가 기물을 하나 뺄 때마다 무르기 횟수가 1번 줄어듭니다.",
+      "複数選択できます。AIは選んだ種類の駒を各1枚落として開始します。待ったは1局に{limit}回までで、AIが駒を1枚落とすごとに1回減ります。",
     ],
     aiPlayed: [
       "已落子 {played} 步",
@@ -296,6 +296,14 @@
       "中国象棋盤、下側が紅",
     ],
     undo: ["悔棋", "Undo", "悔棋", "悔棋", "무르기", "待った"],
+    undoRemaining: [
+      "悔棋（剩 {remaining} 次）",
+      "Undo ({remaining} left)",
+      "悔棋（剩 {remaining} 次）",
+      "悔棋（剩 {remaining} 次）",
+      "무르기 ({remaining}회 남음)",
+      "待った（残り{remaining}回）",
+    ],
     restart: ["重开", "Restart", "重來", "重來", "다시 시작", "やり直す"],
     next: [
       "下一关",
