@@ -12,6 +12,7 @@ for (const entry of [
   "index.html",
   "manifest.webmanifest",
   "service-worker.js",
+  "offline-shell.js",
   "assets",
   "licenses",
   "tools",
@@ -23,5 +24,12 @@ for (const entry of [
 }
 bundleSite(site);
 versionSite(site);
+fs.writeFileSync(
+  path.join(site, "offline-shell.js"),
+  require("./lib/offline-shell.cjs").offlineShell(site, {
+    published: true,
+    version: require("../package.json").version,
+  }),
+);
 fs.writeFileSync(path.join(site, ".nojekyll"), "");
 console.log("Prepared _site for GitHub Pages.");

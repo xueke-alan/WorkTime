@@ -9,6 +9,7 @@ WorkTimeApp.games = (() => {
   const entries = new Map();
   const definitions = new Map();
   async function load(id, rulesOnly = false) {
+    if (!rulesOnly) WorkTimeApp.services.gamePrefetch?.prioritize(id);
     const definition = definitions.get(id);
     if (!definition) {
       if (entries.has(id)) return entries.get(id);
@@ -21,6 +22,9 @@ WorkTimeApp.games = (() => {
         { fetchPriority: "high" },
       );
       await Promise.all([
+        WorkTimeApp.services.assets.style("assets/css/game-session.css", {
+          before: document.querySelector('link[rel="stylesheet"]'),
+        }),
         WorkTimeApp.services.assets.style(definition.style),
         WorkTimeApp.services.assets.script(definition.source),
       ]);

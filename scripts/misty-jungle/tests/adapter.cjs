@@ -30,6 +30,7 @@ module.exports = async function adapterTests(R, site) {
       services: { assets: { script: () => load() } },
     },
     Worker: FakeWorker,
+    location: { protocol: "file:" },
     Blob,
     URL: {
       createObjectURL: () => "blob:test",

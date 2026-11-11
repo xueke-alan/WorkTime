@@ -120,7 +120,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       );
     if (focus) tab.focus({ preventScroll: true });
   }
-  function closeSettingsPanel() {
+  function closeSettingsPanel({ animate = true } = {}) {
     if (settings.hidden) return;
     if (
       !settings.dispatchEvent(
@@ -134,7 +134,7 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     editor.classList.remove("is-page-settings-open", "is-settings-open");
     settings.dispatchEvent(new Event("settings-closed"));
     updateSettingsButton(true);
-    if (!disposed) {
+    if (!disposed && animate) {
       const content = editor.closest(".agenda-mode")
         ? document.getElementById("agendaEditor")
         : editor.querySelector(".editor-content");

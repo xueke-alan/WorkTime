@@ -146,6 +146,7 @@ const agendaChecks = [
   "view-focus",
 ];
 try {
+  run(path.join(root, "scripts/verify-game-prefetch.cjs"));
   if (!focusedFeatures)
     run(path.join(root, "scripts/verify-review-regressions.cjs"));
   run(path.join(root, "scripts/check-site.cjs"));
@@ -203,6 +204,8 @@ try {
     for (const feature of [
       "lunar-runtime",
       "offline",
+      "offline-shell",
+      "deferred-styles",
       "loading",
       "media-loading",
       "motion-settings",
@@ -259,6 +262,8 @@ try {
       "startup",
       "startup-critical",
       "secondary-startup",
+      "offline-shell",
+      "deferred-styles",
       "loading",
       "media-loading",
       "motion-settings",

@@ -147,12 +147,29 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (pageTransition === transition) stopPageTransition();
     }
   }
-  function transitionAnalysis(
+  let analysisStyleRequest = 0,
+    pendingAnalysis = null;
+  async function transitionAnalysis(
     target,
     beforeRender = null,
     afterRender = null,
     { focusAttendance = false } = {},
   ) {
+    const request = ++analysisStyleRequest;
+    pendingAnalysis = target;
+    if (target) {
+      try {
+        await WorkTimeApp.services.assets.style("assets/css/analysis.css");
+      } catch (error) {
+        if (request === analysisStyleRequest && bound) {
+          pendingAnalysis = null;
+          window.alert(WorkTimeApp.i18n.message(error.message));
+        }
+        return;
+      }
+    }
+    if (request !== analysisStyleRequest || !bound) return;
+    pendingAnalysis = null;
     return transitionPage({
       direction: target ? 1 : -1,
       update() {
@@ -177,7 +194,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
   }
   function toggleAnalysis() {
-    const target = !model.analysisMode;
+    const target = !(pendingAnalysis ?? model.analysisMode);
     return transitionAnalysis(target, null, null, {
       focusAttendance: !target,
     });
@@ -863,6 +880,8 @@ WorkTimeApp.ui.createNavigationController = function (options) {
             model.batchDays.clear();
             model.batchAnchor = null;
           }
+          // Reveal only the destination sidebar when the page commits.
+          actions.closeSettings({ animate: false });
         },
       });
     });
@@ -1101,6 +1120,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   }
 
   function dispose() {
+    analysisStyleRequest++;
     stopPageTransition(false);
     stopTodayAttention();
     unlistenMotion?.();
@@ -1120,6 +1140,8 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     retainCalendarSelection,
     highlightToday,
     finishCalendarNavigation() {
+      analysisStyleRequest++;
+      pendingAnalysis = null;
       stopPageTransition();
       stopMonthTransition();
       stopTodayAttention();

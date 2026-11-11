@@ -64,8 +64,10 @@ function bundleSite(root) {
         "assets/js/ui/reader-runtime.min.js",
         "assets/js/services/runtime-import.js",
         "assets/js/services/xiangqi-prefetch.js",
+        "assets/js/services/game-prefetch.js",
         "assets/js/services/utttai-prefetch.js",
         "assets/js/services/rapfi-prefetch.js",
+        "assets/js/services/jungle-prefetch.js",
         "assets/js/services/runtime-migration.js",
         "assets/js/ui/runtime-folder-change.js",
       ])

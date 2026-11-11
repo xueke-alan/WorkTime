@@ -13,9 +13,15 @@ Install Rust 1.94.0 and its `wasm32-unknown-unknown` target, then run
 no external Cargo dependencies. Cargo.lock and rust-toolchain.toml pin the build.
 The build script applies asserted source transformations to the pinned original,
 then compiles the WASM and packages it with the worker into a classic script.
-The manifest records both source and WASM SHA-256 hashes. The game never
-downloads engine resources: the script contains all WASM bytes, and the Blob
-worker instantiates them in memory. Rust is required only for rebuilding.
+The manifest records both source and WASM SHA-256 hashes. HTTP loads the separate
+103 KB WASM binary, verifies its SHA-256, and caches it in
+`dependencies/misty-jungle/misty-jungle.wasm` when the runtime folder is authorized,
+otherwise in browser Cache Storage. Idle prefetch prepares the binary without
+starting a Worker. Folder reads are verified; missing or corrupt files are
+downloaded again. Folder persistence removes the browser binary copy. Cache
+failures do not prevent play. `file://` retains the self-contained `engine.js`
+compatibility script. The same WASM and search budgets apply to both paths;
+storage location does not affect playing strength. Rust is required only for rebuilding.
 
 ## Local adaptations
 

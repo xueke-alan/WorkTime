@@ -560,6 +560,15 @@ WorkTimeApp.services.bootstrap.run(
     });
     controllers.push(agenda);
     lifecycle.defer(() => agenda.dispose());
+    if (model.analysisMode) {
+      try {
+        await WorkTimeApp.services.assets.style("assets/css/analysis.css");
+      } catch {
+        // Keep the calendar usable if the saved view's stylesheet is unavailable.
+        model.analysisMode = false;
+      }
+    }
+    if (lifecycle.closed) return;
     agenda.bind();
     // Let the browser process the assembled controls before mounting the main
     // calendar and measuring the shared footer, keeping startup responsive.

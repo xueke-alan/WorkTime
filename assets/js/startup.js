@@ -20,19 +20,13 @@
       .whenIdle({ signal: prefetchAbort.signal })
       .then(() => {
         if (disposed) return;
-        return Promise.all(
-          [
-            ["xiangqi-prefetch", "xiangqiPrefetch"],
-            ["utttai-prefetch", "utttaiPrefetch"],
-            ["rapfi-prefetch", "rapfiPrefetch"],
-          ].map(async ([file, service]) => {
-            await WorkTimeApp.services.assets.script(
-              "assets/js/services/" + file + ".js",
-              { fetchPriority: "low" },
-            );
-            if (!disposed) WorkTimeApp.services[service].start();
-          }),
-        );
+        return WorkTimeApp.services.assets
+          .script("assets/js/services/game-prefetch.js", {
+            fetchPriority: "low",
+          })
+          .then(() => {
+            if (!disposed) WorkTimeApp.services.gamePrefetch.start();
+          });
       })
       .catch(() => {
         if (!disposed && !prefetchRetried) {

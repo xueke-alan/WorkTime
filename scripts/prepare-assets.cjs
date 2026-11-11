@@ -174,6 +174,8 @@ function prepareAssets({ check = false } = {}) {
       "agenda-drag",
       "agenda-timeline-math",
       "agenda-timetable",
+      "agenda-card-renderer",
+      "agenda-chip-motion",
       "agenda",
       "analysis",
       "analysis-renderer",
@@ -302,7 +304,6 @@ function prepareAssets({ check = false } = {}) {
     "date-info",
     "weather",
     "summary",
-    "analysis",
     "calendar",
     "agenda",
     "controls",
@@ -475,6 +476,10 @@ function prepareAssets({ check = false } = {}) {
     '"use strict";\n// Generated menu identities; game implementations load only on demand.\nWorkTimeApp.games.define(' +
       JSON.stringify(entries) +
       ");\n",
+  );
+  write(
+    "offline-shell.js",
+    require("./lib/offline-shell.cjs").offlineShell(root),
   );
 }
 if (require.main === module)

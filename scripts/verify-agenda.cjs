@@ -967,6 +967,10 @@ async function verify() {
       true,
       "Deleting the last item fades out its previous summary",
     );
+    // Follow the system explicitly; a fresh archive defaults to full motion.
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+    );
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.waitForFunction(
       () => !document.querySelector(".agenda-content-outgoing"),

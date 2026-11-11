@@ -41,6 +41,9 @@ const { launchGame } = require("./game-test-helpers.cjs");
         () => document.documentElement.dataset.appState === "ready",
       );
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
+      await page.evaluate(() =>
+        WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+      );
       await launchGame(page, "game-" + game);
       const prefix = game === "minesweeper" ? "mine" : game;
       const action = (name) =>

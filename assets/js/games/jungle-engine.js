@@ -67,12 +67,23 @@ WorkTimeApp.games.jungleEngine = (() => {
       cancel();
       onError(error);
     }
-    WorkTimeApp.services.assets
-      .script("assets/vendor/misty-jungle/engine.js")
-      .then(() => {
+    const loader = WorkTimeApp.services.assets;
+    async function resources() {
+      if (location.protocol === "file:") {
+        await loader.script("assets/vendor/misty-jungle/engine.js");
+        return G.mistyJungleAssets;
+      }
+      await loader.script("assets/js/games/jungle-resources.js");
+      const [wasm] = await Promise.all([
+        G.jungleResources.load(),
+        loader.script("assets/vendor/misty-jungle/worker-source.js"),
+      ]);
+      return { wasm, worker: G.mistyJungleWorker };
+    }
+    resources()
+      .then((assets) => {
         if (cancelled) return;
         try {
-          const assets = G.mistyJungleAssets;
           url = URL.createObjectURL(
             new Blob([assets.worker], { type: "text/javascript" }),
           );
@@ -109,11 +120,14 @@ WorkTimeApp.games.jungleEngine = (() => {
             () => fail(Error("Engine timed out")),
             budgets[difficulty] + 10000,
           );
-          worker.postMessage({
-            wasm: assets.wasm,
-            positions: positions(state),
-            budget: budgets[difficulty],
-          });
+          worker.postMessage(
+            {
+              wasm: assets.wasm,
+              positions: positions(state),
+              budget: budgets[difficulty],
+            },
+            typeof assets.wasm === "string" ? [] : [assets.wasm],
+          );
         } catch (error) {
           fail(error);
         }

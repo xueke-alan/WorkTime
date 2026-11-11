@@ -359,60 +359,9 @@ async function shuffleCost() {
   );
 }
 async function serviceWorker() {
-  const cacheName = "worktime-shell-" + require("../package.json").version;
-  const handlers = new Map(),
-    names = new Set(["worktime-shell-old", cacheName, "unrelated-cache"]);
-  const requests = [];
-  const context = vm.createContext({
-    self: {
-      location: { origin: "https://fixture.invalid" },
-      clients: { claim: async () => {} },
-      addEventListener: (type, handler) => handlers.set(type, handler),
-    },
-    caches: {
-      keys: async () => [...names],
-      delete: async (name) => names.delete(name),
-      open: async (name) => ({
-        match: async () => {
-          requests.push(name);
-          return "current response";
-        },
-      }),
-    },
-    fetch: async () => {
-      throw Error("offline");
-    },
-    Response,
-    URL,
-  });
-  vm.runInContext(
-    fs.readFileSync(path.join(root, "service-worker.js"), "utf8"),
-    context,
-  );
-  let activation, response;
-  handlers.get("activate")({
-    waitUntil: (task) => {
-      activation = task;
-    },
-  });
-  await activation;
-  assert.deepEqual([...names].sort(), ["unrelated-cache", cacheName]);
-  handlers.get("fetch")({
-    request: { method: "GET" },
-    respondWith: (task) => {
-      response = task;
-    },
-  });
-  assert.equal(await response, "current response");
-  assert.deepEqual(
-    requests,
-    [cacheName],
-    "offline fallback must use the current cache only",
-  );
-  console.log(
-    "Service worker: old owned caches removed, foreign caches preserved, current offline fallback passed.",
-  );
+  await require("./verify-offline-shell.cjs").unit();
 }
+
 async function main() {
   await music();
   await musicStorage();

@@ -14,6 +14,7 @@
 !/index.html
 !/manifest.webmanifest
 !/service-worker.js
+!/offline-shell.js
 !/package.json
 !/package-lock.json
 !/README.md
@@ -45,6 +46,9 @@ __pycache__/
 /tests/
 /scripts/*
 !/scripts/check-site.cjs
+!/scripts/verify-offline-shell.cjs
+!/scripts/verify-game-prefetch.cjs
+!/scripts/verify-deferred-styles.cjs
 !/scripts/sokoban-optimal.cjs
 !/scripts/generate-sokoban-optima.cjs
 !/scripts/verify-sokoban-optimal.cjs
@@ -254,6 +258,7 @@ Thumbs.db
 !/scripts/verify-startup-critical.cjs
 !/scripts/verify-secondary-startup.cjs
 !/scripts/lib/startup-test-server.cjs
+!/scripts/lib/offline-shell.cjs
 !/scripts/verify-sokoban-motion.cjs
 
 !/scripts/pikafish-browser/

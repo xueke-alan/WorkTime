@@ -56,6 +56,9 @@ async function verify() {
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+    );
   }
   async function analysis(page, expected) {
     await page.waitForFunction(

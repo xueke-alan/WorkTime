@@ -32,7 +32,7 @@ WorkTimeApp.services.assets = (() => {
       check();
     });
   }
-  function load(path, style = false, { fetchPriority = "auto" } = {}) {
+  function load(path, style = false, { fetchPriority = "auto", before } = {}) {
     if (pending.has(path)) {
       if (fetchPriority === "high" && elements.has(path))
         elements.get(path).fetchPriority = "high";
@@ -65,7 +65,9 @@ WorkTimeApp.services.assets = (() => {
       }
       element.onload = () => finish();
       element.onerror = () => finish(Error("Asset failed: " + path));
-      document.head.append(element);
+      if (before?.parentNode === document.head)
+        document.head.insertBefore(element, before);
+      else document.head.append(element);
     });
     pending.set(path, task);
     // A failed load is retryable; successful scripts execute only once.
@@ -77,7 +79,7 @@ WorkTimeApp.services.assets = (() => {
   }
   return {
     script: (path, options) => load(path, false, options),
-    style: (path) => load(path, true),
+    style: (path, options) => load(path, true, options),
     scripts,
     whenIdle,
   };

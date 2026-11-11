@@ -37,6 +37,9 @@ const { chromium } = require("playwright");
           document.documentElement.dataset.appState === "ready" &&
           !document.documentElement.classList.contains("app-loading"),
       );
+      await page.evaluate(() =>
+        WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+      );
       await page.locator("#agendaMode").click();
       for (const [title, start, end, status] of [
         ["跨周测试", "2026-10-14", "2026-10-22", "pending"],

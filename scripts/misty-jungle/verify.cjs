@@ -26,6 +26,24 @@ async function harness(site = root) {
     manifest.wasmSha256,
   );
   assert.equal(manifest.commit, "5717f7f8db386a0ec38ec73c1df58920beb32591");
+  for (const file of ["manifest.js", "worker-source.js"])
+    vm.runInContext(
+      fs.readFileSync(
+        path.join(site, "assets/vendor/misty-jungle", file),
+        "utf8",
+      ),
+      sandbox,
+    );
+  assert.deepEqual(
+    fs.readFileSync(
+      path.join(site, "assets/vendor/misty-jungle/misty-jungle.wasm"),
+    ),
+    bytes,
+    "HTTP and file entry points use identical WASM",
+  );
+  assert.equal(G.mistyJungleResources.hash, manifest.wasmSha256);
+  assert.equal(G.mistyJungleResources.size, bytes.length);
+  assert.equal(G.mistyJungleWorker, G.mistyJungleAssets.worker);
   const E = (
     await WebAssembly.instantiate(bytes, {
       host: { now: () => performance.now() },

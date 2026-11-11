@@ -6,6 +6,17 @@ const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 
+// These fixtures inspect analysis layout and animation; deferred loading has its own failure/retry suite.
+async function prepareAnalysis(page) {
+  await page.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  await page.evaluate(async () => {
+    await WorkTimeApp.services.preferences.page.saveMotionMode("system");
+    await WorkTimeApp.services.assets.style("assets/css/analysis.css");
+  });
+}
+
 async function assertTimelineMarkers(page) {
   const alignment = await page.evaluate(() => {
     const svg = document.querySelector(".analysis-plot"),
@@ -221,6 +232,7 @@ async function verifyViewMotion(browser, url, state) {
   page.on("pageerror", (error) => errors.push(error.message));
   await page.clock.setFixedTime(new Date("2026-10-21T04:00:00Z"));
   await page.goto(url);
+  await prepareAnalysis(page);
   await page.waitForFunction(
     () =>
       document.documentElement.dataset.appState === "ready" &&
@@ -585,6 +597,7 @@ async function verifyComponentMotion(browser, url, input) {
   page.on("pageerror", (error) => errors.push(error.message));
   await page.clock.install({ time: new Date("2026-10-21T04:00:00Z") });
   await page.goto(url);
+  await prepareAnalysis(page);
   await page.waitForFunction(
     () => document.documentElement.dataset.appState === "ready",
   );
@@ -1231,6 +1244,7 @@ async function verifyFutureLegend(browser, url, state) {
   try {
     await page.clock.install({ time: new Date("2026-10-21T04:00:00Z") });
     await page.goto(url);
+    await prepareAnalysis(page);
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
@@ -1481,6 +1495,7 @@ async function verifyFutureManual(browser, url, input) {
     const page = await context.newPage();
     await page.clock.setFixedTime(new Date("2026-10-21T04:00:00Z"));
     await page.goto(url);
+    await prepareAnalysis(page);
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );
@@ -1556,6 +1571,7 @@ async function verify() {
         () => document.documentElement.dataset.appState === "ready",
       );
     await page.goto(url);
+    await prepareAnalysis(page);
     await ready();
     await page.locator("#analysisToggle").click();
     assert.equal(await page.locator("#analysisEmpty").count(), 0);
@@ -1863,6 +1879,7 @@ async function verify() {
     view.on("pageerror", (error) => errors.push(error.message));
     await view.clock.setFixedTime(new Date("2026-10-21T04:00:00Z"));
     await view.goto(url);
+    await prepareAnalysis(view);
     const waitReady = () =>
       view.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
@@ -2494,6 +2511,7 @@ async function verify() {
     full.on("pageerror", (error) => errors.push(error.message));
     await full.clock.setFixedTime(new Date("2026-10-31T04:00:00Z"));
     await full.goto(url);
+    await prepareAnalysis(full);
     await full.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
     );

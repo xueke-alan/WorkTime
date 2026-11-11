@@ -250,7 +250,7 @@ WorkTimeApp.ui.secondary.settings = function (options) {
     );
     if (!target) return;
     const keepSettings = target.matches(
-      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton",
+      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle",
     );
     if (keepSettings && !hasScheduleDraft()) return;
     event.preventDefault();

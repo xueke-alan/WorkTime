@@ -5,7 +5,10 @@ self.onmessage = async ({ data }) => {
   try {
     const started = performance.now();
     if (!engine) {
-      const binary = Uint8Array.from(atob(data.wasm), (c) => c.charCodeAt(0));
+      const binary =
+        typeof data.wasm === "string"
+          ? Uint8Array.from(atob(data.wasm), (c) => c.charCodeAt(0))
+          : data.wasm;
       engine = (
         await WebAssembly.instantiate(binary, {
           host: { now: () => performance.now() },

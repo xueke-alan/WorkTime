@@ -1049,7 +1049,10 @@ async function verifyPresentation(browser, output) {
 (async () => {
   unit();
   await require("./misty-jungle/verify.cjs").verify(site);
-  if (!process.argv.includes("--unit")) await browserTests();
+  if (!process.argv.includes("--unit")) {
+    await require("./misty-jungle/verify-resources.cjs").verify(site);
+    await browserTests();
+  }
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;
