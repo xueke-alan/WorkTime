@@ -449,7 +449,11 @@ function prepareAssets({ check = false } = {}) {
     if (["sudoku", "sokoban", "xiangqi", "gomoku", "lights-out"].includes(id))
       rules.push("assets/data/" + id + ".js");
     if (id === "tank") rules.push("assets/js/games/tank-stages.js");
-    if (id === "gomoku") rules.push("assets/js/games/gomoku-search.js");
+    if (id === "gomoku")
+      rules.push(
+        "assets/js/games/gomoku-search.js",
+        "assets/js/games/gomoku-engine.js",
+      );
     if (id === "ultimate-ttt")
       rules.push("assets/js/games/ultimate-ttt-engine.js");
     if (id === "xiangqi") rules.push("assets/js/games/xiangqi-engine.js");

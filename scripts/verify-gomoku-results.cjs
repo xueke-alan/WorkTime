@@ -42,6 +42,10 @@ module.exports = async function verifyResults(browser, site) {
         !document.documentElement.classList.contains("app-loading"),
     );
     await page.waitForTimeout(700);
+    // Exercise system reduced motion explicitly, independent of the app default.
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+    );
     await page.evaluate(() => WorkTimeApp.games.load("game-gomoku"));
     const fixture = await page.evaluate(
       ({ outcome, ended }) => {

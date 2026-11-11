@@ -270,6 +270,8 @@ Thumbs.db
 
 !/scripts/utttai/
 !/scripts/utttai/**
+!/scripts/rapfi/
+!/scripts/rapfi/**
 !/scripts/verify-ultimate-ttt.cjs
 !/scripts/killer-rating.cjs
 !/scripts/generate-killer-hard.cjs

@@ -36,10 +36,10 @@ try {
         "Pushed lockfile differs from working tree; install that revision's dependencies first.",
       );
     snapshot = fs.mkdtempSync(path.join(os.tmpdir(), "worktime-pre-push-"));
-    const archive = git(["archive", "--format=tar", revision], {
-      maxBuffer: 256 * 1024 * 1024,
-    });
-    execFileSync("tar", ["-xf", "-", "-C", snapshot], { input: archive });
+    const archive = path.join(snapshot, ".revision.tar");
+    git(["archive", "--format=tar", "--output=" + archive, revision]);
+    execFileSync("tar", ["-xf", path.basename(archive)], { cwd: snapshot });
+    fs.unlinkSync(archive);
     fs.symlinkSync(
       path.join(root, "node_modules"),
       path.join(snapshot, "node_modules"),

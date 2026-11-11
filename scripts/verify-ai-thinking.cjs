@@ -118,18 +118,22 @@ async function verifyGames(browser) {
       mount: null,
       delay: 0,
       realWorker: window.Worker,
+      realGomokuFactory: WorkTimeApp.games.createGomokuEngine,
       realEngineFactory: WorkTimeApp.games.createXiangqiEngine,
     };
     // Deterministic search results let these checks isolate presentation timing.
-    window.Worker = class {
-      postMessage([board]) {
-        setTimeout(
-          () => this.onmessage?.({ data: board[112] ? board.indexOf(0) : 112 }),
-          window.aiThinkingTest.delay,
+    WorkTimeApp.games.createGomokuEngine = () => ({
+      search({ board }) {
+        return new Promise((resolve) =>
+          setTimeout(
+            () => resolve({ move: board[112] ? board.indexOf(0) : 112 }),
+            window.aiThinkingTest.delay,
+          ),
         );
-      }
-      terminate() {} // Deliberately deliver stale replies to exercise cancellation.
-    };
+      },
+      cancel() {}, // Deliberately deliver stale replies to exercise cancellation.
+      dispose() {},
+    });
     WorkTimeApp.games.createXiangqiEngine = () => ({
       load: () => Promise.resolve(),
       search(fen) {
@@ -910,6 +914,8 @@ async function verifyGames(browser) {
   // Smoke-test the actual offline Pikafish payload after deterministic cases.
   await page.evaluate(() => {
     window.Worker = window.aiThinkingTest.realWorker;
+    WorkTimeApp.games.createGomokuEngine =
+      window.aiThinkingTest.realGomokuFactory;
     WorkTimeApp.games.createXiangqiEngine =
       window.aiThinkingTest.realEngineFactory;
   });

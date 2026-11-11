@@ -39,6 +39,7 @@ function bundleSite(root) {
       "assets/vendor/pikafish",
       "assets/vendor/misty-jungle",
       "assets/vendor/utttai",
+      "assets/vendor/rapfi",
     ]
       .flatMap(dynamicFiles)
       .concat([

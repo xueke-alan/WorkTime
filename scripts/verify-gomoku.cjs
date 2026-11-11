@@ -69,19 +69,6 @@ function verifyRules() {
     2,
     "old cutoff saves receive White's missing reply",
   );
-  const ai = app.games.gomokuAI;
-  for (const difficulty of ["normal", "hard", "master"]) {
-    const board = Array(225).fill(0);
-    assert.equal(ai(board, 1, difficulty), 112);
-    for (const p of [106, 107, 108, 109]) board[p] = 2;
-    board[105] = 1;
-    assert.equal(ai(board, 2, difficulty), 110, difficulty + " takes win");
-    assert.equal(ai(board, 1, difficulty), 110, difficulty + " blocks win");
-    assert.equal(board[110], 0, "AI does not mutate its input");
-  }
-  const fork = Array(225).fill(0);
-  for (const p of [110, 111, 97, 127]) fork[p] = 2;
-  assert.equal(ai(fork, 2, "master"), 112, "Master creates a double four");
   const match = { difficulty: "master", human: 2, path: [112, 113, 97, 128] };
   assert.equal(rules.restoreMatch(match).path.length, 4);
   assert.equal(rules.restoreMatch({ ...match, path: [112, 112] }), null);
@@ -454,11 +441,10 @@ async function verifyUI(browser) {
   await action("ai").click();
   assert.equal(await action("ai").textContent(), "人机对战");
   assert.equal(await page.locator(".gomoku-difficulties button").count(), 3);
-  assert.equal(
-    await page
-      .locator(".gomoku-match-setup select, .gomoku-match-setup p")
-      .count(),
-    0,
+  assert.equal(await page.locator(".gomoku-match-setup select").count(), 0);
+  assert.match(
+    await page.locator(".gomoku-match-setup p").textContent(),
+    /Rapfi/,
   );
   for (const difficulty of ["normal", "hard", "master"]) {
     await action("difficulty-" + difficulty).click();
@@ -646,6 +632,11 @@ async function verifyUI(browser) {
     "100 VCT puzzles: all white defenses, winning replays, 40/30/30 categories and legacy archives passed.",
   );
   if (process.argv.includes("--rules")) return;
+  require("node:child_process").execFileSync(
+    process.execPath,
+    [path.join(root, "scripts/rapfi/verify.cjs"), site],
+    { stdio: "inherit" },
+  );
   const browser = await chromium.launch({
     channel: process.env.WORKTIME_BROWSER_CHANNEL || "msedge",
     headless: true,

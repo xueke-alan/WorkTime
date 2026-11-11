@@ -36,8 +36,8 @@ WorkTimeApp.games.register({
     let returnLevel =
       level ?? (save.match?.path.length ? { id: "ai", group: "ai" } : null);
     let match = save.match ?? { difficulty: "normal", human: 1, path: [] };
-    let worker = null,
-      thinking = false,
+    const engine = WorkTimeApp.games.createGomokuEngine();
+    let thinking = false,
       aiFailed = false;
     let thought = null,
       searchGeneration = 0;
@@ -298,8 +298,7 @@ WorkTimeApp.games.register({
       thought?.cancel();
       thought = null;
       clearResult();
-      worker?.terminate();
-      worker = null;
+      engine.cancel();
       thinking = false;
       preview = null;
       board.removeAttribute("data-replying");
@@ -482,29 +481,11 @@ WorkTimeApp.games.register({
       const generation = searchGeneration;
       thought = thinkFor(state.board);
       render();
-      let url;
-      try {
-        url = URL.createObjectURL(
-          new Blob(
-            [
-              `onmessage = function(event) { const choose = ${WorkTimeApp.games.gomokuAI.toString()}; postMessage(choose(...event.data)); };`,
-            ],
-            { type: "text/javascript" },
-          ),
-        );
-        worker = new Worker(url);
-        worker.onmessage = (event) => {
+      engine
+        .search(state, match.difficulty)
+        .then(({ move: p }) => {
           if (generation !== searchGeneration || paused || signal.aborted)
             return;
-          const p = event.data;
-          worker?.terminate();
-          worker = null;
-          if (!Number.isInteger(p) || p < 0 || p >= 225 || state.board[p]) {
-            settle();
-            aiFailed = true;
-            render();
-            return;
-          }
           thought.wait(() => {
             if (
               generation !== searchGeneration ||
@@ -519,21 +500,13 @@ WorkTimeApp.games.register({
             render();
             showResult();
           });
-        };
-        worker.onerror = () => {
+        })
+        .catch(() => {
           if (generation !== searchGeneration || signal.aborted) return;
           settle();
           aiFailed = true;
           render();
-        };
-        worker.postMessage([state.board, 3 - match.human, match.difficulty]);
-      } catch {
-        settle();
-        aiFailed = true;
-        render();
-      } finally {
-        if (url) URL.revokeObjectURL(url);
-      }
+        });
     }
     function render() {
       root.dataset.category = group;
