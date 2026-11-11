@@ -255,7 +255,10 @@ async function browserTests() {
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
-      await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
+      await page.evaluate(() => {
+        WorkTimeApp.i18n.setLanguage("zh-CN");
+        WorkTimeApp.services.preferences.page.saveMotionMode("system");
+      });
       await launchGame(page, "game-jungle");
       assert(await action("mode-ai").isVisible());
       await action("mode-local").click();
