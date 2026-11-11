@@ -29,7 +29,12 @@ async function verify() {
         };
       });
       await page.goto(
-        pathToFileURL(path.resolve(__dirname, "../index.html")).href,
+        pathToFileURL(
+          path.resolve(
+            process.argv[2] || path.join(__dirname, ".."),
+            "index.html",
+          ),
+        ).href,
       );
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
@@ -39,6 +44,18 @@ async function verify() {
         page.locator(`.theme-card:has(input[value="${id}"])`);
       const assertTheme = async (id) => {
         assert.equal(await page.locator("html").getAttribute("data-theme"), id);
+        assert.equal(
+          await page
+            .locator('meta[name="theme-color"]')
+            .getAttribute("content"),
+          await page.evaluate(
+            (theme) =>
+              WorkTimeApp.domain.preferences.themes.find(
+                (item) => item.id === theme,
+              ).color,
+            id,
+          ),
+        );
         assert.equal(
           await page
             .locator(`input[name="pageTheme"][value="${id}"]`)
@@ -91,7 +108,14 @@ async function verify() {
         await page.locator("html").getAttribute("data-theme"),
         "orange",
       );
+      assert.equal(
+        await page.locator('meta[name="theme-color"]').getAttribute("content"),
+        "#a85616",
+      );
       await clickSettingsControl(page, "#pageSettingsOpen");
+      await page.evaluate(() =>
+        WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+      );
       await page.emulateMedia({ reducedMotion: "reduce" });
       await card("red").click();
       await assertTheme("red");

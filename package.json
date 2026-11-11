@@ -1,6 +1,6 @@
 {
   "name": "worktime",
-  "version": "3.8.0",
+  "version": "3.8.1",
   "private": true,
   "description": "Offline work time records; development tools do not affect file:// use.",
   "scripts": {
