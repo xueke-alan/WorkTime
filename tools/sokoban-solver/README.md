@@ -41,3 +41,12 @@ The fixture oracle searches elementary moves without shared push macros, heurist
 For difficult levels, `--near-full-projections` replaces `--large-patterns` and keeps all but two boxes in each projected board. Set `SOKOBAN_NATIVE_MEMORY_GIB` (2 through 14) to override the managed-memory cap. The cap is checked periodically and is not a bound on total process memory. An unfinished projection remains unusable.
 
 Native input additionally supports `reverse: true`, enabling exact elementary-move bidirectional BFS from the initial state and all solved player positions. It expands a complete layer of the smaller frontier, checks intersections and reconstructs both halves using stored distances. Safe static dead-square and blocked-2x2 pruning applies to forward pushes. It uses the same time/memory budget, returns null on exhaustion and replays through the regular importer before acceptance. This is an independent search route for levels where A* bounds are too weak.
+
+`--room-partitions` applies the saved room splits for Sasquatch I 3 and I 16. Each room database retains all boxes inside its room and relaxes the space outside. A move is charged to the room containing the player's destination, so the bounds for disjoint rooms can be added. A partial database uses the first unfinished distance as a lower bound for missing states. Only an exhaustive database treats a missing state as a deadlock.
+
+To reproduce both proofs, build the native solver as above, then select the two levels explicitly. `--level` includes already verified levels and uses any recorded route length as a search cutoff.
+
+```powershell
+node scripts/generate-sokoban-optima.cjs --room-partitions --level sasquatch-1-3 --level sasquatch-1-16 --export-native test-results/sokoban-native/rooms.json
+dotnet test-results/sokoban-native/Solver.dll test-results/sokoban-native/rooms.json test-results/sokoban-native/room-results.jsonl
+```

@@ -877,15 +877,20 @@ async function main() {
         u: "ArrowUp",
         d: "ArrowDown",
       };
-      for (const direction of burst)
+      for (const direction of burst) {
         element.dispatchEvent(
           new KeyboardEvent("keydown", { key: keys[direction], bubbles: true }),
         );
+        element.dispatchEvent(
+          new KeyboardEvent("keyup", { key: keys[direction], bubbles: true }),
+        );
+      }
     }, burst);
+    // The active step keeps only the latest tap in its one-step buffer.
     await page.waitForFunction(
-      ({ key, id, burst }) =>
-        JSON.parse(localStorage.getItem(key)).drafts[id].path === burst,
-      { key, id: bank.levels[1].id, burst },
+      ({ key, id, expected }) =>
+        JSON.parse(localStorage.getItem(key)).drafts[id].path === expected,
+      { key, id: bank.levels[1].id, expected: burst[0] + burst.at(-1) },
     );
     await page.waitForFunction(
       () =>

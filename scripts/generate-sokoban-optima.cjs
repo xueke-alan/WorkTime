@@ -20,32 +20,54 @@ const records = fs.existsSync(file)
   : {};
 const exportIndex = process.argv.indexOf("--export-native");
 if (exportIndex >= 0) {
+  const selected = process.argv.flatMap((arg, i) =>
+    arg === "--level" ? [process.argv[i + 1]] : [],
+  );
+  for (const id of selected)
+    assert.ok(
+      levels.some((level) => level.id === id),
+      "Unknown level: " + id,
+    );
+  const partitions = process.argv.includes("--room-partitions")
+    ? require("../tools/sokoban-solver/room-partitions.json")
+    : {};
   const batch = {};
   for (const level of levels) {
-    if (records[level.id]?.moves) continue;
+    if (
+      selected.length ? !selected.includes(level.id) : records[level.id]?.moves
+    )
+      continue;
     const map = rules.parse(level);
+    const room = partitions[level.id];
+    const inside = new Set(room);
     batch[level.id] = {
       large:
         process.argv.includes("--large-patterns") ||
         process.argv.includes("--near-full-projections"),
-      projection: process.argv.includes("--near-full-projections")
-        ? Math.min(map.boxes.length, Math.max(4, map.boxes.length - 2))
-        : 0,
+      projection: room
+        ? 4
+        : process.argv.includes("--near-full-projections")
+          ? Math.min(map.boxes.length, Math.max(4, map.boxes.length - 2))
+          : 0,
       memoryGiB: Number(process.env.SOKOBAN_NATIVE_MEMORY_GIB || 0),
       width: map.width,
       player: map.player,
       boxes: [...map.boxes],
       goals: [...map.goals],
       floors: [...map.floors],
+      ...(room
+        ? { rooms: [room, [...map.floors].filter((c) => !inside.has(c))] }
+        : {}),
       upper: Math.min(
         level.solution.length,
+        records[level.id]?.moves?.value ?? Infinity,
         records[level.id]?.pushes?.path.length ?? Infinity,
       ),
       milliseconds: Number(process.env.SOKOBAN_SEARCH_MS || 120000),
     };
   }
   fs.writeFileSync(process.argv[exportIndex + 1], JSON.stringify(batch));
-  console.log("Exported", Object.keys(batch).length, "unproven levels");
+  console.log("Exported", Object.keys(batch).length, "levels");
   process.exit(0);
 }
 const importIndex = process.argv.indexOf("--import-native");

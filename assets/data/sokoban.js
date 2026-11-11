@@ -1653,7 +1653,11 @@ WorkTimeApp.data.sokoban = {
     },
     "sasquatch-1-16": {
       "rowsHash": "51b416319ec1923ff1caea86fde5fcb996d2c02b7e43185de4ecc6678b49002c",
-      "moves": null,
+      "moves": {
+        "value": 193,
+        "path": "llllrrdddlddruuuurulddddrruldluddddrdrrululdluulurddrrdrrullldlurrdddlurulululuurdduurrdluldurrrrdllluluuruulddduuuuululldrdrurdddduuuulllldrrrurdulluurdldrdrdrddluuddllurdrulllldrrrlllllurrrrr",
+        "pushes": 70
+      },
       "pushes": null
     },
     "sasquatch-3-1": {
@@ -1667,7 +1671,11 @@ WorkTimeApp.data.sokoban = {
     },
     "sasquatch-1-3": {
       "rowsHash": "f438c7a540a17b3be8c293c34a489e8d5cebf5a5c2c16d258336835a067638f2",
-      "moves": null,
+      "moves": {
+        "value": 448,
+        "path": "luuuuurrrddrdrrrrulululllllulddddddrdllldlulurrrruuuuurrrrrrururuuldlddrdllllllulddddddrdllldlulurrrdruuuluruurrrrrrrruuluurrdluldlddrdllllllulddddddrdllldlururruuuuurrrddruddrruulullllulddddddrdllullddrururuuuuurrrddrdrurrruudlullllllulddddddrdllldlurruruuuuurrrrrrrruuluurrdluldlddrdllllllulddddddrdllllrruruuuuurrrrrruuurddrdllllllluldddldruuurrrddrudrrulullllulddddddrdlllruruuuuurrrrrdrrullllllulddddddrdllrrrrullluuuuurrrddrurullllulddddddrdl",
+        "pushes": 193
+      },
       "pushes": null
     },
     "sasquatch-4-23": {

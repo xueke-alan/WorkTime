@@ -23,6 +23,10 @@ static Result? Solve(Input input)
     if (input.reverse) return Reverse(input);
     var floors = input.floors.ToHashSet();
     var goals = input.goals.ToHashSet();
+    var roomCells = new HashSet<int>();
+    foreach (var room in input.rooms ?? [])
+        if (room.Length is < 1 or > 57 || room.Any(c => !floors.Contains(c) || !roomCells.Add(c)))
+            throw new ArgumentException("Room partitions must contain 1–57 disjoint floor cells each");
     int size = floors.Max() + input.width + 2;
     int[] deltas = [-input.width, 1, input.width, -1];
     char[] directions = ['u', 'r', 'd', 'l'];
@@ -381,6 +385,7 @@ static Result? Solve(Input input)
         }
         int result = -v[0]; if (estimates.Count < 1000000) estimates[key] = result; return result;
     }
+    var rooms = (input.rooms ?? []).Select(room => new RoomDatabase(input, room, memoryGiB)).ToArray();
     var pending = new PriorityQueue<Node, (int, int)>();
     var best = new Dictionary<string, int>();
     string Key(int[] boxes, int player)
@@ -396,6 +401,9 @@ static Result? Solve(Input input)
         string key = Key(node.boxes, node.player);
         if (best.TryGetValue(key, out int old) && old <= node.cost) return;
         int bound = Math.Max(Math.Max(Bound(node.boxes), PairBound(node.boxes, node.player)), PairMoveBound(node.boxes, node.player));
+        int roomBound = 0;
+        foreach (var room in rooms) roomBound += room.Bound(node.boxes, node.player);
+        bound = Math.Max(bound, roomBound);
         if (node.cost + bound > upper) return;
         best[key] = node.cost; pending.Enqueue(node, (node.cost + bound, -node.cost));
     }
@@ -575,7 +583,7 @@ static Result? Reverse(Input input)
     }
     return null;
 }
-record Input(int width, int player, int[] boxes, int[] goals, int[] floors, int upper, long milliseconds, bool large = false, int projection = 0, int memoryGiB = 0, bool reverse = false);
+record Input(int width, int player, int[] boxes, int[] goals, int[] floors, int upper, long milliseconds, bool large = false, int projection = 0, int memoryGiB = 0, bool reverse = false, int[][]? rooms = null);
 record Node(int player, int[] boxes, int cost, Node? parent, string segment) { public int lower; }
 
 record Result(int value, string path, long nodes);
