@@ -9,6 +9,16 @@
     "size": 10030398,
     "hash": "6bc0d1b0ff8e1d857f7f412923cd458f38f1a435087c91ae71fec3676c23ef62"
   },
+  "renjuBlack": {
+    "name": "mix9svqrenju_bs15_black.bin.lz4",
+    "size": 9984172,
+    "hash": "7ab8c974c30da07717ce6a504616a62ac8c981500503f0ced0fadefd3f46c5ec"
+  },
+  "renjuWhite": {
+    "name": "mix9svqrenju_bs15_white.bin.lz4",
+    "size": 9844944,
+    "hash": "a31f318518d3b5630489054d9eb013fd5353c553999640c2bcfd8d95e6fe4e4e"
+  },
   "classical": {
     "name": "model210901.bin",
     "size": 25896,

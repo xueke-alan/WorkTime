@@ -90,11 +90,24 @@
       value: root.sum / root.visits,
     };
   }
+  function decodeOffline(base64) {
+    if (Uint8Array.fromBase64) return Uint8Array.fromBase64(base64);
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < bytes.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  }
   self.onmessage = async ({ data }) => {
     try {
       if (data.type === "init") {
+        const wasm = data.offline
+          ? decodeOffline(data.offline.wasm)
+          : data.wasm;
+        const model = data.offline
+          ? decodeOffline(data.offline.model)
+          : new Uint8Array(data.model);
         const url = URL.createObjectURL(
-          new Blob([data.wasm], { type: "application/wasm" }),
+          new Blob([wasm], { type: "application/wasm" }),
         );
         try {
           ort.env.wasm.numThreads = 1;
@@ -103,10 +116,10 @@
             "ort-wasm-simd.wasm": url,
             "ort-wasm.wasm": url,
           };
-          session = await ort.InferenceSession.create(
-            new Uint8Array(data.model),
-            { executionProviders: ["wasm"], graphOptimizationLevel: "all" },
-          );
+          session = await ort.InferenceSession.create(model, {
+            executionProviders: ["wasm"],
+            graphOptimizationLevel: "all",
+          });
           const test = await session.run({
             input: new ort.Tensor(
               "float32",

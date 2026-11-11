@@ -1,6 +1,8 @@
 "use strict";
 
 WorkTimeApp.games.xiangqiRules = (() => {
+  const initialPosition =
+    "rheakaehr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RHEAKAEHR";
   const columns = 9;
   const rows = 10;
   const size = columns * rows;
@@ -262,8 +264,8 @@ WorkTimeApp.games.xiangqiRules = (() => {
     );
   }
 
-  // An omitted defense selects the computer's move. A recorded defense is
-  // replayed as-is, including null for a round that ends on Red's move.
+  // An omitted defense selects the computer's move. Null represents an
+  // unfinished off-tree round or a round that ends on Red's move.
   function playRound(position, move, defense) {
     if (position.status !== "playing" || !legal(position.board, true, move))
       return null;
@@ -276,11 +278,11 @@ WorkTimeApp.games.xiangqiRules = (() => {
           : replies && reply(replies);
     if (defense === null) {
       const outcome = result(board, false);
-      if (outcome === "playing") return null;
+      if (outcome === "playing" && replies !== undefined) return null;
       return {
         board,
         node: null,
-        status: "won",
+        status: outcome === "playing" ? "playing" : "won",
         outcome,
         defense,
       };
@@ -297,23 +299,111 @@ WorkTimeApp.games.xiangqiRules = (() => {
 
   function restore(level, path) {
     if (!Array.isArray(path)) return null;
+    const initialBoard = parse(level.position);
+    if (!initialBoard) return null;
     let position = {
-      board: parse(level.position),
+      board: initialBoard,
       node: level.tree,
       status: "playing",
       defense: null,
     };
-    if (!position.board) return null;
     for (let i = 0; i < path.length; i += 2) {
       const hasDefense = i + 1 < path.length;
       if (hasDefense && !Number.isInteger(path[i + 1])) return null;
       position = playRound(position, path[i], hasDefense ? path[i + 1] : null);
       if (!position) return null;
     }
+    if (
+      position.status === "playing" &&
+      !position.node &&
+      repetition(initialBoard, path)
+    )
+      return { ...position, status: "draw", outcome: "repetition" };
+    return position;
+  }
+
+  function matchPosition(initialBoard, path, humanRed) {
+    let board = initialBoard;
+    for (const move of path) board = apply(board, move);
+    const redTurn = path.length % 2 === 0;
+    const outcome = result(board, redTurn);
+    let repeated = outcome === "playing" && repetition(initialBoard, path);
+    // Casual AI matches allow the human to keep checking.
+    if (repeated && repeated.loser === humanRed) repeated = null;
+    return {
+      board,
+      status: repeated
+        ? repeated.loser === null
+          ? "draw"
+          : repeated.loser === humanRed
+            ? "lost"
+            : "won"
+        : outcome === "playing"
+          ? "playing"
+          : redTurn === humanRed
+            ? "lost"
+            : "won",
+      outcome: repeated ? repeated.outcome : outcome,
+    };
+  }
+
+  function restoreMatch(match) {
+    if (
+      !match ||
+      !["normal", "hard", "master"].includes(match.difficulty) ||
+      typeof match.humanRed !== "boolean" ||
+      !Array.isArray(match.handicaps) ||
+      new Set(match.handicaps).size !== match.handicaps.length ||
+      !match.handicaps.every((piece) => ["R", "H", "C"].includes(piece)) ||
+      !Number.isInteger(match.undosRemaining) ||
+      match.undosRemaining < 0 ||
+      match.undosRemaining > 4 - match.handicaps.length ||
+      typeof match.initialBoard !== "string" ||
+      match.initialBoard.length !== size ||
+      !Array.isArray(match.path) ||
+      match.path.length > 10000
+    )
+      return null;
+    const expected = parse(initialPosition).split("");
+    const pairs = match.humanRed
+      ? [
+          [0, 8],
+          [1, 7],
+          [19, 25],
+        ]
+      : [
+          [81, 89],
+          [82, 88],
+          [64, 70],
+        ];
+    for (const [index, piece] of ["R", "H", "C"].entries()) {
+      if (!match.handicaps.includes(piece)) continue;
+      const removed = pairs[index].filter(
+        (square) => match.initialBoard[square] === ".",
+      );
+      if (removed.length !== 1) return null;
+      expected[removed[0]] = ".";
+    }
+    if (expected.join("") !== match.initialBoard) return null;
+    let position = matchPosition(match.initialBoard, [], match.humanRed);
+    const path = [];
+    for (const move of match.path) {
+      if (
+        position.status !== "playing" ||
+        !Number.isInteger(move) ||
+        !legalMoves(position.board, path.length % 2 === 0).includes(move)
+      )
+        return null;
+      path.push(move);
+      position = matchPosition(match.initialBoard, path, match.humanRed);
+    }
     return position;
   }
 
   return {
+    initialPosition,
+    matchPosition,
+    restoreMatch,
     columns,
     rows,
     side,

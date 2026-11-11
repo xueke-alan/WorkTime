@@ -123,13 +123,28 @@ const { chromium } = require("playwright");
         });
         document.dispatchEvent(new Event("visibilitychange"));
       });
-      assert.equal(await shown(), false, "Backgrounding clears cover");
+      assert.equal(await shown(), true, "Backgrounding preserves the cover");
+      await page.clock.setFixedTime(new Date("2026-11-11T16:05:00Z"));
+      await page.waitForTimeout(1100);
+      const clock = cover.locator(".summary-number-visual");
+      assert.equal(await clock.textContent(), "00:00:01", "Clock pauses");
       await page.evaluate(() => {
         delete document.hidden;
         document.dispatchEvent(new Event("visibilitychange"));
       });
-      await page.waitForTimeout(800);
-      assert.equal(await shown(), true, "Resuming rearms cover");
+      assert.equal(await shown(), true, "Resuming keeps the cover visible");
+      assert.equal(
+        await cover.evaluate((el) => getComputedStyle(el).opacity),
+        "1",
+        "Resuming does not fade the cover back in",
+      );
+      assert.equal(await clock.textContent(), "00:05:00", "Clock catches up");
+      await page.clock.setFixedTime(new Date("2026-11-11T16:05:01Z"));
+      await page.waitForFunction(
+        () =>
+          document.querySelector(".game-idle-time .summary-number-accessible")
+            ?.textContent === "00:05:01",
+      );
       await page.setViewportSize({ width: 390, height: 844 });
       await page.evaluate(() => {
         document.documentElement.dataset.theme = "blue";

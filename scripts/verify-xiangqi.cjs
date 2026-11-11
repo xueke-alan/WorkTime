@@ -140,7 +140,11 @@ function verifyRules() {
   assert.equal(stalematePosition.status, "won");
   assert.equal(stalematePosition.outcome, "stalemate");
   assert.equal(rules.restore(first, delayedMate).status, "won");
-  assert.equal(rules.restore(first, [opening]), null);
+  assert.equal(rules.restore(first, [opening]).status, "playing");
+  assert.equal(
+    rules.restore(first, [opening]).board,
+    rules.apply(start.board, opening),
+  );
   assert.equal(rules.restore(first, [...delayedMate, defense]), null);
   assert.equal(rules.restore(first, [opening, 8100]), null);
 
@@ -160,7 +164,7 @@ function verifyRules() {
   );
 }
 
-async function launch(page, touch = false) {
+async function launch(page, { fallback = false, fixture = null } = {}) {
   await page.goto(entry);
   await page.waitForFunction(
     () => document.documentElement.dataset.appState === "ready",
@@ -168,15 +172,41 @@ async function launch(page, touch = false) {
   await page.waitForFunction(
     () => !document.documentElement.classList.contains("app-loading"),
   );
-  await page.evaluate(() => WorkTimeApp.i18n.setLanguage("zh-CN"));
-  const tab = page.locator("#date-tab-games");
-  await page.waitForFunction(
-    () =>
-      typeof document.getElementById("date-tab-games")?.onclick === "function",
-  );
-  if (!(await page.locator("#gamesPanel").isVisible()))
-    await tab.evaluate((button) => button.click());
-  await page.locator("#gamesPanel").waitFor({ state: "visible" });
+  await page.evaluate(async () => {
+    await WorkTimeApp.i18n.setLanguage("zh-CN");
+    const preferences = WorkTimeApp.services.preferences.page;
+    if (preferences.state.motionMode !== "system")
+      await preferences.saveMotionMode("system");
+  });
+  if (fallback || fixture)
+    await page.evaluate(
+      async ({ fallback, fixture }) => {
+        const app = WorkTimeApp;
+        await app.games.load("game-xiangqi");
+        if (fixture) {
+          const level = app.data.xiangqi.find(({ id }) => id === fixture.id);
+          Object.assign(level, fixture);
+        }
+        if (fallback)
+          app.games.createXiangqiEngine = () => ({
+            search: async () => {
+              throw Error("Engine unavailable");
+            },
+            dispose() {},
+          });
+      },
+      { fallback, fixture },
+    );
+  await page.waitForFunction(() => {
+    const panel = document.getElementById("gamesPanel");
+    if (!panel) return false;
+    if (panel.hidden) {
+      const dateInfo = WorkTimeApp.ui.dateInfo;
+      dateInfo.selectTab("games");
+      if (panel.hidden) dateInfo.setDate("2026-01-01");
+    }
+    return !panel.hidden;
+  });
   // This suite repeatedly reloads saved games while shell/menu animations may
   // still be settling. Menu pointer behavior has its own dedicated verifier.
   await page
@@ -224,6 +254,7 @@ async function layout(browser) {
       return {
         board: rect(".xiangqi-board"),
         stage: rect(".xiangqi-stage"),
+        captures: rect(".xiangqi-captures"),
         controls: rect(".xiangqi-controls"),
         controlsPadding: parseFloat(
           getComputedStyle(document.querySelector(".xiangqi-controls"))
@@ -233,9 +264,9 @@ async function layout(browser) {
         gap: parseFloat(playStyle.gap),
         padding: parseFloat(playStyle.paddingLeft),
         title: rect(".xiangqi-level-title"),
-        details: [...document.querySelectorAll(".xiangqi-detail")].map((node) =>
-          node.getBoundingClientRect().toJSON(),
-        ),
+        details: [
+          ...document.querySelectorAll(".xiangqi-objective .xiangqi-detail"),
+        ].map((node) => node.getBoundingClientRect().toJSON()),
         actions: [...document.querySelectorAll(".xiangqi-actions button")]
           .filter((node) => !node.hidden)
           .map((node) => node.getBoundingClientRect().toJSON()),
@@ -246,7 +277,16 @@ async function layout(browser) {
         overflow: content.scrollWidth > content.clientWidth,
       };
     });
-    const { board, stage, controls, content, available, gap, padding } = bounds;
+    const {
+      board,
+      stage,
+      captures,
+      controls,
+      content,
+      available,
+      gap,
+      padding,
+    } = bounds;
     assert(board.width > 0 && board.height > 0);
     assert(Math.abs(board.width / board.height - 0.9) < 0.005);
     assert(!bounds.overflow, `${width}: no horizontal overflow`);
@@ -254,20 +294,21 @@ async function layout(browser) {
     if (available >= 640) {
       assert(controls.x >= board.right, `${width}: controls on right`);
       assert(board.bottom <= content.bottom, `${width}: board fits height`);
-      assert(Math.abs(board.width - stage.width) < 2);
+      assert(captures.x >= stage.x && captures.right <= board.x);
+      assert(Math.abs(board.right - stage.right) < 2);
       assert(Math.abs(controls.x - board.right - gap) < 2);
       assert(Math.abs(controls.y - board.y) < 2);
       assert(bounds.title.y > board.y);
       assert(
         Math.abs(
-          (board.x + controls.right) / 2 - (content.x + content.right) / 2,
+          (stage.x + controls.right) / 2 - (content.x + content.right) / 2,
         ) < 2,
       );
       assert(board.y >= content.y + padding);
     } else {
       assert(controls.y >= board.bottom, `${width}: controls below board`);
       assert(
-        Math.abs(board.width - (available - padding * 2)) < 2,
+        Math.abs(stage.width - (available - padding * 2)) < 2,
         JSON.stringify({ width, bounds }),
       );
     }
@@ -335,7 +376,7 @@ async function resultAnimation(browser) {
       },
       { key, id, path },
     );
-    await launch(page);
+    await launch(page, { fallback: true });
     assert(
       await effect.isHidden(),
       "restoring a position does not replay the effect",
@@ -577,7 +618,7 @@ async function desktop(browser) {
     await square(to).click();
     await page.clock.fastForward(3100);
   }
-  await launch(page);
+  await launch(page, { fallback: true });
   await page.clock.install();
   const visibleLevels = page.locator(".xiangqi-levels button:visible");
   assert.equal(
@@ -645,7 +686,7 @@ async function desktop(browser) {
   );
   const offTrackBoard = await boardState();
   assert.notDeepEqual(offTrackBoard, initial);
-  await launch(page);
+  await launch(page, { fallback: true });
   assert.deepEqual(await boardState(), offTrackBoard);
   await move(delayedMate[2]);
   assert.match(await status.textContent(), /已通关/);
@@ -810,7 +851,7 @@ async function mobile(browser) {
       return original.call(this, name, value);
     };
   }, key);
-  await launch(page, true);
+  await launch(page, { fallback: true });
   await gameAction(page, "goal4").tap();
   const classic = classics[0];
   const finalLevel = gameAction(page, classic.id);
@@ -1007,21 +1048,140 @@ async function interaction(browser) {
   assert.deepEqual((await saved()).drafts[two.id].path, round);
   await launch(page);
   await action("undo").click();
-  await page.evaluate(() => {
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now() + 1000));
+  await page.evaluate((move) => {
     Element.prototype.animate = undefined;
-  });
-  const [origin, destination] = rules.decode(opening);
-  await squareAt(page, origin).click();
-  await squareAt(page, destination).click();
+    for (const square of move)
+      document.querySelector(`.xiangqi-cell[data-square="${square}"]`).click();
+  }, rules.decode(opening));
+  await page.clock.runFor(400);
   assert.equal(
     await reply.count(),
     1,
     "missing animation API still preserves thinking time",
   );
+  const indicator = page.locator(".xiangqi-thinking[data-active]");
+  assert.equal(await indicator.getAttribute("data-side"), "black");
+  await page.clock.runFor(1200);
   await reply.waitFor({ state: "detached" });
+  assert.equal(await indicator.count(), 0);
   assert.deepEqual((await saved()).drafts[two.id].path, round);
   assert.deepEqual(errors, []);
   await page.close();
+}
+
+async function puzzleEngine(browser) {
+  const page = await browser.newPage({ reducedMotion: "reduce" });
+  await page.route(/^https?:/, (route) => route.abort());
+  const fixture = {
+    id: "xq-classic-145",
+    position: "4k4/3h5/6r2/4p4/p2r5/9/9/9/5K3/9",
+    tree: [4, {}],
+  };
+  const action = (name) => gameAction(page, name);
+  const saved = () =>
+    page.evaluate((key) => JSON.parse(localStorage.getItem(key)), key);
+  const waitForPath = (path) =>
+    page.waitForFunction(
+      ({ key, id, path }) =>
+        JSON.stringify(
+          JSON.parse(localStorage.getItem(key))?.drafts[id]?.path,
+        ) === JSON.stringify(path),
+      { key, id: fixture.id, path },
+    );
+  const move = async (from, to) => {
+    await squareAt(page, from).click();
+    await squareAt(page, to).click();
+  };
+  const red = rules.encode(77, 76);
+  const black = rules.encode(39, 40);
+  const anotherLevel = classics[0].id;
+  await launch(page, { fixture });
+  await action("goal4").click();
+  await action(fixture.id).click();
+  await move(77, 76);
+  await waitForPath([red, black]);
+  assert.match(await page.locator(".xiangqi-status").textContent(), /被将军/);
+  await action("restart").click();
+  await launch(page, { fixture });
+
+  // Keep the engine reply pending even after dispose to exercise stale results.
+  await page.evaluate(() => {
+    window.puzzleSearches = [];
+    WorkTimeApp.games.createXiangqiEngine = () => ({
+      search: (fen, difficulty) =>
+        new Promise((resolve) =>
+          window.puzzleSearches.push({ fen, difficulty, resolve }),
+        ),
+      dispose() {},
+    });
+  });
+  await move(77, 76);
+  await page.waitForFunction(() => window.puzzleSearches.length === 1);
+  assert.deepEqual((await saved()).drafts[fixture.id].path, [red]);
+  assert.equal(await squareAt(page, 76).getAttribute("aria-disabled"), "true");
+  assert.equal(
+    await page.evaluate(() => window.puzzleSearches[0].difficulty),
+    "hard",
+  );
+  await action("undo").click();
+  await page.evaluate(() => window.puzzleSearches[0].resolve("d5e5"));
+  await waitForPath([]);
+
+  await move(77, 76);
+  await page.waitForFunction(() => window.puzzleSearches.length === 2);
+  await action("choose").click();
+  await action(anotherLevel).click();
+  await page.evaluate(() => window.puzzleSearches[1].resolve("d5e5"));
+  await waitForPath([red]);
+  assert.equal((await saved()).current, anotherLevel);
+  await action("choose").click();
+  await action(fixture.id).click();
+  await page.waitForFunction(() => window.puzzleSearches.length === 3);
+
+  const imported = await page.evaluate(async (key) => {
+    const archive = WorkTimeApp.services.gameArchive;
+    const packed = await archive.decode(
+      await archive.encode(archive.exportArchive()),
+    );
+    localStorage.removeItem(key);
+    await archive.commit(archive.preview(packed));
+    return JSON.parse(localStorage.getItem(key));
+  }, key);
+  assert.deepEqual(imported.drafts[fixture.id].path, [red]);
+  await launch(page, { fixture });
+  await waitForPath([red, black]);
+
+  const cycle = [
+    [77, 68],
+    [4, 3],
+    [68, 77],
+    [3, 4],
+  ].map(([from, to]) => rules.encode(from, to));
+  await page.evaluate(
+    ({ key, id, path }) => {
+      const save = JSON.parse(localStorage.getItem(key));
+      save.drafts[id] = { path };
+      localStorage.setItem(key, JSON.stringify(save));
+    },
+    { key, id: fixture.id, path: [...cycle, ...cycle] },
+  );
+  await launch(page, { fixture });
+  assert.match(
+    await page.locator(".xiangqi-status").textContent(),
+    /重复局面，和棋/,
+  );
+  await action("undo").click();
+  await waitForPath([...cycle, ...cycle.slice(0, 2)]);
+  assert.doesNotMatch(
+    await page.locator(".xiangqi-status").textContent(),
+    /和棋/,
+  );
+  await page.close();
+  console.log(
+    "Off-tree Pikafish reply, stale search cancellation, backup and repetition verified.",
+  );
 }
 
 (async () => {
@@ -1031,6 +1191,7 @@ async function interaction(browser) {
     headless: true,
   });
   try {
+    await puzzleEngine(browser);
     await historicalSave(browser);
     await resultAnimation(browser);
     await layout(browser);

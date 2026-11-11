@@ -2,6 +2,55 @@
 (() => {
   const locales = ["zh-CN", "en", "zh-TW", "zh-HK", "ko", "ja"];
   const strings = {
+    forbidden: [
+      "黑方禁手",
+      "Black forbidden moves",
+      "黑方禁手",
+      "黑方禁手",
+      "흑 금수",
+      "黒の禁手",
+    ],
+    freestyle: [
+      "无禁手",
+      "No forbidden moves",
+      "無禁手",
+      "無禁手",
+      "금수 없음",
+      "禁手なし",
+    ],
+    forbiddenNote: [
+      "开启后，黑方禁止三三、四四和长连（连续六子及以上）。三三指一手形成两个有效活三，四四指一手形成两个四。黑方恰好五连获胜，白方五连及以上获胜。禁手落子会被阻止并提示原因。",
+      "When enabled, Black cannot play double-threes, double-fours or overlines (six or more in a row). A double-three creates two valid open threes in one move; a double-four creates two fours. Black wins with exactly five in a row; White wins with five or more. Forbidden moves are blocked with an explanation.",
+      "開啟後，黑方禁止三三、四四和長連（連續六子及以上）。三三指一手形成兩個有效活三，四四指一手形成兩個四。黑方恰好五連獲勝，白方五連及以上獲勝。禁手落子會被阻止並提示原因。",
+      "開啟後，黑方禁止三三、四四和長連（連續六子或以上）。三三指一手形成兩個有效活三，四四指一手形成兩個四。黑方恰好五連獲勝，白方五連或以上獲勝。禁手落子會被阻止並提示原因。",
+      "사용하면 흑은 삼삼, 사사, 장목(6개 이상 연속)을 둘 수 없습니다. 삼삼은 한 수로 유효한 열린 삼 두 개를, 사사는 사 두 개를 만드는 것입니다. 흑은 정확히 5개, 백은 5개 이상을 이으면 승리합니다. 금수는 차단되며 이유가 표시됩니다.",
+      "有効にすると、黒の三三、四四、長連（6個以上の連続）を禁止します。三三は一手で有効な活三を2つ、四四は四を2つ作る手です。黒はちょうど5個、白は5個以上並べると勝ちです。禁手は着手を止めて理由を表示します。",
+    ],
+    doubleThree: [
+      "此处为三三禁手，请选择其他位置。",
+      "Double-three is forbidden. Choose another point.",
+      "此處為三三禁手，請選擇其他位置。",
+      "此處為三三禁手，請選擇其他位置。",
+      "삼삼 금수입니다. 다른 곳에 두세요.",
+      "三三の禁手です。別の場所に置いてください。",
+    ],
+    doubleFour: [
+      "此处为四四禁手，请选择其他位置。",
+      "Double-four is forbidden. Choose another point.",
+      "此處為四四禁手，請選擇其他位置。",
+      "此處為四四禁手，請選擇其他位置。",
+      "사사 금수입니다. 다른 곳에 두세요.",
+      "四四の禁手です。別の場所に置いてください。",
+    ],
+    overline: [
+      "此处为长连禁手，请选择其他位置。",
+      "An overline is forbidden. Choose another point.",
+      "此處為長連禁手，請選擇其他位置。",
+      "此處為長連禁手，請選擇其他位置。",
+      "장목 금수입니다. 다른 곳에 두세요.",
+      "長連の禁手です。別の場所に置いてください。",
+    ],
+
     engineName: [
       "Rapfi · NNUE 模型提供运算",
       "Powered by Rapfi · NNUE",
@@ -155,12 +204,12 @@
       "VCT 上級",
     ],
     vctObjective: [
-      "连续威胁 · 最优解 {goal} 步",
-      "Continuous threats · Optimal: {goal} moves",
-      "連續威脅 · 最優解 {goal} 步",
-      "連續威脅 · 最優解 {goal} 步",
-      "연속 위협 · 최적 {goal}수",
-      "連続する脅威 · 最短 {goal}手",
+      "连续威胁 · VCT最优解 {goal} 步",
+      "Continuous threats · VCT optimum: {goal} moves",
+      "連續威脅 · VCT最優解 {goal} 步",
+      "連續威脅 · VCT最優解 {goal} 步",
+      "연속 위협 · VCT 최적 {goal}수",
+      "連続する脅威 · VCT最短 {goal}手",
     ],
     objective: [
       "黑方先行 · 最优解 {goal} 步",

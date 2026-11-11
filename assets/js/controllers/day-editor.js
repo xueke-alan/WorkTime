@@ -351,7 +351,8 @@ WorkTimeApp.ui.createDayController = function (options) {
       candidate &&
       $("dayStart").value === (candidate.start || "") &&
       $("dayEnd").value === (candidate.end || "") &&
-      $("dayNext").checked === !!candidate.nextDay;
+      ($("dayNext").checked === !!candidate.nextDay ||
+        (day.oa?.start === candidate.start && !day.oa?.end && !candidate.end));
     return (
       !(
         matchesClocks(record) ||

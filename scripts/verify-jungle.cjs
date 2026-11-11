@@ -591,18 +591,25 @@ async function browserTests() {
           .evaluateAll((buttons) =>
             buttons.map((button) => {
               const r = button.getBoundingClientRect();
-              return { x: r.x, y: r.y, width: r.width };
+              return { x: r.x, y: r.y, bottom: r.bottom, width: r.width };
             }),
           );
         assert.equal(actionBounds.length, 4);
+        const [rotation, ...matchActions] = actionBounds;
         assert(
-          actionBounds.every(
+          rotation.bottom <= matchActions[0].y &&
+            Math.abs(rotation.x - matchActions[0].x) < 1 &&
+            rotation.width > 40,
+          "the rotation button sits above and aligns with the leftmost match control",
+        );
+        assert(
+          matchActions.every(
             (r, index) =>
-              Math.abs(r.y - actionBounds[0].y) < 1 &&
+              Math.abs(r.y - matchActions[0].y) < 1 &&
               r.width > 40 &&
-              (!index || r.x > actionBounds[index - 1].x),
+              (!index || r.x > matchActions[index - 1].x),
           ),
-          "all four controls share one row at every viewport",
+          "the three match controls share one row at every viewport",
         );
         const before = JSON.stringify(await save());
         await action("rotate").click();

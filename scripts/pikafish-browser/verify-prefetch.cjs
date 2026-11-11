@@ -31,7 +31,7 @@ async function main() {
     }
     if (!url.pathname.startsWith("/WorkTime/"))
       return response.writeHead(404).end();
-    if (/\.(nnue|wasm)$/.test(url.pathname)) {
+    if (/\/pikafish\/[^/]+\.(nnue|wasm)$/.test(url.pathname)) {
       if (failBinaries) return response.writeHead(503).end();
       if (holdModel && url.pathname.endsWith(".nnue")) {
         modelArrived();
@@ -70,7 +70,7 @@ async function main() {
         window.engineWorkers = 0;
         const fetch = window.fetch.bind(window);
         window.fetch = (url, options) => {
-          if (/\.(nnue|wasm)$/.test(String(url)))
+          if (/\/pikafish\/[^/?]+\.(nnue|wasm)(\?|$)/.test(String(url)))
             window.binaryRequests.push({
               url: String(url),
               priority: options?.priority,
@@ -80,7 +80,12 @@ async function main() {
         };
         const digest = crypto.subtle.digest.bind(crypto.subtle);
         crypto.subtle.digest = (...args) => {
-          window.hashes++;
+          const resources = WorkTimeApp.games.pikafishAssets;
+          if (
+            args[1].byteLength === resources?.wasm?.size ||
+            args[1].byteLength === resources?.net?.size
+          )
+            window.hashes++;
           return digest(...args);
         };
         window.Worker = class extends Worker {

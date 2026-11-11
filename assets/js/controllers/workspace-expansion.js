@@ -43,15 +43,18 @@ WorkTimeApp.ui.createWorkspaceExpansion = function ({
   function measure() {
     const bounds = workspace.getBoundingClientRect(),
       compact = innerWidth <= 1150,
+      edgeToEdge = innerWidth <= 850,
       viewport = window.visualViewport;
     shell.classList.toggle("game-shell-compact", compact);
     Object.assign(
       shell.style,
       compact
         ? {
-            left: bounds.left + "px",
+            left: (edgeToEdge ? viewport?.offsetLeft || 0 : bounds.left) + "px",
             top: (viewport?.offsetTop || 0) + "px",
-            width: bounds.width + "px",
+            width:
+              (edgeToEdge ? viewport?.width || innerWidth : bounds.width) +
+              "px",
             height: (viewport?.height || innerHeight) + "px",
           }
         : { left: "0px", top: "0px", width: "100%", height: "100%" },
@@ -86,7 +89,8 @@ WorkTimeApp.ui.createWorkspaceExpansion = function ({
     const token = ++revision,
       collapsed = originClip(),
       clip = getComputedStyle(shell).clipPath;
-    const painted = clip === "none" ? "inset(0px round 16px)" : clip;
+    const expanded = `inset(0px round ${getComputedStyle(shell).borderRadius})`;
+    const painted = clip === "none" ? expanded : clip;
     const background = panels.map((element, i) => ({
       element,
       slide: element !== origin,
@@ -167,7 +171,7 @@ WorkTimeApp.ui.createWorkspaceExpansion = function ({
       track(
         shell,
         { clipPath: opening && !reversing ? collapsed : painted },
-        { clipPath: opening ? "inset(0px round 16px)" : collapsed },
+        { clipPath: opening ? expanded : collapsed },
         timing.surface,
         0,
         motion.expandEase,

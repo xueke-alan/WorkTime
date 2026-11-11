@@ -121,7 +121,7 @@ module.exports = async function verifyResults(browser, site) {
     await page.waitForFunction(
       () => document.getElementById("gameShell").dataset.state === "open",
     );
-    if (outcome !== "solve") await page.locator(".game-level-return").click();
+    assert.equal(await page.locator(".gomoku-play").isVisible(), true);
     const effect = page.locator(".gomoku-result");
     const action = (name) => page.locator(`[data-gomoku-action="${name}"]`);
     async function trigger() {

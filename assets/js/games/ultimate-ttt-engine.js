@@ -255,17 +255,11 @@ WorkTimeApp.games.createUltimateTttEngine = function () {
       async function start() {
         const assets = WorkTimeApp.services.assets;
         await assets.script("assets/vendor/utttai/worker-source.js");
-        let bytes;
+        if (disposed || token !== generation) return;
+        let bytes, offline;
         if (location.protocol === "file:") {
           await assets.script("assets/vendor/utttai/offline.js");
-          bytes = Object.fromEntries(
-            Object.entries(WorkTimeApp.games.utttaiAssets.offline).map(
-              ([key, value]) => [
-                key,
-                Uint8Array.from(atob(value), (c) => c.charCodeAt(0)).buffer,
-              ],
-            ),
-          );
+          offline = WorkTimeApp.games.utttaiAssets.offline;
         } else bytes = await WorkTimeApp.games.utttaiResources.load();
         if (disposed || token !== generation) return;
         const url = URL.createObjectURL(
@@ -305,10 +299,12 @@ WorkTimeApp.games.createUltimateTttEngine = function () {
             } else request.resolve(data);
           }
         };
-        worker.postMessage({ type: "init", ...bytes }, [
-          bytes.wasm,
-          bytes.model,
-        ]);
+        if (offline) worker.postMessage({ type: "init", offline });
+        else
+          worker.postMessage({ type: "init", ...bytes }, [
+            bytes.wasm,
+            bytes.model,
+          ]);
       }
       function fail(error) {
         if (token !== generation) return;

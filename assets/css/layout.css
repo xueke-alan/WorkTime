@@ -139,7 +139,7 @@ body footer {
 @media (min-width: 1151px) {
   body .wrap {
     width: calc(100% - 2.857143rem);
-    max-width: clamp(1680px, calc(65.625vw + 420px), 2100px);
+    max-width: clamp(1840px, calc(65.625vw + 420px), 2100px);
     padding: 1.428571rem 1.714286rem 1.142857rem;
     gap: 0.857143rem;
   }

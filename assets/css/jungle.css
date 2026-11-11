@@ -182,7 +182,9 @@ html[data-reduced-motion="true"] .jungle-capture-indicator .jungle-bite-lower { 
 .jungle-status[data-side="red"] { color: var(--jungle-red); }
 .jungle-status[data-side="blue"] { color: var(--jungle-blue); }
 .jungle-actions { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .3rem; }
-.jungle-controls > .jungle-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .25rem; align-self: end; justify-self: start; width: 100%; margin: 0; }
+.jungle-controls > .jungle-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .25rem; align-self: end; justify-self: start; width: 100%; margin: 0; }
+.jungle-controls .jungle-actions > [data-jungle-action="rotate"] { grid-area: 1 / 1; }
+.jungle-controls .jungle-actions > [data-jungle-action="rotate"] ~ .game-button { grid-row: 2; }
 .jungle-controls .jungle-actions > .game-button { width: 100%; min-width: 0; min-height: 3.6rem; height: auto; padding: .5rem .15rem; flex-direction: column; gap: .4rem; border-color: transparent; background: transparent; white-space: normal; text-align: center; justify-content: center; font-size: .75rem; line-height: 1.4; }
 .jungle-controls .jungle-actions .ui-icon { width: 1.3rem; height: 1.3rem; }
 .game-jungle .jungle-actions > [data-jungle-action="rotate"] { --game-button-fill: transparent; --game-button-edge: transparent; --game-button-hover: var(--game-control-hover); --game-button-hover-ink: var(--ink); margin: 0; color: var(--ink); background: transparent; border-color: transparent; }

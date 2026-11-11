@@ -106,7 +106,235 @@ function verifyRules() {
   };
   assert.deepEqual(
     copy(app.services.gameArchive.normalize("game-gomoku", matchSave)),
-    matchSave,
+    { ...matchSave, forbidden: false, match: { ...match, forbidden: false } },
+  );
+  const position = (black, white = []) => {
+    const board = Array(225).fill(0);
+    for (const [x, y] of black) board[y * 15 + x] = 1;
+    for (const [x, y] of white) board[y * 15 + x] = 2;
+    return board;
+  };
+  const fixtures = [
+    {
+      name: "cross three",
+      black: [
+        [6, 7],
+        [8, 7],
+        [7, 6],
+        [7, 8],
+      ],
+      point: 112,
+      reason: "doubleThree",
+    },
+    {
+      name: "jump threes",
+      black: [
+        [5, 7],
+        [8, 7],
+        [7, 5],
+        [7, 8],
+      ],
+      point: 112,
+      reason: "doubleThree",
+    },
+    {
+      name: "cross four",
+      black: [
+        [5, 7],
+        [6, 7],
+        [8, 7],
+        [7, 5],
+        [7, 6],
+        [7, 8],
+      ],
+      point: 112,
+      reason: "doubleFour",
+    },
+    {
+      name: "same direction fours",
+      black: [
+        [3, 7],
+        [5, 7],
+        [6, 7],
+        [9, 7],
+      ],
+      point: 112,
+      reason: "doubleFour",
+    },
+    {
+      name: "overline",
+      black: [
+        [3, 7],
+        [4, 7],
+        [5, 7],
+        [6, 7],
+        [8, 7],
+      ],
+      point: 112,
+      reason: "overline",
+    },
+    {
+      name: "one open four counts once",
+      black: [
+        [5, 7],
+        [6, 7],
+        [8, 7],
+      ],
+      point: 112,
+      reason: null,
+    },
+    {
+      name: "edge blocks three",
+      black: [
+        [0, 1],
+        [2, 1],
+        [1, 0],
+        [1, 2],
+      ],
+      point: 16,
+      reason: null,
+    },
+    {
+      name: "white blocks three",
+      black: [
+        [6, 7],
+        [8, 7],
+        [7, 6],
+        [7, 8],
+      ],
+      white: [
+        [4, 7],
+        [9, 7],
+      ],
+      point: 112,
+      reason: null,
+    },
+    {
+      name: "false three extensions are double fours",
+      black: [
+        [6, 7],
+        [8, 7],
+        [7, 6],
+        [7, 8],
+        [5, 4],
+        [5, 5],
+        [5, 6],
+        [9, 4],
+        [9, 5],
+        [9, 6],
+      ],
+      point: 112,
+      reason: null,
+    },
+    {
+      name: "five overrides overline",
+      black: [
+        [3, 7],
+        [4, 7],
+        [5, 7],
+        [6, 7],
+        [7, 4],
+        [7, 5],
+        [7, 6],
+        [7, 8],
+        [7, 9],
+      ],
+      point: 112,
+      reason: null,
+    },
+    {
+      name: "five overrides double three",
+      black: [
+        [3, 7],
+        [4, 7],
+        [5, 7],
+        [6, 7],
+        [7, 6],
+        [7, 8],
+        [6, 6],
+        [8, 8],
+      ],
+      point: 112,
+      reason: null,
+    },
+  ];
+  for (const fixture of fixtures) {
+    const board = position(fixture.black, fixture.white);
+    const before = [...board];
+    assert.equal(
+      rules.forbiddenReason(board, fixture.point),
+      fixture.reason,
+      fixture.name,
+    );
+    assert.deepEqual(board, before, "forbidden probe restores board");
+    if (fixture.name === "five overrides overline") {
+      board[fixture.point] = 1;
+      assert.deepEqual(
+        copy(rules.winningLine(board, 1, true)),
+        [108, 109, 110, 111, 112],
+      );
+      board[fixture.point] = 0;
+    }
+    assert.equal(
+      rules.legalMove(board, fixture.point, 1, true),
+      fixture.reason === null,
+      fixture.name,
+    );
+    assert.equal(
+      rules.legalMove(board, fixture.point, 2, true),
+      true,
+      "white unrestricted",
+    );
+    assert.equal(
+      rules.legalMove(board, fixture.point, 1, false),
+      true,
+      "freestyle unrestricted",
+    );
+  }
+  const forbiddenPath = [111, 0, 113, 2, 97, 4, 127, 6];
+  assert(
+    rules.restoreMatch({
+      ...match,
+      human: 1,
+      forbidden: true,
+      path: forbiddenPath,
+    }),
+  );
+  assert.equal(
+    rules.restoreMatch({
+      ...match,
+      forbidden: true,
+      path: [...forbiddenPath, 112],
+    }),
+    null,
+  );
+  assert(
+    rules.restoreMatch({
+      ...match,
+      forbidden: false,
+      path: [...forbiddenPath, 112],
+    }),
+  );
+  assert.equal(rules.restoreMatch({ ...match, forbidden: "true" }), null);
+  const selected = {
+    ...matchSave,
+    forbidden: true,
+    match: { ...match, forbidden: false },
+  };
+  assert.deepEqual(
+    copy(app.services.gameArchive.normalize("game-gomoku", selected)),
+    selected,
+  );
+  assert(app.services.gameArchive.hasContent("game-gomoku", selected));
+  const whiteOverline = [0, 108, 2, 109, 4, 110, 15, 112, 17, 113, 19, 111];
+  assert.equal(
+    rules.restoreMatch({
+      ...match,
+      human: 2,
+      forbidden: true,
+      path: whiteOverline,
+    }).status,
+    "won",
   );
   assert.equal(levels.length, 100);
   assert.equal(new Set(levels.map((p) => p.board.join(""))).size, 100);
@@ -226,7 +454,10 @@ function verifyRules() {
     drafts: { [level.id]: { path: round.path } },
     completed: { "gm-1": { path: retiredWin.path } },
   };
-  assert.deepEqual(copy(archive.normalize("game-gomoku", saved)), copy(saved));
+  assert.deepEqual(copy(archive.normalize("game-gomoku", saved)), {
+    ...copy(saved),
+    forbidden: false,
+  });
   const tampered = copy(saved);
   tampered.drafts[level.id].path[1] = tampered.drafts[level.id].path[0];
   assert.throws(() => archive.normalize("game-gomoku", tampered));
@@ -331,6 +562,82 @@ async function verifyUI(browser) {
       JSON.parse(localStorage.getItem("worktime.games.gomoku.v1")),
     );
   await launch();
+  const easy = levels[0];
+  await action(easy.id).click();
+  assert.match(
+    await page.locator(".gomoku-objective").textContent(),
+    /VCT最优解 4 步/,
+  );
+  const deviation = easy.board.findIndex((stone, p) => {
+    if (stone) return false;
+    const black = rules.placeStone(rules.create(easy), p, 1);
+    return (
+      black.status === "playing" && rules.puzzleReply(easy, black) === null
+    );
+  });
+  assert(deviation >= 0);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.evaluate((square) => {
+    const cell = document.querySelector(
+      `.gomoku-cell[data-square="${square}"]`,
+    );
+    let visibleAtFirstFrame = false;
+    cell.addEventListener(
+      "click",
+      () =>
+        requestAnimationFrame(() => {
+          const stone = getComputedStyle(cell.querySelector(".gomoku-stone"));
+          visibleAtFirstFrame =
+            stone.visibility === "visible" && stone.opacity === "1";
+        }),
+      { capture: true, once: true },
+    );
+    const assets = WorkTimeApp.services.assets;
+    const load = assets.script;
+    assets.script = function (file, ...args) {
+      if (file === "assets/vendor/rapfi/worker-source.js") {
+        assets.script = load;
+        window.gomokuTestPaintedBeforeSearch = visibleAtFirstFrame;
+      }
+      return load.call(this, file, ...args);
+    };
+    const post = Worker.prototype.postMessage;
+    Worker.prototype.postMessage = function (request, ...args) {
+      if (request.type === "search" && request.difficulty === "hard") {
+        Worker.prototype.postMessage = post;
+        this.addEventListener("message", function onMessage({ data }) {
+          if (data.type === "result" || data.type === "error") {
+            this.removeEventListener("message", onMessage);
+            window.gomokuTestRapfiReply = { request, result: data };
+          }
+        });
+      }
+      return post.call(this, request, ...args);
+    };
+  }, deviation);
+  await square(deviation).click();
+  await page
+    .locator(".gomoku-board[data-replying]")
+    .waitFor({ state: "hidden" });
+  const reply = await page.evaluate(() => window.gomokuTestRapfiReply);
+  assert.equal(
+    await page.evaluate(() => window.gomokuTestPaintedBeforeSearch),
+    true,
+  );
+  assert.equal(reply?.result.engine, "Rapfi", "deviation uses Rapfi");
+  assert.equal(reply.request.side, 2);
+  assert.deepEqual(reply.request.path, [
+    ...easy.board.flatMap((stone, p) => (stone ? [p] : [])),
+    deviation,
+  ]);
+  assert.deepEqual((await saved()).drafts[easy.id].path, [
+    deviation,
+    reply.result.move,
+  ]);
+  await action("undo").click();
+  assert.deepEqual((await saved()).drafts[easy.id].path, []);
+  await action("choose").click();
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.clock.install();
   assert.equal(await page.locator(".gomoku-levels:visible button").count(), 40);
   assert.equal(await action("basic").count(), 0);
@@ -344,7 +651,6 @@ async function verifyUI(browser) {
     );
   }
   await action("easy").click();
-  const easy = levels[0];
   await action(easy.id).click();
   for (const p of solutions.get(easy.id).filter((_, i) => i % 2 === 0)) {
     await square(p).focus();
@@ -443,9 +749,30 @@ async function verifyUI(browser) {
   assert.equal(await page.locator(".gomoku-difficulties button").count(), 3);
   assert.equal(await page.locator(".gomoku-match-setup select").count(), 0);
   assert.match(
-    await page.locator(".gomoku-match-setup p").textContent(),
+    await page.locator(".gomoku-match-setup > p").textContent(),
     /Rapfi/,
   );
+  const forbiddenOption = page.locator('[data-gomoku-option="forbidden"]');
+  assert.equal(await forbiddenOption.isChecked(), false);
+  for (const language of ["en", "zh-TW", "zh-HK", "ja", "ko", "zh-CN"]) {
+    await page.evaluate(
+      (value) => WorkTimeApp.i18n.setLanguage(value),
+      language,
+    );
+    const note = await page.locator("#gomoku-forbidden-note").textContent();
+    assert(note.length > 30 && !note.includes("games."));
+  }
+  await forbiddenOption.focus();
+  await page.keyboard.press("Space");
+  assert.equal((await saved()).forbidden, true);
+  await page.evaluate(() => {
+    const post = Worker.prototype.postMessage;
+    Worker.prototype.postMessage = function (request, ...args) {
+      if (request.type === "search" && request.path.length === 1)
+        window.gomokuTestOpeningBudget = request.budget;
+      return post.call(this, request, ...args);
+    };
+  });
   for (const difficulty of ["normal", "hard", "master"]) {
     await action("difficulty-" + difficulty).click();
     assert.equal(
@@ -461,6 +788,11 @@ async function verifyUI(browser) {
     );
     assert.equal((await saved()).match.path.length, 2);
     assert.equal((await saved()).match.difficulty, difficulty);
+    assert.equal((await saved()).match.forbidden, true);
+    assert.equal(
+      await page.evaluate(() => window.gomokuTestOpeningBudget),
+      difficulty === "normal" ? 200 : 250,
+    );
     await action("undo").click();
     assert.equal((await saved()).match.path.length, 0);
     await action("choose").click();
@@ -480,7 +812,17 @@ async function verifyUI(browser) {
   );
   const pathBeforeReload = (await saved()).match.path;
   await launch();
+  assert.deepEqual((await saved()).match.path, pathBeforeReload);
+  assert.equal(await page.locator(".gomoku-play").isVisible(), true);
+  await action("choose").click();
   await action("ai").click();
+  assert.equal(await forbiddenOption.isChecked(), true);
+  await forbiddenOption.uncheck();
+  assert.equal(
+    (await saved()).match.forbidden,
+    true,
+    "setup choice does not change running match",
+  );
   assert.equal(await action("continue-match").count(), 0);
   await page.locator(".game-level-return").click();
   assert.deepEqual((await saved()).match.path, pathBeforeReload);
@@ -493,6 +835,7 @@ async function verifyUI(browser) {
     archiveWithMatch.games["game-gomoku"].match.path,
     pathBeforeReload,
   );
+  assert.equal(archiveWithMatch.games["game-gomoku"].match.forbidden, true);
   await action("restart").click();
   await page.locator('[data-game-restart="new"]').click();
   await action("choose").click(); // Cancel the computer's opening move.
@@ -526,9 +869,18 @@ async function verifyUI(browser) {
     const difficultiesBounds = await page
       .locator(".gomoku-difficulties")
       .boundingBox();
+    const cardBounds = await page
+      .locator(".gomoku-forbidden-option")
+      .boundingBox();
+    assert(cardBounds.y >= difficultiesBounds.y + difficultiesBounds.height);
+    assert(
+      cardBounds.x >= bounds.x &&
+        cardBounds.x + cardBounds.width <= bounds.x + bounds.width + 1,
+    );
     const startsBounds = await page
       .locator(".gomoku-start-options")
       .boundingBox();
+    assert(startsBounds.y >= cardBounds.y + cardBounds.height);
     assert(Math.abs(difficultiesBounds.width - startsBounds.width) < 1);
     assert(Math.abs(difficultiesBounds.x - startsBounds.x) < 1);
     for (const difficulty of ["normal", "hard", "master"]) {
@@ -566,6 +918,110 @@ async function verifyUI(browser) {
   await page.screenshot({
     path: path.join(root, "test-results/gomoku/match-setup.png"),
   });
+  await page.evaluate(() => {
+    const key = "worktime.games.gomoku.v1";
+    const save = JSON.parse(localStorage.getItem(key));
+    save.match = {
+      difficulty: "normal",
+      human: 1,
+      forbidden: true,
+      path: [111, 0, 113, 2, 97, 4, 127, 6],
+    };
+    localStorage.setItem(key, JSON.stringify(save));
+  });
+  await launch();
+  assert.equal(await page.locator(".gomoku-play").isVisible(), true);
+  const beforeForbidden = (await saved()).match.path;
+  await square(112).hover();
+  await page.waitForTimeout(350);
+  assert.equal(await square(112).getAttribute("data-forbidden"), "doubleThree");
+  assert.equal(await square(112).locator("svg").count(), 0);
+  assert.match(
+    await square(112).evaluate((cell) => getComputedStyle(cell).boxShadow),
+    /rgb\(173, 53, 57\).*2px inset/,
+  );
+  assert.match(await square(112).getAttribute("aria-description"), /三三禁手/);
+  assert.equal(
+    await square(112).evaluate((cell) => getComputedStyle(cell).color),
+    "rgb(173, 53, 57)",
+  );
+  await page.mouse.move(10, 10);
+  await page.waitForTimeout(350);
+  assert.equal(
+    await square(112).evaluate((cell) => getComputedStyle(cell).boxShadow),
+    "none",
+  );
+  await square(112).focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowLeft");
+  await page.waitForTimeout(350);
+  assert.match(
+    await square(112).evaluate((cell) => getComputedStyle(cell).boxShadow),
+    /rgb\(173, 53, 57\).*2px inset/,
+  );
+  await page.screenshot({
+    path: path.join(root, "test-results/gomoku/forbidden-hover.png"),
+  });
+  await square(112).click();
+  assert.deepEqual((await saved()).match.path, beforeForbidden);
+  assert.equal(await square(112).getAttribute("data-stone"), "0");
+  assert.match(await page.locator(".gomoku-warning").textContent(), /三三禁手/);
+  assert.equal(
+    await page.locator(".gomoku-warning").getAttribute("role"),
+    "status",
+  );
+  await square(114).click();
+  assert.equal(await page.locator(".gomoku-warning").isHidden(), true);
+  await action("undo").click();
+  assert.deepEqual((await saved()).match.path, beforeForbidden);
+  await page.evaluate(() => {
+    const key = "worktime.games.gomoku.v1";
+    const save = JSON.parse(localStorage.getItem(key));
+    save.match = {
+      difficulty: "master",
+      human: 1,
+      path: [105, 0, 106, 2, 107, 4],
+    };
+    localStorage.setItem(key, JSON.stringify(save));
+  });
+  await launch();
+  assert.equal(await page.locator(".gomoku-play").isVisible(), true);
+  await page.evaluate(() => {
+    const black = document.querySelector('.gomoku-cell[data-square="108"]');
+    const white = document.querySelector('.gomoku-cell[data-square="109"]');
+    black.addEventListener(
+      "click",
+      () => {
+        const start = performance.now();
+        const observer = new MutationObserver(() => {
+          if (white.dataset.stone !== "2") return;
+          observer.disconnect();
+          window.gomokuTestForcedDelay = performance.now() - start;
+        });
+        observer.observe(white, {
+          attributes: true,
+          attributeFilter: ["data-stone"],
+        });
+      },
+      { once: true },
+    );
+    const post = Worker.prototype.postMessage;
+    Worker.prototype.postMessage = function (request, ...args) {
+      if (request.type === "search")
+        throw Error("Forced defense started Rapfi");
+      return post.call(this, request, ...args);
+    };
+  });
+  await square(108).click();
+  await page.waitForFunction(
+    () =>
+      document.querySelector('.gomoku-cell[data-square="109"]').dataset
+        .stone === "2",
+    null,
+    { timeout: 5000 },
+  );
+  assert.deepEqual((await saved()).match.path.slice(-2), [108, 109]);
+  assert(await page.evaluate(() => window.gomokuTestForcedDelay >= 200));
   const extendedLevel = levels[0];
   const extendedBoard = [...extendedLevel.board],
     extendedPath = [];
@@ -619,6 +1075,9 @@ async function verifyUI(browser) {
   );
   const nextEmpty = extendedBoard.indexOf(0);
   await square(nextEmpty).click();
+  await page
+    .locator(".gomoku-board[data-replying]")
+    .waitFor({ state: "hidden" });
   assert(
     (await saved()).drafts[extendedLevel.id]?.path.length >
       extendedPath.length || (await saved()).completed[extendedLevel.id],

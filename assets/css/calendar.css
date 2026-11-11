@@ -1621,17 +1621,17 @@ body .workspace .calendar.year-calendar {
 .year-month-switch {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
   min-width: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  color: inherit;
+  color: color-mix(in srgb, currentColor 65%, var(--theme-text-strong, var(--ink)));
   font: inherit;
   line-height: inherit;
   text-align: start;
+  white-space: nowrap;
   cursor: pointer;
 }
 .year-month-switch:hover:not(:disabled) {
@@ -1643,24 +1643,10 @@ body .workspace .calendar.year-calendar {
   outline: 2px solid var(--theme-edge, var(--accent));
   outline-offset: 3px;
 }
-.year-month-dot {
-  display: block;
-  position: relative;
-  /* Whole-pixel geometry avoids fractional scaling of this small circle. */
-  top: -2px;
-  width: 12px;
-  height: 12px;
-  min-height: 0;
-  flex: 0 0 12px;
-  aspect-ratio: 1;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--accent) 45%, #fff);
-  opacity: 0;
-  transition: opacity 180ms ease;
-}
-.year-month-switch[aria-pressed="true"] .year-month-dot {
-  opacity: 1;
+.year-month-switch[aria-pressed="true"] .year-month-number {
+  text-decoration: underline var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 .year-month-stats {
   display: flex;

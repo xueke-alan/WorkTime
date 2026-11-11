@@ -71,6 +71,7 @@ __pycache__/
 !/scripts/verify-analysis.cjs
 !/scripts/verify-performance.cjs
 !/scripts/verify-games.cjs
+!/scripts/verify-narrow-workspace.cjs
 !/scripts/verify-game-menu.cjs
 !/scripts/verify-game-idle-cover.cjs
 !/scripts/verify-music.cjs
@@ -280,3 +281,5 @@ Thumbs.db
 !/scripts/generate-killer-hard.cjs
 !/scripts/verify-killer-hard.cjs
 !/scripts/killer-difficulty.json
+
+!/scripts/verify-ai-continuation.cjs

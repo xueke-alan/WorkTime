@@ -195,9 +195,10 @@ WorkTimeApp.ui.createCalendar = function (options) {
       : esc(value);
   }
   function sourceIndicator(day, record) {
-    const manual = day.draft || day.actual || day.estimate,
+    const manual = WorkTimeApp.domain.records.manualSource(day),
       both = !!(day.oa && manual),
-      priority = day.sourcePriority === "manual" || !day.oa ? "manual" : "oa";
+      priority =
+        !day.oa || (both && day.sourcePriority === "manual") ? "manual" : "oa";
     if (!both && !record) return "";
     let hint = WorkTimeApp.i18n.t("source." + priority);
     if (record?.filledStart)
@@ -998,17 +999,25 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const statsMarkup = WorkTimeApp.i18n
       .t("copy.2b3cbb76bd")
       .replace(/^<\/span>/, "");
+    const chineseMonths =
+      "一月 二月 三月 四月 五月 六月 七月 八月 九月 十月 十一月 十二月".split(
+        " ",
+      );
+    const isChinese = WorkTimeApp.i18n.language.startsWith("zh-");
     const heading = (m) => {
       const monthKey = viewYear + "-" + C.pad(m.month),
         active = monthKey === month;
+      const label = isChinese
+        ? chineseMonths[m.month - 1]
+        : WorkTimeApp.i18n.monthName(monthKey + "-01");
       return (
         '<h3><button class="year-month-switch" type="button" data-year-month-switch="' +
         monthKey +
         '" aria-pressed="' +
         active +
         '"><span class="year-month-number">' +
-        WorkTimeApp.i18n.monthName(monthKey + "-01") +
-        '</span><span class="year-month-dot" aria-hidden="true"></span></button>' +
+        esc(label) +
+        "</span></button>" +
         statsMarkup +
         WorkTimeApp.i18n.number(
           (m.summary.workOvertime + m.summary.restOvertime) / 60,

@@ -24,12 +24,16 @@ WorkTimeApp.games.register({
       setupOpen = true,
       paused = false,
       covered = false;
+    let checkedState = null,
+      lockedWinner = null,
+      continuedAt = 0;
     let thinking = false,
       engineError = false,
       failed = false,
       generation = 0,
       focus = 0,
-      previewCell = -1;
+      previewCell = -1,
+      previewTimer = 0;
     let engine = null,
       disposed = false,
       animations = [];
@@ -79,9 +83,10 @@ WorkTimeApp.games.register({
     }
     const root = node(container, "section", "game-ultimate-ttt game-session");
     const catalog = G.createLevelPage(root, "uttt-level-page", signal);
+    catalog.categories.removeAttribute("aria-labelledby");
     const setup = node(catalog.entries, "section", "uttt-setup");
-    const heading = node(setup, "h3"),
-      intro = node(setup, "p", "uttt-muted");
+    const heading = node(setup, "h3");
+    const intro = node(setup, "p", "uttt-muted");
     const buttons = [];
     function button(parent, action, key, callback) {
       const el = node(parent, "button", "game-button");
@@ -94,61 +99,42 @@ WorkTimeApp.games.register({
         },
         { signal },
       );
-      buttons.push({ el, key });
+      if (key) buttons.push({ el, key });
       return el;
     }
-    const groups = [];
-    function choices(parent, key, values, field) {
-      const group = node(parent, "fieldset", "uttt-options");
-      const label = node(group, "legend");
-      const row = node(group, "div", "uttt-actions");
-      const items = values.map(([value, text]) => ({
-        value,
-        control: button(row, field + "-" + value, text, () => {
-          draft[field] = value;
-          if (field === "mode" && value === "local") cancel();
-          render();
-          if (draft.mode === "ai") warm();
-        }),
-      }));
-      const result = { group, label, key, field, items };
-      groups.push(result);
-      return result;
-    }
-    choices(
-      setup,
-      "mode",
-      [
-        ["ai", "ai"],
-        ["local", "local"],
-      ],
-      "mode",
-    );
-    const difficulty = choices(
-      setup,
-      "difficulty",
-      [
-        ["easy", "easy"],
-        ["normal", "normal"],
-        ["hard", "hard"],
-      ],
-      "difficulty",
-    );
-    const side = choices(
-      setup,
-      "side",
-      [
-        [1, "first"],
-        [-1, "second"],
-      ],
-      "human",
-    );
-    const chainLabel = node(setup, "label", "uttt-checkbox");
-    const chain = node(chainLabel, "input");
+    const modes = ["ai", "local"].map((mode) => {
+      const control = button(catalog.categories, "mode-" + mode, mode, () => {
+        if (draft.mode !== mode) catalog.entries.scrollTop = 0;
+        draft.mode = mode;
+        if (mode === "local") cancel();
+        render();
+        if (mode === "ai") warm();
+      });
+      control.setAttribute("aria-controls", catalog.entries.id);
+      return { mode, control };
+    });
+    const difficulty = node(setup, "fieldset", "uttt-options");
+    const difficultyLabel = node(difficulty, "legend");
+    const difficultyRow = node(difficulty, "div", "uttt-actions");
+    const difficulties = ["easy", "normal", "hard"].map((value) => ({
+      value,
+      control: button(difficultyRow, "difficulty-" + value, value, () => {
+        draft.difficulty = value;
+        render();
+        warm();
+      }),
+    }));
+    const chainOption = node(setup, "div", "uttt-chain-option");
+    const chainLabel = node(chainOption, "label", "uttt-checkbox");
+    const check = node(chainLabel, "span", "uttt-check");
+    const chain = node(check, "input");
     chain.type = "checkbox";
     chain.dataset.utttOption = "chain";
+    chain.setAttribute("aria-describedby", "uttt-chain-note");
+    check.append(G.createIcon("check"));
     const chainName = node(chainLabel, "span");
-    const chainNote = node(setup, "p", "uttt-muted");
+    const chainNote = node(chainOption, "p", "uttt-muted");
+    chainNote.id = "uttt-chain-note";
     chain.addEventListener(
       "change",
       () => {
@@ -156,23 +142,38 @@ WorkTimeApp.games.register({
       },
       { signal },
     );
+    const side = node(setup, "fieldset", "uttt-options");
+    const sideLabel = node(side, "legend");
+    const sideRow = node(side, "div", "uttt-actions uttt-start-row");
+    const localRow = node(setup, "div", "uttt-actions uttt-start-row");
+    const startCards = [
+      startCard(sideRow, "human-1", ["X"], "first", 1),
+      startCard(sideRow, "human--1", ["O"], "second", -1),
+      startCard(localRow, "start-local", ["X", "O"], "start"),
+    ];
     const engineName = node(setup, "p", "uttt-muted");
-    const setupActions = node(setup, "div", "uttt-actions");
-    button(setupActions, "start", "start", () => {
-      if (active && state.path.length) prompt.open(startButton);
-      else startMatch();
-    });
-    const startButton = setupActions.firstElementChild;
+    function startCard(parent, action, marks, key, human) {
+      const control = button(parent, action, null, () => {
+        if (human !== undefined) draft.human = human;
+        if (active && state.path.length) prompt.open(control);
+        else startMatch();
+      });
+      control.classList.add("uttt-start-card");
+      const icons = node(control, "span", "uttt-start-icons");
+      icons.setAttribute("aria-hidden", "true");
+      for (const mark of marks) {
+        const icon = node(icons, "span");
+        icon.dataset.mark = mark;
+        paintMark(icon, mark);
+      }
+      const label = node(control, "span");
+      return { control, label, key };
+    }
     function startMatch() {
-      cancel();
       options = { ...draft, path: [] };
-      state = R.create(options.chain);
-      engineError = false;
       active = true;
       setupOpen = false;
-      persist();
-      render();
-      scheduleAI();
+      restartMatch(options.mode === "ai");
       cells[focus].focus();
     }
     const play = node(root, "div", "uttt-play");
@@ -195,7 +196,12 @@ WorkTimeApp.games.register({
         "pointerenter",
         (event) => {
           if (event.pointerType === "touch") return;
+          clearPreview();
           previewCell = p;
+          previewTimer = window.setTimeout(() => {
+            previewTimer = 0;
+            renderPreview();
+          }, 100);
           renderPreview();
         },
         { signal },
@@ -203,7 +209,7 @@ WorkTimeApp.games.register({
       el.addEventListener(
         "pointerleave",
         () => {
-          previewCell = -1;
+          clearPreview();
           renderPreview();
         },
         { signal },
@@ -229,6 +235,7 @@ WorkTimeApp.games.register({
           focus = p;
           el.tabIndex = 0;
           if (el.matches(":focus-visible")) {
+            clearPreview();
             previewCell = p;
             renderPreview();
           }
@@ -261,6 +268,29 @@ WorkTimeApp.games.register({
       );
       return el;
     });
+    const resultLayer = node(board, "div", "uttt-result-layer");
+    resultLayer.hidden = true;
+    const resultCard = node(resultLayer, "div", "uttt-result-card");
+    resultCard.setAttribute("role", "group");
+    resultCard.setAttribute("aria-labelledby", "uttt-result-label");
+    const resultSymbol = node(resultCard, "span", "uttt-result-symbol");
+    resultSymbol.setAttribute("aria-hidden", "true");
+    const resultLabel = node(resultCard, "strong");
+    resultLabel.id = "uttt-result-label";
+    const resultActions = node(resultCard, "div", "uttt-result-actions");
+    const resultBack = button(
+      resultActions,
+      "result-back",
+      "resultBack",
+      () => {
+        resultLayer.hidden = true;
+        cells[focus].focus({ preventScroll: true });
+      },
+    );
+    button(resultActions, "result-restart", "restart", () => {
+      restartMatch();
+      cells[focus].focus({ preventScroll: true });
+    });
     const controls = node(play, "aside", "uttt-controls");
     const objective = node(controls, "header", "uttt-objective");
     const matchTitle = node(objective, "h3"),
@@ -291,25 +321,28 @@ WorkTimeApp.games.register({
     button(error, "retry", "retry", () => {
       cancel();
       engineError = false;
-      scheduleAI();
+      advanceTurn();
       render();
     });
     const actions = node(controls, "div", "uttt-actions");
     const undo = button(actions, "undo", "undo", () => {
+      resultLayer.hidden = true;
       cancel();
       engineError = false;
       let length = state.path.length - 1;
       if (options.mode === "ai")
         while (length > 0 && (length % 2 ? -1 : 1) !== options.human) length--;
       state = R.replay(state.path.slice(0, Math.max(0, length)), options.chain);
+      if (state.path.length < continuedAt) continuedAt = 0;
       persist();
       render();
-      scheduleAI();
+      advanceTurn();
     });
     const restart = button(actions, "restart", "restart", () =>
       prompt.open(restart),
     );
     const settings = button(actions, "settings", "settings", () => {
+      resultLayer.hidden = true;
       cancel();
       draft = { ...options };
       setupOpen = true;
@@ -327,26 +360,56 @@ WorkTimeApp.games.register({
       signal,
       onOpen() {
         covered = true;
-        cancel();
+        cancel({ keepEngine: setupOpen && draft.mode === "ai" });
       },
       onCancel() {
         covered = false;
         render();
-        scheduleAI();
+        advanceTurn();
       },
       onConfirm() {
         covered = false;
         if (setupOpen) startMatch();
-        else {
-          cancel();
-          state = R.create(options.chain);
-          engineError = false;
-          persist();
-          render();
-          scheduleAI();
-        }
+        else restartMatch();
       },
     });
+    const lockedPrompt = G.createRestartPrompt({
+      host: stage,
+      signal,
+      labels: () => ({
+        title: lockedWinner
+          ? t("lockedWin", { side: lockedWinner === 1 ? "X" : "O" })
+          : t("lockedDraw"),
+        cancel: t("continueMatch"),
+        accept: t("restart"),
+      }),
+      onOpen() {
+        covered = true;
+        cancel();
+        render();
+      },
+      onCancel() {
+        covered = false;
+        continuedAt = state.path.length;
+        render();
+        advanceTurn();
+      },
+      onConfirm() {
+        covered = false;
+        restartMatch();
+        cells[focus].focus({ preventScroll: true });
+      },
+    });
+    function restartMatch(keepEngine = false) {
+      resultLayer.hidden = true;
+      cancel({ keepEngine });
+      state = R.create(options.chain);
+      continuedAt = 0;
+      engineError = false;
+      persist();
+      render();
+      advanceTurn();
+    }
     function playable() {
       return (
         !disposed &&
@@ -357,12 +420,25 @@ WorkTimeApp.games.register({
         state.status === "playing"
       );
     }
-    function cancel() {
+    function clearPreview() {
+      window.clearTimeout(previewTimer);
+      previewTimer = 0;
       previewCell = -1;
+    }
+    function showResult() {
+      const mark = state.winner === 1 ? "X" : state.winner === -1 ? "O" : "=";
+      resultLayer.dataset.mark = mark;
+      paintMark(resultSymbol, mark);
+      resultLayer.hidden = false;
+    }
+    function cancel({ keepEngine = false } = {}) {
+      clearPreview();
       generation++;
       thinking = false;
-      engine?.dispose();
-      engine = null;
+      if (!keepEngine) {
+        engine?.dispose();
+        engine = null;
+      }
       animations.forEach((a) => a.cancel());
       animations = [];
       root.querySelectorAll(".uttt-ghost").forEach((el) => el.remove());
@@ -390,11 +466,14 @@ WorkTimeApp.games.register({
       }
     }
     function accept(next) {
-      previewCell = -1;
+      clearPreview();
       const erased = next.cleared.map((p) => ({ p, mark: state.board[p] }));
       state = next;
+      if (state.status !== "playing") showResult();
       persist();
       render();
+      if (!resultLayer.hidden && board.contains(document.activeElement))
+        resultBack.focus({ preventScroll: true });
       if (!compat.preference().matches)
         for (const { p, mark } of erased) {
           const ghost = node(cells[p], "span", "uttt-ghost");
@@ -412,11 +491,23 @@ WorkTimeApp.games.register({
             () => ghost.remove(),
           );
         }
-      scheduleAI();
+      advanceTurn();
     }
-    function scheduleAI() {
+    function advanceTurn() {
+      if (!playable()) return;
+      if (!continuedAt && checkedState !== state) {
+        checkedState = state;
+        lockedWinner = R.lockedResult(state);
+      }
+      if (!continuedAt && lockedWinner !== null) {
+        const position = state;
+        // Wait for the game shell to finish its initial focus handling.
+        queueMicrotask(() => {
+          if (state === position && playable()) lockedPrompt.open(cells[focus]);
+        });
+        return;
+      }
       if (
-        !playable() ||
         options.mode !== "ai" ||
         state.turn === options.human ||
         thinking ||
@@ -454,11 +545,14 @@ WorkTimeApp.games.register({
           ? () => {
               setupOpen = false;
               render();
-              scheduleAI();
+              advanceTurn();
             }
           : null,
       );
-      heading.textContent = t("name");
+      catalog.categories.setAttribute("aria-label", t("mode"));
+      for (const { mode, control } of modes)
+        control.setAttribute("aria-pressed", String(draft.mode === mode));
+      heading.textContent = t(draft.mode);
       intro.textContent = t("description");
       for (const { el, key } of buttons) el.textContent = t(key);
       for (const [el, key, icon] of [
@@ -470,18 +564,23 @@ WorkTimeApp.games.register({
         node(el, "span").textContent = t(key);
         el.setAttribute("aria-label", t(key));
       }
-      for (const group of groups) {
-        group.label.textContent = t(group.key);
-        for (const { value, control } of group.items)
-          control.setAttribute(
-            "aria-pressed",
-            String(draft[group.field] === value),
-          );
+      difficultyLabel.textContent = t("difficulty");
+      sideLabel.textContent = t("side");
+      for (const { value, control } of difficulties)
+        control.setAttribute(
+          "aria-pressed",
+          String(draft.difficulty === value),
+        );
+      for (const { control, label, key } of startCards) {
+        label.textContent = t("startShort");
+        control.setAttribute(
+          "aria-label",
+          key === "start" ? t(key) : t(key) + " · " + t("startShort"),
+        );
       }
-      difficulty.group.hidden =
-        side.group.hidden =
-        engineName.hidden =
-          draft.mode !== "ai";
+      const aiMode = draft.mode === "ai";
+      difficulty.hidden = side.hidden = engineName.hidden = !aiMode;
+      localRow.hidden = aiMode;
       chain.checked = draft.chain;
       chainName.textContent = t("chain");
       chainNote.textContent = t("chainRules");
@@ -511,6 +610,19 @@ WorkTimeApp.games.register({
                 ? t("thinking")
                 : t("turn", { side: state.turn === 1 ? "X" : "O" });
       status.dataset.thinking = String(thinking);
+      if (!resultLayer.hidden) {
+        const resultKey =
+          state.status === "draw"
+            ? "resultDraw"
+            : options.mode === "local"
+              ? "resultSide"
+              : state.winner === options.human
+                ? "resultWin"
+                : "resultLoss";
+        resultLabel.textContent = t(resultKey, {
+          side: resultLayer.dataset.mark,
+        });
+      }
       thinkingIndicator.toggleAttribute(
         "data-active",
         thinking &&
@@ -605,7 +717,8 @@ WorkTimeApp.games.register({
       regions.forEach(({ el }, r) => {
         el.classList.toggle(
           "is-preview",
-          !!playing &&
+          !previewTimer &&
+            !!playing &&
             !next.regions[r] &&
             (next.target === -1 || next.target === r),
         );
@@ -631,14 +744,14 @@ WorkTimeApp.games.register({
           cancel();
           render();
         } else if (setupOpen) warm();
-        else scheduleAI();
+        else advanceTurn();
       },
       { signal },
     );
     signal.addEventListener("abort", cancel, { once: true });
     render();
     if (setupOpen) warm();
-    else scheduleAI();
+    else advanceTurn();
     return {
       pause() {
         paused = true;
@@ -649,7 +762,7 @@ WorkTimeApp.games.register({
         paused = false;
         render();
         if (setupOpen) warm();
-        else scheduleAI();
+        else advanceTurn();
       },
       resize({ width, height }) {
         root.dataset.compact = String(width < 800);

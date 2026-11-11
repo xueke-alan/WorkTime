@@ -33,8 +33,7 @@ WorkTimeApp.games.register({
       saveFailed = true;
     }
     let level = levels.find(({ id }) => id === save.current);
-    let returnLevel =
-      level ?? (save.match?.path.length ? { id: "ai", group: "ai" } : null);
+    let returnLevel = level ?? (save.match ? { id: "ai", group: "ai" } : null);
     let match = save.match ?? { difficulty: "normal", human: 1, path: [] };
     const engine = WorkTimeApp.games.createGomokuEngine();
     let thinking = false,
@@ -42,10 +41,15 @@ WorkTimeApp.games.register({
     let thought = null,
       searchGeneration = 0;
     const isMatch = () => level?.id === "ai";
-    let state = level ? rules.restore(level, save.drafts[level.id].path) : null;
+    if (!level && save.match) level = { id: "ai", group: "ai" };
+    let state = isMatch()
+      ? rules.restoreMatch(match)
+      : level
+        ? rules.restore(level, save.drafts[level.id].path)
+        : null;
     let renderedBoard = state?.board.slice() ?? null;
     let group = level?.group ?? "easy",
-      focus = 112,
+      focus = state?.path.at(-1) ?? 112,
       paused = false,
       preview = null;
     function node(parent, tag, className) {
@@ -99,6 +103,8 @@ WorkTimeApp.games.register({
     setup.className = "gomoku-match-setup";
     const setupTitle = node(setup, "h3", "gomoku-level-title");
     let selectedDifficulty = match.difficulty;
+    let selectedForbidden = save.forbidden ?? false;
+    let forbiddenNotice = null;
     const difficultyOptions = node(setup, "div", "gomoku-difficulties");
     difficultyOptions.setAttribute("role", "group");
     const difficultyButtons = ["normal", "hard", "master"].map(
@@ -110,15 +116,41 @@ WorkTimeApp.games.register({
         }),
       }),
     );
+    const forbiddenCard = node(setup, "div", "gomoku-forbidden-option");
+    const forbiddenLabel = node(forbiddenCard, "label", "gomoku-checkbox");
+    const check = node(forbiddenLabel, "span", "gomoku-check");
+    const forbidden = node(check, "input");
+    forbidden.type = "checkbox";
+    forbidden.dataset.gomokuOption = "forbidden";
+    forbidden.setAttribute("aria-describedby", "gomoku-forbidden-note");
+    check.append(WorkTimeApp.games.createIcon("check"));
+    const forbiddenName = node(forbiddenLabel, "span");
+    const forbiddenNote = node(forbiddenCard, "p", "gomoku-detail");
+    forbiddenNote.id = "gomoku-forbidden-note";
+    forbidden.addEventListener(
+      "change",
+      () => {
+        selectedForbidden = forbidden.checked;
+        save.forbidden = selectedForbidden;
+        persist();
+        render();
+      },
+      { signal },
+    );
     const startTitle = node(setup, "h4", "gomoku-start-title");
     const startOptions = node(setup, "div", "gomoku-start-options");
-    const startButtons = [2, 1].map((human) => ({
+    const startButtons = [1, 2].map((human) => ({
       human,
       control: button(
         startOptions,
         human === 1 ? "start-black" : "start-red",
         (keyboard) => {
-          match = { difficulty: selectedDifficulty, human, path: [] };
+          match = {
+            difficulty: selectedDifficulty,
+            human,
+            forbidden: selectedForbidden,
+            path: [],
+          };
           openMatch(keyboard);
         },
       ),
@@ -148,6 +180,7 @@ WorkTimeApp.games.register({
       (_, i) => `M${i + 0.5} .5v14M.5 ${i + 0.5}h14`,
     ).join("");
     art.innerHTML = `<svg viewBox="0 0 15 15" focusable="false"><path d="${grid}"/>${[48, 56, 112, 168, 176].map((p) => `<circle cx="${(p % 15) + 0.5}" cy="${Math.floor(p / 15) + 0.5}" r=".075"/>`).join("")}</svg>`;
+    let hoveredSquare = null;
     const cells = Array.from({ length: 225 }, (_, p) => {
       const cell = node(board, "button", "gomoku-cell");
       cell.type = "button";
@@ -158,12 +191,50 @@ WorkTimeApp.games.register({
         "focus",
         () => {
           focus = p;
+          updateBlockedHint(p);
+        },
+        { signal },
+      );
+      cell.addEventListener(
+        "pointerenter",
+        () => {
+          hoveredSquare = p;
+          updateBlockedHint(p);
+        },
+        { signal },
+      );
+      cell.addEventListener(
+        "pointerleave",
+        () => {
+          hoveredSquare = null;
         },
         { signal },
       );
       cell.addEventListener("click", () => attempt(p), { signal });
       return cell;
     });
+    function updateBlockedHint(p) {
+      const reason =
+        isMatch() &&
+        match.forbidden &&
+        match.human === 1 &&
+        !paused &&
+        !thinking &&
+        !preview &&
+        state.status === "playing" &&
+        state.path.length % 2 === 0 &&
+        !state.board[p]
+          ? rules.forbiddenReason(state.board, p)
+          : null;
+      const cell = cells[p];
+      if (!reason) {
+        delete cell.dataset.forbidden;
+        cell.removeAttribute("aria-description");
+        return;
+      }
+      cell.dataset.forbidden = reason;
+      cell.setAttribute("aria-description", t(reason));
+    }
     const controls = node(play, "div", "gomoku-controls");
     const resultLayer = node(board, "div", "gomoku-result");
     resultLayer.hidden = true;
@@ -178,7 +249,8 @@ WorkTimeApp.games.register({
     const title = node(objective, "h3", "gomoku-level-title");
     const goalText = node(objective, "p", "gomoku-detail");
     const played = node(objective, "p", "gomoku-detail");
-    const status = node(controls, "p", "gomoku-status");
+    const feedback = node(controls, "div", "gomoku-feedback");
+    const status = node(feedback, "p", "gomoku-status");
     status.setAttribute("role", "status");
     const thinkingIndicator = node(controls, "div", "gomoku-thinking");
     thinkingIndicator.setAttribute("aria-hidden", "true");
@@ -294,6 +366,7 @@ WorkTimeApp.games.register({
       persist();
     }
     function settle() {
+      forbiddenNotice = null;
       searchGeneration++;
       thought?.cancel();
       thought = null;
@@ -308,8 +381,8 @@ WorkTimeApp.games.register({
         simple:
           board.filter(Boolean).length < 4 ||
           board.filter((stone) => !stone).length === 1 ||
-          rules.threats(board, 1).length > 0 ||
-          rules.threats(board, 2).length > 0,
+          rules.threats(board, 1, isMatch() && match.forbidden).length > 0 ||
+          rules.threats(board, 2, isMatch() && match.forbidden).length > 0,
         advanced: isMatch()
           ? match.difficulty !== "normal"
           : level.group === "hard",
@@ -434,6 +507,16 @@ WorkTimeApp.games.register({
           state.board[p]
         )
           return;
+        const reason =
+          match.forbidden && match.human === 1
+            ? rules.forbiddenReason(state.board, p)
+            : null;
+        if (reason) {
+          forbiddenNotice = reason;
+          render();
+          return;
+        }
+        forbiddenNotice = null;
         state = rules.restoreMatch({ ...match, path: [...state.path, p] });
         focus = p;
         update();
@@ -442,21 +525,27 @@ WorkTimeApp.games.register({
         showResult();
         return;
       }
-      const previous = state;
-      const result = rules.move(level, state, p);
-      if (!result) return;
+      const black = rules.placeStone(state, p, 1);
+      if (!black) return;
       focus = p;
-      state = result;
+      const white =
+        black.status === "playing" ? rules.puzzleReply(level, black) : null;
+      if (black.status === "playing" && white == null) {
+        state = black;
+        searchPuzzleReply();
+        return;
+      }
+      state = white == null ? black : rules.placeStone(black, white, 2);
       update();
-      if (result.path.length === previous.path.length + 2) {
-        preview = [...previous.board];
-        preview[p] = 1;
+      if (white != null) {
+        preview = black.board;
         const generation = searchGeneration;
         thought = thinkFor(preview);
         thought.wait(() => {
           if (generation !== searchGeneration || paused || signal.aborted)
             return;
-          settle();
+          thought = null;
+          preview = null;
           render();
           showResult();
         });
@@ -464,7 +553,43 @@ WorkTimeApp.games.register({
       render();
       if (!preview) showResult();
     }
-    function scheduleAI() {
+    function afterStonePaint() {
+      // Let the board paint before a cold engine can occupy the main thread.
+      return new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      );
+    }
+    async function searchPuzzleReply() {
+      const generation = searchGeneration;
+      const position = state;
+      thinking = true;
+      thought = thinkFor(position.board);
+      render();
+      await afterStonePaint();
+      if (generation !== searchGeneration || signal.aborted) return;
+      // Bound worker startup as well as the search so offline play can continue.
+      const deadline = setTimeout(() => engine.cancel(), 4000);
+      let white;
+      try {
+        ({ move: white } = await engine.search(position, "hard", level.board));
+      } catch {
+        // Use the local tactical defense if the engine is unavailable.
+      } finally {
+        clearTimeout(deadline);
+      }
+      if (generation !== searchGeneration || signal.aborted) return;
+      thought.wait(() => {
+        if (generation !== searchGeneration || paused || signal.aborted) return;
+        const reply = white ?? rules.vctFallbackReply(level, position);
+        state = rules.placeStone(position, reply, 2);
+        thought = null;
+        thinking = false;
+        update();
+        render();
+        showResult();
+      });
+    }
+    async function scheduleAI() {
       if (restartPrompt.isOpen()) return;
       if (
         !isMatch() ||
@@ -479,34 +604,63 @@ WorkTimeApp.games.register({
       aiFailed = false;
       thinking = true;
       const generation = searchGeneration;
-      thought = thinkFor(state.board);
+      const wins = rules.threats(state.board, 3 - match.human, match.forbidden);
+      const blocks = rules.threats(state.board, match.human, match.forbidden);
+      const forced =
+        wins[0] ??
+        (blocks.length === 1 &&
+        rules.legalMove(
+          state.board,
+          blocks[0],
+          3 - match.human,
+          match.forbidden,
+        )
+          ? blocks[0]
+          : null);
+      const quick = forced !== null || state.path.length === 1;
+      thought = quick ? null : thinkFor(state.board);
       render();
-      engine
-        .search(state, match.difficulty)
-        .then(({ move: p }) => {
-          if (generation !== searchGeneration || paused || signal.aborted)
-            return;
-          thought.wait(() => {
-            if (
-              generation !== searchGeneration ||
-              paused ||
-              signal.aborted ||
-              !isMatch()
+      await afterStonePaint();
+      if (generation !== searchGeneration || paused || signal.aborted) return;
+      try {
+        if (forced !== null) {
+          // Keep decisive replies brisk while leaving a short, natural pause.
+          await new Promise((resolve) =>
+            setTimeout(resolve, 220 + Math.random() * 130),
+          );
+        }
+        const p =
+          forced ??
+          (
+            await engine.search(
+              state,
+              match.difficulty,
+              undefined,
+              match.forbidden,
             )
-              return;
-            settle();
-            state = rules.restoreMatch({ ...match, path: [...state.path, p] });
-            update();
-            render();
-            showResult();
-          });
-        })
-        .catch(() => {
-          if (generation !== searchGeneration || signal.aborted) return;
-          settle();
-          aiFailed = true;
-          render();
+          ).move;
+        if (generation !== searchGeneration || paused || signal.aborted) return;
+        const nextState = rules.restoreMatch({
+          ...match,
+          path: [...state.path, p],
         });
+        if (!nextState) throw Error("Invalid AI move");
+        const finish = () => {
+          thought = null;
+          thinking = false;
+          state = nextState;
+          update();
+          render();
+          showResult();
+        };
+        if (thought) thought.wait(finish);
+        else finish();
+      } catch {
+        if (generation !== searchGeneration || signal.aborted) return;
+        settle();
+        aiFailed = true;
+        render();
+      }
     }
     function render() {
       root.dataset.category = group;
@@ -521,11 +675,16 @@ WorkTimeApp.games.register({
       catalog.page.hidden = !!level;
       play.hidden = !level;
       root.dataset.playing = String(!!level);
-      warning.hidden = !saveFailed;
-      warning.textContent = t("saveFailed");
-      (level ? controls : root).append(warning);
+      warning.hidden = !saveFailed && !forbiddenNotice;
+      warning.textContent = forbiddenNotice
+        ? t(forbiddenNotice)
+        : t("saveFailed");
+      (level ? feedback : root).append(warning);
       if (!level) {
         setupTitle.textContent = t("ai");
+        forbidden.checked = selectedForbidden;
+        forbiddenName.textContent = t("forbidden");
+        forbiddenNote.textContent = t("forbiddenNote");
         engineName.textContent = t("engineName");
         difficultyOptions.setAttribute("aria-label", t("difficulty"));
         difficultyButtons.forEach(({ difficulty, control }) => {
@@ -578,7 +737,7 @@ WorkTimeApp.games.register({
         }),
       );
       status.textContent = t(
-        preview
+        preview || thinking
           ? "replying"
           : state.status === "playing"
             ? "turn"
@@ -586,7 +745,10 @@ WorkTimeApp.games.register({
       );
       if (isMatch()) {
         title.textContent = t("ai") + " · " + t("ai" + match.difficulty);
-        goalText.textContent = t(match.human === 1 ? "first" : "second");
+        goalText.textContent =
+          t(match.human === 1 ? "first" : "second") +
+          " · " +
+          t(match.forbidden ? "forbidden" : "freestyle");
         played.textContent = t("matchPlayed", { played: state.path.length });
         status.textContent = t(
           aiFailed
@@ -635,6 +797,8 @@ WorkTimeApp.games.register({
       const previousBoard = renderedBoard;
       cells.forEach((cell, p) => {
         cell.dataset.stone = displayed[p];
+        delete cell.dataset.forbidden;
+        cell.removeAttribute("aria-description");
         if (
           previousBoard &&
           previousBoard[p] === 0 &&
@@ -645,11 +809,11 @@ WorkTimeApp.games.register({
           if (typeof stone?.animate === "function")
             stone.animate(
               [
-                { opacity: 0, transform: "scale(.35)" },
-                { opacity: 1, transform: "scale(1.08)", offset: 0.72 },
-                { opacity: 1, transform: "scale(1)" },
+                { transform: "scale(.86)" },
+                { transform: "scale(1.04)", offset: 0.72 },
+                { transform: "scale(1)" },
               ],
-              { duration: 210, easing: "cubic-bezier(.2,.75,.25,1)" },
+              { duration: 140, easing: "cubic-bezier(.2,.75,.25,1)" },
             );
         }
         cell.tabIndex = focus === p ? 0 : -1;
@@ -683,6 +847,8 @@ WorkTimeApp.games.register({
           }),
         );
       });
+      for (const p of new Set([focus, hoveredSquare]))
+        if (p !== null) updateBlockedHint(p);
       renderedBoard = displayed.slice();
     }
     board.addEventListener(

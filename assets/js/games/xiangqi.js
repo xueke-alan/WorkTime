@@ -55,8 +55,7 @@ WorkTimeApp.games.register({
     let paused = false;
     let presentation = null;
     let resultEffect = null;
-    const initialPosition =
-      "rheakaehr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RHEAKAEHR";
+    const initialPosition = rules.initialPosition;
     const versusLevel = { id: "versus", position: initialPosition };
     let versus = false;
     let difficulty = "normal";
@@ -65,7 +64,24 @@ WorkTimeApp.games.register({
     const undoLimit = 4;
     let undosRemaining = 0;
     let versusInitialBoard = rules.parse(initialPosition);
+    if (!level && save.match) {
+      versus = true;
+      level = versusLevel;
+      difficulty = save.match.difficulty;
+      humanRed = save.match.humanRed;
+      save.match.handicaps.forEach((piece) => handicaps.add(piece));
+      undosRemaining = save.match.undosRemaining;
+      versusInitialBoard = save.match.initialBoard;
+      path = [...save.match.path];
+      position = rules.restoreMatch(save.match);
+      focus = path.length ? rules.decode(path.at(-1))[1] : humanRed ? 76 : 13;
+    }
     const humanTurn = () => (path.length % 2 === 0) === humanRed;
+    const puzzleReplyPending = () =>
+      !versus &&
+      !!level &&
+      position?.status === "playing" &&
+      path.length % 2 === 1;
     const flipped = () => versus && !humanRed;
     let engine = null;
     let thinking = false;
@@ -232,6 +248,7 @@ WorkTimeApp.games.register({
         restartPrompt.open(restart);
         return;
       }
+      cancelSearch();
       stopPresentation();
       path = [];
       updatePosition();
@@ -268,6 +285,7 @@ WorkTimeApp.games.register({
         versusMode.focus();
         return;
       }
+      cancelSearch();
       stopPresentation();
       const index = levels.indexOf(level);
       level = null;
@@ -289,12 +307,13 @@ WorkTimeApp.games.register({
     }
 
     function cancelSearch(release = false) {
+      const searching = thinking;
       searchGeneration++;
       thought?.cancel();
       thought = null;
       thinking = false;
       board.removeAttribute("data-replying");
-      if (release || engine?.busy) {
+      if (release || searching || engine?.busy) {
         engine?.dispose();
         engine = null;
         engineReady = false;
@@ -305,6 +324,7 @@ WorkTimeApp.games.register({
       cancelSearch(!value);
       stopPresentation();
       versus = value;
+      engineError = false;
       level = null;
       position = null;
       path = [];
@@ -339,6 +359,7 @@ WorkTimeApp.games.register({
       });
       versusInitialBoard = initialBoard.join("");
       position = { board: versusInitialBoard, status: "playing" };
+      saveMatch();
       selected = message = null;
       engineError = false;
       focus = 76;
@@ -365,31 +386,23 @@ WorkTimeApp.games.register({
       }
     }
 
-    function versusPosition() {
-      let value = versusInitialBoard;
-      for (const move of path) value = rules.apply(value, move);
-      const redTurn = path.length % 2 === 0;
-      const outcome = rules.result(value, redTurn);
-      let repeated =
-        outcome === "playing" && rules.repetition(versusInitialBoard, path);
-      // Casual human-versus-AI play allows the human to keep checking.
-      if (repeated && repeated.loser === humanRed) repeated = null;
-      position = {
-        board: value,
-        status: repeated
-          ? repeated.loser === null
-            ? "draw"
-            : repeated.loser === humanRed
-              ? "lost"
-              : "won"
-          : outcome === "playing"
-            ? "playing"
-            : redTurn === humanRed
-              ? "lost"
-              : "won",
-        outcome: repeated ? repeated.outcome : outcome,
+    function saveMatch() {
+      save.match = {
+        difficulty,
+        humanRed,
+        handicaps: [...handicaps],
+        undosRemaining,
+        initialBoard: versusInitialBoard,
+        path: [...path],
       };
+      save.current = null;
+      persist();
+    }
+
+    function versusPosition() {
+      position = rules.matchPosition(versusInitialBoard, path, humanRed);
       selected = message = null;
+      saveMatch();
     }
 
     function fen(value) {
@@ -406,6 +419,70 @@ WorkTimeApp.games.register({
         (path.length % 2 === 0 ? " w" : " b") +
         " - - 0 1"
       );
+    }
+
+    async function searchMove(board, red, difficulty, timeout = 0) {
+      engine ??= WorkTimeApp.games.createXiangqiEngine();
+      const moveText = await engine.search(fen(board), difficulty, timeout);
+      if (!/^[a-i][0-9][a-i][0-9]$/.test(moveText))
+        throw Error("Invalid engine move");
+      const square = (file, rank) =>
+        (9 - Number(rank)) * 9 + file.charCodeAt(0) - 97;
+      const move = rules.encode(
+        square(moveText[0], moveText[1]),
+        square(moveText[2], moveText[3]),
+      );
+      if (!rules.legalMoves(board, red).includes(move))
+        throw Error("Illegal engine move");
+      return move;
+    }
+
+    function puzzleThinkTurn(value) {
+      return WorkTimeApp.games.createThinkTurn({
+        simple: rules.legalMoves(value, false).length === 1,
+        advanced: groupFor(level) === 6,
+      });
+    }
+
+    async function replyPuzzle() {
+      if (
+        !puzzleReplyPending() ||
+        presentation ||
+        thinking ||
+        paused ||
+        document.hidden ||
+        signal.aborted
+      )
+        return;
+      const generation = searchGeneration;
+      const redBoard = position.board;
+      const turn = puzzleThinkTurn(redBoard);
+      thought = turn;
+      thinking = true;
+      render();
+      let defense;
+      try {
+        defense = await searchMove(redBoard, false, "hard", 10000);
+      } catch {
+        if (generation !== searchGeneration || signal.aborted) return;
+        defense = rules.suggest(redBoard, false);
+      }
+      if (generation !== searchGeneration || signal.aborted) return;
+      turn.wait(() => {
+        if (
+          generation !== searchGeneration ||
+          paused ||
+          document.hidden ||
+          signal.aborted
+        )
+          return;
+        thought = null;
+        thinking = false;
+        const redMove = path.at(-1);
+        path = [...path, defense];
+        updatePosition();
+        showRound(redBoard, redMove, defense, true);
+      });
     }
 
     async function replyVersus() {
@@ -433,20 +510,9 @@ WorkTimeApp.games.register({
       thought = turn;
       render();
       try {
-        engine ??= WorkTimeApp.games.createXiangqiEngine();
-        const moveText = await engine.search(fen(position.board), difficulty);
+        let move = await searchMove(position.board, !humanRed, difficulty);
         if (generation !== searchGeneration || signal.aborted) return;
         engineReady = true;
-        if (!/^[a-i][0-9][a-i][0-9]$/.test(moveText))
-          throw Error("Invalid engine move");
-        const square = (file, rank) =>
-          (9 - Number(rank)) * 9 + file.charCodeAt(0) - 97;
-        let move = rules.encode(
-          square(moveText[0], moveText[1]),
-          square(moveText[2], moveText[3]),
-        );
-        if (!rules.legalMoves(position.board, !humanRed).includes(move))
-          throw Error("Illegal engine move");
         move = rules.avoidPerpetualCheck(versusInitialBoard, path, move);
         turn.wait(() => {
           if (
@@ -592,20 +658,14 @@ WorkTimeApp.games.register({
       }, 1800);
     }
 
-    function showRound(before, move, reply) {
-      const redBoard = rules.apply(before, move);
+    function showRound(before, move, reply, redAlreadyShown = false) {
+      const redBoard = redAlreadyShown ? before : rules.apply(before, move);
       const round = {
-        board: redBoard,
+        board: redAlreadyShown ? position.board : redBoard,
         red: rules.decode(move),
-        black: [],
-        waiting: reply !== null,
-        thought:
-          reply === null
-            ? null
-            : WorkTimeApp.games.createThinkTurn({
-                simple: rules.legalMoves(redBoard, false).length === 1,
-                advanced: groupFor(level) === 6,
-              }),
+        black: redAlreadyShown ? rules.decode(reply) : [],
+        waiting: !redAlreadyShown && reply !== null,
+        thought: null,
       };
       presentation = round;
       render();
@@ -641,10 +701,17 @@ WorkTimeApp.games.register({
       }
 
       function afterRed() {
+        if (reply === undefined) {
+          stopPresentation(false);
+          replyPuzzle();
+          return;
+        }
         if (reply === null) {
           finish();
           return;
         }
+        round.thought = puzzleThinkTurn(redBoard);
+        if (paused || document.hidden) round.thought.pause();
         round.thought.wait(() => {
           if (
             presentation !== round ||
@@ -661,10 +728,12 @@ WorkTimeApp.games.register({
         });
       }
 
-      slide(round.red, 110, afterRed);
+      if (redAlreadyShown) slide(round.black, 150, finish);
+      else slide(round.red, 110, afterRed);
     }
 
     function start(index, keyboard) {
+      cancelSearch();
       stopPresentation();
       level = levels[index];
       returnLevel = level;
@@ -675,6 +744,7 @@ WorkTimeApp.games.register({
       render();
       board.toggleAttribute("data-pointer-entry", !keyboard);
       focusBoard();
+      replyPuzzle();
     }
 
     function canUndo() {
@@ -687,14 +757,14 @@ WorkTimeApp.games.register({
     function undoRound(keyboard) {
       if (!canUndo()) return;
       stopPresentation();
-      if (versus) cancelSearch();
+      cancelSearch();
       path = path.slice(
         0,
         versus ? (humanTurn() ? -2 : -1) : path.length % 2 ? -1 : -2,
       );
       if (versus) {
-        versusPosition();
         undosRemaining--;
+        versusPosition();
       } else updatePosition();
       render();
       if (versus) prepareEngine();
@@ -703,6 +773,7 @@ WorkTimeApp.games.register({
 
     function activate(square) {
       if (versus && (thinking || !humanTurn())) return;
+      if (puzzleReplyPending()) return;
       if (position.status !== "playing") return;
       message = null;
       if (
@@ -735,15 +806,20 @@ WorkTimeApp.games.register({
         else replyVersus();
         return;
       }
-      const nextPosition = rules.playRound(position, move);
+      const scripted = position.node?.[1][move] !== undefined;
+      const nextPosition = rules.playRound(
+        position,
+        move,
+        scripted ? undefined : null,
+      );
       if (!nextPosition) {
         message = "illegal";
         render();
       } else {
         const { defense } = nextPosition;
         path = defense === null ? [...path, move] : [...path, move, defense];
-        updatePosition(nextPosition);
-        showRound(before, move, defense);
+        updatePosition(scripted ? nextPosition : undefined);
+        showRound(before, move, puzzleReplyPending() ? undefined : defense);
       }
     }
 
@@ -800,7 +876,7 @@ WorkTimeApp.games.register({
 
     function settle() {
       if (presentation?.waiting) {
-        if (paused || document.hidden) presentation.thought.pause();
+        if (paused || document.hidden) presentation.thought?.pause();
       } else stopPresentation();
       render();
     }
@@ -892,7 +968,9 @@ WorkTimeApp.games.register({
       const displayed = presentation?.board ?? position.board;
       renderCaptures();
       const blackTurn =
-        !!presentation?.waiting || (versus && !humanTurn() && !ended);
+        !!presentation?.waiting ||
+        puzzleReplyPending() ||
+        (versus && !humanTurn() && !ended);
       const active = selected;
       const redTurn = presentation
         ? presentation.black.length > 0
@@ -955,19 +1033,18 @@ WorkTimeApp.games.register({
                     (blackTurn
                       ? "replying"
                       : ended && !presentation
-                        ? won && position.outcome === "stalemate"
-                          ? "blackStalemate"
-                          : position.status
+                        ? position.outcome === "repetition"
+                          ? "aiDrawRepetition"
+                          : won && position.outcome === "stalemate"
+                            ? "blackStalemate"
+                            : position.status
                         : redTurn && checkedSquare !== -1
                           ? "inCheck"
                           : "turn"),
                 );
       thinkingIndicator.toggleAttribute(
         "data-active",
-        versus &&
-          !ended &&
-          !engineError &&
-          (loading || thinking || !!presentation?.waiting),
+        versus ? !ended && !engineError && (loading || thinking) : blackTurn,
       );
       if (versus)
         thinkingIndicator.dataset.side = loading
@@ -977,6 +1054,7 @@ WorkTimeApp.games.register({
           : humanRed
             ? "black"
             : "red";
+      else if (blackTurn) thinkingIndicator.dataset.side = "black";
       else delete thinkingIndicator.dataset.side;
       board.setAttribute("aria-label", t("board"));
       board.toggleAttribute("data-replying", blackTurn);
@@ -1061,7 +1139,7 @@ WorkTimeApp.games.register({
         cell.setAttribute("aria-pressed", String(active === square));
         cell.setAttribute(
           "aria-disabled",
-          String(ended || !!presentation || thinking),
+          String(ended || !!presentation || thinking || puzzleReplyPending()),
         );
         cell.setAttribute(
           "aria-label",
@@ -1120,8 +1198,9 @@ WorkTimeApp.games.register({
             });
         }
       }
-      // Puzzle replies are recorded before their thinking/animation is shown.
-      const visiblePlies = path.length - (presentation?.waiting ? 1 : 0);
+      // A scripted defense is recorded before its animation is shown.
+      const hiddenDefense = presentation?.waiting && path.length % 2 === 0;
+      const visiblePlies = path.length - Number(hiddenDefense ?? false);
       const visiblePath = path.slice(0, visiblePlies);
       const continuing =
         source === captureSource &&
@@ -1162,7 +1241,8 @@ WorkTimeApp.games.register({
             !previous &&
             continuing &&
             ply >= captureHistory.length &&
-            !reduced.matches
+            !reduced.matches &&
+            typeof token.animate === "function"
           )
             flights.push({ token, square });
           token.textContent = glyphs[piece];
@@ -1277,12 +1357,15 @@ WorkTimeApp.games.register({
     listen(window, "blur", settle);
     listen(document, "visibilitychange", () => {
       if (document.hidden) {
-        if (versus) cancelSearch(true);
+        if (versus || puzzleReplyPending()) cancelSearch(true);
         settle();
       } else if (versus) {
         prepareEngine();
         replyVersus();
-      } else presentation?.thought?.resume();
+      } else {
+        presentation?.thought?.resume();
+        replyPuzzle();
+      }
     });
     const unlisten = compat.listen(reduced, settle);
     signal.addEventListener(
@@ -1296,10 +1379,11 @@ WorkTimeApp.games.register({
       { once: true },
     );
     render();
+    replyPuzzle();
     return {
       pause() {
         paused = true;
-        if (versus) cancelSearch(true);
+        if (versus || puzzleReplyPending()) cancelSearch(true);
         settle();
       },
       resume() {
@@ -1308,7 +1392,7 @@ WorkTimeApp.games.register({
         if (versus) {
           prepareEngine();
           replyVersus();
-        }
+        } else replyPuzzle();
       },
       resize() {
         if (presentation) settle();

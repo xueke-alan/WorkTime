@@ -250,6 +250,7 @@ async function verify() {
         WorkTimeApp.ui.createEventScope = originalScope;
       }
       const fixture = S.defaultState();
+      fixture.preferences.motionMode = "system";
       fixture.days[oa.date] = { ...both, actual: { ...manual, end: "20:00" } };
       fixture.days["2026-10-09"] = {
         oa: { ...oa, date: "2026-10-09", end: "", status: "pending" },
@@ -258,6 +259,15 @@ async function verify() {
       fixture.days["2026-10-12"] = {
         ...draft,
         oa: { ...oa, date: "2026-10-12" },
+      };
+      fixture.days["2026-10-13"] = {
+        oa: { ...oa, date: "2026-10-13", end: "", status: "pending" },
+      };
+      fixture.days["2026-10-14"] = {
+        oa: { ...oa, date: "2026-10-14", end: "", status: "pending" },
+        actual: manual,
+        draft: { start: oa.start, end: "", nextDay: false },
+        sourcePriority: "manual",
       };
       let fail = false;
       const owner = WorkTimeApp.services.application.createState({
@@ -384,6 +394,9 @@ async function verify() {
     });
     assert.deepEqual(rapidSwitch, { continuous: true, priority: "true" });
     await view.emulateMedia({ reducedMotion: "reduce" });
+    await view.waitForFunction(
+      () => document.documentElement.dataset.reducedMotion === "true",
+    );
     assert.match(await first.locator(".daytime").textContent(), /09:00.*20:00/);
     assert.equal(
       await view.locator(".day.selected").getAttribute("data-date"),
@@ -450,6 +463,37 @@ async function verify() {
           .getAttribute("aria-pressed") === "false",
     );
     assert.match(await first.locator(".day-total-hours").textContent(), /8.00/);
+    for (const date of ["2026-10-13", "2026-10-14"]) {
+      const pending = card(date);
+      assert.equal(await pending.locator(".record-source-dot.oa").count(), 1);
+      assert.equal(
+        await pending.locator(".record-source-dot.manual").count(),
+        0,
+      );
+      await pending.click();
+      assert.equal(await view.locator("#dayStart").inputValue(), "08:00");
+      const end = view.locator("#dayEnd");
+      assert.equal(await end.inputValue(), "");
+      await end.fill("19:00");
+      await pending.locator(".record-source-dot.manual").waitFor();
+      await end.fill("");
+      await pending.locator(".record-source-dot.manual").waitFor({
+        state: "detached",
+      });
+      assert.equal(await pending.locator(".record-source-dot.oa").count(), 1);
+      assert.equal(await pending.locator(".day-total-hours").count(), 0);
+    }
+    await view.waitForFunction(() => {
+      const event = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return !event.defaultPrevented;
+    });
+    await view.reload();
+    await ready(view);
+    assert.equal(
+      await card("2026-10-13").locator(".record-source-dot.manual").count(),
+      0,
+    );
     await view.locator("#batchToggle").click();
     const batchBefore = await view.locator(".day.batchselected").count();
     assert.equal(await toggle.isDisabled(), true);

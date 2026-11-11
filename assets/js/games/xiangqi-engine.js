@@ -235,7 +235,10 @@ WorkTimeApp.games.createXiangqiEngine = function () {
     }
     rejectLoading?.(error);
     rejectLoading = null;
-    for (const request of pending.values()) request.reject(error);
+    for (const request of pending.values()) {
+      clearTimeout(request.timer);
+      request.reject(error);
+    }
     pending.clear();
     worker?.terminate();
     worker = null;
@@ -278,8 +281,10 @@ WorkTimeApp.games.createXiangqiEngine = function () {
             } else if (data.type === "error") fail(Error(data.message));
             else if (data.type === "move") {
               const request = pending.get(data.id);
+              if (!request) return;
               pending.delete(data.id);
-              request?.resolve(data.move);
+              clearTimeout(request.timer);
+              request.resolve(data.move);
             }
           };
           if (bytes)
@@ -328,15 +333,22 @@ WorkTimeApp.games.createXiangqiEngine = function () {
     get busy() {
       return pending.size > 0;
     },
-    async search(fen, difficulty) {
+    async search(fen, difficulty, timeout = 0) {
       await load();
       if (disposed) throw Error("Engine disposed");
       if (!worker) throw Error("Engine unavailable");
       if (pending.size) throw Error("Search already running");
       const id = ++sequence;
       return new Promise((resolve, reject) => {
-        pending.set(id, { resolve, reject });
-        worker.postMessage({ type: "search", id, fen, difficulty });
+        const timer = timeout
+          ? setTimeout(() => fail(Error("Engine search timed out")), timeout)
+          : null;
+        pending.set(id, { resolve, reject, timer });
+        try {
+          worker.postMessage({ type: "search", id, fen, difficulty });
+        } catch (error) {
+          fail(error);
+        }
       });
     },
     dispose() {

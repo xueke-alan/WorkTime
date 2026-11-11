@@ -155,11 +155,9 @@ WorkTimeApp.games.rapfiResources = (() => {
         return false;
       }
     });
+    // A missing disk file needs to be populated even if Cache Storage has it.
+    if (typeof disk === "boolean") return disk;
     const storage = await cache();
-    if (disk) {
-      await storage?.delete(target).catch(() => {});
-      return true;
-    }
     try {
       const response = await storage?.match(target);
       if (!response) return false;
@@ -192,40 +190,41 @@ WorkTimeApp.games.rapfiResources = (() => {
           await folder.removeEntry(name);
     });
   }
-  async function prefetch() {
+  function resourceKeys(forbidden) {
+    return forbidden
+      ? ["wasm", "renjuBlack", "renjuWhite", "classical"]
+      : ["wasm", "model", "classical"];
+  }
+  async function prefetch(forbidden = false) {
     if (!/^https?:$/.test(location.protocol)) return;
     const assets = await manifest("low");
-    await Promise.all(
-      Object.values(assets)
-        .filter((info) => info && typeof info.name === "string")
+    const results = await Promise.allSettled(
+      resourceKeys(forbidden)
+        .map((key) => assets[key])
         .map(async (info) => {
           if (!inFlight.has(info.name) && (await cached(info))) return;
           const result = await resource(info, "low");
           await result.persistence;
         }),
     );
+    // Let outstanding downloads settle before the idle service retries.
+    const failure = results.find((result) => result.status === "rejected");
+    if (failure) throw failure.reason;
     await cleanup(assets);
   }
-  async function load() {
+  async function load(forbidden = false) {
     const assets = await manifest("high");
-    const [wasm, model, classical] = await Promise.all([
-      resource(assets.wasm, "high"),
-      resource(assets.model, "high"),
-      resource(assets.classical, "high"),
-    ]);
-    void Promise.all([
-      wasm.persistence,
-      model.persistence,
-      classical.persistence,
-    ])
+    const keys = resourceKeys(forbidden);
+    const results = await Promise.all(
+      keys.map((key) => resource(assets[key], "high")),
+    );
+    void Promise.all(results.map((result) => result.persistence))
       .then(() => cleanup(assets))
       .catch(() => {});
-    // Every consumer owns its buffers; one transfer must not detach another load.
-    return {
-      wasm: wasm.bytes.slice(0),
-      model: model.bytes.slice(0),
-      classical: classical.bytes.slice(0),
-    };
+    // Every consumer owns its buffers; transfers cannot detach another load.
+    return Object.fromEntries(
+      keys.map((key, i) => [key, results[i].bytes.slice(0)]),
+    );
   }
   return { load, prefetch, url };
 })();
@@ -236,7 +235,8 @@ WorkTimeApp.games.createGomokuEngine = function () {
     pending = null,
     disposed = false,
     sequence = 0,
-    generation = 0;
+    generation = 0,
+    loadedForbidden = false;
   let rejectLoad = null,
     timer = null;
   const budgets = { normal: 200, hard: 1000, master: 3000 };
@@ -252,7 +252,11 @@ WorkTimeApp.games.createGomokuEngine = function () {
     pending?.reject(Error("Search cancelled"));
     pending = null;
   }
-  function load() {
+  function load(forbidden = false) {
+    if (loadedForbidden !== forbidden) {
+      cancel();
+      loadedForbidden = forbidden;
+    }
     if (disposed) return Promise.reject(Error("Engine disposed"));
     if (loading) return loading;
     const token = ++generation;
@@ -269,14 +273,19 @@ WorkTimeApp.games.createGomokuEngine = function () {
         if (location.protocol === "file:") {
           await assets.script("assets/vendor/rapfi/offline.js");
           bytes = Object.fromEntries(
-            Object.entries(WorkTimeApp.games.rapfiAssets.offline).map(
-              ([key, value]) => [
-                key,
-                Uint8Array.from(atob(value), (c) => c.charCodeAt(0)).buffer,
-              ],
-            ),
+            Object.entries(WorkTimeApp.games.rapfiAssets.offline)
+              .filter(([key]) =>
+                forbidden ? key !== "model" : !key.startsWith("renju"),
+              )
+              .map(([key, value]) => {
+                const decoded = atob(value);
+                const bytes = new Uint8Array(decoded.length);
+                for (let i = 0; i < bytes.length; i++)
+                  bytes[i] = decoded.charCodeAt(i);
+                return [key, bytes.buffer];
+              }),
           );
-        } else bytes = await WorkTimeApp.games.rapfiResources.load();
+        } else bytes = await WorkTimeApp.games.rapfiResources.load(forbidden);
         if (disposed || token !== generation) return;
         const url = URL.createObjectURL(
           new Blob([WorkTimeApp.games.rapfiAssets.worker], {
@@ -309,18 +318,28 @@ WorkTimeApp.games.createGomokuEngine = function () {
               data.move >= 225 ||
               request.state.board[data.move] !== 0 ||
               data.engine !== "Rapfi" ||
-              data.model !== "mix9svqfreestyle_bsmix"
+              data.model !==
+                (forbidden
+                  ? "mix9svqrenju_bs15_" +
+                    (request.side === 1 ? "black" : "white")
+                  : "mix9svqfreestyle_bsmix") ||
+              (forbidden &&
+                !WorkTimeApp.games.gomokuRules.legalMove(
+                  request.state.board,
+                  data.move,
+                  request.side,
+                  true,
+                ))
             ) {
               request.reject(Error("Invalid engine move"));
               cancel();
             } else request.resolve(data);
           }
         };
-        worker.postMessage({ type: "init", ...bytes }, [
-          bytes.wasm,
-          bytes.model,
-          bytes.classical,
-        ]);
+        worker.postMessage(
+          { type: "init", forbidden, ...bytes },
+          Object.values(bytes),
+        );
       }
       function fail(error) {
         if (token !== generation) return;
@@ -336,10 +355,14 @@ WorkTimeApp.games.createGomokuEngine = function () {
     load,
     cancel,
     budgets,
-    async search(state, difficulty) {
+    async search(state, difficulty, initialBoard, forbidden = false) {
       if (!Object.hasOwn(budgets, difficulty))
         throw Error("Invalid difficulty");
-      const ready = load();
+      const budget =
+        !initialBoard && state.path.length === 1
+          ? Math.min(budgets[difficulty], 250)
+          : budgets[difficulty];
+      const ready = load(forbidden);
       const token = generation;
       await ready;
       if (disposed || !worker || token !== generation)
@@ -347,20 +370,31 @@ WorkTimeApp.games.createGomokuEngine = function () {
       if (pending) throw Error("Search already running");
       return new Promise((resolve, reject) => {
         const id = ++sequence;
-        pending = { id, resolve, reject, state };
+        pending = {
+          id,
+          resolve,
+          reject,
+          state,
+          side: (state.path.length % 2) + 1,
+        };
         timer = setTimeout(() => {
           reject(Error("Search timed out"));
           cancel();
-        }, budgets[difficulty] + 15000);
+        }, budget + 15000);
         worker.postMessage({
           type: "search",
           id,
-          path: state.path,
+          path: initialBoard
+            ? [
+                ...initialBoard.flatMap((stone, p) => (stone ? [p] : [])),
+                ...state.path,
+              ]
+            : state.path,
           board: state.board,
           side: (state.path.length % 2) + 1,
           depth: depths[difficulty],
           difficulty,
-          budget: budgets[difficulty],
+          budget,
         });
       });
     },

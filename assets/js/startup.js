@@ -21,19 +21,18 @@
       .then(() => {
         if (disposed) return;
         return Promise.all(
-          ["xiangqi-prefetch", "utttai-prefetch"].map((name) =>
-            WorkTimeApp.services.assets.script(
-              "assets/js/services/" + name + ".js",
+          [
+            ["xiangqi-prefetch", "xiangqiPrefetch"],
+            ["utttai-prefetch", "utttaiPrefetch"],
+            ["rapfi-prefetch", "rapfiPrefetch"],
+          ].map(async ([file, service]) => {
+            await WorkTimeApp.services.assets.script(
+              "assets/js/services/" + file + ".js",
               { fetchPriority: "low" },
-            ),
-          ),
+            );
+            if (!disposed) WorkTimeApp.services[service].start();
+          }),
         );
-      })
-      .then(() => {
-        if (!disposed) {
-          WorkTimeApp.services.xiangqiPrefetch.start();
-          WorkTimeApp.services.utttaiPrefetch.start();
-        }
       })
       .catch(() => {
         if (!disposed && !prefetchRetried) {

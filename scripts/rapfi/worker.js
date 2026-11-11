@@ -4,6 +4,12 @@ let engine = null;
 let current = null;
 let evaluator = false;
 let diagnostics = [];
+let forbidden = false;
+function modelName(side) {
+  return forbidden
+    ? "mix9svqrenju_bs15_" + (side === 1 ? "black" : "white")
+    : "mix9svqfreestyle_bsmix";
+}
 const config = "__RAPFI_CONFIG__";
 function output(line) {
   if (/Evaluator set to mix9svq/.test(line)) evaluator = true;
@@ -22,7 +28,7 @@ function output(line) {
     x,
     y,
     engine: "Rapfi",
-    model: "mix9svqfreestyle_bsmix",
+    model: modelName(current.side),
     diagnostics,
   });
   current = null;
@@ -30,6 +36,7 @@ function output(line) {
 self.onmessage = async ({ data }) => {
   try {
     if (data.type === "init") {
+      forbidden = data.forbidden === true;
       engine = await Rapfi({
         wasmBinary: data.wasm,
         onReceiveStdout: output,
@@ -38,15 +45,37 @@ self.onmessage = async ({ data }) => {
         },
         preRun: [
           (module) => {
-            module.FS.writeFile("/config.toml", config);
+            module.FS.writeFile(
+              "/config.toml",
+              forbidden
+                ? config.replace(
+                    /\[\[model.evaluator.weights\]\]\s*weight_file = "mix9svqfreestyle_bsmix.bin.lz4"/,
+                    "",
+                  )
+                : config.replace(
+                    /\[\[model.evaluator.weights\]\]\s*weight_file_black = "mix9svqrenju_bs15_black.bin.lz4"\s*weight_file_white = "mix9svqrenju_bs15_white.bin.lz4"/,
+                    "",
+                  ),
+            );
             module.FS.writeFile(
               "/model210901.bin",
               new Uint8Array(data.classical),
             );
-            module.FS.writeFile(
-              "/mix9svqfreestyle_bsmix.bin.lz4",
-              new Uint8Array(data.model),
-            );
+            if (forbidden) {
+              module.FS.writeFile(
+                "/mix9svqrenju_bs15_black.bin.lz4",
+                new Uint8Array(data.renjuBlack),
+              );
+              module.FS.writeFile(
+                "/mix9svqrenju_bs15_white.bin.lz4",
+                new Uint8Array(data.renjuWhite),
+              );
+            } else {
+              module.FS.writeFile(
+                "/mix9svqfreestyle_bsmix.bin.lz4",
+                new Uint8Array(data.model),
+              );
+            }
           },
         ],
       });
@@ -54,14 +83,14 @@ self.onmessage = async ({ data }) => {
       self.postMessage({
         type: "ready",
         engine: "Rapfi",
-        model: "mix9svqfreestyle_bsmix",
+        model: modelName(1),
       });
     } else if (data.type === "search") {
       if (!engine || current) throw Error("Engine not ready");
       current = data;
       diagnostics = [];
       const command = (text) => engine.sendCommand(text);
-      command("INFO rule 0");
+      command("INFO rule " + (forbidden ? 4 : 0));
       command("START 15");
       command("INFO pondering 0");
       command("INFO timeout_turn " + data.budget);

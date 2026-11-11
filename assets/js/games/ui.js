@@ -679,14 +679,17 @@ WorkTimeApp.games.createRestartCover = function ({
   cancel,
   accept,
   signal,
+  labels,
 }) {
   const content = document.createElement("div");
   content.className = "game-restart-content";
-  const icon = WorkTimeApp.games.createIcon("restart-alt");
-  icon.classList.add("game-restart-icon");
+  const heading = labels
+    ? document.createElement("h3")
+    : WorkTimeApp.games.createIcon("restart-alt");
+  heading.classList.add(labels ? "game-restart-message" : "game-restart-icon");
   const actions = document.createElement("div");
   actions.className = "game-restart-actions";
-  content.append(icon, actions);
+  content.append(heading, actions);
   cover.append(content);
   const buttons = [cancel, accept];
   const places = buttons.map(() => document.createComment("restart action"));
@@ -719,11 +722,17 @@ WorkTimeApp.games.createRestartCover = function ({
       }
     }
     if (!value) return;
-    cover.setAttribute("aria-label", WorkTimeApp.i18n.t("games.restartNew"));
+    const copy = labels?.();
+    const title = copy?.title ?? WorkTimeApp.i18n.t("games.restartNew");
+    cover.setAttribute("aria-label", title);
+    if (copy) heading.textContent = title;
+    const buttonLabels = copy
+      ? [copy.cancel, copy.accept]
+      : ["games.restartCancel", "games.restartNew"].map((key) =>
+          WorkTimeApp.i18n.t(key),
+        );
     buttons.forEach((button, i) => {
-      const label = WorkTimeApp.i18n.t(
-        i ? "games.restartNew" : "games.restartCancel",
-      );
+      const label = buttonLabels[i];
       const text = button.querySelector(".button-label");
       if (text) text.textContent = label;
       else button.textContent = label;
@@ -753,6 +762,7 @@ WorkTimeApp.games.createRestartCover = function ({
 WorkTimeApp.games.createRestartPrompt = function ({
   host,
   signal,
+  labels,
   onOpen,
   onCancel,
   onConfirm,
@@ -778,6 +788,7 @@ WorkTimeApp.games.createRestartPrompt = function ({
     cancel,
     accept,
     signal,
+    labels,
   });
   let opened = false,
     source = null,

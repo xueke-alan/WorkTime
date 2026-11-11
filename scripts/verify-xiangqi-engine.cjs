@@ -72,25 +72,40 @@ async function verify() {
   assert.equal(workers.length, 1);
   workers[0].onmessage({ data: { type: "ready" } });
   await retry;
+  const searchTimeout = assert.rejects(
+    engine.search("position", "hard", 10000),
+    /search timed out/,
+  );
+  await Promise.resolve();
+  assert.equal(engine.busy, true);
+  [...timers][0]();
+  await searchTimeout;
+  assert.equal(engine.busy, false);
+  assert.equal(workers[0].terminated, true);
+  assert.equal(timers.size, 0);
+  const recovered = engine.load();
+  scripts[2].onload();
+  workers[1].onmessage({ data: { type: "ready" } });
+  await recovered;
   const search = engine.search("position", "normal");
   const disposed = assert.rejects(search, /disposed/);
   await Promise.resolve();
   engine.dispose();
   await disposed;
-  assert.equal(workers[0].terminated, true);
+  assert.equal(workers[1].terminated, true);
   assert.equal(timers.size, 0);
   await assert.rejects(engine.load(), /disposed/);
 
   const another = context.WorkTimeApp.games.createXiangqiEngine();
   const pending = another.load();
-  const callback = scripts[2].onload;
+  const callback = scripts[3].onload;
   const rejected = assert.rejects(pending, /disposed/);
   another.dispose();
   callback();
   await rejected;
   assert.equal(
     workers.length,
-    1,
+    2,
     "disposing during resource loading prevents late workers",
   );
   assert.equal(timers.size, 0);

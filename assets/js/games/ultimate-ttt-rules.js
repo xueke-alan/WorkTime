@@ -95,6 +95,42 @@ WorkTimeApp.games.ultimateTttRules = (() => {
     }
     return next;
   }
+  function lockedResult(state) {
+    if (state.status !== "playing") return null;
+    const [x, o] = counts(state);
+    const leader = Math.sign(x - o);
+    // A drawn region can reopen when a later capture clears the board.
+    const contestable = (owner) => owner === 0 || (state.chain && owner === 2);
+    if (
+      Math.abs(x - o) > state.regions.filter(contestable).length &&
+      !lines.some((line) =>
+        line.every(
+          (r) => state.regions[r] === -leader || contestable(state.regions[r]),
+        ),
+      )
+    )
+      return leader;
+
+    const openCells = state.board.filter(
+      (piece, p) => !piece && !state.regions[Math.floor(p / 9)],
+    ).length;
+    if (openCells > 12) return null;
+
+    let remaining = 3000;
+    function solve(position) {
+      if (remaining-- <= 0) return null;
+      if (position.status !== "playing") return position.winner;
+      let result;
+      for (const p of legal(position)) {
+        const outcome = solve(move(position, p, false));
+        if (outcome === null || (result !== undefined && result !== outcome))
+          return null;
+        result = outcome;
+      }
+      return result ?? null;
+    }
+    return solve(state);
+  }
   function replay(path, chain = false) {
     // At most nine captures, each clearing at most 81 cells: 810 is a safe upper bound.
     if (!Array.isArray(path) || path.length > 810 || typeof chain !== "boolean")
@@ -149,6 +185,7 @@ WorkTimeApp.games.ultimateTttRules = (() => {
     create,
     legal,
     move,
+    lockedResult,
     replay,
     restore,
     counts,

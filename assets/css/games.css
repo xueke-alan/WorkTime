@@ -926,6 +926,22 @@ body .game-shell .workspace-toolbar .workspace-toolbar-action:disabled {
     padding: 1rem;
   }
 }
+@media (max-width: 850px) {
+  body .game-shell {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  body .game-shell > .game-surface {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .game-content {
+    padding: 8px;
+  }
+}
 :where(html:where([data-reduced-motion="true"])) .game-button,
   :where(html:where([data-reduced-motion="true"])) .game-menu-entry,
   :where(html:where([data-reduced-motion="true"])) body .game-session .game-select-options > .game-button > .button-label {

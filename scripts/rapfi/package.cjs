@@ -13,6 +13,14 @@ const files = {
     "mix9svqfreestyle_bsmix.bin.lz4",
     ".cache/rapfi-networks/mix9svq/mix9svqfreestyle_bsmix.bin.lz4",
   ],
+  renjuBlack: [
+    "mix9svqrenju_bs15_black.bin.lz4",
+    ".cache/rapfi-networks/mix9svq/mix9svqrenju_bs15_black.bin.lz4",
+  ],
+  renjuWhite: [
+    "mix9svqrenju_bs15_white.bin.lz4",
+    ".cache/rapfi-networks/mix9svq/mix9svqrenju_bs15_white.bin.lz4",
+  ],
   classical: [
     "model210901.bin",
     ".cache/rapfi-networks/classical/model210901.bin",
@@ -21,6 +29,10 @@ const files = {
 const manifest = {},
   offline = {};
 const pinned = {
+  renjuWhite:
+    "a31f318518d3b5630489054d9eb013fd5353c553999640c2bcfd8d95e6fe4e4e",
+  renjuBlack:
+    "7ab8c974c30da07717ce6a504616a62ac8c981500503f0ced0fadefd3f46c5ec",
   model: "6bc0d1b0ff8e1d857f7f412923cd458f38f1a435087c91ae71fec3676c23ef62",
   classical: "b3425ab5dbb73b25aad6f1c816e4700438c1fca265bf7a9c42aa3c2c006444af",
 };
@@ -47,7 +59,7 @@ config = config
   .replace("default_tt_size_kb = 32768", "default_tt_size_kb = 16384")
   .replace(
     /\[\[model.evaluator.weights\]\]\s*weight_file = "mix9svqstandard_bs15.bin.lz4"\s*\[\[model.evaluator.weights\]\]\s*weight_file_black = "mix9svqrenju_bs15_black.bin.lz4"\s*weight_file_white = "mix9svqrenju_bs15_white.bin.lz4"/,
-    "",
+    '[[model.evaluator.weights]]\nweight_file_black = "mix9svqrenju_bs15_black.bin.lz4"\nweight_file_white = "mix9svqrenju_bs15_white.bin.lz4"',
   );
 fs.writeFileSync(path.join(__dirname, "config.toml"), config);
 const prefix = '"use strict";\nWorkTimeApp.games.rapfiAssets ||= {};\n';

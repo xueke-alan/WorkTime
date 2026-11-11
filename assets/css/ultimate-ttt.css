@@ -2,6 +2,12 @@
 .game-ultimate-ttt [hidden]{display:none!important}
 .uttt-play{display:flex;align-items:center;justify-content:center;gap:28px;min-height:100%;padding:12px 0}
 .uttt-stage{width:var(--uttt-size);max-width:100%;flex-shrink:0}
+.uttt-stage .game-restart-message {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  text-align: center;
+}
 .uttt-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:clamp(5px,1.2vw,12px);aspect-ratio:1;padding:8px;border-radius:18px;background:rgba(89,120,139,.14)}
 .uttt-region{position:relative;min-width:0;border-radius:10px;background:rgba(255,255,255,.35);border:2px solid transparent;padding:4px;transition:border-color .15s,background .15s}
 .uttt-region.is-active{border-color:var(--uttt-x);background:rgba(216,240,243,.65)}
@@ -23,12 +29,165 @@
 .uttt-status{font-weight:650;line-height:1.65}
 
 .uttt-actions{display:flex;flex-wrap:wrap;gap:8px}
-.uttt-options{border:0;padding:0;margin:0;display:grid;gap:10px}
+.uttt-options{border:0;padding:0;margin:0;min-inline-size:0}
 .uttt-options legend{padding:0;margin-bottom:10px;font-weight:600}
-.uttt-options [aria-pressed="true"]{background:var(--uttt-x);color:#fff}
-.uttt-setup{display:grid;gap:24px;max-width:600px;margin:0 auto;padding:20px}
-.uttt-checkbox{display:flex;gap:10px;align-items:center;font-weight:600;cursor:pointer}
-.uttt-checkbox input{width:20px;height:20px;accent-color:var(--uttt-x)}
+#uttt-level-page {
+  gap: 1.25rem;
+}
+#uttt-level-page .game-level-categories {
+  grid-auto-rows: minmax(44px, 2.75rem);
+}
+.uttt-setup {
+  --uttt-option-width: 17rem;
+  display: grid;
+  gap: 1.25rem;
+  max-width: 30rem;
+  margin-inline: auto;
+  padding: 1rem;
+}
+.uttt-setup h3 {
+  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  line-height: 1.2;
+}
+.uttt-options .uttt-actions,
+.uttt-start-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.4rem, 1.5vw, 0.75rem);
+  max-inline-size: var(--uttt-option-width);
+}
+.uttt-setup .uttt-start-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.uttt-options .game-button {
+  min-width: 0;
+  min-height: 44px;
+  height: auto;
+  padding: 0.5rem;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.uttt-options [data-uttt-action^="difficulty-"] {
+  aspect-ratio: 1;
+}
+.uttt-setup .uttt-start-card {
+  --uttt-card-ink: var(--accent);
+  --game-button-edge: color-mix(in srgb, var(--uttt-card-ink) 28%, var(--game-control));
+  --game-button-fill: color-mix(in srgb, var(--uttt-card-ink) 6%, var(--game-control));
+  --game-button-hover: color-mix(in srgb, var(--uttt-card-ink) 12%, var(--game-control));
+  flex-direction: column;
+  gap: 0.375rem;
+  min-height: 4.5rem;
+  height: auto;
+  padding: 0.625rem;
+}
+.uttt-setup [data-uttt-action="human-1"] {
+  --uttt-card-ink: var(--uttt-x);
+}
+.uttt-setup [data-uttt-action="human--1"] {
+  --uttt-card-ink: var(--uttt-o);
+}
+.uttt-start-card:only-child {
+  grid-column: 1 / -1;
+}
+.uttt-start-icons {
+  display: flex;
+  gap: 0.375rem;
+}
+.uttt-start-icons > span {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--uttt-x);
+}
+.uttt-start-icons > [data-mark="O"] {
+  color: var(--uttt-o);
+}
+.uttt-start-icons .uttt-symbol {
+  width: 100%;
+  height: 100%;
+}
+.uttt-chain-option {
+  max-inline-size: var(--uttt-option-width);
+  padding: 0.25rem 0.875rem 0.75rem;
+  border: 1px solid var(--game-control-border);
+  border-radius: var(--control-radius);
+  background: var(--theme-surface-subtle, var(--paper));
+}
+.uttt-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 44px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.uttt-check {
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.uttt-check > * {
+  grid-area: 1 / 1;
+}
+.uttt-check input {
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--game-control-border);
+  border-radius: 0.3rem;
+  background: var(--game-control);
+  box-shadow: none;
+  cursor: inherit;
+}
+.uttt-checkbox:hover input {
+  border-color: var(--accent);
+}
+.uttt-check input:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.uttt-check input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.uttt-check .ui-icon {
+  width: 1rem;
+  height: 1rem;
+  color: white;
+  pointer-events: none;
+  visibility: hidden;
+}
+.uttt-check input:checked + .ui-icon {
+  visibility: visible;
+}
+@media (max-width: 640px) {
+  #uttt-level-page {
+    gap: 0.75rem;
+  }
+  #uttt-level-page .game-level-page-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  #uttt-level-page .game-level-categories {
+    border-inline-end: 0;
+    padding: 3px;
+  }
+  .uttt-setup {
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+}
+@media (forced-colors: active) {
+  .uttt-check input {
+    appearance: auto;
+  }
+  .uttt-check input:checked + .ui-icon {
+    visibility: hidden;
+  }
+}
 .uttt-engine-error,.uttt-save-error{color:var(--uttt-o);line-height:1.6}
 .uttt-guide{font-size:.85rem;line-height:1.75}
 .uttt-guide summary{cursor:pointer;font-weight:600}
@@ -42,7 +201,92 @@
 /* Match the shared board-game sidebar and keep the board vertically centered. */
 .game-ultimate-ttt{height:100%;min-height:0;overflow:auto;box-sizing:border-box}
 .uttt-play{min-height:100%;box-sizing:border-box;padding:24px 8px;gap:28px}
-.uttt-board{box-sizing:border-box}
+.uttt-board{position:relative;isolation:isolate;box-sizing:border-box}
+.uttt-board:has(> .uttt-result-layer:not([hidden])) > .uttt-region {
+  opacity: 0.32;
+}
+.uttt-result-layer {
+  --uttt-result-ink: var(--muted);
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.uttt-result-layer[data-mark="X"] {
+  --uttt-result-ink: var(--uttt-x);
+}
+.uttt-result-layer[data-mark="O"] {
+  --uttt-result-ink: var(--uttt-o);
+}
+.uttt-result-card {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  inline-size: min(82%, max(48%, 22rem));
+  min-block-size: 40%;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid color-mix(in srgb, var(--uttt-result-ink) 32%, var(--paper));
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--uttt-result-ink) 7%, var(--paper));
+  box-shadow: 0 0.6rem 1.5rem color-mix(in srgb, var(--uttt-result-ink) 18%, transparent);
+  color: var(--ink);
+  text-align: center;
+  font-size: clamp(1rem, 3.2vw, 1.65rem);
+  line-height: 1.2;
+  pointer-events: auto;
+  animation: uttt-result-enter 160ms ease-out both;
+}
+.uttt-result-symbol {
+  display: grid;
+  place-items: center;
+  inline-size: clamp(4rem, 12vw, 6rem);
+  aspect-ratio: 1;
+  color: var(--uttt-result-ink);
+  font-size: 2.5em;
+  line-height: 1;
+}
+.uttt-result-symbol .uttt-symbol {
+  width: 100%;
+  height: 100%;
+}
+.uttt-result-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  inline-size: 100%;
+  max-inline-size: 18rem;
+  gap: 0.75rem;
+}
+.uttt-result-actions .game-button {
+  --game-button-fill: var(--paper);
+  --game-button-edge: color-mix(in srgb, var(--uttt-result-ink) 22%, var(--paper));
+  --game-button-hover: color-mix(in srgb, var(--uttt-result-ink) 9%, var(--paper));
+  min-width: 0;
+  height: 100%;
+  min-height: 44px;
+  padding: 0.6rem 0.75rem;
+  white-space: normal;
+}
+.uttt-result-actions [data-uttt-action="result-restart"] {
+  --game-button-fill: color-mix(in srgb, var(--uttt-result-ink) 12%, var(--paper));
+  --game-button-edge: color-mix(in srgb, var(--uttt-result-ink) 32%, var(--paper));
+  --game-button-hover: color-mix(in srgb, var(--uttt-result-ink) 20%, var(--paper));
+  color: var(--ink);
+}
+@keyframes uttt-result-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+html[data-reduced-motion="true"] .uttt-result-card {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .uttt-result-card { animation: none; }
+}
 .uttt-controls{height:var(--uttt-size);box-sizing:border-box;padding:8px 0 20px;gap:14px;flex:0 0 250px}
 .uttt-objective{display:grid;gap:7px}
 .uttt-objective h3{font-size:1.45rem;letter-spacing:-.02em}

@@ -18,6 +18,67 @@ for (const file of [
 ])
   vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context);
 const R = context.WorkTimeApp.games.ultimateTttRules;
+const tournament = JSON.parse(
+  fs.readFileSync(
+    path.join(root, "scripts/utttai/bakeoff-results.json"),
+    "utf8",
+  ),
+);
+const drawGame = tournament.games[52];
+const chainGame = tournament.games[81];
+function lockedResults() {
+  const initial = R.create();
+  const state = { ...initial, regions: [1, 1, 0, 0, 1, 1, 1, 0, 0] };
+  assert.equal(R.lockedResult(state), 1);
+  assert.equal(
+    R.lockedResult({ ...state, regions: state.regions.map((owner) => -owner) }),
+    -1,
+  );
+  assert.equal(
+    R.lockedResult({ ...state, regions: [2, 1, 1, 2, 1, 1, 0, 0, 0] }),
+    null,
+    "the trailing side can still claim the bottom line",
+  );
+  const drawnBoards = { ...state, regions: [2, 1, 2, 1, 1, 0, 1, 0, 0] };
+  assert.equal(R.lockedResult(drawnBoards), 1);
+  assert.equal(
+    R.lockedResult({ ...drawnBoards, chain: true }),
+    null,
+    "chain reset can reopen the drawn regions",
+  );
+
+  const draw = R.replay(drawGame.path.slice(0, 59));
+  const snapshot = JSON.stringify(draw);
+  assert.equal(R.lockedResult(draw), 0);
+  assert.equal(JSON.stringify(draw), snapshot, "proof leaves the state intact");
+  assert.equal(R.lockedResult(R.replay(drawGame.path)), null);
+  assert.equal(R.lockedResult(initial), null);
+  assert.equal(
+    R.lockedResult(R.replay(chainGame.path.slice(0, 146), true)),
+    -1,
+  );
+
+  // Cross-check two small trees without the production solver's early exits.
+  for (const [game, length, expected] of [
+    [drawGame, 58, [-1, 0]],
+    [tournament.games[63], 57, [-1]],
+  ]) {
+    const start = R.replay(game.path.slice(0, length), game.chain);
+    const outcomes = new Set();
+    let visited = 0;
+    function enumerate(position) {
+      visited++;
+      if (position.status !== "playing") outcomes.add(position.winner);
+      else
+        for (const p of R.legal(position))
+          enumerate(R.move(position, p, false));
+    }
+    enumerate(start);
+    assert.deepEqual([...outcomes].sort(), expected);
+    assert.equal(visited > 3000, expected.length === 1);
+    assert.equal(R.lockedResult(start), null);
+  }
+}
 function unit() {
   assert.equal(R.legal(R.create()).length, 81);
   for (let i = 0; i < 81; i++) {
@@ -112,12 +173,7 @@ function unit() {
       assert.equal(R.replay([...s.path, 0], chain), null);
     }
   assert(longest > 81, "reset histories can exceed 81 moves");
-  const tournament = JSON.parse(
-    fs.readFileSync(
-      path.join(root, "scripts/utttai/bakeoff-results.json"),
-      "utf8",
-    ),
-  );
+  lockedResults();
   assert.equal(tournament.games.length, 160);
   for (const game of tournament.games) {
     const final = R.replay(game.path, game.chain);
@@ -156,7 +212,279 @@ function unit() {
     null,
   );
   console.log(
-    "Rules, territory endings, reset, encoding, 100 complete games and >81-ply archive replay passed.",
+    "Rules, locked outcomes, territory endings, reset, encoding, 100 complete games and >81-ply archive replay passed.",
+  );
+}
+async function verifyLockedPrompt(page) {
+  const gameId = "game-ultimate-ttt";
+  const key = "worktime.games.ultimate-ttt.v1";
+  const saved = () =>
+    page.evaluate((key) => JSON.parse(localStorage.getItem(key)).state, key);
+  async function open(game, length, mode, human) {
+    const state = {
+      mode,
+      human,
+      difficulty: "easy",
+      chain: game.chain,
+      path: game.path.slice(0, length),
+    };
+    await page.evaluate(
+      ({ key, state }) =>
+        localStorage.setItem(key, JSON.stringify({ version: 1, state })),
+      { key, state },
+    );
+    await launchGame(page, gameId);
+    return state;
+  }
+  const root = page.locator(".game-ultimate-ttt");
+  const prompt = root.locator('.uttt-stage [role="dialog"]');
+  const heading = prompt.locator("h3");
+  const resume = prompt.getByRole("button", { name: "继续游戏" });
+  const restart = prompt.getByRole("button", { name: "重新开始" });
+  const cell = (p) => root.locator(`[data-cell="${p}"]`);
+  const undo = root.locator('[data-uttt-action="undo"]');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(drawGame, 58, "local", 1);
+  assert.equal(await prompt.count(), 0);
+  await cell(drawGame.path[58]).click();
+  await prompt.waitFor();
+  assert.equal(await heading.textContent(), "本局已锁定平局");
+  assert.equal(await root.getAttribute("data-status"), "playing");
+  assert.equal(await root.locator(".uttt-result-layer").isVisible(), false);
+  assert.equal(
+    await resume.evaluate((button) => document.activeElement === button),
+    true,
+  );
+  assert.equal(
+    await cell(drawGame.path[59]).getAttribute("aria-disabled"),
+    "true",
+  );
+  await cell(drawGame.path[59]).evaluate((button) => button.click());
+  assert.deepEqual((await saved()).path, drawGame.path.slice(0, 59));
+  await page.keyboard.press("Tab");
+  assert.equal(
+    await restart.evaluate((button) => document.activeElement === button),
+    true,
+  );
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Enter");
+  await prompt.waitFor({ state: "hidden" });
+  await cell(drawGame.path[59]).click();
+  assert.equal(await prompt.count(), 0);
+  await undo.click();
+  assert.equal(await prompt.count(), 0);
+  await undo.click();
+  await cell(drawGame.path[58]).click();
+  await prompt.waitFor();
+  await resume.click();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.reload();
+  await page.waitForFunction(
+    () => document.documentElement.dataset.appState === "ready",
+  );
+  await page.evaluate(() => WorkTimeApp.services.assets.whenIdle());
+  await launchGame(page, gameId);
+  await prompt.waitFor();
+  assert.equal(
+    await resume.evaluate((button) => document.activeElement === button),
+    true,
+  );
+  await resume.click();
+  for (const p of drawGame.path.slice(59)) await cell(p).click();
+  assert.equal(await root.getAttribute("data-status"), "draw");
+  assert.equal(await prompt.count(), 0);
+
+  const ai = await open(chainGame, 146, "ai", -1);
+  await prompt.waitFor();
+  assert.equal(await heading.textContent(), "O 已锁定胜局");
+  assert.equal(
+    await root.locator(".uttt-status").getAttribute("data-thinking"),
+    "false",
+  );
+  assert.deepEqual(await saved(), ai);
+  await resume.click();
+  await page.waitForFunction(
+    (key) => JSON.parse(localStorage.getItem(key)).state.path.length === 147,
+    key,
+  );
+  assert.equal(await prompt.count(), 0);
+
+  await open(chainGame, 146, "ai", -1);
+  await restart.click();
+  await page.waitForFunction(
+    (key) => JSON.parse(localStorage.getItem(key)).state.path.length === 1,
+    key,
+  );
+  const fresh = await saved();
+  assert.deepEqual(fresh, { ...ai, path: fresh.path });
+  assert.equal(await root.getAttribute("data-status"), "playing");
+  assert.equal(await prompt.count(), 0);
+  console.log(
+    "Locked draw and win prompts, pause, continue, undo, reload and AI restart passed.",
+  );
+}
+async function verifyEndFeedback(page) {
+  const gameId = "game-ultimate-ttt";
+  const root = page.locator(".game-ultimate-ttt");
+  const layer = root.locator(".uttt-result-layer");
+  const card = layer.locator(".uttt-result-card");
+  const label = card.locator("strong");
+  const status = root.locator(".uttt-status");
+  const action = (id) => root.locator(`[data-uttt-action="${id}"]`);
+  async function open(index, mode = "local", human = 1, finished = false) {
+    const game = tournament.games[index];
+    const move = game.path.at(-1);
+    const state = {
+      mode,
+      human,
+      difficulty: "easy",
+      chain: game.chain,
+      path: finished ? game.path : game.path.slice(0, -1),
+    };
+    await page.evaluate(
+      (state) =>
+        localStorage.setItem(
+          "worktime.games.ultimate-ttt.v1",
+          JSON.stringify({ version: 1, state }),
+        ),
+      state,
+    );
+    await launchGame(page, gameId);
+    return root.locator(`[data-cell="${move}"]`);
+  }
+  async function check(text, mark) {
+    await layer.waitFor();
+    assert.equal(
+      await card.getAttribute("aria-labelledby"),
+      "uttt-result-label",
+    );
+    assert.equal(await layer.getAttribute("data-mark"), mark);
+    assert.equal(await label.textContent(), text);
+    const symbol = layer.locator(".uttt-result-symbol");
+    assert.equal(await symbol.textContent(), mark);
+    assert.equal(await symbol.locator("svg").count(), mark === "=" ? 0 : 1);
+    assert(
+      await card.evaluate((el) => {
+        const layer = el.parentElement;
+        const board = layer.parentElement.getBoundingClientRect();
+        const region = layer.parentElement
+          .querySelector(".uttt-region")
+          .getBoundingClientRect();
+        const card = el.getBoundingClientRect();
+        const buttons = [...el.querySelectorAll("button")].map((button) =>
+          button.getBoundingClientRect(),
+        );
+        const style = getComputedStyle(layer);
+        return (
+          style.overflow === "hidden" &&
+          style.pointerEvents === "none" &&
+          getComputedStyle(el).pointerEvents === "auto" &&
+          Number(
+            getComputedStyle(layer.parentElement.querySelector(".uttt-region"))
+              .opacity,
+          ) < 1 &&
+          card.width <= board.width * 0.82 + 1 &&
+          card.width > region.width &&
+          card.height > region.height &&
+          Math.abs(buttons[0].width - buttons[1].width) < 1 &&
+          Math.abs(buttons[0].height - buttons[1].height) < 1 &&
+          card.height < board.height &&
+          Math.abs(card.x + card.width / 2 - board.x - board.width / 2) < 1 &&
+          Math.abs(card.y + card.height / 2 - board.y - board.height / 2) < 1
+        );
+      }),
+    );
+  }
+  const animation = () =>
+    card.evaluate((el) => getComputedStyle(el).animationName);
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const finalX = await open(1);
+  await finalX.focus();
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await page.keyboard.press("Enter");
+  await check("X 获胜", "X");
+  assert.match(await status.textContent(), /三区连线/);
+  const back = card.getByRole("button", { name: "返回" });
+  const restart = card.getByRole("button", { name: "重新开始" });
+  assert.equal(
+    await back.evaluate((el) => el === document.activeElement),
+    true,
+  );
+  assert.equal(await animation(), "uttt-result-enter");
+  await page.clock.runFor(10000);
+  assert.equal(await layer.isVisible(), true);
+  await page.keyboard.press("Tab");
+  assert.equal(
+    await restart.evaluate((el) => el === document.activeElement),
+    true,
+  );
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Enter");
+  assert.equal(await layer.isVisible(), false);
+  assert.equal(
+    await root
+      .locator(".uttt-region")
+      .first()
+      .evaluate((el) => getComputedStyle(el).opacity),
+    "1",
+  );
+  assert.equal(
+    await finalX.evaluate((el) => el === document.activeElement),
+    true,
+  );
+  assert.equal(await root.getAttribute("data-status"), "won");
+  await page.clock.resume();
+  await open(1, "local", 1, true);
+  assert.equal(await root.getAttribute("data-status"), "won");
+  assert.equal(await layer.isVisible(), false);
+
+  await (await open(0)).click();
+  await check("O 获胜", "O");
+  await action("undo").click();
+  assert.equal(await layer.isVisible(), false);
+  assert.equal(await root.getAttribute("data-status"), "playing");
+
+  await (await open(6, "ai")).click();
+  await check("你赢了", "X");
+  assert.match(await status.textContent(), /占领区域更多/);
+  await restart.click();
+  assert.equal(await layer.isVisible(), false);
+  assert.equal(await root.locator(".game-restart-cover").count(), 0);
+  assert.equal(await root.getAttribute("data-status"), "playing");
+
+  await page.evaluate((move) => {
+    const games = WorkTimeApp.games;
+    window.utttOriginalEngine = games.createUltimateTttEngine;
+    games.createUltimateTttEngine = () => ({
+      search: () =>
+        Promise.resolve({ move, engine: "fixture", simulations: 1 }),
+      dispose() {},
+    });
+  }, tournament.games[0].path.at(-1));
+  await open(0, "ai");
+  await check("你输了", "O");
+  await page.evaluate(() => {
+    WorkTimeApp.games.createUltimateTttEngine = window.utttOriginalEngine;
+  });
+  await action("settings").click();
+  assert.equal(await layer.getAttribute("hidden"), "");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() =>
+    WorkTimeApp.services.preferences.page.saveMotionMode("reduce"),
+  );
+  await (await open(7)).click();
+  await check("平局", "=");
+  assert.equal(await animation(), "none");
+  await page.clock.fastForward(10000);
+  assert.equal(await layer.isVisible(), true);
+  await back.click();
+  assert.equal(await layer.isVisible(), false);
+  assert.match(await status.textContent(), /本局平局/);
+  console.log(
+    "Board result cards, motion preference, dismissal and saved endings passed.",
   );
 }
 async function browser() {
@@ -176,17 +504,44 @@ async function browser() {
     const action = (id) => page.locator(`[data-uttt-action="${id}"]`);
     await action("mode-local").click();
     await page.locator('[data-uttt-option="chain"]').check();
-    await action("start").click();
-    await page.locator('.uttt-cell[data-cell="4"]').hover();
-    assert.equal(
-      await page.locator(".uttt-board").getAttribute("data-preview"),
-      "4",
+    await action("start-local").click();
+    const cell = page.locator('.uttt-cell[data-cell="4"]');
+    const title = page.locator(".uttt-controls h3");
+    const frames = page.locator(".uttt-region.is-preview");
+    const preview = () =>
+      page.locator(".uttt-board").getAttribute("data-preview");
+    const idleBackground = await cell.evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
     );
-    assert.equal(await page.locator(".uttt-region.is-preview").count(), 1);
+    await cell.hover();
+    await page.waitForFunction(
+      (background) =>
+        getComputedStyle(document.querySelector('.uttt-cell[data-cell="4"]'))
+          .backgroundColor !== background,
+      idleBackground,
+    );
+    await title.hover();
+    const clockTime = Date.now();
+    await page.clock.install({ time: clockTime });
+    await page.clock.pauseAt(clockTime + 1000);
+    await cell.dispatchEvent("pointerenter", { pointerType: "mouse" });
+    assert.equal(await preview(), "4");
+    assert((await page.locator(".uttt-preview-note").textContent()).trim());
+    await page.clock.runFor(99);
+    assert.equal(await frames.count(), 0);
+    await page.clock.runFor(1);
+    assert.equal(await frames.getAttribute("data-region"), "4");
     assert.equal(await page.locator(".uttt-score .uttt-score-row").count(), 2);
-    await page.locator(".uttt-controls h3").hover();
-    assert.equal(await page.locator(".uttt-region.is-preview").count(), 0);
-    await page.locator('.uttt-cell[data-cell="4"]').click();
+    await cell.dispatchEvent("pointerleave", { pointerType: "mouse" });
+    assert.equal(await frames.count(), 0);
+    await cell.dispatchEvent("pointerenter", { pointerType: "mouse" });
+    await page.clock.runFor(50);
+    await cell.dispatchEvent("pointerleave", { pointerType: "mouse" });
+    await page.clock.runFor(100);
+    assert.equal(await preview(), "");
+    assert.equal(await frames.count(), 0);
+    await page.clock.resume();
+    await cell.click();
     assert.equal(
       await page.locator('.uttt-region[data-region="4"]').getAttribute("class"),
       "uttt-region is-active",
@@ -296,6 +651,12 @@ async function browser() {
     });
     assert.deepEqual(archiveRoundTrip.state.path, [4]);
     await page.evaluate(() => {
+      const createEngine = WorkTimeApp.games.createUltimateTttEngine;
+      window.utttEngineCreations = 0;
+      WorkTimeApp.games.createUltimateTttEngine = () => {
+        window.utttEngineCreations++;
+        return createEngine();
+      };
       window.utttNativeWorker = window.Worker;
       window.Worker = class {
         constructor() {
@@ -307,9 +668,13 @@ async function browser() {
     await action("mode-ai").click();
     await action("difficulty-easy").click();
     await action("human--1").click();
-    await action("start").click();
-    await page.locator('[data-game-restart="new"]').click();
+    await page.locator('.game-restart-cover [data-game-restart="new"]').click();
     await page.locator(".uttt-engine-error").waitFor({ state: "visible" });
+    assert.equal(
+      await page.evaluate(() => window.utttEngineCreations),
+      1,
+      "starting from setup reuses the engine created for prewarming",
+    );
     assert.equal(
       await page.evaluate(
         () =>
@@ -382,6 +747,8 @@ async function browser() {
       layout.bottomGap >= 16 && layout.bottomGap <= 28,
       "rules leave bottom breathing room",
     );
+    await verifyLockedPrompt(page);
+    await verifyEndFeedback(page);
     assert.equal(errors.length, 0, errors.join("\n"));
     console.log(
       "Offline UI, local play, undo/reload, six locales, mobile and real NMCTS2 passed:",

@@ -228,13 +228,32 @@ WorkTimeApp.services.gameArchive = (() => {
           };
         }
       }
+      if (gomoku) {
+        requireValue(
+          input.forbidden === undefined || typeof input.forbidden === "boolean",
+          id,
+        );
+        result.forbidden = input.forbidden ?? false;
+      }
       if (gomoku && input.match != null) {
         requireValue(G.gomokuRules.restoreMatch(input.match), id);
         result.match = {
+          forbidden: input.match.forbidden ?? false,
           difficulty: input.match.difficulty,
           human: input.match.human,
           path: [...input.match.path],
         };
+      }
+      if (!gomoku && input.match != null) {
+        requireValue(G.xiangqiRules.restoreMatch(input.match), id);
+        result.match = fields(input.match, [
+          "difficulty",
+          "humanRed",
+          "handicaps",
+          "undosRemaining",
+          "initialBoard",
+          "path",
+        ]);
       }
       return fixSelection(id, result);
     }
@@ -387,6 +406,8 @@ WorkTimeApp.services.gameArchive = (() => {
     return value;
   }
   function hasContent(id, v) {
+    if (["game-xiangqi", "game-gomoku"].includes(id) && v.match) return true;
+    if (id === "game-gomoku" && v.forbidden) return true;
     if (id === "game-lights-out")
       return Object.keys(v.completed).length > 0 || hasProgress(id, v);
     if (id === "game-sliding-puzzle")
@@ -429,6 +450,7 @@ WorkTimeApp.services.gameArchive = (() => {
     });
   }
   function hasProgress(id, v) {
+    if (["game-xiangqi", "game-gomoku"].includes(id) && v.match) return true;
     if (id === "game-sliding-puzzle")
       return Object.values(v.sessions).some((s) => s.started);
     if (id === "game-jungle" || id === "game-ultimate-ttt")
@@ -527,7 +549,7 @@ WorkTimeApp.services.gameArchive = (() => {
     if (id === "game-jump") return null;
     if (id === "game-tank") return fields(v, ["custom", "muted"]);
     if (levelGames.includes(id))
-      return fields(v, ["current", "group", "chapter", "drafts"]);
+      return fields(v, ["current", "group", "chapter", "drafts", "match"]);
     return fields(
       v,
       id === "game-minesweeper"
@@ -570,6 +592,12 @@ WorkTimeApp.services.gameArchive = (() => {
         hasProgress(id, local) &&
         hasProgress(id, incoming) &&
         !same(progress(id, local), progress(id, incoming));
+    if (["game-xiangqi", "game-gomoku"].includes(id))
+      conflict ||= !!(
+        local.match &&
+        incoming.match &&
+        !same(local.match, incoming.match)
+      );
     const preferred =
       source === "incoming" && hasProgress(id, incoming)
         ? incoming
@@ -676,6 +704,13 @@ WorkTimeApp.services.gameArchive = (() => {
         Object.assign(out, fields(other, ["current", "group", "chapter"]));
       }
       fixSelection(id, out);
+    }
+    if (["game-xiangqi", "game-gomoku"].includes(id)) {
+      const match =
+        source === "incoming"
+          ? (incoming.match ?? local.match)
+          : (local.match ?? incoming.match);
+      if (match) out.match = clone(match);
     }
     // A pristine local session must not hide meaningful imported progress.
     if (
@@ -791,7 +826,8 @@ WorkTimeApp.services.gameArchive = (() => {
           return summary(
             "completed",
             active(save.completed).filter(plain).length,
-            active(save.drafts).some((draft) => draft?.path?.length > 0),
+            !!save.match ||
+              active(save.drafts).some((draft) => draft?.path?.length > 0),
           );
         }
         case "game-xiangqi": {
@@ -826,7 +862,8 @@ WorkTimeApp.services.gameArchive = (() => {
           return summary(
             "completed",
             active(save.completed).filter(plain).length,
-            active(save.drafts).some((draft) => draft?.path?.length > 0),
+            !!save.match ||
+              active(save.drafts).some((draft) => draft?.path?.length > 0),
           );
         }
         case "game-garden":

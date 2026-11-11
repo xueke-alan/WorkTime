@@ -1,5 +1,5 @@
 "use strict";
-/** Freestyle Gomoku. Positions and replay paths contain no UI state. */
+/** Gomoku positions and replay paths contain no UI state. */
 WorkTimeApp.games.gomokuRules = (() => {
   const size = 15;
   const lines = [];
@@ -17,10 +17,118 @@ WorkTimeApp.games.gomokuRules = (() => {
           Array.from({ length: 5 }, (_, n) => (y + dy * n) * size + x + dx * n),
         );
       }
-  function winningLine(board, side) {
-    return lines.find((line) => line.every((p) => board[p] === side)) ?? [];
+  function winningLine(board, side, forbidden = false) {
+    return (
+      lines.find((line) => {
+        if (!line.every((p) => board[p] === side)) return false;
+        if (!forbidden || side !== 1) return true;
+        const dx = (line[1] % size) - (line[0] % size);
+        const dy = Math.floor(line[1] / size) - Math.floor(line[0] / size);
+        return runLength(board, line[0], side, dx, dy) === 5;
+      }) ?? []
+    );
   }
-  function threats(board, side) {
+  const directions = [
+    [1, 0],
+    [0, 1],
+    [1, 1],
+    [-1, 1],
+  ];
+  function offset(p, dx, dy, n) {
+    const x = (p % size) + dx * n;
+    const y = Math.floor(p / size) + dy * n;
+    return x >= 0 && x < size && y >= 0 && y < size ? y * size + x : -1;
+  }
+  function runLength(board, p, side, dx, dy) {
+    let length = 1;
+    for (const sign of [-1, 1]) {
+      for (let n = sign; ; n += sign) {
+        const q = offset(p, dx, dy, n);
+        if (q < 0 || board[q] !== side) break;
+        length++;
+      }
+    }
+    return length;
+  }
+  function exactFive(board, p) {
+    return directions.some(([dx, dy]) => runLength(board, p, 1, dx, dy) === 5);
+  }
+  // Each distinct set of four stones is one four, even with two winning ends.
+  function fours(board, p) {
+    const groups = new Map();
+    for (const [dx, dy] of directions) {
+      for (let start = -4; start <= 0; start++) {
+        const stones = [];
+        const empty = [];
+        for (let n = start; n < start + 5; n++) {
+          const q = offset(p, dx, dy, n);
+          if (q < 0 || board[q] === 2) break;
+          if (board[q] === 1) stones.push(q);
+          else empty.push(q);
+        }
+        if (stones.length !== 4 || empty.length !== 1) continue;
+        const q = empty[0];
+        board[q] = 1;
+        const wins = runLength(board, q, 1, dx, dy) === 5;
+        board[q] = 0;
+        if (!wins) continue;
+        const key = stones.sort((a, b) => a - b).join(",");
+        if (!groups.has(key)) groups.set(key, { stones, ends: [] });
+        groups.get(key).ends.push(q);
+      }
+    }
+    return [...groups.values()];
+  }
+  function forbiddenReason(board, p) {
+    if (!Number.isInteger(p) || p < 0 || p >= 225 || board[p]) return null;
+    board[p] = 1;
+    try {
+      // Rapfi gives an exact five priority over every forbidden pattern.
+      if (exactFive(board, p)) return null;
+      if (directions.some(([dx, dy]) => runLength(board, p, 1, dx, dy) > 5))
+        return "overline";
+      if (fours(board, p).length >= 2) return "doubleFour";
+      const threes = new Map();
+      for (const [dx, dy] of directions) {
+        for (let n = -4; n <= 4; n++) {
+          const q = offset(p, dx, dy, n);
+          if (q < 0 || board[q]) continue;
+          board[q] = 1;
+          const groups = exactFive(board, q) ? [] : fours(board, q);
+          board[q] = 0;
+          for (const group of groups) {
+            if (group.ends.length < 2 || !group.stones.includes(p)) continue;
+            const key = group.stones.filter((stone) => stone !== q).join(",");
+            if (!threes.has(key)) threes.set(key, new Set());
+            threes.get(key).add(q);
+          }
+        }
+      }
+      if (threes.size < 2) return null;
+      let live = 0;
+      const legal = new Map();
+      for (const extensions of threes.values()) {
+        const valid = [...extensions].some((q) => {
+          if (!legal.has(q)) legal.set(q, forbiddenReason(board, q) === null);
+          return legal.get(q);
+        });
+        if (valid && ++live >= 2) return "doubleThree";
+      }
+      return null;
+    } finally {
+      board[p] = 0;
+    }
+  }
+  function legalMove(board, p, side, forbidden = false) {
+    return (
+      Number.isInteger(p) &&
+      p >= 0 &&
+      p < 225 &&
+      !board[p] &&
+      (!forbidden || side !== 1 || forbiddenReason(board, p) === null)
+    );
+  }
+  function threats(board, side, forbidden = false) {
     const result = new Set();
     for (const line of lines) {
       let count = 0,
@@ -32,7 +140,7 @@ WorkTimeApp.games.gomokuRules = (() => {
       }
       if (count === 4 && empty !== -1) result.add(empty);
     }
-    return [...result];
+    return [...result].filter((p) => legalMove(board, p, side, forbidden));
   }
   function candidates(board) {
     const result = new Set();
@@ -104,7 +212,7 @@ WorkTimeApp.games.gomokuRules = (() => {
   function create(level) {
     return { board: [...level.board], status: "playing", path: [], line: [] };
   }
-  function move(level, state, p) {
+  function placeStone(state, p, side) {
     if (
       state.status !== "playing" ||
       !Number.isInteger(p) ||
@@ -115,22 +223,26 @@ WorkTimeApp.games.gomokuRules = (() => {
       return null;
     const board = [...state.board],
       path = [...state.path, p];
-    board[p] = 1;
-    let line = winningLine(board, 1);
-    if (line.length) return { board, path, status: "won", line };
-    const white = level.vct
-      ? vctReply(level, board, path)
-      : reply(board, level.goal - Math.ceil(path.length / 2));
-    if (white < 0) return { board, path, status: "draw", line: [] };
-    board[white] = 2;
-    path.push(white);
-    line = winningLine(board, 2);
+    board[p] = side;
+    const line = winningLine(board, side);
     return {
       board,
       path,
-      status: line.length ? "lost" : board.includes(0) ? "playing" : "draw",
+      status: line.length
+        ? side === 1
+          ? "won"
+          : "lost"
+        : board.includes(0)
+          ? "playing"
+          : "draw",
       line,
     };
+  }
+  function move(level, state, p) {
+    const black = placeStone(state, p, 1);
+    if (!black || black.status !== "playing") return black;
+    const white = puzzleReply(level, black) ?? vctFallbackReply(level, black);
+    return placeStone(black, white, 2);
   }
   function restore(level, path) {
     if (
@@ -186,15 +298,19 @@ WorkTimeApp.games.gomokuRules = (() => {
     }
     return state;
   }
-  function vctReply(level, board, path) {
+  function puzzleReply(level, { board, path }) {
+    if (!level.vct)
+      return reply(board, level.goal - Math.ceil(path.length / 2));
     const wins = threats(board, 2);
     if (wins.length) return wins[0];
     const blocks = threats(board, 1);
     if (blocks.length) return blocks[0];
     if (path.every((p, i) => p === level.solution[i]))
       return level.solution[path.length];
-    // Off the principal variation, probe promising defenses with a bounded
-    // search so an exploratory move cannot stall the offline UI.
+    return null;
+  }
+  // Keep bounded tactical defense available if Rapfi cannot return a move.
+  function vctFallbackReply(level, { board, path }) {
     const remaining = Math.max(2, level.goal - Math.ceil(path.length / 2));
     const search = WorkTimeApp.games.gomokuSearch;
     const pos = new search.Position(board);
@@ -224,6 +340,8 @@ WorkTimeApp.games.gomokuRules = (() => {
         !input ||
         !["normal", "hard", "master"].includes(input.difficulty) ||
         ![1, 2].includes(input.human) ||
+        (input.forbidden !== undefined &&
+          typeof input.forbidden !== "boolean") ||
         !Array.isArray(input.path) ||
         input.path.length > 225
       )
@@ -244,9 +362,10 @@ WorkTimeApp.games.gomokuRules = (() => {
         )
           return null;
         const side = (state.path.length % 2) + 1;
+        if (!legalMove(state.board, p, side, input.forbidden)) return null;
         state.board[p] = side;
         state.path.push(p);
-        state.line = winningLine(state.board, side);
+        state.line = winningLine(state.board, side, input.forbidden);
         if (state.line.length)
           state.status = side === input.human ? "won" : "lost";
         else if (state.path.length === 225) state.status = "draw";
@@ -254,12 +373,17 @@ WorkTimeApp.games.gomokuRules = (() => {
       return state;
     },
     size,
+    forbiddenReason,
+    legalMove,
     winningLine,
     threats,
     candidates,
     winInTwo,
     reply,
     create,
+    placeStone,
+    puzzleReply,
+    vctFallbackReply,
     move,
     restore,
   };

@@ -65,6 +65,7 @@ function bundleSite(root) {
         "assets/js/services/runtime-import.js",
         "assets/js/services/xiangqi-prefetch.js",
         "assets/js/services/utttai-prefetch.js",
+        "assets/js/services/rapfi-prefetch.js",
         "assets/js/services/runtime-migration.js",
         "assets/js/ui/runtime-folder-change.js",
       ])

@@ -27,77 +27,87 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     idleTick = null,
     idleVisible = false,
     idleWasCovered = true;
-  function updateIdleClock() {
+  let clockLocale, clockFormatter, dateFormatter;
+  function updateIdleClock(animate = idleVisible) {
     const now = new Date();
     const locale = WorkTimeApp.i18n.locale;
+    if (clockLocale !== locale) {
+      clockLocale = locale;
+      clockFormatter = new Intl.DateTimeFormat(locale, {
+        timeZone: "Asia/Shanghai",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23",
+      });
+      dateFormatter = new Intl.DateTimeFormat(locale, {
+        timeZone: "Asia/Shanghai",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long",
+      });
+    }
     idleTime.dateTime = now.toISOString();
-    const clock = new Intl.DateTimeFormat(locale, {
-      timeZone: "Asia/Shanghai",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hourCycle: "h23",
-    }).format(now);
-    WorkTimeApp.ui.numbers.set(idleTime, clock, {
+    WorkTimeApp.ui.numbers.set(idleTime, clockFormatter.format(now), {
       animateInitial: false,
-      motion: idleVisible,
+      motion: animate,
     });
-    idleDate.textContent = new Intl.DateTimeFormat(locale, {
-      timeZone: "Asia/Shanghai",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      weekday: "long",
-    }).format(now);
+    const date = dateFormatter.format(now);
+    if (idleDate.textContent !== date) idleDate.textContent = date;
   }
-  function hideIdleCover() {
+  function pauseIdleClock() {
     window.clearTimeout(idleDelay);
     window.clearInterval(idleTick);
     idleDelay = idleTick = null;
-    idleVisible = false;
     WorkTimeApp.ui.numbers.settle(idleTime);
+  }
+  function hideIdleCover() {
+    pauseIdleClock();
+    idleVisible = false;
     idleCover.classList.remove("is-visible", "is-initial");
   }
-  function canShowIdleCover() {
-    return (
-      !disposed &&
-      ["closed", "closing"].includes(state) &&
-      !workspace.classList.contains("is-game-expanded") &&
-      !sidebar.hidden &&
-      !document.hidden &&
-      hoverDevice.matches &&
-      !sidebar.matches(":hover") &&
-      !sidebar.querySelector(":focus-visible")
-    );
+  function interactingWithSidebar() {
+    return sidebar.matches(":hover") || sidebar.querySelector(":focus-visible");
   }
   function refreshIdleCover() {
     const covered =
       sidebar.hidden ||
       workspace.classList.contains("is-game-expanded") ||
       !["closed", "closing"].includes(state);
-    const enteringTab = idleWasCovered && !covered && !document.hidden;
+    const enteringTab = idleWasCovered && !covered;
     idleWasCovered = covered;
-    if (!canShowIdleCover()) {
+    if (covered || disposed || !hoverDevice.matches) {
       hideIdleCover();
       return;
     }
-    if (idleVisible || idleDelay !== null) return;
+    if (document.hidden) {
+      pauseIdleClock();
+      return;
+    }
+    if (idleVisible) {
+      if (idleTick === null) startIdleClock();
+      return;
+    }
+    if (interactingWithSidebar() || idleDelay !== null) return;
     if (enteringTab) {
       showIdleCover(true);
       return;
     }
     idleDelay = window.setTimeout(() => {
       idleDelay = null;
-      if (!canShowIdleCover()) return;
-      showIdleCover();
+      if (!document.hidden && !interactingWithSidebar()) showIdleCover();
     }, 300);
   }
+  function startIdleClock() {
+    updateIdleClock(false);
+    idleTick = window.setInterval(updateIdleClock, 1000);
+  }
   function showIdleCover(immediate = false) {
-    updateIdleClock();
+    startIdleClock();
     idleVisible = true;
     idleCover.classList.toggle("is-initial", immediate);
     idleCover.classList.add("is-visible");
-    idleTick = window.setInterval(updateIdleClock, 1000);
   }
   const archiveUI = WorkTimeApp.ui.createGameArchiveController({
     document,
@@ -234,10 +244,13 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       const viewport = window.visualViewport;
       const height = viewport?.height || window.innerHeight;
       const top = viewport?.offsetTop || 0;
+      const edgeToEdge = window.innerWidth <= 850;
       Object.assign(shell.style, {
-        left: bounds.left + "px",
+        left: (edgeToEdge ? viewport?.offsetLeft || 0 : bounds.left) + "px",
         top: top + "px",
-        width: bounds.width + "px",
+        width:
+          (edgeToEdge ? viewport?.width || window.innerWidth : bounds.width) +
+          "px",
         height: height + "px",
       });
     } else {
@@ -278,7 +291,8 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     // or style writes. A reversal then starts at exactly the interrupted frame.
     const collapsed = originClip();
     const clip = window.getComputedStyle(shell).clipPath;
-    const painted = clip === "none" ? "inset(0px round 16px)" : clip;
+    const expanded = `inset(0px round ${window.getComputedStyle(shell).borderRadius})`;
+    const painted = clip === "none" ? expanded : clip;
     const background = panels.map((element, index) => ({
       element,
       slide: element !== origin,
@@ -355,7 +369,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
       track(
         shell,
         { clipPath: opening ? collapsed : painted },
-        { clipPath: opening ? "inset(0px round 16px)" : collapsed },
+        { clipPath: opening ? expanded : collapsed },
         timing.surface,
         0,
         motion.expandEase,
@@ -544,10 +558,12 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   }
   events.listen(exitButton, "click", exit);
   events.listen(sidebar, "pointerenter", (event) => {
-    if (event.pointerType !== "touch") hideIdleCover();
+    if (!document.hidden && event.pointerType !== "touch") hideIdleCover();
   });
   events.listen(sidebar, "pointerleave", refreshIdleCover);
-  events.listen(sidebar, "focusin", hideIdleCover);
+  events.listen(sidebar, "focusin", () => {
+    if (!document.hidden) hideIdleCover();
+  });
   events.listen(sidebar, "focusout", () => {
     window.queueMicrotask(refreshIdleCover);
   });

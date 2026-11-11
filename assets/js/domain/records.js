@@ -7,9 +7,26 @@ const WorkTimeDomainRecords = (() => {
   function actualRecord(day = {}) {
     return effectiveRecord(day);
   }
+  /** @param {WorkDraft|WorkManualRecord|undefined} record @param {WorkDay["oa"]} oa */
+  function matchesIncompleteOA(record, oa) {
+    return (
+      !!record &&
+      !!oa &&
+      !!oa.start !== !!oa.end &&
+      record.start === oa.start &&
+      record.end === oa.end &&
+      (!record.end || record.nextDay === oa.nextDay)
+    );
+  }
+  /** @param {WorkDay} day */
+  function manualSource(day) {
+    // A draft can shadow an earlier manual record whose clocks were cleared.
+    if (matchesIncompleteOA(day.draft, day.oa)) return null;
+    return day.draft || day.actual || day.estimate;
+  }
   /** @param {WorkDay} [day] @returns {WorkEffectiveRecord|null} */
   function effectiveRecord(day = {}, includeEstimate = false) {
-    const candidate = day.draft || day.actual || day.estimate,
+    const candidate = manualSource(day),
       manual =
         candidate && (includeEstimate || candidate !== day.estimate)
           ? {
@@ -19,7 +36,7 @@ const WorkTimeDomainRecords = (() => {
               manual: true,
             }
           : null;
-    if (day.sourcePriority === "manual") return manual;
+    if (day.sourcePriority === "manual" && candidate) return manual;
     const oa = day.oa;
     if (!oa || (!oa.start && !oa.end)) return manual;
     const filledStart = !oa.start && !!manual?.start,
@@ -62,12 +79,18 @@ const WorkTimeDomainRecords = (() => {
     /** @type {Partial<WorkManualRecord>} */
     const current = effectiveRecord(old, true) || {};
     if (
+      !matchesIncompleteOA(old.draft, oa) &&
       start === (current.start || "") &&
       end === (current.end || "") &&
       nextDay === !!current.nextDay
     )
       return day;
-    if (complete(record)) {
+    if (matchesIncompleteOA(record, oa)) {
+      delete day.draft;
+      delete day.actual;
+      delete day.estimate;
+      delete day.sourcePriority;
+    } else if (complete(record)) {
       delete day.draft;
       if (
         (oa && (oa.status === "complete" || start !== oa.start)) ||
@@ -239,6 +262,7 @@ const WorkTimeDomainRecords = (() => {
   }
   return {
     actualRecord,
+    manualSource,
     effectiveRecord,
     complete,
     editedDay,

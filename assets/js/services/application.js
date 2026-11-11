@@ -253,7 +253,7 @@ const WorkTimeServiceApplication = (() => {
       },
       toggleSourcePriority(date) {
         const day = state.days[date];
-        if (!day?.oa || !(day.draft || day.actual || day.estimate))
+        if (!day?.oa || !WorkTimeApp.domain.records.manualSource(day))
           return commit(state);
         return service.saveDay(date, {
           ...day,

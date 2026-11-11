@@ -2,6 +2,30 @@
 (() => {
   const locales = ["zh-CN", "en", "zh-TW", "zh-HK", "ko", "ja"];
   const strings = {
+    lockedWin: [
+      "{side} 已锁定胜局",
+      "{side} is guaranteed to win",
+      "{side} 已鎖定勝局",
+      "{side} 已鎖定勝局",
+      "{side} 승리 확정",
+      "{side} の勝利が確定しました",
+    ],
+    lockedDraw: [
+      "本局已锁定平局",
+      "This match is guaranteed to end in a draw",
+      "本局已鎖定平局",
+      "本局已鎖定平局",
+      "무승부 확정",
+      "引き分けが確定しました",
+    ],
+    continueMatch: [
+      "继续游戏",
+      "Continue playing",
+      "繼續遊戲",
+      "繼續遊戲",
+      "계속하기",
+      "対局を続ける",
+    ],
     regionCount: [
       "{side} 占领区域",
       "{side} regions",
@@ -150,6 +174,7 @@
       "uttt.ai NMCTS2 엔진으로 연산",
       "uttt.ai NMCTS2 エンジンで演算",
     ],
+    startShort: ["开始", "Start", "開始", "開始", "시작", "開始"],
     start: [
       "开始对局",
       "Start match",
@@ -197,6 +222,18 @@
       "下一步須在第 {region} 區域落子",
       "{region}번 영역에 놓으세요",
       "領域 {region} に置いてください",
+    ],
+    resultWin: ["你赢了", "You won", "你贏了", "你贏了", "승리", "勝利"],
+    resultLoss: ["你输了", "You lost", "你輸了", "你輸了", "패배", "敗北"],
+    resultDraw: ["平局", "Draw", "平局", "平局", "무승부", "引き分け"],
+    resultBack: ["返回", "Back", "返回", "返回", "돌아가기", "戻る"],
+    resultSide: [
+      "{side} 获胜",
+      "{side} wins",
+      "{side} 獲勝",
+      "{side} 獲勝",
+      "{side} 승리",
+      "{side} の勝利",
     ],
     lineWin: [
       "{side} 三区连线，获胜！",
