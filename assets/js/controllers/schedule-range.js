@@ -24,7 +24,8 @@ WorkTimeApp.ui.createScheduleRangeController = function ({
   function positionRangePicker() {
     const list = $("scheduleRangeOptions");
     if (list.hidden) return;
-    const rect = $("scheduleRangeTrigger").getBoundingClientRect();
+    const trigger = $("scheduleRangeTrigger");
+    const rect = trigger.getBoundingClientRect();
     const below = window.innerHeight - rect.bottom - 14;
     const above = rect.top - 14;
     const height = Math.min(list.scrollHeight, Math.max(below, above), 280);
@@ -32,7 +33,8 @@ WorkTimeApp.ui.createScheduleRangeController = function ({
     list.style.maxHeight = height + "px";
     list.style.left = rect.left + "px";
     list.style.top =
-      (below >= height ? rect.bottom + 6 : rect.top - height - 6) + "px";
+      (below >= height ? rect.bottom + 8 : rect.top - height - 8) + "px";
+    WorkTimeApp.ui.popover.point(list, trigger);
   }
   function syncRangePicker() {
     const select = $("scheduleRangeChoice");

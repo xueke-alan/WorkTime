@@ -44,6 +44,7 @@ const root = path.resolve(__dirname, ".."),
     "arrow-downward",
     "arrow-back",
     "arrow-forward",
+    "keyboard-double-arrow-right",
   ];
 async function build(html, fetchSvg = fetch) {
   const ids = [

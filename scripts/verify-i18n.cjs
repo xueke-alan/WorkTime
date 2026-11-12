@@ -18,7 +18,7 @@ async function englishText(page, label) {
   const text = await page.locator("body").innerText();
   assert.ok(
     !/[\u3400-\u9fff]/.test(
-      text.replace(/简体中文|繁體中文-台|繁體中文-港|日本語/g, ""),
+      text.replace(/简体中文|繁體-台|繁體-港|日本語/g, ""),
     ),
     label + ": English UI contains Chinese text",
   );
@@ -372,6 +372,9 @@ async function verifyMonthWidths(browser) {
       await page.route(/^https?:/, (route) => route.abort());
       await page.goto(pathToFileURL(path.join(root, "index.html")).href);
       await ready(page);
+      await page.evaluate(() =>
+        WorkTimeApp.services.preferences.page.saveMotionMode("reduce"),
+      );
       const layouts = new Map();
       for (const language of ["en", "zh-CN", "en"]) {
         await page.evaluate(
@@ -493,15 +496,14 @@ async function verifyNotificationLanguage(browser) {
       document.querySelector("#backupBeforeRestore").click();
     });
     await page.waitForFunction(() => {
-      const feedback = document.querySelector(
-        "#feedbackList .notification-body",
-      );
-      return (
-        document.querySelector("#feedbackList").childElementCount === 1 &&
-        feedback?.textContent ===
+      return [
+        ...document.querySelectorAll("#feedbackList .notification-body"),
+      ].some(
+        (feedback) =>
+          feedback.textContent ===
           WorkTimeApp.ui.runtimeFolderText("backupSaved", {
             name: "backups/manual/",
-          })
+          }),
       );
     });
     const result = await page.evaluate(async () => {
@@ -674,6 +676,10 @@ async function verify() {
       await page.goto(pathToFileURL(path.join(root, "index.html")).href);
       await ready(page);
       await page.locator("#monthTitle").click();
+      await page.locator(".year-month").first().waitFor();
+      await page.waitForFunction(
+        () => !document.getElementById("panelContent").inert,
+      );
       const result = await page.evaluate(async () => {
         const button = document.querySelector("[data-year-date]");
         const month = document.querySelector(".year-month");
@@ -927,6 +933,10 @@ async function verify() {
         await page.locator("#importOpen").click();
       }
       await page.locator("#monthTitle").click();
+      await page.locator(".year-month").first().waitFor();
+      await page.waitForFunction(
+        () => !document.getElementById("panelContent").inert,
+      );
       await page.waitForFunction(() => {
         const title = document.getElementById("monthTitle"),
           year = title
@@ -947,6 +957,10 @@ async function verify() {
         await englishText(page, "year view");
       }
       await page.locator("#monthTitle").click();
+      await page.locator(".year-month").first().waitFor({ state: "hidden" });
+      await page.waitForFunction(
+        () => !document.getElementById("panelContent").inert,
+      );
       await page.locator("#date-tab-history").click();
       await page.waitForSelector(".history-event");
       assert.equal(

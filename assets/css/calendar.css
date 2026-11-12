@@ -953,7 +953,8 @@ body .calendar .day-footer:has(.daystatus:empty):not(:has(.day-average:not(:empt
 .day-average > span {
   white-space: nowrap;
 }
-.day-average .day-average-value.below-target {
+.day-average .day-average-value.below-target,
+.day-average.batch-average-affected:has(> .day-average-value.below-target) {
   color: #d13b32;
 }
 .day-average .trend-icon {
@@ -1643,11 +1644,24 @@ body .workspace .calendar.year-calendar {
   outline: 2px solid var(--theme-edge, var(--accent));
   outline-offset: 3px;
 }
-.year-month-switch[aria-pressed="true"] .year-month-number {
-  text-decoration: underline var(--accent);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
+.year-month-number { position: relative; }
+.year-month-number::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -7px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  opacity: 0;
+  transform: scaleX(.65);
+  transition: opacity 180ms ease, transform 220ms var(--motion-ease);
 }
+.year-month-switch[aria-pressed="true"] .year-month-number::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+:where(html[data-reduced-motion="true"]) .year-month-number::after { transition: none; }
 .year-month-stats {
   display: flex;
   gap: 8px;
@@ -2091,6 +2105,13 @@ body .calendar .day-date .daynum-text {
   line-height: 1.3;
   transform: translate(var(--ui-ink-offset-x, 0px), var(--ui-ink-offset, 0px));
 }
+body .calendar .day-date .daynum-text > .summary-number {
+  vertical-align: baseline;
+  font-variant-numeric: inherit;
+}
+body .calendar .day-date .daynum-text .summary-number-column {
+  width: auto;
+}
 /* Date markers need a full label row when a desktop cell is too narrow. */
 @container calendar-panel (min-width: 700px) {
   body .calendar .day:has(.date-markers) .daytop {
@@ -2142,13 +2163,18 @@ body .calendar .day-date .daynum-text {
   bottom: 0.5rem;
   width: clamp(32px, 3.5vw, 56px);
   height: clamp(32px, 3.5vw, 56px);
-  fill: currentColor;
-  color: var(--theme-text-muted, #458b83);
-  opacity: 0.5;
   pointer-events: none;
   z-index: 0;
+  fill: currentColor;
+  color: var(--theme-text-muted, #458b83);
+  opacity: 0.4;
+  filter: opacity(1);
+  transition: filter 180ms var(--motion-ease);
 }
 :is(.calendar-weather-icon, .calendar-weather-outgoing) img { display: block; width: 100%; height: 100%; }
+.calendar.is-batch-editing .day > :is(.calendar-weather-icon, .calendar-weather-outgoing) {
+  filter: opacity(0);
+}
 /* Soft holiday scenery and motifs extend beneath text and weather. */
 .calendar .day[data-holiday]:not([data-holiday="国庆"]):not(.full-leave)::after {
   content: "";
@@ -2168,7 +2194,11 @@ body .calendar .day-date .daynum-text {
   background-position: bottom left;
   max-width: calc(100% - clamp(32px, 3.5vw, 56px) - 1.5rem);
 }
-/* Planned and recorded rest-day overtime share a quiet desk illustration. */
+body .calendar .day.planned-overtime-day:not(.selected, .batchselected, .full-leave) {
+  --day-surface: color-mix(in srgb, var(--paper) 96%, #aaa);
+  background-color: var(--day-surface);
+}
+/* Planned and recorded rest-day overtime share a faint laptop silhouette. */
 .calendar .day.rest-overtime:not(.full-leave) {
   isolation: isolate;
 }
@@ -2181,7 +2211,7 @@ body .calendar .day-date .daynum-text {
   aspect-ratio: 4 / 5;
   background: url("../images/overtime.svg") bottom left / 88% auto no-repeat;
   filter: none;
-  opacity: 0.48;
+  opacity: 0.24;
   pointer-events: none;
   z-index: -1;
 }
@@ -2261,11 +2291,36 @@ body .calendar .day[data-festival] .daykind {
   font-weight: 700;
 }
 
+body .calendar.is-batch-editing > .day.batch-eligible:not(.batchselected) {
+  border-color: var(--theme-border, #aecdbf);
+}
+body .calendar.is-batch-editing > .day.batchselected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+@media (hover: hover) {
+  body .calendar.is-batch-editing > .day.batch-eligible:not(.batchselected):hover {
+    border-color: color-mix(in srgb, var(--accent) 45%, white);
+  }
+  body .calendar.is-batch-editing > .day.batch-eligible.batchselected:hover {
+    border-color: color-mix(in srgb, var(--accent) 90%, black);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 90%, black);
+  }
+}
 /* Unavailable batch dates do not respond to pointer hover. */
 body .calendar.is-batch-editing > .day[aria-disabled="true"] {
   cursor: default;
 }
 
+.calendar .day > :is(.dayhours, .day-footer) {
+  position: relative;
+  z-index: 1;
+}
+/* Date markers need to receive pointer input above the full-card button. */
+.calendar .day > .daytop {
+  position: relative;
+  z-index: 3;
+}
 /* Shared date marker slot: overlap icons while the carousel changes. */
 body .calendar .date-markers {
   position: relative;
@@ -2283,6 +2338,7 @@ body .calendar .date-markers:focus-visible {
   outline-offset: 2px;
 }
 body .calendar .date-markers > .payday-icon {
+  pointer-events: none;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -2322,6 +2378,7 @@ body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
   }
   body .calendar .day-date {
     flex-wrap: wrap;
+    max-width: 100%;
     gap: 2px;
   }
   .day-average .trend-icon {
@@ -2329,13 +2386,59 @@ body .calendar .date-markers:has(> :nth-child(2)) > .payday-icon:nth-child(2) {
     height: 8px;
   }
 }
-/* Batch previews dim only rest-day content, preserving card surfaces and borders. */
-.calendar.is-batch-editing .day.restday .daynum-text,
-.calendar.is-batch-editing .day.restday .daykind,
-.calendar.is-batch-editing .day.restday > .daytime,
-.calendar.is-batch-editing .day.restday > .dayhours,
-.calendar.is-batch-editing .day.restday > .day-footer {
-  opacity: 0.55;
+@media (max-width: 360px) {
+  body .calendar .dayhours,
+  body .calendar .day-average {
+    font-size: 0.642857rem;
+  }
+}
+/* Keep selection and weather fades independent of the card surface. */
+.calendar .day > :is(.daytime, .dayhours),
+.calendar .day-footer > :is(.day-average, .daystatus) {
+  transition: opacity 180ms var(--motion-ease);
+}
+.calendar.is-batch-editing .day.batch-eligible:not(.batchselected) > :is(.daytime, .dayhours),
+.calendar.is-batch-editing .day.batch-eligible:not(.batchselected) .day-footer > :is(.day-average, .daystatus) {
+  opacity: 0.3;
+}
+.calendar.is-batch-editing .day.batch-eligible .day-footer > .day-average.batch-average-affected {
+  opacity: 1;
+}
+.calendar .day-average.batch-average-affected {
+  display: grid;
+  grid-template-columns: max-content max-content max-content;
+  align-items: center;
+}
+.calendar .day-average.batch-average-affected > .day-average-value {
+  grid-column: 2;
+  grid-row: 1;
+}
+.calendar .day-average.batch-average-affected > .trend-icon {
+  grid-column: 3;
+  grid-row: 1;
+}
+@container calendar-panel (max-width: 699px) {
+  .calendar .day-average {
+    display: grid;
+    grid-template-columns: max-content;
+  }
+  .calendar .day-average > .trend-icon {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: end;
+  }
+  .calendar .day-average.batch-average-affected {
+    grid-template-columns: max-content max-content;
+  }
+  .calendar .day-average.batch-average-affected > .trend-icon {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+}
+body .calendar.is-batch-editing > .day[aria-disabled="true"] {
+  --day-opacity: 0.3;
+  opacity: var(--day-opacity);
 }
 body #monthTitle[aria-disabled="true"] {
   cursor: default;

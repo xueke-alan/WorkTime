@@ -41,6 +41,7 @@ WorkTimeApp.ui.createWorkspace = function ({
     model.calendarSelected = null;
     model.batchDays.clear();
     model.batchAnchor = null;
+    model.batchInput = null;
     model.batchDraft = null;
     model.batchPreview = null;
     renderStats();

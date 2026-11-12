@@ -95,6 +95,21 @@ const { chromium } = require("playwright");
         "00:00:01",
       );
       assert.match(await cover.locator(".game-idle-date").textContent(), /12/);
+      for (const [language, expected] of Object.entries({
+        "zh-TW": "我愛上班，絕不摸魚",
+        "zh-HK": "我愛返工，絕不偷懶",
+        ja: "仕事大好き、サボりません！",
+        ko: "일이 좋아요, 딴짓은 안 해요!",
+        "zh-CN": "我爱上班，从不摸鱼",
+        en: "All work, no slacking!",
+      })) {
+        await page.evaluate((id) => WorkTimeApp.i18n.setLanguage(id), language);
+        assert.equal(await motto.textContent(), expected);
+        assert.ok(
+          await motto.evaluate((el) => el.scrollWidth <= el.clientWidth),
+          language + " motto fits the cover",
+        );
+      }
       await page.evaluate(() => WorkTimeApp.i18n.setLanguage("en"));
       console.log("Clock and language verified");
       assert.equal(

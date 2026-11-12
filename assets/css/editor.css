@@ -584,28 +584,6 @@ body .notification-empty {
 .nextday-toggle[aria-pressed="true"]:active:not(:disabled) {
   background: var(--theme-accent-deep, #0e4834);
 }
-.nextday-tip {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 8px);
-  padding: 6px 10px;
-  border-radius: 7px;
-  background: var(--theme-accent-deep, #254b3e);
-  color: white;
-  font-size: 12px;
-  line-height: 1.5;
-  white-space: nowrap;
-  box-shadow: 0 3px 12px rgba(var(--theme-rgb, 32, 59, 54), 0.12549);
-  pointer-events: none;
-  visibility: hidden;
-  opacity: 0;
-  z-index: 5;
-}
-.nextday-control:has(.nextday-toggle:hover) .nextday-tip,
-.nextday-control:has(.nextday-toggle:focus-visible) .nextday-tip {
-  visibility: visible;
-  opacity: 1;
-}
 #batchForm .batch-time-fields {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px;
   gap: 8px;
@@ -1514,14 +1492,6 @@ body .editor #dayLeaveToggle[aria-expanded="true"] {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(var(--theme-rgb, 21, 126, 104), 0.078431);
 }
-body
-  .editor
-  .day-action-row
-  .leave-control:has(#dayLeaveToggle:hover)
-  > .nextday-tip {
-  visibility: visible;
-  opacity: 1;
-}
 body .editor #editorInfo[hidden] {
   display: none !important;
 }
@@ -1983,10 +1953,10 @@ body .editor #dayForm .time-fields .field {
   margin-block: 0;
   gap: var(--field-spacing);
 }
-body .editor #dayForm .day-schedule {
+body .editor :is(#dayForm, #batchForm) .day-schedule {
   margin-block: var(--field-spacing) 0;
 }
-body .editor #dayForm .day-schedule::after { display: none; }
+body .editor :is(#dayForm, #batchForm) .day-schedule::after { display: none; }
 body .editor #dayForm .time-template-area {
   margin-top: var(--section-spacing);
   padding-block: var(--section-spacing) 0;
@@ -2133,7 +2103,7 @@ body .editor #dayForm .day-action-row {
   padding-top: var(--section-spacing);
   border-top: 1px solid var(--line);
 }
-body .editor #dayForm #dayPreview { margin-bottom: var(--section-spacing); }
+body .editor :is(#dayForm, #batchForm) .editor-preview { margin-bottom: var(--section-spacing); }
 
 body .editor #personalSettingsForm {
   margin: 0;
@@ -2401,3 +2371,116 @@ body .editor .settings-tabs .settings-tab[aria-selected="true"] { color: var(--a
 body .editor .settings-tabs .settings-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
 
 body .workspace > .editor.is-settings-open { display: flex; flex-direction: column; }
+
+/* The batch tools sit on the divider above the shared action slots. */
+#batchBar:not(.hidden) .batch-toolbar { animation: batch-toolbar-enter 180ms ease-out both; }
+@keyframes batch-toolbar-enter { from { opacity: 0; } }
+.editor .batch-toolbar.batch-toolbar-outgoing {
+  position: fixed;
+  z-index: 5;
+  margin: 0;
+  pointer-events: none;
+}
+:where(html[data-reduced-motion="true"]) #batchBar:not(.hidden) .batch-toolbar { animation: none; }
+.batch-toolbar {
+  --batch-toolbar-height: var(--action-control-height);
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--row-spacing);
+  margin-bottom: calc(var(--batch-toolbar-height) / -2);
+}
+.batch-selection-group {
+  display: flex;
+  min-width: 0;
+  border: 1px solid var(--control-border, var(--line));
+  border-radius: var(--control-radius);
+  overflow: hidden;
+  background: var(--theme-surface-paper, var(--paper));
+}
+body .editor .batch-toolbar .batch-selection-group > button.ui-button {
+  min-width: 0;
+  margin: 0;
+  padding-inline: 0.35rem;
+  border: 0;
+  border-radius: 0 !important;
+  box-shadow: none;
+  background: transparent;
+}
+body .editor .batch-toolbar .batch-selection-group > button.ui-button + button {
+  border-inline-start: 1px solid var(--control-border, var(--line));
+}
+body .editor .batch-toolbar .batch-selection-group > button.ui-button:hover:not(:disabled) {
+  background: var(--accent-light);
+}
+.batch-selection-group > button:first-child { flex: 1 1 auto; }
+.batch-selection-group > button:last-child { flex-shrink: 0; }
+body .editor .batch-toolbar .ui-button {
+  --control-height: var(--batch-toolbar-height);
+  min-width: 0;
+  font-size: var(--text-small);
+}
+body .editor .batch-mode-toggle { background: var(--theme-surface-paper, var(--paper)); }
+body .editor .batch-mode-toggle:hover:not(:disabled) { background: var(--accent-light); }
+.batch-selection-group .button-label, .batch-mode-toggle .button-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.batch-mode-toggle .batch-mode-icon { width: 1rem; height: 1rem; }
+body .editor .batch-toolbar .batch-selection-group > button.ui-button {
+  --control-height: calc(var(--batch-toolbar-height) - 2px);
+}
+body .editor #batchForm .batch-editor-actions {
+  --button-icon-inset: 0.285714rem;
+  margin-top: 0;
+  padding-top: calc(var(--section-spacing) + var(--action-control-height) / 2);
+  padding-bottom: 0;
+}
+body .editor #batchForm .batch-editor-actions button { gap: 0.214286rem; }
+.batch-footer { display: flex; flex-direction: column; margin-top: auto; }
+#batchError:empty { display: none; }
+.batch-preview-card { box-sizing: border-box; block-size: 9.5rem; overflow: auto; }
+.batch-preview-card .batch-selection-count { display: block; padding: 0; margin: 0 0 .35rem; font-size: inherit; }
+body .editor #batchForm .batch-preview-status { margin: 0; padding: 0; border: 0; background: transparent; font-size: inherit; line-height: inherit; }
+.batch-preview-status p { margin: 0; }
+.batch-preview-time { display: block; font-size: 1.071429rem; font-weight: 650; margin-bottom: .25rem; font-variant-numeric: tabular-nums; }
+.batch-preview-counts { display: flex; flex-wrap: wrap; gap: .15rem .65rem; }
+.batch-preview-status .batch-preview-note { color: var(--muted); margin-top: .3rem; }
+
+body .editor #batchForm .batch-time-fields {
+  --nextday-track: calc(var(--input-height) + var(--row-spacing));
+  position: relative;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  padding-inline-end: var(--nextday-track);
+  overflow: clip;
+  overflow-clip-margin: 4px;
+  transition: padding-inline-end 240ms var(--motion-ease);
+}
+#batchNextField {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-end: 0;
+  transition: opacity 180ms ease, transform 240ms var(--motion-ease);
+}
+.batch-schedule-line { display: grid; }
+.batch-schedule-line > .day-schedule { grid-area: 1 / 1; }
+.batch-template-area { transition: opacity 200ms ease, visibility 0s; }
+#batchOvertimeFields[hidden],
+#batchEndField[hidden] { display: none !important; }
+.batch-input-section:not([data-input-mode="overtime"]) #batchCalcResult,
+.batch-input-section[data-input-mode="overtime"] #batchSchedule { visibility: hidden; }
+body .editor #batchForm .batch-input-section[data-input-mode="overtime"] .batch-time-fields { padding-inline-end: 0; }
+.batch-input-section[data-input-mode="overtime"] #batchNextField {
+  opacity: 0;
+  transform: translateX(12px);
+}
+.batch-input-section[data-input-mode="overtime"] .batch-template-area {
+  opacity: 0;
+  visibility: hidden;
+  transition-delay: 0s, 200ms;
+}
+:where(html[data-reduced-motion="true"]) body .editor #batchForm :is(.batch-time-fields, #batchNextField, .batch-template-area) {
+  transition: none;
+}

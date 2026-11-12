@@ -3,8 +3,8 @@
 WorkTimeApp.data.languages = Object.freeze(
   [
     ["zh-CN", "简体中文", "zh-CN", true, "zh-CN"],
-    ["zh-TW", "繁體中文-台", "zh-TW", true, "zh-TW"],
-    ["zh-HK", "繁體中文-港", "zh-HK", true, "zh-HK"],
+    ["zh-TW", "繁體-台", "zh-TW", true, "zh-TW"],
+    ["zh-HK", "繁體-港", "zh-HK", true, "zh-HK"],
     ["en", "English", "en-GB", false, "en"],
     ["ko", "한국어", "ko-KR", false, "en"],
     ["ja", "日本語", "ja-JP", false, "en"],

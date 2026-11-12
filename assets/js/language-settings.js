@@ -3,15 +3,6 @@
 (() => {
   const i18n = WorkTimeApp.i18n;
   const preferences = WorkTimeApp.services.preferences.page;
-  function icon(name, className) {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "ui-icon " + className);
-    svg.setAttribute("aria-hidden", "true");
-    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-    use.setAttribute("href", "#ms-" + name);
-    svg.append(use);
-    return svg;
-  }
   function mountPicker(host, config) {
     const field = document.createElement("div");
     field.className = "field language-settings";
@@ -36,8 +27,7 @@
     const valueLabel = document.createElement("span");
     valueLabel.id = config.id + "Value";
     valueLabel.className = "button-label";
-    const chevron = icon("chevron-right", "language-chevron");
-    trigger.append(valueLabel, chevron);
+    trigger.append(valueLabel);
     const list = document.createElement("div");
     list.id = config.id + "Options";
     list.className = "settings-select-options";
@@ -57,7 +47,7 @@
       item.setAttribute("role", "option");
       const itemLabel = document.createElement("span");
       itemLabel.className = "button-label";
-      item.append(itemLabel, icon("check", "language-selected-icon"));
+      item.append(itemLabel);
       item.addEventListener("click", () => {
         select.value = value;
         close(true);
@@ -117,7 +107,8 @@
       list.style.left = rect.left + "px";
       const height = list.getBoundingClientRect().height;
       list.style.top =
-        (below >= height ? rect.bottom + 6 : rect.top - height - 6) + "px";
+        (below >= height ? rect.bottom + 8 : rect.top - height - 8) + "px";
+      WorkTimeApp.ui.popover.point(list, trigger);
     }
     function open() {
       synchronize();
@@ -215,9 +206,7 @@
     if (!host) return;
     const row = document.createElement("div");
     row.className = "settings-select-row";
-    const divider = document.createElement("hr");
-    divider.className = "settings-content-divider";
-    host.before(row, divider);
+    document.querySelector(".theme-settings-host").after(row);
     const backupRow = host;
     function backupStatus() {
       const saved = preferences.state.lastBackupAt;
@@ -241,36 +230,24 @@
       failed: "autoBackup.saveFailed",
       help: backupStatus,
       options: () =>
-        [0, 1, 3, 7].map((days) => ({
+        [1, 3, 7].map((days) => ({
           id: String(days),
           name: i18n.t("autoBackup.option" + days),
         })),
-      read: () => String(preferences.state.autoBackupDays ?? 1),
+      read: () => String(preferences.state.autoBackupDays || 1),
       save: (value) => preferences.saveAutoBackupDays(Number(value)),
     });
     mountPicker(row, {
-      id: "weather",
-      selectId: "weatherDays",
-      label: "weather.settings.label",
-      preference: "weatherDays",
-      failed: "copy.121c73541e",
-      options: () =>
-        [3, 5, 7, 0].map((days) => ({
-          id: String(days),
-          name: i18n.t(
-            days ? "weather.settings.days" : "weather.settings.off",
-            {
-              days,
-            },
-          ),
-        })),
-      read: () => String(preferences.state.weatherDays ?? 5),
-      save: (value) => preferences.saveWeatherDays(Number(value)),
+      id: "language",
+      selectId: "languageSelect",
+      label: "language.label",
+      preference: "language",
+      failed: "language.failed",
+      options: () => i18n.languages,
+      read: () => i18n.preference,
+      save: (value) => preferences.saveLanguage(value),
     });
-    const motionRow = document.createElement("div");
-    motionRow.className = "settings-select-row motion-settings-row";
-    document.querySelector(".theme-settings-host").after(motionRow);
-    mountPicker(motionRow, {
+    mountPicker(row, {
       id: "motion",
       selectId: "motionMode",
       label: "motion.label",
@@ -291,14 +268,21 @@
       save: (value) => preferences.saveMotionMode(value),
     });
     mountPicker(row, {
-      id: "language",
-      selectId: "languageSelect",
-      label: "language.label",
-      preference: "language",
-      failed: "language.failed",
-      options: () => i18n.languages,
-      read: () => i18n.preference,
-      save: (value) => preferences.saveLanguage(value),
+      id: "weather",
+      selectId: "weatherDays",
+      label: "weather.settings.label",
+      preference: "weatherDays",
+      failed: "copy.121c73541e",
+      options: () =>
+        [3, 5, 7, 0].map((days) => ({
+          id: String(days),
+          name: i18n.t(
+            days ? "weather.settings.days" : "weather.settings.off",
+            { days },
+          ),
+        })),
+      read: () => String(preferences.state.weatherDays ?? 5),
+      save: (value) => preferences.saveWeatherDays(Number(value)),
     });
   }
   if (document.readyState === "loading")

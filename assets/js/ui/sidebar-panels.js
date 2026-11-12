@@ -61,6 +61,9 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       open ? "copy.e2ae92e1ec" : "copy.165118b1d4",
     );
     settingsButton.setAttribute("aria-label", settingsButton.title);
+    settingsButton.dataset.actionHint = open
+      ? "calendarHint.closeSettings"
+      : "calendarHint.settings";
     const use = settingsButton.querySelector("use"),
       href = open ? "#ms-close" : "#ms-settings",
       changed = use.getAttribute("href") !== href;
@@ -203,8 +206,11 @@ WorkTimeApp.ui.createSidebarPanels = function ({
     const secondaryActions = document.querySelector(
       ".import-secondary-actions",
     );
-    secondaryActions.inert = !!active;
-    secondaryActions.setAttribute("aria-hidden", String(!!active));
+    secondaryActions.inert = !!active || importOpen.inert;
+    secondaryActions.setAttribute(
+      "aria-hidden",
+      String(secondaryActions.inert),
+    );
     const returnLabel =
       stack.length > 1
         ? WorkTimeApp.i18n.t("copy.e1fa5c7224")

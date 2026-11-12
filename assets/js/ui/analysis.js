@@ -91,7 +91,7 @@ WorkTimeApp.ui.createAnalysis = function ({
           esc(t("allDates", { count: dates.length })) +
           '">+' +
           esc(number(dates.length)) +
-          "</summary><p>" +
+          '</summary><p class="analysis-date-hint">' +
           dates.map((item) => esc(date(item))).join(" · ") +
           "</p></details>"
         : "") +

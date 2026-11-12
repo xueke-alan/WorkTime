@@ -36,12 +36,11 @@ WorkTimeApp.ui.secondary.personal = function ({
   function positionCities() {
     const list = $("workCityOptions");
     if (list.hidden) return;
-    const rect = $("workCity").getBoundingClientRect();
-    const row = $("workCity")
-      .closest(".settings-employment")
-      .getBoundingClientRect();
+    const input = $("workCity");
+    const rect = input.getBoundingClientRect();
+    const row = input.closest(".settings-employment").getBoundingClientRect();
     const width = Math.min(row.width, window.innerWidth - 16);
-    const gap = 6;
+    const gap = 8;
     const below = window.innerHeight - rect.bottom - gap - 8;
     const above = rect.top - gap - 8;
     const height = Math.min(360, Math.max(below, above));
@@ -55,6 +54,7 @@ WorkTimeApp.ui.secondary.personal = function ({
       (openBelow
         ? rect.bottom + gap
         : rect.top - gap - Math.min(list.scrollHeight, height)) + "px";
+    WorkTimeApp.ui.popover.point(list, input);
   }
   function closeCities() {
     $("workCityOptions").hidden = true;

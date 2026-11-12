@@ -341,6 +341,9 @@ async function verify() {
     const selected = await view
       .locator(".day.selected")
       .getAttribute("data-date");
+    await view.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+    );
     await view.emulateMedia({ reducedMotion: "no-preference" });
     const dots = toggle.locator(".record-source-dot");
     assert.equal(await dots.count(), 2);

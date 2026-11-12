@@ -95,6 +95,32 @@ async function verify() {
         });
         const unalignedTags = await tagSizes();
         await page.evaluate(() => WorkTimeApp.ui.alignment.refresh());
+        const clippedDateDigits = await page
+          .locator("#calendar .daynum-text .summary-number-digit")
+          .evaluateAll((digits) =>
+            digits
+              .filter((digit) => {
+                const range = document.createRange();
+                range.selectNodeContents(digit);
+                return (
+                  Math.abs(
+                    digit
+                      .closest(".summary-number-column")
+                      .getBoundingClientRect().width -
+                      range.getBoundingClientRect().width,
+                  ) > 0.1
+                );
+              })
+              .map((digit) => digit.closest(".daynum-text").textContent),
+          );
+        assert.deepEqual(
+          clippedDateDigits,
+          [],
+          language +
+            "/" +
+            width +
+            " date columns fit their actual digit widths",
+        );
         assert.deepEqual(
           await tagSizes(),
           unalignedTags,

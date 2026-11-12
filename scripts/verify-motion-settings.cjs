@@ -47,42 +47,71 @@ async function verify() {
       };
       await ready();
       await clickSettingsControl(page, "#pageSettingsOpen");
-      const boxes = await page
-        .locator(
-          ".settings-select-row:not(.motion-settings-row) > .field > .language-trigger",
-        )
-        .evaluateAll((elements) =>
-          elements.map((element) => {
-            const r = element.getBoundingClientRect();
-            return { y: r.y, width: r.width };
+      const preferenceBoxes = await page
+        .locator(".settings-select-row .language-trigger")
+        .evaluateAll((controls) =>
+          controls.map((control) => {
+            const { left, top } = control.getBoundingClientRect();
+            const labelLeft = control
+              .querySelector(".button-label")
+              .getBoundingClientRect().left;
+            return { id: control.id, left, top, textInset: labelLeft - left };
           }),
         );
+      assert.deepEqual(
+        preferenceBoxes.map((box) => box.id),
+        ["languageTrigger", "motionTrigger", "weatherTrigger"],
+      );
+      assert.ok(
+        preferenceBoxes.every(
+          (box, index) =>
+            Math.abs(box.top - preferenceBoxes[0].top) < 1 &&
+            Math.abs(box.textInset - preferenceBoxes[0].textInset) < 1 &&
+            (index === 0 || box.left > preferenceBoxes[index - 1].left),
+        ),
+        "language, motion and weather must share a row with equal text insets",
+      );
+      assert.equal(await page.locator("#weatherLabel").textContent(), "天气");
+      const folderBox = await page
+        .locator(".auto-backup-folder-control")
+        .boundingBox();
+      const autoBackupBox = await page
+        .locator("#autoBackupTrigger")
+        .boundingBox();
       if (mobile && process.env.WORKTIME_SHOT)
         await page
           .locator("#pageSettingsPane .page-settings-body")
           .screenshot({ path: process.env.WORKTIME_SHOT });
-      assert.equal(boxes.length, 2);
-      const motionBox = await page.locator("#motionTrigger").boundingBox();
-      const motionRowBox = await page
-        .locator(".motion-settings-row")
+      const backupRowBox = await page
+        .locator(".auto-backup-settings")
         .boundingBox();
       const installBox = await page.locator("#appInstallButton").boundingBox();
+      const weatherBox = await page.locator("#weatherTrigger").boundingBox();
       assert.ok(
-        Math.abs(installBox.width - motionRowBox.width * 0.25) < 1,
-        "install action must fill a quarter of the settings row",
+        Math.abs(weatherBox.width - installBox.width) < 1 &&
+          Math.abs(weatherBox.x - installBox.x) < 1,
+        "weather and install must align and have the same width",
       );
       assert.ok(
-        installBox.x > motionBox.x + motionBox.width,
-        "install action must sit to the right of the animation preference",
+        Math.abs(installBox.width - backupRowBox.width * 0.25) < 1,
+        "install action must fill one quarter of the settings row",
       );
-      assert.ok(motionBox.y < boxes[0].y);
+      assert.ok(
+        folderBox.x + folderBox.width < autoBackupBox.x &&
+          autoBackupBox.x + autoBackupBox.width < installBox.x &&
+          Math.abs(folderBox.width - autoBackupBox.width) < 1 &&
+          Math.abs(autoBackupBox.y - folderBox.y) < 1 &&
+          Math.abs(installBox.y - folderBox.y) < 1,
+        "folder and backup must share the remaining width to the left of install",
+      );
       assert.equal(await page.locator("#motionHelp").count(), 0);
-      assert.ok(
-        boxes.every(
-          (box) =>
-            Math.abs(box.y - boxes[0].y) < 1 &&
-            Math.abs(box.width - boxes[0].width) < 1,
-        ),
+      assert.equal(
+        await page.locator("#motionMode option").nth(1).textContent(),
+        "始终动画",
+      );
+      assert.equal(
+        await page.locator("#pageSettingsPane .language-settings svg").count(),
+        0,
       );
       const choose = async (mode, persist = true) => {
         await page.locator("#motionTrigger").click();

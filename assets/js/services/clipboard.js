@@ -1,5 +1,15 @@
 "use strict";
 WorkTimeApp.services.clipboard = (() => {
+  async function readPermission(navigator) {
+    if (!navigator.clipboard?.readText || !navigator.permissions?.query)
+      return null;
+    try {
+      return (await navigator.permissions.query({ name: "clipboard-read" }))
+        .state;
+    } catch {
+      return null;
+    }
+  }
   function create(getClipboard) {
     return {
       async readText() {
@@ -14,5 +24,5 @@ WorkTimeApp.services.clipboard = (() => {
       },
     };
   }
-  return { create };
+  return { create, readPermission };
 })();

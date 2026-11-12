@@ -207,11 +207,11 @@ body #batchAddTimeTemplate {
   padding: 0 !important;
 }
 /* Joined button groups share one outside border and a single inner divider. */
-body :is(.settings-button-group, .calendar-view-button-group) button.ui-button {
+body :is(.settings-button-group, .calendar-view-button-group, .batch-button-group) button.ui-button {
   border: 0 !important;
   box-shadow: none !important;
 }
-body :is(.settings-button-group, .calendar-view-button-group) button.ui-button + button {
+body :is(.settings-button-group, .calendar-view-button-group, .batch-button-group) button.ui-button + button {
   border-left: 1px solid var(--control-border) !important;
 }
 /* Keep OA text and symbols on stable raster sizes at desktop scaling. */

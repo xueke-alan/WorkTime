@@ -208,7 +208,7 @@ WorkTimeApp.ui.autoBackupFolderText = (() => {
       buttons.hidden = controls.retry.hidden;
     }
     field.append(label, control, status, buttons);
-    host.append(field);
+    host.prepend(field);
     const unsubscribe = service.subscribe(render);
     document.addEventListener("worktime:languagechange", render);
     window.addEventListener(

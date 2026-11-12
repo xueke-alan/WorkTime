@@ -34,6 +34,9 @@ async function verify() {
             document.documentElement.dataset.appState === "ready" &&
             !document.documentElement.classList.contains("app-loading"),
         );
+        await page.evaluate(() =>
+          WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+        );
         async function finish() {
           await page.evaluate(() => {
             for (const animation of document
@@ -43,10 +46,17 @@ async function verify() {
           });
         }
         async function switchPage(selector, direction) {
-          const outgoing = await page.evaluate((selector) => {
+          const outgoing = await page.evaluate(async (selector) => {
             document.querySelector(selector).click();
             const content = document.getElementById("panelContent");
-            const animation = content.getAnimations()[0];
+            let animation = content.getAnimations()[0];
+            // Analysis can load its stylesheet before starting the transition.
+            for (let frame = 0; !animation && frame < 60; frame++) {
+              await new Promise(requestAnimationFrame);
+              animation = content.getAnimations()[0];
+            }
+            if (!animation)
+              throw Error("Missing page transition for " + selector);
             animation.pause();
             const frames = animation.effect.getKeyframes();
             // Additional toolbar clicks must not alter the pending destination.
@@ -55,12 +65,18 @@ async function verify() {
               duration: animation.effect.getTiming().duration,
               frames,
               inert: content.inert,
+              oa: document.getElementById("importDialog").open,
+              leftMotion: document
+                .querySelector(".sidebar-oa-workspace")
+                .getAnimations()
+                .map((item) => item.effect.getKeyframes().at(-1).opacity),
               copies: document.querySelectorAll(".calendar-navigation-copy")
                 .length,
             };
           }, selector);
           assert.equal(outgoing.duration, 180);
           assert.equal(outgoing.inert, true);
+          if (outgoing.oa) assert.ok(outgoing.leftMotion.includes("0"));
           assert.equal(outgoing.copies, 0);
           assert.equal(outgoing.frames[0].opacity, "1");
           assert.equal(outgoing.frames[1].opacity, "0");
@@ -141,6 +157,16 @@ async function verify() {
         await titleMotion.dispose();
         assert.equal(await page.locator("#calendar.year-calendar").count(), 1);
         assert.equal(await page.locator("#importDialog").isVisible(), false);
+        assert.equal(
+          await page.locator("#yearAnalysisTitle").textContent(),
+          "年度报告",
+        );
+        assert.equal(
+          await page
+            .locator(".sidebar-year-month")
+            .evaluate((badge) => getComputedStyle(badge).backgroundColor),
+          "rgba(0, 0, 0, 0)",
+        );
         assert.equal(
           await page
             .locator("#monthTitleYear .summary-number-accessible")

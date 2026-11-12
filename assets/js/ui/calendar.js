@@ -27,7 +27,6 @@ WorkTimeApp.ui.createCalendar = function (options) {
   let renderedMode = null,
     renderedSelection = null,
     renderedYearMode = null;
-  let yearTitleAnimation = null;
   let lunarLoading = null,
     lunarUnavailable = false;
 
@@ -186,13 +185,18 @@ WorkTimeApp.ui.createCalendar = function (options) {
     element: $,
     document,
     weatherLayer,
+    numbers,
   });
   const monthSlotWidths = new Map();
   let monthMeasureContext;
   function timePart(value, manual) {
-    return manual
-      ? '<span class="manual-time">' + esc(value) + "</span>"
-      : esc(value);
+    return (
+      '<span class="day-time-value' +
+      (manual ? " manual-time" : "") +
+      '">' +
+      esc(value) +
+      "</span>"
+    );
   }
   function sourceIndicator(day, record) {
     const manual = WorkTimeApp.domain.records.manualSource(day),
@@ -270,7 +274,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
       html: markers.length
         ? '<span class="date-markers" role="img" tabindex="0" aria-label="' +
           esc(markers.map((marker) => marker.label).join("、")) +
-          '" title="' +
+          '" data-date-marker-hint="' +
           esc(markers.map((marker) => marker.hint).join("\n")) +
           '">' +
           markers
@@ -516,6 +520,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
       );
     $("analysisToggle").setAttribute("data-i18n-title", analysisLabel);
     $("analysisToggle").setAttribute("data-i18n-aria-label", analysisLabel);
+    $("analysisToggle").dataset.actionHint = analysisMode
+      ? "agenda.monthView"
+      : "";
     $("calendar").classList.toggle("hidden", !!analysisMode);
     $("analysisPage").hidden = !analysisMode;
     $("analysisSidebar").hidden = !analysisMode;
@@ -551,6 +558,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
       return;
     }
     $("monthTitle").setAttribute("aria-pressed", String(yearMode));
+    $("monthTitle").dataset.actionHint = yearMode
+      ? "agenda.monthView"
+      : "calendarHint.yearView";
     $("monthTitle").setAttribute(
       "aria-label",
       yearMode
@@ -601,6 +611,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
       workdayNumber = 0,
       counts = { actual: 0, estimate: 0, pending: 0 },
       dailyAverages = C.cumulativeAverageOvertime(state, first, last);
+    const originalAverages = batchMode
+      ? C.cumulativeAverageOvertime(getOriginalState(), first, last)
+      : dailyAverages;
     const payday = C.payday(first),
       paydayHint =
         WorkTimeApp.i18n.t("copy.15c1a8dfb5") +
@@ -643,6 +656,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
         restOvertime || (!info.work && day.plannedOvertime)
           ? "rest-overtime"
           : "",
+        !info.work && day.plannedOvertime && !restOvertime
+          ? "planned-overtime-day"
+          : "",
         isFullLeave(day, k)
           ? "full-leave"
           : day.leaveMinutes
@@ -659,6 +675,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
           calc.minutes !== null &&
           info.work &&
           (k <= today || (r && r.manual && C.complete(r))),
+        averageAffected =
+          batchMode && average !== originalAverages[k]?.averageMinutes,
         averageText = !showAverage
           ? ""
           : average === null
@@ -773,7 +791,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
                 "</span>"
               : "")
           : "") +
-        '</div><div class="day-footer"><div class="day-average" title="' +
+        '</div><div class="day-footer"><div class="day-average' +
+        (averageAffected && averageText ? " batch-average-affected" : "") +
+        '" title="' +
         esc(
           WorkTimeApp.i18n.t("copy.1e6a453ebc") +
             (dailyAverages[k].pending
@@ -870,7 +890,48 @@ WorkTimeApp.ui.createCalendar = function (options) {
         WorkTimeApp.i18n.t("copy.85bd9f454a"),
     );
     renderTimeAnomalyNotice();
-    $("batchBar").classList.toggle("hidden", !batchMode);
+    const batchBar = $("batchBar");
+    if (batchMode === batchBar.classList.contains("hidden")) {
+      const toolbar = batchBar.querySelector(".batch-toolbar");
+      const parent = batchBar.parentElement;
+      parent.querySelector(".batch-toolbar-outgoing")?.remove();
+      if (!batchMode && !WorkTimeApp.ui.animationCompat.preference().matches) {
+        const { left, top, width, height } = toolbar.getBoundingClientRect();
+        if (width && height) {
+          const outgoing = toolbar.cloneNode(true);
+          outgoing.classList.add("batch-toolbar-outgoing");
+          outgoing.inert = true;
+          outgoing.setAttribute("aria-hidden", "true");
+          for (const child of outgoing.querySelectorAll("[id]"))
+            child.removeAttribute("id");
+          Object.assign(outgoing.style, {
+            left: left + "px",
+            top: top + "px",
+            width: width + "px",
+            height: height + "px",
+          });
+          outgoing.style.setProperty(
+            "--row-spacing",
+            getComputedStyle(toolbar).columnGap,
+          );
+          parent.append(outgoing);
+          WorkTimeApp.ui.animationCompat
+            .animate(
+              outgoing,
+              [
+                { opacity: Number(getComputedStyle(toolbar).opacity) },
+                { opacity: 0 },
+              ],
+              { duration: 160, easing: "ease-out", fill: "forwards" },
+            )
+            .finished.then(
+              () => outgoing.remove(),
+              () => outgoing.remove(),
+            );
+        }
+      }
+      batchBar.classList.toggle("hidden", !batchMode);
+    }
     $("dayEditor").classList.toggle("hidden", batchMode);
     $("batchToggle").setAttribute("aria-pressed", String(batchMode));
     $("batchToggle").title = batchMode
@@ -885,67 +946,20 @@ WorkTimeApp.ui.createCalendar = function (options) {
         ? WorkTimeApp.i18n.t("copy.03b15bbfb8")
         : WorkTimeApp.i18n.t("copy.3f712eac83"),
     );
-    $("batchSave").disabled = !batchDraft?.canConfirm || batchSaving;
+    $("batchSave").disabled = !batchDraft?.canConfirm || !!batchSaving;
     $("batchCancel").disabled = $("batchToggle").disabled = !!batchSaving;
     $("batchAutoSelect").disabled = !!batchSaving;
-    const resetAll = !batchDays.size;
-    $("batchReset").disabled =
-      $("batchForm").getAttribute("aria-busy") === "true";
-    updateText(
-      $("batchReset").querySelector(".button-label"),
-      resetAll
-        ? WorkTimeApp.i18n.t("short.batchReset")
-        : WorkTimeApp.i18n.t("short.batchResetSelected"),
-    );
-    $("batchReset").setAttribute(
-      "aria-label",
-      resetAll
-        ? WorkTimeApp.i18n.t("copy.ee5bb614c4")
-        : WorkTimeApp.i18n.t("copy.2455259fc5"),
-    );
-    $("batchReset").title =
-      WorkTimeApp.i18n.t("copy.7b15e5e8e7") +
-      (resetAll
-        ? WorkTimeApp.i18n.t("copy.78e45ac995")
-        : WorkTimeApp.i18n.t("copy.26139f522b")) +
-      WorkTimeApp.i18n.t("copy.32ed29d7b7");
+    $("batchReset").disabled = !!batchSaving || !batchDays.size;
+    $("batchClearSelection").disabled = !!batchSaving || !batchDays.size;
     updateText(
       $("batchSelectionCount"),
-      WorkTimeApp.i18n.t("copy.d31313dabc") +
-        batchDays.size +
-        WorkTimeApp.i18n.t("copy.f8bb0516cc"),
+      WorkTimeApp.i18n.t("batch.selected", { count: batchDays.size }),
+    );
+    updateText(
+      $("batchSave").querySelector(".button-label"),
+      WorkTimeApp.i18n.t("batch.saveShort"),
     );
     $("batchToggle").classList.toggle("primary", batchMode);
-    const previewStatus = $("batchPreviewStatus");
-    const originalState = getOriginalState(),
-      resetState =
-        batchMode && batchDraft
-          ? WorkTimeApp.domain.batch.applyBatchChanges(originalState, {
-              ...batchDraft,
-              month,
-              record: null,
-            })
-          : originalState,
-      resetCount = Object.keys(originalState.days).filter(
-        (date) => originalState.days[date] !== resetState.days[date],
-      ).length;
-    updateText(
-      previewStatus,
-      batchMode
-        ? WorkTimeApp.i18n.t("batch.preview") +
-            "\n" +
-            WorkTimeApp.i18n.t(
-              batchDraft?.reset === "all"
-                ? "batch.resetAllCount"
-                : "batch.resetCount",
-              { count: resetCount },
-            ) +
-            " · " +
-            WorkTimeApp.i18n.t("batch.fillCount", {
-              count: batchDraft?.record ? batchDraft.dates.length : 0,
-            })
-        : "",
-    );
     $("cards").classList.toggle("is-batch-preview", batchMode);
     // Dragging owns the visual feedback. Saving a move or resize is not a day click.
     if (
@@ -957,12 +971,6 @@ WorkTimeApp.ui.createCalendar = function (options) {
         $("calendar").querySelector(".selected"),
         "motion-selection",
       );
-    if (modeChanged) {
-      WorkTimeApp.ui.motion?.play(
-        $(batchMode ? "batchForm" : "dayForm"),
-        batchMode ? "motion-sidebar-forward" : "motion-sidebar-back",
-      );
-    }
     if (viewChanged)
       WorkTimeApp.ui.motion?.play($("calendar"), "motion-calendar-view");
     renderedMode = batchMode;
@@ -1171,38 +1179,6 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const average = totals.attendance
       ? totals.workOvertime / totals.attendance
       : null;
-    const title = $("yearAnalysisTitle"),
-      nextTitle = String(viewYear),
-      titleChanged = title.textContent !== nextTitle;
-    if (titleChanged) title.textContent = nextTitle;
-    const animationCompat = WorkTimeApp.ui.animationCompat;
-    if (
-      titleChanged &&
-      !animationCompat.preference().matches &&
-      !document.hidden
-    ) {
-      yearTitleAnimation?.cancel();
-      const animation = animationCompat.animate(
-        title,
-        [
-          { opacity: 0.25, translate: "0 4px" },
-          { opacity: 1, translate: "0 0" },
-        ],
-        {
-          duration: 240,
-          easing: "cubic-bezier(0.2, 0.7, 0.3, 1)",
-          fill: "both",
-        },
-      );
-      yearTitleAnimation = animation;
-      animation.finished
-        .then(() => {
-          if (yearTitleAnimation !== animation) return;
-          yearTitleAnimation = null;
-          animation.cancel();
-        })
-        .catch(() => {});
-    }
     const data = [
       [
         WorkTimeApp.i18n.t("copy.cc954e610b"),

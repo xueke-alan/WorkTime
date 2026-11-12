@@ -286,7 +286,7 @@ const WorkTimeDomainValidation = (() => {
       (typeof lastAutoBackupDate !== "string" || !validDate(lastAutoBackupDate))
     )
       fail("preferences.lastAutoBackupDate", "Invalid automatic backup date.");
-    clean.preferences.autoBackupDays = autoBackupDays;
+    clean.preferences.autoBackupDays = autoBackupDays || 1;
     clean.preferences.lastAutoBackupDate = lastAutoBackupDate;
     const lastBackupAt = input.preferences.lastBackupAt ?? null;
     if (

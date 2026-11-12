@@ -75,7 +75,8 @@ WorkTimeApp.ui.createCalendarWeather = function ({
       decodes.delete(picture);
       picture.style.opacity = "";
       if (reducedMotion.matches || document.hidden) return;
-      animate(picture, [{ opacity: 0 }, { opacity: 0.5 }], {
+      const opacity = getComputedStyle(picture).opacity;
+      animate(picture, [{ opacity: 0 }, { opacity }], {
         duration: 300,
         easing: "cubic-bezier(0.22, 1, 0.36, 1)",
       });

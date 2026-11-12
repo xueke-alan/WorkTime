@@ -3,10 +3,29 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
-async function verifyRecovery(browser, root) {
-  const context = await browser.newContext();
+async function verifyRecovery(browser, root, width) {
+  const context = await browser.newContext({
+    viewport: { width, height: 900 },
+  });
   await context.route(/^https?:/, (route) => route.abort());
   await context.addInitScript(() => {
+    navigator.permissions.query = async () => ({
+      state: localStorage.getItem("test.clipboardGranted")
+        ? "granted"
+        : "prompt",
+    });
+    window.clipboardReads = 0;
+    Object.defineProperty(navigator, "clipboard", {
+      value: {
+        async readText() {
+          if (!navigator.userActivation.isActive)
+            throw Error("Clipboard request lost click gesture");
+          window.clipboardReads++;
+          localStorage.setItem("test.clipboardGranted", "yes");
+          return "10/09\n08:00\n18:00";
+        },
+      },
+    });
     document.addEventListener(
       "worktime:ready",
       () => {
@@ -40,8 +59,32 @@ async function verifyRecovery(browser, root) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(pathToFileURL(path.resolve(root, "index.html")).href);
-  const notice = page.locator("#runtimeFolderRecovery");
+  const notice = page.locator("#startupPermissionsDialog");
   await notice.waitFor();
+  const layout = await notice.evaluate((dialog) => {
+    const folder = dialog
+      .querySelector("#startupFolderPermission")
+      .getBoundingClientRect();
+    const clipboard = dialog
+      .querySelector("#startupClipboardPermission")
+      .getBoundingClientRect();
+    return {
+      folderX: folder.left,
+      folderY: folder.top,
+      clipboardX: clipboard.left,
+      clipboardY: clipboard.top,
+      openDialogs: document.querySelectorAll("dialog:modal").length,
+    };
+  });
+  assert.equal(layout.openDialogs, 1);
+  if (width > 560) {
+    assert.ok(layout.clipboardX > layout.folderX);
+    assert.equal(layout.clipboardY, layout.folderY);
+  } else {
+    assert.equal(layout.clipboardX, layout.folderX);
+    assert.ok(layout.clipboardY > layout.folderY);
+  }
+  assert.equal(await page.evaluate(() => window.clipboardReads), 0);
   assert.match(await notice.innerText(), /test.*运行文件夹需要恢复读写授权/);
   assert.match(await notice.innerText(), /授权成功后才能使用/);
   assert.equal(
@@ -78,7 +121,14 @@ async function verifyRecovery(browser, root) {
     true,
   );
   await restore.click();
+  await notice.locator("#startupFolderPermission").waitFor({ state: "hidden" });
+  assert.equal(await notice.isVisible(), true);
+  const compact = await notice.boundingBox();
+  assert.ok(compact.width <= 382 && compact.width / compact.height < 1.8);
+  await notice.locator("#clipboardPermissionAllow").click();
   await notice.waitFor({ state: "detached" });
+  assert.equal(await page.evaluate(() => window.clipboardReads), 1);
+  assert.equal(await page.locator("#pasteText").inputValue(), "");
   await page.locator("#importOpen").click({ trial: true });
   assert.equal(await page.evaluate(() => window.recoveryCalls), 2);
   assert.equal(await page.evaluate(() => window.recoveryActivation), true);
@@ -97,10 +147,12 @@ async function main() {
   const browser = await chromium.launch({ channel: "msedge", headless: true });
   try {
     for (const root of [".", "_site"]) {
-      await verifyRecovery(browser, root);
+      for (const width of [1280, 390])
+        await verifyRecovery(browser, root, width);
       const context = await browser.newContext();
       // Persist only the mocked folder availability across reloads/new tabs.
       await context.addInitScript(() => {
+        navigator.permissions.query = async () => ({ state: "granted" });
         document.addEventListener(
           "worktime:ready",
           () => {
@@ -582,7 +634,7 @@ async function main() {
       );
       await page.reload();
       await page.waitForFunction(
-        () => document.documentElement.dataset.appState === "ready",
+        () => localStorage.getItem("worktime.onboarding.v1") === "done",
       );
       assert.equal(await page.locator("#onboardingDialog").count(), 0);
       assert.equal(

@@ -10,14 +10,21 @@ chromium.launch = async (...args) => {
   const newContext = browser.newContext.bind(browser);
   browser.newContext = async (...options) => {
     const context = await newContext(...options);
-    await context.addInitScript(() => {
+    await context.addInitScript((testClipboard) => {
       const show = HTMLDialogElement.prototype.showModal;
       HTMLDialogElement.prototype.showModal = function (...args) {
         const result = show.apply(this, args);
-        if (this.id === "onboardingDialog") this.close();
+        if (
+          this.id === "onboardingDialog" ||
+          (this.id === "startupPermissionsDialog" &&
+            !this.classList.contains("has-both-permissions") &&
+            this.querySelector("#startupFolderPermission").hidden &&
+            !testClipboard)
+        )
+          this.close();
         return result;
       };
-    });
+    }, process.env.WORKTIME_TEST_CLIPBOARD === "1");
     if (process.env.WORKTIME_TEST_DISABLE_AUTO_BACKUP === "1")
       await context.addInitScript(() => {
         document.addEventListener(

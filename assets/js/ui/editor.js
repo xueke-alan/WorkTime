@@ -117,26 +117,12 @@ WorkTimeApp.ui.createEditor = function (options) {
       editorDate.innerHTML = dateMarkup;
       editorDateMarkup = dateMarkup;
     }
-    $("dayStart").placeholder = C.scheduleForDate(state, selected).workStart;
-    $("dayEnd").placeholder = C.scheduleForDate(state, selected).workEnd;
-    const clock = (minutes) =>
-      String(Math.floor(minutes / 60)).padStart(2, "0") +
-      ":" +
-      String(minutes % 60).padStart(2, "0");
-    const breaks = C.scheduleForDate(state, selected).breaks.map(
-      (rest) => clock(rest.start) + "–" + clock(rest.end),
-    );
-    const schedule = esc(
-      WorkTimeApp.i18n.t("schedule.description", {
-        start: C.scheduleForDate(state, selected).workStart,
-        end: C.scheduleForDate(state, selected).workEnd,
-        breaks:
-          breaks.join(WorkTimeApp.i18n.config.cjk ? "、" : ", ") ||
-          WorkTimeApp.i18n.t("copy.1a8b4ad549"),
-      }),
-    );
-    if ($("daySchedule").innerHTML !== schedule)
-      $("daySchedule").innerHTML = schedule;
+    const schedule = C.scheduleForDate(state, selected);
+    $("dayStart").placeholder = schedule.workStart;
+    $("dayEnd").placeholder = schedule.workEnd;
+    const description = WorkTimeApp.ui.scheduleDescription(schedule);
+    if ($("daySchedule").textContent !== description)
+      $("daySchedule").textContent = description;
     $("dayStart").value = r.start || "";
     $("dayEnd").value = r.end || "";
     $("dayNext").checked = !!r.nextDay;

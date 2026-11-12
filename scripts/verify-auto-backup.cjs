@@ -95,8 +95,8 @@ const root = path.resolve(process.argv[2] || sourceRoot);
       ...legacy,
       preferences: { ...legacy.preferences, autoBackupDays: 0 },
     }).preferences.autoBackupDays,
-    0,
-    "Preserve an explicitly disabled automatic backup preference",
+    1,
+    "Migrate disabled automatic backup to the daily interval",
   );
   assert.equal(validated.preferences.lastAutoBackupDate, null);
   assert.equal(validated.preferences.lastBackupAt, null);
@@ -179,12 +179,30 @@ const root = path.resolve(process.argv[2] || sourceRoot);
         "Automatic backup defaults to every day",
       );
       await page.evaluate(() =>
-        WorkTimeApp.services.preferences.page.saveAutoBackupDays(0),
+        WorkTimeApp.services.preferences.page.saveAutoBackupDate(null),
       );
       await settled(page);
       downloads.length = 0;
       await clickSettingsControl(page, "#pageSettingsOpen");
+      assert.equal(
+        await page.locator("#autoBackupValue").textContent(),
+        await page.evaluate(() => WorkTimeApp.i18n.t("autoBackup.option1")),
+      );
       await page.locator("#autoBackupTrigger").click();
+      assert.deepEqual(
+        await page
+          .locator("#autoBackupOptions [data-value]")
+          .evaluateAll((options) =>
+            options.map((option) => option.dataset.value),
+          ),
+        ["1", "3", "7"],
+      );
+      assert.equal(
+        await page
+          .locator("#autoBackupOptions :focus")
+          .getAttribute("data-value"),
+        "1",
+      );
       await page.locator('#autoBackupOptions [data-value="3"]').click();
       await settled(page);
       assert.equal(downloads.length, 0, "enabling only saves preference");

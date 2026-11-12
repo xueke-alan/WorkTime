@@ -132,7 +132,7 @@ body #musicDialog select { width: 100%; min-width: 0; max-width: 100%; padding-i
 .music-menu-toggle { display: grid; place-items: center; list-style: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; color: var(--music-muted); }
 .music-menu-toggle::-webkit-details-marker { display: none; }
 .music-menu-toggle.has-timer { color: var(--accent); background: var(--music-soft); }
-.music-menu-panel { position: absolute; right: 0; z-index: 10; width: 240px; max-width: calc(100vw - 48px); max-height: calc(100dvh - 150px); overflow: auto; padding: 16px; border: 1px solid var(--music-edge); border-radius: 13px; background: var(--paper); box-shadow: 0 14px 45px #143b2b24; }
+.music-menu-panel { position: absolute; right: 0; z-index: 10; width: 240px; max-width: calc(100vw - 48px); max-height: calc(100dvh - 150px); overflow: auto; padding: 16px; }
 .music-management .music-menu-panel { top: calc(100% + 12px); }
 .music-settings .music-menu-panel { bottom: calc(100% + 16px); display: grid; gap: 16px; }
 .music-settings:not([open]) .music-menu-panel { display: none; }

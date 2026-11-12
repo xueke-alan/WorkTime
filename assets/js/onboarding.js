@@ -209,80 +209,176 @@ WorkTimeApp.ui.onboarding = (() => {
       localStorage.setItem(KEY, "done");
     } catch {}
   };
-  let recoveryDialog = null;
+  let permissionsDialog = null;
+  let setupReady = false;
+  let clipboardChecking = false;
+  let clipboardChecked = false;
+  let clipboardOffered = false;
+  let clipboardPending = false;
+  let folderOffered = false;
   let recoveryPending = false;
   let recoveryError = "";
   let watchingRecovery = false;
-  function renderRecovery() {
+
+  const notifyClipboardDenied = () =>
+    document.dispatchEvent(new Event("worktime:clipboarddenied"));
+  async function checkClipboard() {
+    if (
+      closed ||
+      clipboardChecking ||
+      clipboardChecked ||
+      document.documentElement.dataset.appState !== "ready" ||
+      document.hidden ||
+      !document.hasFocus()
+    )
+      return;
+    clipboardChecking = true;
+    const state =
+      await WorkTimeApp.services.clipboard.readPermission(navigator);
+    clipboardChecking = false;
+    clipboardChecked = true;
+    if (closed) return;
+    clipboardOffered = state === "prompt";
+    if (state === "denied") notifyClipboardDenied();
+    renderPermissions();
+  }
+  async function authorizeClipboard() {
+    if (!clipboardOffered || clipboardPending || recoveryPending) return;
+    clipboardPending = true;
+    try {
+      // Start the browser request in the click gesture and discard its contents.
+      const read = navigator.clipboard.readText();
+      renderPermissions();
+      await read;
+    } catch {
+      if (!closed) notifyClipboardDenied();
+    } finally {
+      clipboardPending = false;
+      clipboardOffered = false;
+      renderPermissions();
+    }
+  }
+  async function authorizeFolder() {
     const service = WorkTimeApp.services.autoBackupFolder;
-    const state = service.state;
-    if (!state.name || state.status === "available") {
-      recoveryDialog?.close();
-      recoveryDialog?.remove();
-      recoveryDialog = null;
-      recoveryError = "";
+    if (recoveryPending || clipboardPending || service.state.busy) return;
+    recoveryPending = true;
+    recoveryError = "";
+    try {
+      const result = service.authorize();
+      renderPermissions();
+      if (await result)
+        document.dispatchEvent(new Event("worktime:autobackupretry"));
+    } catch (error) {
+      recoveryError = error.folderCode || "failed";
+    } finally {
+      recoveryPending = false;
+      renderPermissions();
+    }
+  }
+  function renderPermissions() {
+    if (closed || !setupReady || clipboardChecking) return;
+    const state = WorkTimeApp.services.autoBackupFolder.state;
+    folderOffered = Boolean(
+      state.name &&
+      state.status !== "available" &&
+      (state.status === "permission" || folderOffered),
+    );
+    if (!folderOffered) recoveryError = "";
+    if (!folderOffered && !clipboardOffered) {
+      permissionsDialog?.close();
+      permissionsDialog?.remove();
+      permissionsDialog = null;
       return;
     }
-    if (!recoveryDialog) {
-      if (
-        state.status !== "permission" ||
-        document.getElementById("onboardingDialog")
-      )
-        return;
-      recoveryDialog = document.createElement("dialog");
-      recoveryDialog.id = "runtimeFolderRecovery";
-      recoveryDialog.setAttribute(
-        "aria-labelledby",
-        "runtimeFolderRecoveryTitle",
-      );
-      recoveryDialog.setAttribute(
-        "aria-describedby",
-        "runtimeFolderRecoveryHelp",
-      );
-      recoveryDialog.setAttribute("closedby", "none");
-      recoveryDialog.innerHTML = `
-        <div class="dialog-head"><h2 id="runtimeFolderRecoveryTitle"></h2></div>
-        <div class="dialog-body"><p data-recovery-status role="status"></p><p id="runtimeFolderRecoveryHelp" class="help"></p></div>
-        <div class="dialog-foot"></div>`;
-      recoveryDialog.addEventListener("cancel", (event) =>
-        event.preventDefault(),
-      );
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "ui-button primary";
-      button.addEventListener("click", async () => {
-        if (recoveryPending || service.state.busy) return;
-        recoveryPending = true;
-        recoveryError = "";
-        try {
-          // Request permission directly in the click gesture; never reopen the picker.
-          const result = service.authorize();
-          renderRecovery();
-          if (await result)
-            document.dispatchEvent(new Event("worktime:autobackupretry"));
-        } catch (error) {
-          recoveryError = error.folderCode || "failed";
-        } finally {
-          recoveryPending = false;
-          renderRecovery();
-        }
+    const activeModal = document.querySelector("dialog:modal");
+    if (activeModal && activeModal !== permissionsDialog) return;
+    if (!permissionsDialog) {
+      const dialog = document.createElement("dialog");
+      dialog.id = "startupPermissionsDialog";
+      dialog.setAttribute("aria-labelledby", "startupPermissionsTitle");
+      dialog.innerHTML = `
+        <div class="dialog-head"><h2 id="startupPermissionsTitle"></h2></div>
+        <div class="dialog-body startup-permissions-grid">
+          <section id="startupFolderPermission" aria-labelledby="runtimeFolderRecoveryTitle" hidden>
+            <h3 id="runtimeFolderRecoveryTitle"></h3>
+            <div class="startup-permissions-copy">
+              <p data-recovery-status role="status"></p>
+              <p class="help" id="runtimeFolderRecoveryHelp"></p>
+            </div>
+            <div class="startup-permissions-actions">
+              <button id="startupFolderAuthorize" type="button" class="ui-button primary"></button>
+            </div>
+          </section>
+          <section id="startupClipboardPermission" aria-labelledby="clipboardPermissionTitle" hidden>
+            <h3 id="clipboardPermissionTitle"></h3>
+            <div class="startup-permissions-copy"><p class="help" id="clipboardPermissionHelp"></p></div>
+            <div class="startup-permissions-actions">
+              <button id="clipboardPermissionSkip" type="button" class="ui-button"></button>
+              <button id="clipboardPermissionAllow" type="button" class="ui-button primary"></button>
+            </div>
+          </section>
+        </div>`;
+      dialog.querySelector("#startupFolderAuthorize").onclick = authorizeFolder;
+      dialog.querySelector("#clipboardPermissionAllow").onclick =
+        authorizeClipboard;
+      dialog.querySelector("#clipboardPermissionSkip").onclick = () => {
+        clipboardOffered = false;
+        renderPermissions();
+        dialog.querySelector("#startupFolderAuthorize").focus();
+      };
+      dialog.addEventListener("cancel", (event) => {
+        if (folderOffered || clipboardPending) event.preventDefault();
+        else clipboardOffered = false;
       });
-      recoveryDialog.querySelector(".dialog-foot").append(button);
-      document.body.append(recoveryDialog);
+      dialog.addEventListener("close", () => {
+        if (permissionsDialog !== dialog) return;
+        dialog.remove();
+        permissionsDialog = null;
+        clipboardOffered = false;
+      });
+      permissionsDialog = dialog;
+      document.body.append(dialog);
     }
-    const t = WorkTimeApp.ui.runtimeFolderText;
-    recoveryDialog.querySelector("h2").textContent = t("restorePermission");
-    recoveryDialog.querySelector("#runtimeFolderRecoveryHelp").textContent =
-      t("permissionRequired");
-    recoveryDialog.querySelector("[data-recovery-status]").textContent =
+    const $ = (selector) => permissionsDialog.querySelector(selector);
+    const t = WorkTimeApp.i18n.t;
+    const folderText = WorkTimeApp.ui.runtimeFolderText;
+    const folderButton = $("#startupFolderAuthorize");
+    const clipboardButton = $("#clipboardPermissionAllow");
+    const busy =
+      recoveryPending || clipboardPending || (folderOffered && state.busy);
+    $("#startupPermissionsTitle").textContent = t("permissions.title");
+    $("#startupFolderPermission").hidden = !folderOffered;
+    $("#startupClipboardPermission").hidden = !clipboardOffered;
+    permissionsDialog.classList.toggle(
+      "has-both-permissions",
+      folderOffered && clipboardOffered,
+    );
+    permissionsDialog.setAttribute(
+      "closedby",
+      folderOffered || busy ? "none" : "closerequest",
+    );
+    permissionsDialog.setAttribute("aria-busy", String(busy));
+    $("#runtimeFolderRecoveryTitle").textContent =
+      folderText("restorePermission");
+    $("#runtimeFolderRecoveryHelp").textContent =
+      folderText("permissionRequired");
+    $("[data-recovery-status]").textContent =
       state.name +
       " · " +
-      t(recoveryError || state.status, { name: state.detail });
-    const button = recoveryDialog.querySelector("button");
-    button.textContent = t("restorePermission");
-    button.disabled = recoveryPending || state.busy || !state.supported;
-    recoveryDialog.setAttribute("aria-busy", String(recoveryPending));
-    if (!recoveryDialog.open) recoveryDialog.showModal();
+      folderText(recoveryError || state.status, { name: state.detail });
+    folderButton.textContent = folderText("restorePermission");
+    folderButton.disabled = busy || !state.supported;
+    $("#clipboardPermissionTitle").textContent = t("clipboard.permissionTitle");
+    $("#clipboardPermissionHelp").textContent = t("clipboard.permissionHelp");
+    $("#clipboardPermissionSkip").textContent = t("clipboard.permissionSkip");
+    $("#clipboardPermissionSkip").disabled = busy;
+    clipboardButton.textContent = t("clipboard.permissionAllow");
+    clipboardButton.disabled = busy;
+    if (!permissionsDialog.open) permissionsDialog.showModal();
+    else if (!permissionsDialog.contains(document.activeElement) && !busy)
+      (folderOffered ? folderButton : clipboardButton).focus({
+        preventScroll: true,
+      });
   }
   async function mount() {
     if (closed) return;
@@ -291,24 +387,29 @@ WorkTimeApp.ui.onboarding = (() => {
     if (!watchingRecovery && !closed) {
       watchingRecovery = true;
       const unsubscribe =
-        WorkTimeApp.services.autoBackupFolder.subscribe(renderRecovery);
-      document.addEventListener("worktime:languagechange", renderRecovery);
+        WorkTimeApp.services.autoBackupFolder.subscribe(renderPermissions);
+      document.addEventListener("worktime:languagechange", renderPermissions);
       window.addEventListener(
         "pagehide",
         () => {
           unsubscribe();
           document.removeEventListener(
             "worktime:languagechange",
-            renderRecovery,
+            renderPermissions,
           );
         },
         { once: true },
       );
     }
-    if (!closed) renderRecovery();
-    // A remembered folder awaiting permission is recovery, not first-run setup.
-    // This also suppresses queued installation reminders while recovery is pending.
-    if (recoveryDialog) return;
+    // Folder recovery takes priority over first-run setup and install reminders.
+    if (
+      folderState.name &&
+      (folderState.status === "permission" || folderOffered)
+    ) {
+      setupReady = true;
+      renderPermissions();
+      return;
+    }
     if (closed || document.getElementById("onboardingDialog")) return;
     // Folder setup is mandatory. Installation reminders recur on each visit
     // until the user opts out or the browser reports an installed app.
@@ -317,6 +418,8 @@ WorkTimeApp.ui.onboarding = (() => {
       (skipInstallReminder() || WorkTimeApp.services.pwaInstall.state.installed)
     ) {
       complete();
+      setupReady = true;
+      renderPermissions();
       return;
     }
     // Established profiles never need these styles. Base dialog styles remain
@@ -324,8 +427,12 @@ WorkTimeApp.ui.onboarding = (() => {
     await WorkTimeApp.services.assets
       .style("assets/css/onboarding.css")
       .catch(() => {});
-    if (!closed) renderRecovery();
-    if (recoveryDialog) return;
+    const currentFolder = WorkTimeApp.services.autoBackupFolder.state;
+    if (currentFolder.name && currentFolder.status === "permission") {
+      setupReady = true;
+      renderPermissions();
+      return;
+    }
     if (
       closed ||
       document.getElementById("onboardingDialog") ||
@@ -339,6 +446,8 @@ WorkTimeApp.ui.onboarding = (() => {
       (skipInstallReminder() || WorkTimeApp.services.pwaInstall.state.installed)
     ) {
       complete();
+      setupReady = true;
+      renderPermissions();
       return;
     }
     try {
@@ -548,15 +657,27 @@ WorkTimeApp.ui.onboarding = (() => {
     );
     render();
     dialog.showModal();
+    setupReady = true;
+    renderPermissions();
     dialog.querySelector("#onboardingTitle").focus({ preventScroll: true });
   }
   document.addEventListener(
     "worktime:ready",
     () => {
       WorkTimeApp.services.pwaInstall.initialize();
-      mount();
+      void checkClipboard();
+      void mount();
     },
     { once: true },
+  );
+  window.addEventListener("focus", checkClipboard);
+  document.addEventListener("visibilitychange", checkClipboard);
+  document.addEventListener(
+    "close",
+    (event) => {
+      if (event.target !== permissionsDialog) renderPermissions();
+    },
+    true,
   );
   document.addEventListener("worktime:folderreset", () => {
     try {

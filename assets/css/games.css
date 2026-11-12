@@ -421,14 +421,23 @@ body .game-menu-archive-actions .ui-icon {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-body button.ui-button.game-menu-play {
+body button.ui-button.primary.game-menu-play {
   --control-height: 2rem;
+  --control-radius: 4px;
+  box-shadow: none;
+  background: var(--accent-light);
+  border-color: color-mix(in srgb, var(--accent) 18%, white);
+  color: var(--accent);
   max-width: 100%;
   height: auto !important;
   max-height: none !important;
   padding: 0.25rem 0.6rem !important;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+body button.ui-button.primary.game-menu-play:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 14%, white);
+  border-color: color-mix(in srgb, var(--accent) 28%, white);
 }
 body button.ui-button.game-menu-entry {
   display: flex;

@@ -112,8 +112,33 @@ async function verifyAutoSelection() {
     const saved = await page.evaluate(() =>
       localStorage.getItem("worktime-local-v1"),
     );
+    const dateButton = page.locator(
+      '.day[data-date="2026-10-21"] > .day-select',
+    );
     await page.locator("#batchToggle").click();
-    await page.locator('.day[data-date="2026-10-20"]').click();
+    const unchangedTimes = await dateButton
+      .locator("..")
+      .locator(".daytime")
+      .textContent();
+    await dateButton.click();
+    assert.equal(
+      await dateButton.locator("..").locator(".daytime").textContent(),
+      unchangedTimes,
+    );
+    assert.equal(
+      await dateButton
+        .locator("..")
+        .locator(
+          ".day-time-value .number-roll-up, .day-time-value .number-roll-down",
+        )
+        .count(),
+      0,
+      "Selecting an unchanged date must not animate its clock times",
+    );
+    assert.equal(await dateButton.getAttribute("aria-pressed"), "true");
+    await dateButton.press("Space");
+    assert.equal(await dateButton.getAttribute("aria-pressed"), "false");
+    await page.locator('.day[data-date="2026-10-20"] > .day-select').click();
     const selected = () =>
       page
         .locator(".day.batchselected")
@@ -142,7 +167,14 @@ async function verifyAutoSelection() {
       saved,
       "Selection must not persist preview data",
     );
-    for (const width of [1365, 390]) {
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("reduce"),
+    );
+    await dateButton.press("Space");
+    assert.equal(await dateButton.getAttribute("aria-pressed"), "false");
+    await dateButton.press("Enter");
+    assert.equal(await dateButton.getAttribute("aria-pressed"), "true");
+    for (const width of [1920, 1365, 390]) {
       await page.setViewportSize({ width, height: 900 });
       for (const language of ["zh-CN", "en", "zh-TW", "zh-HK", "ja", "ko"]) {
         await page.evaluate(
@@ -159,17 +191,22 @@ async function verifyAutoSelection() {
                 .getBoundingClientRect();
             return {
               text: button.textContent,
-              right: Math.abs(bounds.right - row.right),
-              overlap: count.right > bounds.left,
+              outside:
+                bounds.right > row.right + 1 || bounds.left < row.left - 1,
+              overlap:
+                count.top < bounds.bottom - 1 &&
+                count.bottom > bounds.top + 1 &&
+                count.right > bounds.left,
               height: bounds.height,
             };
           });
         assert.ok(geometry.text && !geometry.text.includes("batch.autoSelect"));
-        assert.ok(geometry.right < 2);
+        assert.equal(geometry.outside, false);
         assert.equal(geometry.overlap, false);
         assert.ok(geometry.height <= 34);
       }
     }
+    await page.locator("#batchCancel").click();
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

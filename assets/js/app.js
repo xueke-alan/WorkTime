@@ -437,6 +437,21 @@ WorkTimeApp.services.bootstrap.run(
       downloads: WorkTimeApp.services.downloads.create({ document, URL, Blob }),
     };
     lifecycle.defer(() => controllerOptions.downloads.dispose());
+    const notifyClipboardDenied = () =>
+      actions.toast(
+        WorkTimeApp.i18n.t("clipboard.permissionRequired"),
+        "error",
+      );
+    document.addEventListener(
+      "worktime:clipboarddenied",
+      notifyClipboardDenied,
+    );
+    lifecycle.defer(() =>
+      document.removeEventListener(
+        "worktime:clipboarddenied",
+        notifyClipboardDenied,
+      ),
+    );
     const controllers = [];
     let channel;
     if (typeof BroadcastChannel === "function") {

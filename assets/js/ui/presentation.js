@@ -19,6 +19,23 @@ WorkTimeApp.ui.headerDateMarkup = function (date, esc) {
   );
 };
 
+/** Work schedule shown above the template controls in both editors. */
+WorkTimeApp.ui.scheduleDescription = function (schedule) {
+  const clock = (minutes) =>
+    String(Math.floor(minutes / 60)).padStart(2, "0") +
+    ":" +
+    String(minutes % 60).padStart(2, "0");
+  const { i18n } = WorkTimeApp;
+  return i18n.t("schedule.description", {
+    start: schedule.workStart,
+    end: schedule.workEnd,
+    breaks:
+      schedule.breaks
+        .map((rest) => clock(rest.start) + "–" + clock(rest.end))
+        .join(i18n.config.cjk ? "、" : ", ") || i18n.t("copy.1a8b4ad549"),
+  });
+};
+
 /** Create an isolated presentation view; state/view getters remain live after restore and navigation. */
 WorkTimeApp.ui.createDayPresentation = function (options) {
   const { core: C, escape: esc, getState, getView } = options;

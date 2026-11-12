@@ -95,7 +95,7 @@ WorkTimeApp.ui.createAgenda = function ({
   );
   $("analysisToggle").after(modes);
   modes.innerHTML =
-    '<button type="button" id="agendaMode" class="ui-button icon-only" aria-pressed="false" aria-controls="calendar agendaEditor"><svg class="ui-icon" aria-hidden="true"><use href="#ms-event-note"/></svg></button>';
+    '<button type="button" id="agendaMode" class="ui-button icon-only" data-action-hint aria-pressed="false" aria-controls="calendar agendaEditor"><svg class="ui-icon" aria-hidden="true"><use href="#ms-event-note"/></svg></button>';
   modes.setAttribute("role", "group");
   modes.prepend($("analysisToggle"));
   const modesRegion = document.createElement("div");
@@ -143,6 +143,9 @@ WorkTimeApp.ui.createAgenda = function ({
       ),
     );
     yearViewToggle.setAttribute("aria-pressed", String(detail));
+    yearViewToggle.dataset.actionHint = detail
+      ? "yearView.toHeatmap"
+      : "yearView.toCalendar";
     yearViewToggle.dataset.yearMode = detail ? "calendar" : "heatmap";
     if (!changed || !animate || !canAnimate()) return;
     yearIconAnimation?.cancel();
@@ -2621,6 +2624,7 @@ WorkTimeApp.ui.createAgenda = function ({
     modesRegion.style.removeProperty("margin-right");
     modes.style.removeProperty("opacity");
     modes.style.removeProperty("transform");
+    modesDivider.style.removeProperty("opacity");
   }
   function renderModes() {
     const hidden = !!model.batchMode;
@@ -2628,6 +2632,7 @@ WorkTimeApp.ui.createAgenda = function ({
     const animate = modesHidden !== null && canAnimate();
     const width = modesRegion.getBoundingClientRect().width;
     const margin = getComputedStyle(modesRegion).marginRight;
+    const dividerOpacity = getComputedStyle(modesDivider).opacity;
     const painted = getComputedStyle(modes);
     const from = { opacity: painted.opacity, transform: painted.transform };
     for (const animation of modesAnimations) animation.cancel();
@@ -2651,6 +2656,7 @@ WorkTimeApp.ui.createAgenda = function ({
     modesRegion.style.marginRight = hidden ? -gap + "px" : "0px";
     modes.style.opacity = hidden ? "0" : "1";
     modes.style.transform = hidden ? "translateX(-8px)" : "none";
+    modesDivider.style.opacity = hidden ? "0" : "1";
     const startTime = document.timeline?.currentTime;
     const animations = [
       animationCompat.animate(
@@ -2688,10 +2694,13 @@ WorkTimeApp.ui.createAgenda = function ({
       ),
       animationCompat.animate(
         modesDivider,
-        [{ opacity: hidden ? 1 : 0 }, { opacity: hidden ? 0 : 1 }],
+        [
+          { opacity: width ? dividerOpacity : 0 },
+          { opacity: modesDivider.style.opacity },
+        ],
         {
           duration: 160,
-          delay: hidden ? 160 : 40,
+          delay: hidden ? 0 : 40,
           easing: "ease-out",
           fill: "both",
         },
@@ -2845,11 +2854,13 @@ WorkTimeApp.ui.createAgenda = function ({
           { duration: 180, easing: "ease-out", fill: "both" },
         );
     }
+    const nextView = viewNames[(weekView + 1) % 4];
+    viewToggle.dataset.actionHint = "agenda." + nextView;
     viewToggle.title =
       t(viewNames[weekView]) +
       " · " +
       t("switchView", {
-        view: t(viewNames[(weekView + 1) % 4]),
+        view: t(nextView),
       });
     viewToggle.setAttribute("aria-label", viewToggle.title);
     viewToggle.disabled = busy;
@@ -2984,12 +2995,15 @@ WorkTimeApp.ui.createAgenda = function ({
     finishWeekTransition();
     workspace.classList.toggle("agenda-mode", active);
     pane.hidden = summary.hidden = !active;
-    const todayKey =
-      active && weekView ? "agenda.todayWeek" : "copy.323a7e0872";
-    for (const attribute of ["title", "aria-label"]) {
-      $("todayButton").setAttribute(attribute, WorkTimeApp.i18n.t(todayKey));
-      $("todayButton").setAttribute("data-i18n-" + attribute, todayKey);
-    }
+    const focusesToday =
+      !model.yearMode &&
+      !model.analysisMode &&
+      ((active && weekView > 0) || model.month === model.today.slice(0, 7));
+    const todayKey = focusesToday
+      ? "calendarHint.today"
+      : "calendarHint.thisMonth";
+    $("todayButton").setAttribute("aria-label", WorkTimeApp.i18n.t(todayKey));
+    $("todayButton").setAttribute("data-i18n-aria-label", todayKey);
     applyWeekLayout();
     timetable.render();
     updateWeekLabel();

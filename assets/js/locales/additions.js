@@ -1,4 +1,25 @@
 "use strict";
+for (const [language, label] of Object.entries({
+  "zh-CN":
+    "未获得剪贴板权限，请在浏览器的网站设置中允许访问，或手动粘贴 OA 信息。",
+  "zh-TW":
+    "尚未取得剪貼簿權限，請在瀏覽器的網站設定中允許存取，或手動貼上 OA 資訊。",
+  "zh-HK":
+    "尚未取得剪貼簿權限，請在瀏覽器的網站設定中允許存取，或手動貼上 OA 資訊。",
+  en: "Clipboard access was not granted. Allow it in your browser's site settings, or paste OA information manually.",
+  ja: "クリップボードへのアクセスが許可されていません。ブラウザーのサイト設定で許可するか、OA 情報を手動で貼り付けてください。",
+  ko: "클립보드 접근 권한이 없습니다. 브라우저 사이트 설정에서 허용하거나 OA 정보를 직접 붙여넣으세요.",
+}))
+  WorkTimeApp.data.locales[language]["clipboard.permissionRequired"] = label;
+for (const [language, label] of Object.entries({
+  "zh-CN": "我爱上班，从不摸鱼",
+  "zh-TW": "我愛上班，絕不摸魚",
+  "zh-HK": "我愛返工，絕不偷懶",
+  en: "All work, no slacking!",
+  ja: "仕事大好き、サボりません！",
+  ko: "일이 좋아요, 딴짓은 안 해요!",
+}))
+  WorkTimeApp.data.locales[language]["games.idleMotto"] = label;
 for (const [language, labels] of Object.entries({
   "zh-CN": ["正在加载，请稍候…", "加载失败，请重试。"],
   "zh-TW": ["正在載入，請稍候…", "載入失敗，請重試。"],
@@ -1591,12 +1612,12 @@ for (const [language, value] of Object.entries({
 })();
 (() => {
   const labels = {
-    "zh-CN": ["日历天气显示", "{days} 天", "不显示"],
-    "zh-TW": ["月曆天氣顯示", "{days} 天", "不顯示"],
-    "zh-HK": ["日曆天氣顯示", "{days} 天", "不顯示"],
-    en: ["Calendar weather", "{days} days", "Hidden"],
-    ko: ["달력 날씨", "{days} 일", "표시 안 함"],
-    ja: ["カレンダーの天気", "{days} 日", "非表示"],
+    "zh-CN": ["天气", "{days} 天", "不显示"],
+    "zh-TW": ["天氣", "{days} 天", "不顯示"],
+    "zh-HK": ["天氣", "{days} 天", "不顯示"],
+    en: ["Weather", "{days} days", "Hidden"],
+    ko: ["날씨", "{days} 일", "표시 안 함"],
+    ja: ["天気", "{days} 日", "非表示"],
   };
   for (const [locale, [label, days, off]] of Object.entries(labels))
     Object.assign(WorkTimeApp.data.locales[locale], {
@@ -3480,39 +3501,73 @@ for (const [language, label] of Object.entries({
 }
 
 for (const [language, labels] of Object.entries({
+  "zh-CN": ["年视图", "当月", "当日", "导入备份", "设置", "关闭设置"],
+  "zh-TW": ["年檢視", "當月", "當日", "匯入備份", "設定", "關閉設定"],
+  "zh-HK": ["年視圖", "當月", "當日", "匯入備份", "設定", "關閉設定"],
+  en: [
+    "Year view",
+    "This month",
+    "Today",
+    "Import backup",
+    "Settings",
+    "Close settings",
+  ],
+  ja: [
+    "年表示",
+    "今月",
+    "今日",
+    "バックアップの読み込み",
+    "設定",
+    "設定を閉じる",
+  ],
+  ko: ["연간 보기", "이번 달", "오늘", "백업 가져오기", "설정", "설정 닫기"],
+})) {
+  [
+    "yearView",
+    "thisMonth",
+    "today",
+    "importBackup",
+    "settings",
+    "closeSettings",
+  ].forEach((key, index) => {
+    WorkTimeApp.data.locales[language]["calendarHint." + key] = labels[index];
+  });
+}
+
+for (const [language, labels] of Object.entries({
   "zh-CN": [
     "动画效果",
     "跟随系统",
-    "始终展示动画",
+    "始终动画",
     "减少动画",
-    "系统当前要求减少动画；选择“始终展示动画”可恢复本站动效。",
+    "系统当前要求减少动画；选择“始终动画”可恢复本站动效。",
     "系统当前允许展示动画。",
     "动画设置未保存，将在本次使用中生效。",
   ],
   "zh-TW": [
     "動畫效果",
     "跟隨系統",
-    "一律顯示動畫",
+    "一律播放",
     "減少動畫",
-    "系統目前要求減少動畫；選擇「一律顯示動畫」可恢復本站動態效果。",
+    "系統目前要求減少動畫；選擇「一律播放」可恢復本站動態效果。",
     "系統目前允許顯示動畫。",
     "動畫設定未儲存，僅於本次使用生效。",
   ],
   "zh-HK": [
     "動畫效果",
     "跟隨系統",
-    "一律顯示動畫",
+    "一律播放",
     "減少動畫",
-    "系統目前要求減少動畫；選擇「一律顯示動畫」可恢復本站動態效果。",
+    "系統目前要求減少動畫；選擇「一律播放」可恢復本站動態效果。",
     "系統目前允許顯示動畫。",
     "動畫設定未儲存，僅於本次使用生效。",
   ],
   en: [
     "Animation effects",
     "Follow system",
-    "Always show animations",
+    "Always animate",
     "Reduce motion",
-    "The system currently requests reduced motion. Choose “Always show animations” to restore this site’s effects.",
+    "The system currently requests reduced motion. Choose “Always animate” to restore this site’s effects.",
     "The system currently allows animations.",
     "Animation preference could not be saved; it applies for this session.",
   ],
@@ -3528,9 +3583,9 @@ for (const [language, labels] of Object.entries({
   ko: [
     "애니메이션 효과",
     "시스템 설정 따르기",
-    "항상 애니메이션 표시",
+    "항상 표시",
     "동작 줄이기",
-    "시스템이 동작 줄이기를 요청하고 있습니다. 항상 애니메이션 표시를 선택하면 이 사이트의 효과를 복원합니다.",
+    "시스템이 동작 줄이기를 요청하고 있습니다. ‘항상 표시’를 선택하면 이 사이트의 효과를 복원합니다.",
     "시스템이 애니메이션을 허용하고 있습니다.",
     "설정을 저장하지 못했습니다. 이번 세션에만 적용됩니다.",
   ],
@@ -3682,3 +3737,365 @@ for (const [language, labels] of Object.entries({
   WorkTimeApp.data.locales[language]["games.restartCancel"] = labels[0];
   WorkTimeApp.data.locales[language]["games.restartNew"] = labels[1];
 }
+
+// Batch selection, mutually exclusive fill modes, and independent clearing.
+for (const [key, values] of Object.entries({
+  method: [
+    "填写方式",
+    "填寫方式",
+    "填寫方式",
+    "Fill method",
+    "入力方法",
+    "입력 방식",
+  ],
+  direct: [
+    "直接填时间",
+    "直接填時間",
+    "直接填時間",
+    "Enter times",
+    "時刻を入力",
+    "시간 입력",
+  ],
+  overtime: [
+    "按加班时长",
+    "按加班時長",
+    "按加班時長",
+    "By overtime",
+    "残業時間から",
+    "초과 근무 기준",
+  ],
+  nextDay: [
+    "次日下班",
+    "次日下班",
+    "翌日下班",
+    "Ends next day",
+    "翌日退勤",
+    "다음 날 퇴근",
+  ],
+  dailyOvertime: [
+    "每天加班 / 小时",
+    "每天加班 / 小時",
+    "每日加班 / 小時",
+    "Daily overtime / hours",
+    "1日の残業 / 時間",
+    "하루 초과 근무 / 시간",
+  ],
+  selectMissing: [
+    "选本月未填",
+    "選本月未填",
+    "選本月未填",
+    "Missing this month",
+    "今月の未入力",
+    "이달 미입력",
+  ],
+  clearSelection: [
+    "清空选择",
+    "清空選擇",
+    "清空選擇",
+    "Clear selection",
+    "選択を解除",
+    "선택 해제",
+  ],
+  selected: [
+    "已选 {count} 天",
+    "已選 {count} 天",
+    "已選 {count} 天",
+    "{count} days selected",
+    "{count}日を選択",
+    "{count}일 선택됨",
+  ],
+  saveDays: [
+    "保存 {count} 天",
+    "儲存 {count} 天",
+    "儲存 {count} 天",
+    "Save {count} days",
+    "{count}日を保存",
+    "{count}일 저장",
+  ],
+  chooseDates: [
+    "请在日历中选择日期",
+    "請在日曆中選擇日期",
+    "請在日曆中選擇日期",
+    "Select dates in the calendar.",
+    "カレンダーで日付を選択してください。",
+    "달력에서 날짜를 선택하세요.",
+  ],
+  needStart: [
+    "请填写有效的上班时间",
+    "請填寫有效的上班時間",
+    "請填寫有效的上班時間",
+    "Enter a valid start time.",
+    "有効な出勤時刻を入力してください。",
+    "올바른 출근 시간을 입력하세요.",
+  ],
+  needEnd: [
+    "请填写有效的下班时间",
+    "請填寫有效的下班時間",
+    "請填寫有效的下班時間",
+    "Enter a valid end time.",
+    "有効な退勤時刻を入力してください。",
+    "올바른 퇴근 시간을 입력하세요.",
+  ],
+  needHours: [
+    "请填写有效的每天加班小时数（0–24，以 0.5 小时递增）",
+    "請填寫有效的每天加班小時數（0–24，以 0.5 小時遞增）",
+    "請填寫有效的每日加班小時數（0–24，以 0.5 小時遞增）",
+    "Enter daily overtime (0–24 hours, in 0.5-hour steps).",
+    "1日の残業を入力してください（0～24時間、0.5時間単位）。",
+    "하루 초과 근무 시간을 입력하세요(0–24시간, 0.5시간 단위).",
+  ],
+  mixedSchedules: [
+    "所选日期作息不同，请按作息分批选择，或改用直接填时间",
+    "所選日期作息不同，請按作息分批選擇，或改用直接填時間",
+    "所選日期作息不同，請按作息分批選擇，或改用直接填時間",
+    "Schedules differ. Select dates with the same schedule or enter times directly.",
+    "勤務設定が異なります。同じ設定の日を選ぶか、時刻を直接入力してください。",
+    "근무 일정이 다릅니다. 같은 일정의 날짜를 선택하거나 시간을 직접 입력하세요.",
+  ],
+  invalidRange: [
+    "下班早于上班，跨午夜请开启“次日下班”",
+    "下班早於上班，跨午夜請開啟「次日下班」",
+    "下班早於上班，跨午夜請開啟「翌日下班」",
+    "End precedes start. Enable next-day ending for overnight work.",
+    "退勤が出勤より早いため、日をまたぐ場合は翌日退勤を有効にしてください。",
+    "퇴근이 출근보다 빠릅니다. 자정을 넘기면 다음 날 퇴근을 켜세요.",
+  ],
+  calculated: [
+    "下班时间：{time}",
+    "下班時間：{time}",
+    "下班時間：{time}",
+    "End time: {time}",
+    "退勤時刻：{time}",
+    "퇴근 시간: {time}",
+  ],
+  summary: [
+    "待保存 {count} 天 · {time}\n新增 {added} 天 · 补全 {completed} 天 · 替换完整工时 {replaced} 天",
+    "待儲存 {count} 天 · {time}\n新增 {added} 天 · 補全 {completed} 天 · 取代完整工時 {replaced} 天",
+    "待儲存 {count} 天 · {time}\n新增 {added} 天 · 補全 {completed} 天 · 取代完整工時 {replaced} 天",
+    "Ready to save {count} days · {time}\nNew {added} · Completed {completed} · Replaced {replaced}",
+    "保存予定 {count}日 · {time}\n新規 {added}日 · 補完 {completed}日 · 完全な記録の置換 {replaced}日",
+    "저장할 {count}일 · {time}\n신규 {added}일 · 보완 {completed}일 · 완전한 기록 교체 {replaced}일",
+  ],
+  manualHelp: [
+    "预览中，保存后更新手动记录；OA 优先时仍按现有规则合并显示。",
+    "預覽中，儲存後更新手動記錄；OA 優先時仍按現有規則合併顯示。",
+    "預覽中，儲存後更新手動記錄；OA 優先時仍按現有規則合併顯示。",
+    "Preview only. Saving updates manual records; OA priority and merging still apply.",
+    "プレビューです。保存で手動記録を更新します。OA優先と統合規則は維持されます。",
+    "미리보기입니다. 저장 시 수동 기록을 갱신하며 OA 우선순위와 병합 규칙은 유지됩니다.",
+  ],
+  clearData: [
+    "清除已填数据…",
+    "清除已填資料…",
+    "清除已填資料…",
+    "Clear entered data…",
+    "入力済みデータを消去…",
+    "입력한 데이터 지우기…",
+  ],
+  wholeMonth: [
+    "本月全部日期",
+    "本月全部日期",
+    "本月全部日期",
+    "All dates this month",
+    "今月のすべての日付",
+    "이번 달 전체 날짜",
+  ],
+  clearHelp: [
+    "清除手动工时、草稿、备注、日期类型和手动来源优先设置；保留 OA、请假时长、计划加班及模板。",
+    "清除手動工時、草稿、備註、日期類型和手動來源優先設定；保留 OA、請假時長、計劃加班及範本。",
+    "清除手動工時、草稿、備註、日期類型和手動來源優先設定；保留 OA、請假時長、計劃加班及範本。",
+    "Removes manual times, drafts, notes, date types and manual source priority. Keeps OA, leave duration, planned overtime and templates.",
+    "手動時刻、下書き、メモ、日付種別、手動ソース優先設定を消去します。OA、休暇時間、予定残業、テンプレートは保持します。",
+    "수동 시간, 초안, 메모, 날짜 유형, 수동 출처 우선순위를 지웁니다. OA, 휴가 시간, 예정 초과 근무, 템플릿은 유지합니다.",
+  ],
+  clearSummary: [
+    "{month} · 将清除 {count} 天已填数据",
+    "{month} · 將清除 {count} 天已填資料",
+    "{month} · 將清除 {count} 天已填資料",
+    "{month} · Will clear {count} days",
+    "{month} · {count}日分を消去します",
+    "{month} · {count}일의 데이터를 지웁니다",
+  ],
+  confirmClear: [
+    "确认清除 {count} 天",
+    "確認清除 {count} 天",
+    "確認清除 {count} 天",
+    "Clear {count} days",
+    "{count}日分を消去",
+    "{count}일 지우기",
+  ],
+})) {
+  ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"].forEach((language, index) => {
+    WorkTimeApp.data.locales[language]["batch." + key] = values[index];
+  });
+}
+
+for (const [key, values] of Object.entries({
+  clearShort: ["清除", "清除", "清除", "Clear", "消去", "지우기"],
+  switchDirect: [
+    "切换为直接填时间",
+    "切換為直接填時間",
+    "切換為直接填時間",
+    "Switch to entering times",
+    "時刻の直接入力に切り替え",
+    "시간 직접 입력으로 전환",
+  ],
+  switchOvertime: [
+    "切换为按加班时长",
+    "切換為按加班時長",
+    "切換為按加班時長",
+    "Switch to overtime duration",
+    "残業時間からの入力に切り替え",
+    "초과 근무 시간 입력으로 전환",
+  ],
+})) {
+  ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"].forEach((language, index) => {
+    WorkTimeApp.data.locales[language]["batch." + key] = values[index];
+  });
+}
+
+for (const [key, values] of Object.entries({
+  saveShort: ["确认", "確認", "確認", "Confirm", "確定", "확인"],
+  clearSelectedShort: [
+    "删除所选",
+    "刪除所選",
+    "刪除所選",
+    "Delete",
+    "選択を削除",
+    "선택 삭제",
+  ],
+  clearAllShort: ["清除全部", "清除全部", "清除全部", "All", "全日", "전체"],
+  clearSelectedAction: [
+    "删除所选日期的已填数据",
+    "清除所選日期的已填資料",
+    "清除所選日期的已填資料",
+    "Clear data for selected dates",
+    "選択した日付の入力データを消去",
+    "선택한 날짜의 입력 데이터 지우기",
+  ],
+  clearAllAction: [
+    "清除本月全部日期的已填数据",
+    "清除本月全部日期的已填資料",
+    "清除本月全部日期的已填資料",
+    "Clear data for all dates this month",
+    "今月すべての日付の入力データを消去",
+    "이번 달 전체 날짜의 입력 데이터 지우기",
+  ],
+})) {
+  ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"].forEach((language, index) => {
+    WorkTimeApp.data.locales[language]["batch." + key] = values[index];
+  });
+}
+
+for (const [key, values] of Object.entries({
+  clearSelectedLabel: ["所选", "所選", "所選", "Selected", "選択分", "선택"],
+  clearAllLabel: ["全部", "全部", "全部", "All", "全日", "전체"],
+  confirmShort: ["确认", "確認", "確認", "Confirm", "確認", "확인"],
+  cancelShort: ["取消", "取消", "取消", "Cancel", "中止", "취소"],
+  countadded: ["新增", "新增", "新增", "New", "追加", "신규"],
+  countcompleted: ["补全", "補全", "補全", "Completed", "補完", "보완"],
+  countreplaced: ["替换", "取代", "取代", "Replaced", "置換", "교체"],
+  previewNote: [
+    "保存后生效，OA 优先规则不变。",
+    "儲存後生效，OA 優先規則不變。",
+    "儲存後生效，OA 優先規則不變。",
+    "Preview only · OA priority unchanged.",
+    "保存後に反映。OA優先は維持。",
+    "저장 후 반영 · OA 우선순위 유지.",
+  ],
+  inlineClearHelp: [
+    "再次点击确认，Esc 取消。保留 OA、请假和计划加班。",
+    "再次點擊確認，Esc 取消。保留 OA、請假和計劃加班。",
+    "再次點擊確認，Esc 取消。保留 OA、請假和計劃加班。",
+    "Click Confirm again; Esc cancels. OA, leave and planned overtime stay.",
+    "再度確認で実行、Escで中止。OA・休暇・予定残業は保持。",
+    "확인을 다시 누르면 실행, Esc로 취소. OA·휴가·예정 초과 근무 유지.",
+  ],
+  scopeSelected: [
+    "所选日期",
+    "所選日期",
+    "所選日期",
+    "Selected dates",
+    "選択した日付",
+    "선택한 날짜",
+  ],
+  nothingToClear: [
+    "此范围没有可清除的手动数据。",
+    "此範圍沒有可清除的手動資料。",
+    "此範圍沒有可清除的手動資料。",
+    "No manual data to clear in this scope.",
+    "この範囲に消去できる手動データはありません。",
+    "이 범위에 지울 수동 데이터가 없습니다.",
+  ],
+})) {
+  ["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"].forEach((language, index) => {
+    WorkTimeApp.data.locales[language]["batch." + key] = values[index];
+  });
+}
+
+for (const [language, values] of Object.entries({
+  "zh-CN": [
+    "剪贴板授权",
+    "允许读取剪贴板，可在从 OA 返回后自动预览复制的考勤信息。",
+    "稍后",
+    "允许读取",
+    "年度报告",
+  ],
+  "zh-TW": [
+    "剪貼簿授權",
+    "允許讀取剪貼簿，可在從 OA 返回後自動預覽複製的考勤資訊。",
+    "稍後",
+    "允許讀取",
+    "年度報告",
+  ],
+  "zh-HK": [
+    "剪貼簿授權",
+    "允許讀取剪貼簿，可在從 OA 返回後自動預覽複製的考勤資訊。",
+    "稍後",
+    "允許讀取",
+    "年度報告",
+  ],
+  en: [
+    "Clipboard access",
+    "Allow clipboard access to preview copied attendance records when you return from OA.",
+    "Later",
+    "Allow access",
+    "Annual report",
+  ],
+  ja: [
+    "クリップボードのアクセス許可",
+    "許可すると、OA から戻ったときにコピーした勤怠情報をプレビューできます。",
+    "後で",
+    "許可する",
+    "年次レポート",
+  ],
+  ko: [
+    "클립보드 접근 권한",
+    "허용하면 OA에서 돌아올 때 복사한 근태 정보를 미리 볼 수 있습니다.",
+    "나중에",
+    "접근 허용",
+    "연간 보고서",
+  ],
+})) {
+  const keys = [
+    "clipboard.permissionTitle",
+    "clipboard.permissionHelp",
+    "clipboard.permissionSkip",
+    "clipboard.permissionAllow",
+    "yearView.report",
+  ];
+  keys.forEach((key, index) => {
+    WorkTimeApp.data.locales[language][key] = values[index];
+  });
+}
+
+["zh-CN", "zh-TW", "zh-HK", "en", "ja", "ko"].forEach((language, index) => {
+  WorkTimeApp.data.locales[language]["permissions.title"] = [
+    "启动授权",
+    "啟動授權",
+    "啟動授權",
+    "Startup permissions",
+    "起動時のアクセス許可",
+    "시작 권한",
+  ][index];
+});

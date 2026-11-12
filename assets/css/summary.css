@@ -156,11 +156,8 @@ body .sidebar-actions .import-secondary-actions > button:hover {
   min-width: 0;
   overflow: hidden;
   padding: 0 0.85rem;
-  border: 1px solid var(--theme-accent-deep, var(--accent));
-  border-radius: var(--control-radius);
-  background: var(--accent-light);
   color: var(--theme-text-strong, var(--ink));
-  font-size: 1.285714rem;
+  font-size: 1.571429rem;
   font-weight: 600;
   line-height: 1.3;
   pointer-events: none;
@@ -1540,6 +1537,16 @@ body .summary-sidebar .card.average-card .metric > .summary-number {
   overflow: hidden;
   vertical-align: bottom;
 }
+.summary-number-sign,
+.summary-number-spacer {
+  display: inline-block;
+  flex: none;
+  width: 1ch;
+  text-align: center;
+}
+.summary-number-sign {
+  text-align: right;
+}
 .summary-number-column.summary-number-word {
   width: auto;
 }
@@ -1554,6 +1561,9 @@ body .summary-sidebar .card.average-card .metric > .summary-number {
   position: absolute;
   inset-inline: 0;
   top: -100%;
+}
+.summary-number-outgoing[data-number-before]::before {
+  content: attr(data-number-before);
 }
 .number-roll-down > .summary-number-outgoing {
   top: 100%;
@@ -1958,6 +1968,7 @@ body .summary-sidebar #sourceDialog.import-detail-view #sourceBody > .import-par
   flex: 0 1 auto;
   min-height: 0;
   max-height: 55%;
+  padding-inline-end: 0.428571rem;
   overflow: auto;
   overscroll-behavior: contain;
 }

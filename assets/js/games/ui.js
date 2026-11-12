@@ -323,8 +323,9 @@ WorkTimeApp.games.createSelect = function ({ host, select, label, signal }) {
       close();
       return;
     }
-    const below = bottom - rect.bottom - 6,
-      above = rect.top - top - 6;
+    const gap = 8,
+      below = bottom - rect.bottom - gap,
+      above = rect.top - top - gap;
     list.style.width = rect.width + "px";
     list.style.maxHeight = Math.max(0, Math.max(below, above)) + "px";
     list.style.left =
@@ -332,7 +333,8 @@ WorkTimeApp.games.createSelect = function ({ host, select, label, signal }) {
       "px";
     const height = list.getBoundingClientRect().height;
     list.style.top =
-      (below >= height ? rect.bottom + 6 : rect.top - height - 6) + "px";
+      (below >= height ? rect.bottom + gap : rect.top - height - gap) + "px";
+    WorkTimeApp.ui.popover.point(list, trigger);
   }
   function sync() {
     trigger.disabled = select.disabled;

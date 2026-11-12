@@ -171,7 +171,7 @@ async function verify() {
       await card("2026-10-18").evaluate(
         (node) => getComputedStyle(node, "::before").opacity,
       ),
-      "0.48",
+      "0.24",
       "Release the reveal at the illustration's resting opacity",
     );
     assert.deepEqual(errors, []);

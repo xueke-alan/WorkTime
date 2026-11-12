@@ -348,10 +348,32 @@ WorkTimeApp.ui.createImportController = function (options) {
     events = WorkTimeApp.ui.createEventScope(),
     $ = options.element;
   let hold = null;
+  let oaReturn = null;
+  function readOnReturn() {
+    const visit = oaReturn;
+    if (
+      !visit ||
+      !visit.left ||
+      visit.consumed ||
+      document.hidden ||
+      !document.hasFocus() ||
+      !record.value ||
+      !$("importDialog").open
+    )
+      return;
+    visit.consumed = true;
+    void record.value.readReturnedClipboard(() => oaReturn === visit);
+  }
+  function leftOAEntry() {
+    if (oaReturn) oaReturn.left = true;
+  }
   function run(method, trigger, ...args) {
     manager.request(
       ["imports"],
-      (valid) => record.value[method](...args, valid),
+      (valid) => {
+        record.value[method](...args, valid);
+        if (method === "openImport") readOnReturn();
+      },
       trigger,
     );
   }
@@ -392,12 +414,19 @@ WorkTimeApp.ui.createImportController = function (options) {
         run("showSources", $("sourceOpen")),
       );
       events.handler($("importOASite"), "onclick", () => {
+        oaReturn = { left: false, consumed: false };
         if (record.value) {
           record.value.openImport({ motionDuration: 0 });
-          openWebsite();
+          if (!openWebsite()) oaReturn = null;
         } else if (openWebsite()) {
           run("openImport", $("importOASite"), { motionDuration: 0 });
-        }
+        } else oaReturn = null;
+      });
+      events.listen(window, "blur", leftOAEntry);
+      events.listen(window, "focus", readOnReturn);
+      events.listen(document, "visibilitychange", () => {
+        if (document.hidden) leftOAEntry();
+        else readOnReturn();
       });
       hold = WorkTimeApp.ui.createHoldAction({
         button: $("oaShortcut"),
@@ -406,9 +435,13 @@ WorkTimeApp.ui.createImportController = function (options) {
         onLong: editLink,
         cancelShortAfterFeedback: true,
       });
-      events.listen($("importDialog"), "close", () => hold.cancel());
+      events.listen($("importDialog"), "close", () => {
+        hold.cancel();
+        oaReturn = null;
+      });
     },
     dispose() {
+      oaReturn = null;
       record.disposed = true;
       record.value?.dispose();
       hold?.dispose();

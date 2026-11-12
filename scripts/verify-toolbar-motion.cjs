@@ -23,6 +23,9 @@ async function verifyWorkdaySwitch(browser) {
         document.documentElement.dataset.appState === "ready" &&
         !document.documentElement.classList.contains("app-loading"),
     );
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+    );
     await page.locator("#agendaMode").click();
     const reveal = await page.evaluate(() => {
       document.querySelector("#agendaViewToggle").click();
@@ -150,6 +153,9 @@ async function verify() {
     );
     await page.waitForFunction(
       () => document.documentElement.dataset.appState === "ready",
+    );
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("system"),
     );
     const settle = () =>
       page.waitForFunction(
@@ -373,19 +379,20 @@ async function verify() {
           const initial = region.getBoundingClientRect().width;
           const baseline = backup.getBoundingClientRect().x;
           document.querySelector("#analysisToggle").click();
-          while (
-            document
-              .querySelector("#analysisToggle")
-              .getAttribute("aria-pressed") !== "true"
-          )
-            await new Promise(requestAnimationFrame);
           const samples = [];
           const start = performance.now();
-          while (performance.now() - start < 420) {
+          while (performance.now() - start < 1200) {
             samples.push({
               width: region.getBoundingClientRect().width,
               shift: Math.abs(backup.getBoundingClientRect().x - baseline),
             });
+            if (
+              region.hidden &&
+              document
+                .querySelector("#analysisToggle")
+                .getAttribute("aria-pressed") === "true"
+            )
+              break;
             await new Promise(requestAnimationFrame);
           }
           return { initial, samples, hidden: region.hidden };
@@ -394,6 +401,7 @@ async function verify() {
           collapse.samples.some(
             (sample) => sample.width > 0 && sample.width < collapse.initial - 1,
           ),
+          JSON.stringify({ width, agenda, collapse }),
         );
         assert.ok(
           collapse.samples.every((sample) => sample.shift < 1),

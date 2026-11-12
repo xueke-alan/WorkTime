@@ -389,23 +389,58 @@ dialog::backdrop {
     grid-row: auto;
   }
 }
-#runtimeFolderRecovery {
-  width: min(460px, calc(100vw - 32px));
+#startupPermissionsDialog {
+  width: min(380px, calc(100vw - 32px));
 }
-#runtimeFolderRecovery .dialog-body {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  min-height: min(168px, 45dvh);
-  padding-block: 28px;
+#startupPermissionsDialog.has-both-permissions {
+  width: min(720px, calc(100vw - 32px));
+}
+#startupPermissionsDialog .startup-permissions-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0;
   overflow-wrap: anywhere;
 }
-#runtimeFolderRecovery .dialog-body p {
+#startupPermissionsDialog.has-both-permissions .startup-permissions-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.startup-permissions-grid > section:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+#startupPermissionsDialog:not(.has-both-permissions) .startup-permissions-grid > section {
+  min-block-size: 12rem;
+}
+.has-both-permissions .startup-permissions-grid > section + section {
+  border-inline-start: 1px solid var(--line);
+}
+.startup-permissions-grid h3,
+.startup-permissions-copy p {
   margin: 0;
 }
-#runtimeFolderRecovery .dialog-body .help {
-  margin-top: 18px;
+.startup-permissions-grid h3 { font-size: 1rem; }
+.startup-permissions-copy {
+  display: grid;
+  gap: .5rem;
+}
+.startup-permissions-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .5rem;
+  margin-top: auto;
+}
+@media (max-width: 560px) {
+  #startupPermissionsDialog.has-both-permissions .startup-permissions-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .has-both-permissions .startup-permissions-grid > section + section {
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--line);
+  }
 }
 .dialog-head {
   background: var(--theme-surface-paper, #f8fbf9);

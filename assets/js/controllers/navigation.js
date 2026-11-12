@@ -33,6 +33,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     const wasYearMode = model.yearMode;
     transition.update();
     actions.render();
+    if (transition.sidebarTransition) actions.closeImport();
     if (wasYearMode !== model.yearMode && $("settingsPane").hidden) {
       const content = document.querySelector(".editor > .editor-content");
       WorkTimeApp.ui.motion?.stop(content);
@@ -69,7 +70,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     sidebarTransition = false,
   }) {
     if (resettingBatch || model.batchMode || pageTransition) return;
-    actions.closeImport();
+    if (!sidebarTransition && !model.yearMode) actions.closeImport();
     stopMonthTransition();
     stopTodayAttention();
     const transition = {
@@ -95,6 +96,13 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         elements = [
           content,
           ...document.querySelectorAll(".calendar-footer > :not(.site-meta)"),
+          ...(transition.sidebarTransition
+            ? [
+                ...document.querySelectorAll(
+                  ".summary-sidebar > :is(.cards, .target-panel, .sidebar-oa-workspace)",
+                ),
+              ].filter((element) => element.getClientRects().length)
+            : []),
           ...(transition.sidebarTransition
             ? []
             : [
@@ -647,47 +655,161 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
     if (!$("settingsPane").hidden) actions.refreshSettings();
   }
+  const batchText = (key, values = {}) =>
+    WorkTimeApp.i18n.t("batch." + key, values);
   function prepareBatchEditor() {
     const schedule = C.scheduleForDate(model.state, model.selected);
+    model.batchInput = {
+      mode: "direct",
+      direct: { start: "", end: "", nextDay: false },
+      overtime: { start: "", hours: "" },
+    };
     model.batchDraft = { reset: "none" };
     model.batchPreview = null;
-    $("batchStart").value = "";
-    $("batchEnd").value = "";
+    $("batchStart").value =
+      $("batchEnd").value =
+      $("batchCalcOvertime").value =
+        "";
     $("batchStart").placeholder = schedule.workStart;
     $("batchEnd").placeholder = schedule.workEnd;
     $("batchNext").checked = false;
-    $("batchCalcStart").value = schedule.workStart;
-    $("batchCalcOvertime").value = "";
     $("batchError").textContent = "";
-    $("batchCalcResult").textContent = "";
+    updateBatchMode();
+    actions.renderBatchTimeTemplates();
+    refreshBatchPreview();
+  }
+  function updateBatchMode() {
+    const overtime = model.batchInput.mode === "overtime";
+    $("batchInputSection").dataset.inputMode = overtime ? "overtime" : "direct";
+    $("batchModeToggle").querySelector(".button-label").textContent = batchText(
+      overtime ? "direct" : "overtime",
+    );
+    $("batchModeToggle").title = batchText(
+      overtime ? "switchDirect" : "switchOvertime",
+    );
+    $("batchModeToggle").setAttribute("aria-label", $("batchModeToggle").title);
+    $("batchEndField").hidden = overtime;
+    $("batchNextField").inert = overtime;
+    document.querySelector(".batch-template-area").inert = overtime;
+    $("batchOvertimeFields").hidden = !overtime;
+    $("batchEnd").disabled = overtime;
+    $("batchCalcOvertime").disabled = !overtime;
+    $("batchCalcOvertime").required = overtime;
     updateBatchNextToggle();
+  }
+  function rememberBatchInput() {
+    const input = model.batchInput;
+    if (input.mode === "direct")
+      input.direct = {
+        start: $("batchStart").value,
+        end: $("batchEnd").value,
+        nextDay: $("batchNext").checked,
+      };
+    else
+      input.overtime = {
+        start: $("batchStart").value,
+        hours: $("batchCalcOvertime").value,
+      };
+  }
+  function switchBatchMode(mode) {
+    if (model.batchSaving || model.batchInput.mode === mode) return;
+    rememberBatchInput();
+    const input = model.batchInput;
+    input.mode = mode;
+    if (mode === "overtime") {
+      if (!input.overtime.start)
+        input.overtime.start =
+          input.direct.start ||
+          C.scheduleForDate(model.state, model.selected).workStart;
+      $("batchStart").value = input.overtime.start;
+      $("batchCalcOvertime").value = input.overtime.hours;
+    } else {
+      $("batchStart").value = input.direct.start;
+      $("batchEnd").value = input.direct.end;
+      $("batchNext").checked = input.direct.nextDay;
+    }
+    $("batchError").textContent = "";
+    updateBatchMode();
     actions.renderBatchTimeTemplates();
     refreshBatchPreview();
   }
   function refreshBatchPreview() {
     if (!model.batchMode || model.batchSaving) return;
-    const record = {
-      start: $("batchStart").value,
-      end: $("batchEnd").value,
-      nextDay: $("batchNext").checked,
-      effectiveMinutes: null,
-    };
-    const reset = model.batchDraft?.reset || "none";
-    const empty = !record.start && !record.end;
-    const complete = C.complete(record);
-    const valid = complete || (reset !== "none" && empty);
+    updateBatchMode();
+    rememberBatchInput();
     const dates = [...model.batchDays].filter(
       (date) =>
         date.slice(0, 7) === model.month &&
         C.canBatchEditDate(model.state, date),
     );
+    let record = {
+      start: $("batchStart").value,
+      end: $("batchEnd").value,
+      nextDay: $("batchNext").checked,
+      effectiveMinutes: null,
+    };
+    let issue = "";
+    const overtime = model.batchInput.mode === "overtime";
+    $("batchSchedule").textContent = WorkTimeApp.ui.scheduleDescription(
+      C.scheduleForDate(model.state, model.selected),
+    );
+    $("batchCalcResult").textContent = "";
+    if (overtime) {
+      record = null;
+      const schedules = dates.map((date) =>
+        C.scheduleForDate(model.state, date),
+      );
+      const hours = $("batchCalcOvertime").value;
+      if (!model.state.settings.configured)
+        issue = WorkTimeApp.i18n.t("copy.99d09d1bd5");
+      else if (C.timeMin($("batchStart").value) === null)
+        issue = batchText("needStart");
+      else if (
+        hours === "" ||
+        !$("batchCalcOvertime").validity.valid ||
+        !Number.isFinite(Number(hours)) ||
+        Number(hours) < 0
+      )
+        issue = batchText("needHours");
+      else if (
+        schedules.some(
+          (item) =>
+            C.scheduleSignature(item) !== C.scheduleSignature(schedules[0]),
+        )
+      )
+        issue = batchText("mixedSchedules");
+      else if (schedules.length) {
+        const minutes =
+          schedules[0].standardMinutes + Math.round(Number(hours) * 60);
+        const match =
+          minutes < 1440
+            ? C.endForDuration($("batchStart").value, minutes, schedules[0])
+            : null;
+        if (!match) issue = WorkTimeApp.i18n.t("copy.0e1112168e");
+        else {
+          record = {
+            start: $("batchStart").value,
+            end: match.end,
+            nextDay: match.nextDay,
+            effectiveMinutes: null,
+          };
+          $("batchCalcResult").textContent = batchText("calculated", {
+            time:
+              match.end + (match.nextDay ? " · " + batchText("nextDay") : ""),
+          });
+        }
+      }
+    } else if (C.timeMin(record.start) === null) issue = batchText("needStart");
+    else if (C.timeMin(record.end) === null) issue = batchText("needEnd");
+    else if (!C.complete(record)) issue = batchText("invalidRange");
+    const valid = !!record && !issue && C.complete(record);
     model.batchDraft = {
-      reset,
+      reset: "none",
       month: model.month,
       dates,
-      record: complete ? record : null,
+      record: valid ? record : null,
       valid,
-      canConfirm: valid && (reset === "all" || dates.length > 0),
+      canConfirm: valid && dates.length > 0,
     };
     model.batchPreview = {
       base: model.state,
@@ -696,8 +818,51 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         model.batchDraft,
       ),
     };
-    $("batchStart").required = $("batchEnd").required =
-      reset === "none" || !empty;
+    const status = $("batchPreviewStatus");
+    const line = (tag, text, className = "") => {
+      const element = document.createElement(tag);
+      element.className = className;
+      element.textContent = text;
+      return element;
+    };
+    status.replaceChildren();
+    if (!dates.length) status.append(line("p", batchText("chooseDates")));
+    else if (!valid) status.append(line("p", issue));
+    else {
+      const counts = { added: 0, completed: 0, replaced: 0 };
+      for (const date of dates) {
+        const day = model.state.days[date];
+        const previous = C.effectiveRecord(day, true);
+        if (C.complete(previous)) counts.replaced++;
+        else if (
+          (previous && (previous.start || previous.end)) ||
+          day?.draft?.start ||
+          day?.draft?.end
+        )
+          counts.completed++;
+        else counts.added++;
+      }
+      status.append(
+        line(
+          "strong",
+          record.start +
+            " – " +
+            record.end +
+            (record.nextDay ? " · " + batchText("nextDay") : ""),
+          "batch-preview-time",
+        ),
+      );
+      const summary = line("p", "", "batch-preview-counts");
+      for (const key of ["added", "completed", "replaced"]) {
+        const item = line("span", batchText("count" + key) + " ");
+        item.append(line("b", String(counts[key])));
+        summary.append(item);
+      }
+      status.append(
+        summary,
+        line("p", batchText("previewNote"), "batch-preview-note"),
+      );
+    }
     actions.renderStats();
     actions.renderCalendar();
   }
@@ -707,54 +872,51 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       String($("batchNext").checked),
     );
   }
-  function calculateBatchEndTime() {
-    const result = $("batchCalcResult");
-    result.textContent = "";
+  async function persistBatch(draft, message) {
+    model.batchSaving = resettingBatch = true;
+    $("batchForm").setAttribute("aria-busy", "true");
+    $("batchForm").inert = true;
+    $("batchError").textContent = "";
+    actions.renderCalendar();
     try {
-      if (!model.state.settings.configured)
-        throw Error(WorkTimeApp.i18n.t("copy.99d09d1bd5"));
-      if (!model.batchDays.size)
-        throw Error(WorkTimeApp.i18n.t("copy.23568bd4b2"));
-      const schedules = [...model.batchDays].map((date) =>
-        C.scheduleForDate(model.state, date),
-      );
-      const schedule = schedules[0];
-      if (
-        schedules.some(
-          (item) => C.scheduleSignature(item) !== C.scheduleSignature(schedule),
-        )
-      )
-        throw Error(WorkTimeApp.i18n.t("copy.33d9bb36a9"));
-      const start = $("batchCalcStart").value,
-        startMinutes = C.timeMin(start),
-        value = $("batchCalcOvertime").value,
-        overtimeHours = Number(value);
-      if (startMinutes === null)
-        throw Error(WorkTimeApp.i18n.t("copy.abc132bd4b"));
-      if (value === "" || !Number.isFinite(overtimeHours) || overtimeHours < 0)
-        throw Error(WorkTimeApp.i18n.t("copy.b5694f41a7"));
-      const targetMinutes =
-        schedule.standardMinutes + Math.round(overtimeHours * 60);
-      if (targetMinutes >= 1440)
-        throw Error(WorkTimeApp.i18n.t("copy.0e1112168e"));
-      const match = C.endForDuration(start, targetMinutes, schedule);
-      if (!match) throw Error(WorkTimeApp.i18n.t("copy.c63cf259af"));
-      $("batchStart").value = start;
-      $("batchEnd").value = match.end;
-      $("batchNext").checked = match.nextDay;
-      updateBatchNextToggle();
-      actions.renderBatchTimeTemplates();
-      $("batchError").textContent = "";
-      result.textContent =
-        WorkTimeApp.i18n.t("copy.72393b4192") +
-        start +
-        " – " +
-        match.end +
-        (match.nextDay ? WorkTimeApp.i18n.t("copy.c751037c58") : "");
-      refreshBatchPreview();
-    } catch (error) {
-      result.textContent = WorkTimeApp.i18n.message(error.message);
+      const result = await application.confirmBatch(draft);
+      if (!result.persisted) throw result.error || Error("Save failed");
+      model.batchSaving = resettingBatch = false;
+      actions.leaveBatch();
+      actions.render();
+      actions.saveFeedback(true, message);
+      $("batchToggle").focus();
+    } catch {
+      $("batchError").textContent = batchText("saveFailed");
+      actions.toast(WorkTimeApp.i18n.t("copy.77b0044d4f"), "error");
+    } finally {
+      model.batchSaving = resettingBatch = false;
+      $("batchForm").removeAttribute("aria-busy");
+      $("batchForm").inert = false;
+      if (model.batchMode) refreshBatchPreview();
     }
+  }
+  function handleBatchClear() {
+    if (!model.batchMode || model.batchSaving || !model.batchDays.size) return;
+    const draft = {
+      reset: "selected",
+      month: model.month,
+      dates: [...model.batchDays],
+      record: null,
+    };
+    const candidate = WorkTimeApp.domain.batch.applyBatchChanges(
+      model.state,
+      draft,
+    );
+    if (
+      !draft.dates.some(
+        (date) => candidate.days[date] !== model.state.days[date],
+      )
+    ) {
+      actions.toast(batchText("nothingToClear"));
+      return;
+    }
+    return persistBatch(draft, batchText("saved"));
   }
   let bound = false;
   function bind() {
@@ -781,15 +943,36 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         },
         true,
       );
-    for (const id of ["batchStart", "batchEnd"])
+    for (const id of ["batchStart", "batchEnd", "batchCalcOvertime"])
       for (const type of ["input", "change"])
         events.listen($(id), type, () => {
           $("batchError").textContent = "";
           refreshBatchPreview();
         });
+    events.listen(
+      $("batchCalcOvertime"),
+      "wheel",
+      (event) => {
+        const input = $("batchCalcOvertime");
+        if (
+          model.batchSaving ||
+          model.batchInput?.mode !== "overtime" ||
+          document.activeElement !== input ||
+          !event.deltaY
+        )
+          return;
+        event.preventDefault();
+        if (event.deltaY < 0) input.stepUp();
+        else input.stepDown();
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      },
+      { passive: false },
+    );
     unlistenMotion = animationCompat.listen(reducedMotion, () => {
       stopTodayAttention();
-      if (reducedMotion.matches) stopPageTransition();
+      if (reducedMotion.matches) {
+        stopPageTransition();
+      }
     });
     events.listen(document, "visibilitychange", () => {
       if (document.hidden) {
@@ -1031,10 +1214,14 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       if (resettingBatch || model.batchSaving || !model.batchMode) return;
       model.batchDays.clear();
       model.batchAnchor = null;
-      for (const card of $("calendar").querySelectorAll(".day[data-date]")) {
-        const date = card.dataset.date;
+      const end = new Date(
+        Number(model.month.slice(0, 4)),
+        Number(model.month.slice(5)),
+        0,
+      ).getDate();
+      for (let day = 1; day <= end; day++) {
+        const date = model.month + "-" + String(day).padStart(2, "0");
         if (
-          date.slice(0, 7) === model.month &&
           C.canBatchEditDate(model.state, date) &&
           !C.complete(C.effectiveRecord(model.state.days[date], true))
         )
@@ -1048,31 +1235,23 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       actions.leaveBatch();
       $("batchToggle").focus();
     });
-    events.handler($("batchReset"), "onclick", () => {
-      if (model.batchSaving || !model.batchMode) return;
-      model.batchDraft = { reset: model.batchDays.size ? "selected" : "all" };
-      $("batchStart").value = "";
-      $("batchEnd").value = "";
-      $("batchNext").checked = false;
-      $("batchCalcOvertime").value = "";
-      $("batchError").textContent = "";
-      $("batchCalcResult").textContent = "";
-      updateBatchNextToggle();
-      actions.renderBatchTimeTemplates();
+    events.handler($("batchClearSelection"), "onclick", () => {
+      if (model.batchSaving) return;
+      model.batchDays.clear();
+      model.batchAnchor = null;
       refreshBatchPreview();
     });
+    events.handler($("batchModeToggle"), "onclick", () =>
+      switchBatchMode(
+        model.batchInput.mode === "direct" ? "overtime" : "direct",
+      ),
+    );
+    events.handler($("batchReset"), "onclick", handleBatchClear);
     events.handler($("batchNextToggle"), "onclick", () => {
       $("batchNext").checked = !$("batchNext").checked;
       updateBatchNextToggle();
       actions.renderBatchTimeTemplates();
       refreshBatchPreview();
-    });
-    events.handler($("batchCalculateEnd"), "onclick", calculateBatchEndTime);
-    events.listen($("batchCalcOvertime"), "keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        calculateBatchEndTime();
-      }
     });
     events.handler($("batchForm"), "onsubmit", async (e) => {
       e.preventDefault();
@@ -1085,37 +1264,12 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         );
         return;
       }
-      const count = draft.dates.length;
-      model.batchSaving = resettingBatch = true;
-      $("batchForm").setAttribute("aria-busy", "true");
-      $("batchForm").inert = true;
-      $("batchError").textContent = "";
-      actions.renderCalendar();
-      try {
-        const result = await application.confirmBatch(draft);
-        if (!result.persisted) throw result.error || Error("Save failed");
-        model.batchSaving = resettingBatch = false;
-        actions.leaveBatch();
-        actions.render();
-        actions.saveFeedback(
-          true,
-          draft.reset !== "none"
-            ? WorkTimeApp.i18n.t("batch.saved")
-            : WorkTimeApp.i18n.t("copy.f54a93c893") +
-                count +
-                WorkTimeApp.i18n.t("copy.a68e14c5a6"),
-        );
-        $("batchToggle").focus();
-      } catch {
-        $("batchError").textContent = WorkTimeApp.i18n.t("batch.saveFailed");
-        actions.toast(WorkTimeApp.i18n.t("copy.77b0044d4f"), "error");
-      } finally {
-        model.batchSaving = resettingBatch = false;
-        $("batchForm").removeAttribute("aria-busy");
-        $("batchForm").inert = false;
-        if (model.batchMode) refreshBatchPreview();
-        else actions.render();
-      }
+      await persistBatch(
+        draft,
+        WorkTimeApp.i18n.t("copy.f54a93c893") +
+          draft.dates.length +
+          WorkTimeApp.i18n.t("copy.a68e14c5a6"),
+      );
     });
   }
 

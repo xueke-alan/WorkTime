@@ -288,3 +288,6 @@ Thumbs.db
 !/scripts/killer-difficulty.json
 
 !/scripts/verify-ai-continuation.cjs
+!/scripts/verify-oa-return-clipboard.cjs
+
+!/scripts/verify-batch-editor.cjs

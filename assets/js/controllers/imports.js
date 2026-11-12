@@ -18,6 +18,7 @@ WorkTimeApp.ui.secondary.imports = function (options) {
   let disposed = false;
   let importParseTimer = null;
   let resultsMode = "history";
+  let inputRevision = 0;
   function anomalyReason(record) {
     if (!record.start && !record.end)
       return WorkTimeApp.i18n.t("copy.afaa05cdc4");
@@ -57,6 +58,7 @@ WorkTimeApp.ui.secondary.imports = function (options) {
       );
   }
   function resetImportInput() {
+    inputRevision++;
     $("pasteText").value = "";
     $("importRows").innerHTML = "";
     invalidatePreview();
@@ -378,6 +380,26 @@ WorkTimeApp.ui.secondary.imports = function (options) {
     parseImport();
     actions.open("importDialog", openOptions);
   }
+  async function readReturnedClipboard(valid) {
+    const input = $("pasteText"),
+      revision = inputRevision;
+    const current = () =>
+      !disposed &&
+      valid() &&
+      $("importDialog").open &&
+      inputRevision === revision &&
+      !input.value.trim();
+    if (!current()) return;
+    try {
+      const text = await clipboard.readText();
+      if (!current() || !text.trim()) return;
+      input.value = text;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    } catch {
+      if (current())
+        actions.toast(WorkTimeApp.i18n.t("copy.a97d627f90"), "error");
+    }
+  }
   let bound = false;
   function bind() {
     if (bound) return;
@@ -467,7 +489,10 @@ WorkTimeApp.ui.secondary.imports = function (options) {
         $("oaLinkError").textContent = WorkTimeApp.i18n.message(error.message);
       }
     });
-    events.handler($("pasteText"), "oninput", scheduleImportParse);
+    events.handler($("pasteText"), "oninput", () => {
+      inputRevision++;
+      scheduleImportParse();
+    });
     events.handler($("pasteOAClipboard"), "onclick", async () => {
       const button = $("pasteOAClipboard"),
         input = $("pasteText"),
@@ -541,5 +566,13 @@ WorkTimeApp.ui.secondary.imports = function (options) {
     !!$("pasteText").value.trim() ||
     ($("oaLinkDialog").open &&
       $("oaLinkInput").value.trim() !== model.state.oaUrl);
-  return { bind, dispose, hasDraft, openImport, showSources, editOALink };
+  return {
+    bind,
+    dispose,
+    hasDraft,
+    openImport,
+    readReturnedClipboard,
+    showSources,
+    editOALink,
+  };
 };

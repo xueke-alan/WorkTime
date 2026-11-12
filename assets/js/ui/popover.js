@@ -12,7 +12,7 @@ WorkTimeApp.ui.popover = (() => {
   }
   const instances = new Set();
   const stack = [];
-  // Arrows live outside scrolling surfaces, so long menus never clip them.
+  // Keep arrows outside scrollable menus and attach them to animated hints.
   const pointers = new Map();
   let pointerFrame = 0;
   function point(element, anchor) {
@@ -20,17 +20,21 @@ WorkTimeApp.ui.popover = (() => {
     element.setAttribute("data-pop-surface", "");
     let entry = pointers.get(element);
     if (!entry) {
-      const arrow = document.createElement("div");
-      arrow.className = "pop-arrow";
-      arrow.setAttribute("aria-hidden", "true");
-      arrow.innerHTML =
-        '<svg viewBox="0 0 14 8" aria-hidden="true"><path d="M0 8 7 1 14 8"/></svg>';
-      const topLayer = typeof arrow.showPopover === "function";
-      if (topLayer) arrow.setAttribute("popover", "manual");
-      (element.closest("dialog[open]") || document.body).append(arrow);
-      entry = { arrow, anchor, topLayer };
+      const attached = element.matches(
+        ".site-hint,.analysis-hover,.analysis-date-hint,.timetable-hint,.agenda-drag-hint",
+      );
+      let arrow = element;
+      if (!attached) {
+        arrow = document.createElement("div");
+        arrow.className = "pop-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        const topLayer = typeof arrow.showPopover === "function";
+        if (topLayer) arrow.setAttribute("popover", "manual");
+        (element.closest("dialog[open]") || document.body).append(arrow);
+        if (topLayer) arrow.showPopover();
+      }
+      entry = { arrow, anchor, attached };
       pointers.set(element, entry);
-      if (topLayer) arrow.showPopover();
     }
     entry.anchor = anchor;
     updatePointers();
@@ -38,7 +42,7 @@ WorkTimeApp.ui.popover = (() => {
   function updatePointers() {
     pointerFrame = 0;
     for (const [element, entry] of pointers) {
-      const { arrow, anchor } = entry;
+      const { arrow, anchor, attached } = entry;
       const bounds = element.getBoundingClientRect();
       if (
         !element.isConnected ||
@@ -49,7 +53,7 @@ WorkTimeApp.ui.popover = (() => {
         (anchor instanceof Element &&
           (!anchor.isConnected || !anchor.getClientRects().length))
       ) {
-        arrow.remove();
+        if (!attached) arrow.remove();
         pointers.delete(element);
         continue;
       }
@@ -70,25 +74,36 @@ WorkTimeApp.ui.popover = (() => {
                   ? "top"
                   : "bottom";
       const clamp = (value, start, end) =>
-        Math.max(start, Math.min(value, Math.max(start, end)));
+        start > end ? (start + end) / 2 : Math.max(start, Math.min(value, end));
       const horizontal = side === "top" || side === "bottom";
       const left = horizontal
-        ? clamp(x, bounds.left + 12, bounds.right - 12) - 7
+        ? clamp(x, bounds.left + 14, bounds.right - 14)
         : side === "left"
-          ? bounds.left - 10
-          : bounds.right - 4;
+          ? bounds.left
+          : bounds.right;
       const top = horizontal
         ? side === "top"
-          ? bounds.top - 7
-          : bounds.bottom - 1
-        : clamp(y, bounds.top + 12, bounds.bottom - 12) - 4;
-      const style = getComputedStyle(element);
-      const css = `left:${left}px;top:${top}px;--pop-fill:${style.backgroundColor};--pop-edge:${style.borderTopColor};z-index:${Math.max(20000, Number(style.zIndex) || 0) + 1};`;
-      if (entry.css !== css) {
-        arrow.style.cssText = css;
-        entry.css = css;
+          ? bounds.top
+          : bounds.bottom
+        : clamp(y, bounds.top + 14, bounds.bottom - 14);
+      if (attached) {
+        const offset = horizontal
+          ? left - bounds.left - element.clientLeft
+          : top - bounds.top - element.clientTop;
+        if (entry.offset !== offset) {
+          element.style.setProperty("--pop-arrow-offset", offset + "px");
+          entry.offset = offset;
+        }
+      } else {
+        const style = getComputedStyle(element);
+        const css = `left:${left - 7}px;top:${top - 7}px;--pop-fill:${style.backgroundColor};--pop-edge:${style.borderTopColor};z-index:${Math.max(20000, Number(style.zIndex) || 0) + 1};`;
+        if (entry.css !== css) {
+          arrow.style.cssText = css;
+          entry.css = css;
+        }
       }
-      if (arrow.dataset.side !== side) arrow.dataset.side = side;
+      if (arrow.dataset.popArrowSide !== side)
+        arrow.dataset.popArrowSide = side;
     }
   }
   function schedulePointers() {
@@ -117,7 +132,7 @@ WorkTimeApp.ui.popover = (() => {
       const details = event.target;
       if (details instanceof HTMLDetailsElement && details.open) {
         const menu = details.querySelector(
-          ":scope > .music-menu-panel, :scope > .reader-menu",
+          ":scope > :is(.music-menu-panel,.reader-menu,.analysis-date-hint)",
         );
         if (menu) point(menu, details.querySelector("summary"));
       }
@@ -278,7 +293,7 @@ WorkTimeApp.ui.popover = (() => {
   };
 })();
 
-/** Only detailed or clipped content gets a hint, including in lazy UI. */
+/** Hints for detailed or clipped content and explicitly marked actions. */
 (() => {
   const hint = document.createElement("div");
   hint.id = "siteHint";
@@ -290,6 +305,7 @@ WorkTimeApp.ui.popover = (() => {
   document.body.append(hint);
   let target = null,
     text = "",
+    originalTitle = null,
     description = null,
     timer = null,
     motion = null;
@@ -302,8 +318,8 @@ WorkTimeApp.ui.popover = (() => {
     hint.hidden = true;
     if (target) {
       // Rendering may have supplied a newer title while this hint was open.
-      if (target.getAttribute("title") === "")
-        target.setAttribute("title", text);
+      if (originalTitle !== null && target.getAttribute("title") === "")
+        target.setAttribute("title", originalTitle);
       if (description === null) target.removeAttribute("aria-describedby");
       else target.setAttribute("aria-describedby", description);
     }
@@ -319,19 +335,21 @@ WorkTimeApp.ui.popover = (() => {
     const rect = target.getBoundingClientRect(),
       box = hint.getBoundingClientRect();
     const inset = 10,
-      gap = 8;
-    hint.style.left =
-      Math.max(
+      gap = 8,
+      anchorX = rect.left + rect.width / 2,
+      left = Math.max(
         inset,
         Math.min(
-          rect.left + (rect.width - box.width) / 2,
+          anchorX - box.width / 2,
           window.innerWidth - box.width - inset,
         ),
-      ) + "px";
+      ),
+      above = rect.top >= box.height + gap + inset;
+    hint.style.left = left + "px";
     hint.style.top =
       Math.max(
         inset,
-        rect.top >= box.height + gap + inset
+        above
           ? rect.top - box.height - gap
           : Math.min(
               rect.bottom + gap,
@@ -352,32 +370,43 @@ WorkTimeApp.ui.popover = (() => {
   function open(element, immediate = false) {
     if (element === target) return;
     close();
-    const title = element?.getAttribute("title")?.trim();
     if (
-      !title ||
+      !element ||
       element.closest(".agenda-content-outgoing,.calendar-navigation-copy")
     )
       return;
+    const action = element.getAttribute("data-action-hint");
+    const title = element.getAttribute("title");
+    const label = action
+      ? WorkTimeApp.i18n.t(action)
+      : action === ""
+        ? element.getAttribute("aria-label")?.trim()
+        : (element.dataset.dateMarkerHint || title)?.trim();
+    if (!label) return;
     target = element;
-    text = title;
+    text = label;
+    originalTitle = title;
     description = target.getAttribute("aria-describedby");
     // Suppress native bubbles even when a visible label makes the hint redundant.
-    target.setAttribute("title", "");
+    if (title !== null) target.setAttribute("title", "");
     // Bottom navigation never opens hints, including clipped or status labels.
     if (element.closest(".editor > .notification-tabs")) return;
-    const clipped = [
-      element,
-      ...element.querySelectorAll(".button-label,.game-menu-name"),
-    ].some(
-      (node) => node.clientWidth > 0 && node.scrollWidth > node.clientWidth + 1,
-    );
+    if (action !== null && element.matches(':disabled,[aria-disabled="true"]'))
+      return;
     // Labels and routine action descriptions should never float over the layout,
     // even when their wording differs from the visible or accessible name.
     // Date markers contain details that otherwise have no visible text.
     if (
-      !clipped &&
+      action === null &&
       element.dataset.hint !== "detail" &&
-      !element.matches(".date-markers")
+      !element.matches(".date-markers") &&
+      ![
+        element,
+        ...element.querySelectorAll(".button-label,.game-menu-name"),
+      ].some(
+        (node) =>
+          node.clientWidth > 0 && node.scrollWidth > node.clientWidth + 1,
+      )
     )
       return;
     target.setAttribute(
@@ -386,17 +415,30 @@ WorkTimeApp.ui.popover = (() => {
     );
     timer = setTimeout(show, immediate ? 0 : 240);
   }
+  const hintTrigger = "[title],[data-action-hint],[data-date-marker-hint]";
   document.addEventListener("pointerover", (event) => {
-    if (event.pointerType !== "touch") open(event.target.closest?.("[title]"));
+    if (event.pointerType !== "touch")
+      open(event.target.closest?.(hintTrigger));
   });
   document.addEventListener("pointerout", (event) => {
     if (target && !target.contains(event.relatedTarget)) close();
   });
   document.addEventListener("focusin", (event) =>
-    open(event.target.closest?.("[title]"), true),
+    open(event.target.closest?.(hintTrigger), true),
   );
   document.addEventListener("focusout", close);
   document.addEventListener("pointerdown", close, true);
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (
+        target?.hasAttribute("data-action-hint") &&
+        target.contains(event.target)
+      )
+        close();
+    },
+    true,
+  );
   document.addEventListener("pointerup", (event) => {
     if (
       event.pointerType === "touch" &&

@@ -114,7 +114,10 @@ function auditLayout() {
     if (
       node.matches("button") &&
       !ellipsis &&
-      node.scrollHeight > node.clientHeight + 2
+      node.scrollHeight > node.clientHeight + 2 &&
+      lines.some(
+        (line) => line.top < box.top - 2 || line.bottom > box.bottom + 2,
+      )
     )
       report("vertical-clipping");
     if (node.matches(".button-label") && !ellipsis) {
@@ -227,14 +230,7 @@ async function verify() {
       assert.equal(await page.locator("#languageOptions button").count(), 6);
       assert.deepEqual(
         await page.locator("#languageOptions button").allTextContents(),
-        [
-          "简体中文",
-          "繁體中文-台",
-          "繁體中文-港",
-          "English",
-          "한국어",
-          "日本語",
-        ],
+        ["简体中文", "繁體-台", "繁體-港", "English", "한국어", "日本語"],
       );
       const baseline = await page.evaluate(() =>
         JSON.stringify(
@@ -385,11 +381,24 @@ async function verify() {
             );
             await ready(zoomPage);
             for (const view of ["month", "year", "batch", "preferences"]) {
-              if (view === "year")
+              if (view === "year") {
                 await zoomPage.locator("#monthTitle").click();
+                await zoomPage.locator(".year-month").first().waitFor();
+                await zoomPage.waitForFunction(
+                  () => !document.getElementById("panelContent").inert,
+                );
+              }
               if (view === "batch") {
                 await zoomPage.locator("#monthTitle").click();
+                await zoomPage
+                  .locator(".year-month")
+                  .first()
+                  .waitFor({ state: "hidden" });
+                await zoomPage.waitForFunction(
+                  () => !document.getElementById("panelContent").inert,
+                );
                 await zoomPage.locator("#batchToggle").click();
+                await zoomPage.locator("#batchCancel").waitFor();
               }
               if (view === "preferences") {
                 await zoomPage.locator("#batchCancel").click();

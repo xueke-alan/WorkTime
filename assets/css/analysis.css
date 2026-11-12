@@ -241,13 +241,7 @@ body .editor.is-analysis-mode #dayEditor { display: none !important; }
   position: absolute;
   z-index: 3;
   inset-inline: 0;
-  padding: 12px;
-  margin-top: 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--paper);
-  box-shadow: var(--shadow);
-  line-height: 1.8;
+  margin: 8px 0 0;
 }
 .analysis-chart-heading {
   padding-top: 14px;
@@ -388,17 +382,11 @@ body .editor.is-analysis-mode #dayEditor { display: none !important; }
   z-index: 5;
   width: 160px;
   max-width: calc(100% - 16px);
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--paper);
-  box-shadow: 0 6px 20px #0002;
   pointer-events: none;
 }
 .analysis-tooltip {
   display: grid;
   gap: 4px;
-  font-size: 12px;
 }
 .analysis-tooltip > strong {
   font-weight: 600;

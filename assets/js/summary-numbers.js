@@ -38,6 +38,9 @@
       alignInk = false,
       animateInitial = true,
       animateWhole = false,
+      preserveText = false,
+      integerDigits = 0,
+      reserveSign = false,
       motion = true,
       deferAnimation = false,
     } = {},
@@ -61,7 +64,15 @@
             });
     const raw = number === null ? placeholder : number + suffix;
     const old = previous.get(element);
-    const signature = JSON.stringify([raw, unit, alignInk, animateWhole]);
+    const signature = JSON.stringify([
+      raw,
+      unit,
+      alignInk,
+      animateWhole,
+      preserveText,
+      integerDigits,
+      reserveSign,
+    ]);
     if (old?.signature === signature) return;
     for (const track of element.querySelectorAll(".summary-number-track"))
       finish(track);
@@ -83,7 +94,7 @@
       accessible.textContent = raw;
       const visual = document.createElement("span");
       visual.className = "summary-number-visual";
-      visual.setAttribute("aria-hidden", "true");
+      if (!preserveText) visual.setAttribute("aria-hidden", "true");
       const decimal = WorkTimeApp.i18n.decimalSeparator;
       const oldDot = oldValue.includes(decimal)
         ? oldValue.indexOf(decimal)
@@ -106,10 +117,30 @@
         (animateInitial || old?.number != null) &&
         oldValue !== number;
       const pending = [];
+      const leadingNumber = number.match(/^([+-]?)(\d+)/);
+      if (!animateWhole && leadingNumber) {
+        for (
+          let count = leadingNumber[2].length;
+          count < integerDigits;
+          count++
+        ) {
+          const spacer = document.createElement("span");
+          spacer.className = "summary-number-spacer";
+          spacer.setAttribute("aria-hidden", "true");
+          visual.append(spacer);
+        }
+        if (reserveSign) {
+          const sign = document.createElement("span");
+          sign.className = "summary-number-sign";
+          sign.textContent = leadingNumber[1];
+          visual.append(sign);
+        }
+      }
       for (const [index, digit] of (animateWhole
         ? [number]
         : [...number]
       ).entries()) {
+        if (reserveSign && index === 0 && leadingNumber?.[1]) continue;
         if (!animateWhole && !/\d/.test(digit)) {
           const punctuation = document.createElement("span");
           punctuation.textContent = digit === " " ? "\u00a0" : digit;
@@ -144,6 +175,11 @@
           const delay = Math.min(pending.length * 12, 48);
           track.style.setProperty("--number-delay", delay + "ms");
           const outgoing = row(before);
+          if (preserveText) {
+            outgoing.textContent = "";
+            outgoing.dataset.numberBefore = before;
+            outgoing.setAttribute("aria-hidden", "true");
+          }
           outgoing.classList.add("summary-number-outgoing");
           track.append(finalRow, outgoing);
           const end = (event) => {
@@ -169,7 +205,8 @@
         label.style.whiteSpace = "pre";
         visual.append(label);
       }
-      wrapper.append(accessible, visual);
+      if (!preserveText) wrapper.append(accessible);
+      wrapper.append(visual);
       element.replaceChildren(wrapper);
       // The final row owns layout; the outgoing row never contributes geometry.
       if (

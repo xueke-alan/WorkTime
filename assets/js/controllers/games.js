@@ -18,7 +18,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   idleDate.className = "game-idle-date";
   const idleMotto = document.createElement("div");
   idleMotto.className = "game-idle-motto";
-  idleMotto.textContent = "我爱上班，从不摸鱼";
+  idleMotto.textContent = WorkTimeApp.i18n.t("games.idleMotto");
   idleCover.append(idleTime, idleDate, idleMotto);
   const hoverDevice = window.matchMedia(
     "(any-hover: hover) and (any-pointer: fine)",
@@ -532,6 +532,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     notifySize();
   }
   function refreshLanguage() {
+    idleMotto.textContent = t("games.idleMotto");
     const focused = document.activeElement;
     const gameId = focused?.dataset.game;
     const menu = focused?.closest(

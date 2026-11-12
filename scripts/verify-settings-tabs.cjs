@@ -354,7 +354,7 @@ async function verify() {
       await page.locator("#date-tab-notifications").click();
       assert.equal(await page.locator(".date-info-area").isVisible(), true);
       await page.locator("#agendaDrawerGrip").click();
-      assert.equal(await page.locator(".date-info-area").isVisible(), false);
+      await page.locator(".date-info-area").waitFor({ state: "hidden" });
       assert.deepEqual(errors, []);
       const guideState = await page.evaluate(() => {
         const state = WorkTimeApp.domain.state.defaultState();

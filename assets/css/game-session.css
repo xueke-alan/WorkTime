@@ -125,10 +125,6 @@
 }
 body .game-session .game-select-options {
   --language-menu-padding: 0.285714rem;
-  border-color: var(--theme-border-soft, var(--line));
-  border-radius: var(--control-radius);
-  background: var(--theme-surface-paper, var(--paper));
-  box-shadow: none;
 }
 body .game-session .game-select-options > .game-button {
   justify-content: space-between;

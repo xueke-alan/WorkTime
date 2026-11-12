@@ -37,6 +37,7 @@ async function main() {
     });
     await context.addInitScript(() => {
       localStorage.setItem("worktime.onboarding.v1", "dismissed");
+      navigator.permissions.query = async () => ({ state: "granted" });
       window.folderTest = {
         permission: "granted",
         failWrite: false,
@@ -162,16 +163,17 @@ async function main() {
         .getBoundingClientRect();
       return {
         topDifference: Math.abs(frequency.top - folder.top),
-        ratio: folder.width / frequency.width,
+        widthDifference: Math.abs(folder.width - frequency.width),
+        folderFirst: folder.right < frequency.left,
       };
     });
     assert.ok(
-      layout.topDifference < 1,
-      "frequency and folder must share a row",
+      layout.topDifference < 1 && layout.folderFirst,
+      "folder and frequency must share a row with the folder first",
     );
     assert.ok(
-      Math.abs(layout.ratio - 1.5) < 0.03,
-      "frequency/folder widths must keep the 2:3 ratio",
+      layout.widthDifference < 1,
+      "folder and frequency must have equal widths",
     );
     assert.equal(downloads.length, 0, "folder archive must not download");
     assert.equal(
@@ -262,7 +264,9 @@ async function main() {
       ),
       "2020-01-01",
     );
-    await page.locator("#runtimeFolderRecovery[open] button").click();
+    await page
+      .locator("#startupPermissionsDialog[open] #startupFolderAuthorize")
+      .click();
     await saved();
     archived = await files();
     assert.equal(archived.length, 2);

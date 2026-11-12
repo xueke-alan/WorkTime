@@ -4,10 +4,18 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
   element: $,
   document,
   weatherLayer,
+  numbers,
 }) {
   let calendarMarkup = "";
   const calendarNodes = new Map(),
     markup = new WeakMap();
+  const numberSelectors = [
+    ".daynum-text",
+    ".day-time-value",
+    ".day-total-hours",
+    ".day-overtime",
+    ".day-average-value",
+  ];
   const artworkKey = (card) =>
     ["weekend", "full-leave", "rest-overtime"]
       .map((name) => card.classList.contains(name))
@@ -159,7 +167,6 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
       calendarNodes.clear();
     }
     const headerAlignment = [],
-      contentMotions = [],
       artworkMotions = [],
       sourceMotions = [];
     candidates.forEach((candidate, index) => {
@@ -172,6 +179,17 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
           element.matches(".daytime, .dayhours, .day-footer"),
         ),
         bodyMarkup = bodies.map((element) => element.outerHTML);
+      const numberFields =
+        candidate.matches(".day") && !container.closest(".agenda-mode")
+          ? numberSelectors.flatMap((selector) =>
+              [...candidate.querySelectorAll(selector)].map((field, index) => ({
+                selector,
+                index,
+                value: field.textContent,
+                previous: previous?.element.querySelectorAll(selector)[index],
+              })),
+            )
+          : [];
       let element = candidate,
         sourceMotion;
       if (previous && previous.element.parentElement === container) {
@@ -206,7 +224,11 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
             // Keep the painted positions so redraws and rapid clicks stay smooth.
             const sourceToggle = element.querySelector(".source-toggle"),
               nextSourceToggle = candidate.querySelector(".source-toggle");
-            if (sourceToggle && nextSourceToggle) {
+            if (
+              sourceToggle &&
+              nextSourceToggle &&
+              previous.bodyMarkup[0] !== bodyMarkup[0]
+            ) {
               if (
                 sourceToggle.getAttribute("aria-pressed") !==
                   nextSourceToggle.getAttribute("aria-pressed") &&
@@ -239,21 +261,34 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
             // Selection only changes the day surface. Keep its already aligned
             // header, otherwise the replacement's taller raw line boxes move
             // agenda contents until the next alignment frame.
-            if (preserveHeader) nextHeader.replaceWith(header);
+            const preserved = new Map();
+            if (preserveHeader) preserved.set(nextHeader, header);
             else if (nextHeader) headerAlignment.push(nextHeader);
+            const currentBodies = [...element.children].filter((child) =>
+              child.matches(".daytime, .dayhours, .day-footer"),
+            );
+            bodies.forEach((body, index) => {
+              if (previous.bodyMarkup[index] === bodyMarkup[index])
+                preserved.set(body, currentBodies[index]);
+            });
+            const children = [...candidate.childNodes].map(
+              (child) => preserved.get(child) || child,
+            );
             // Weather and agenda own persistent layers. Selecting a different
             // date must not destroy their nodes or restart their animations.
             for (const child of [...element.childNodes])
               if (
-                !(child instanceof Element) ||
-                !child.matches(
-                  ".calendar-weather-icon, .calendar-weather-outgoing, .agenda-card-items, .calendar-artwork-outgoing",
-                )
+                !children.includes(child) &&
+                (!(child instanceof Element) ||
+                  !child.matches(
+                    ".calendar-weather-icon, .calendar-weather-outgoing, .agenda-card-items, .calendar-artwork-outgoing",
+                  ))
               )
                 child.remove();
-            const content = document.createDocumentFragment();
-            content.append(...candidate.childNodes);
-            element.insertBefore(content, element.firstChild);
+            children.forEach((child, index) => {
+              if (element.childNodes[index] !== child)
+                element.insertBefore(child, element.childNodes[index] || null);
+            });
           }
           if (element.querySelector(".calendar-weather-icon"))
             element.classList.add("has-weather");
@@ -275,19 +310,41 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
       });
       if (container.children[index] !== element)
         container.insertBefore(element, container.children[index] || null);
-      // Animate changed attendance fields inside the shared card, leaving its date,
-      // weather and selection surface still. Agenda owns its own content transitions.
-      if (
-        animateContent &&
-        previous?.bodyMarkup &&
-        !container.closest(".agenda-mode")
-      ) {
-        const currentBodies = [...element.children].filter((child) =>
-          child.matches(".daytime, .dayhours, .day-footer"),
-        );
-        currentBodies.forEach((child, bodyIndex) => {
-          if (previous.bodyMarkup[bodyIndex] !== bodyMarkup[bodyIndex])
-            contentMotions.push(child);
+      // Roll actual text changes, retaining the number component across style and
+      // source changes so selecting an unchanged record cannot restart motion.
+      for (const field of numberFields) {
+        let current = element.querySelectorAll(field.selector)[field.index];
+        if (field.previous && field.previous !== current) {
+          const aligned = field.previous.classList.contains("ui-aligned-text");
+          for (const attribute of [...field.previous.attributes])
+            if (
+              attribute.name !== "style" &&
+              !current.hasAttribute(attribute.name)
+            )
+              field.previous.removeAttribute(attribute.name);
+          for (const attribute of current.attributes)
+            field.previous.setAttribute(
+              attribute.name,
+              attributeValue(field.previous, attribute),
+            );
+          if (aligned) field.previous.classList.add("ui-aligned-text");
+          current.replaceWith(field.previous);
+          current = field.previous;
+        }
+        const duration = field.value.match(/^([+-]?[\d.,]+)( h)$/);
+        numbers.set(current, duration ? duration[1] : field.value, {
+          suffix: duration?.[2] || "",
+          integerDigits: [".day-overtime", ".day-average-value"].includes(
+            field.selector,
+          )
+            ? 2
+            : 0,
+          reserveSign: [".day-overtime", ".day-average-value"].includes(
+            field.selector,
+          ),
+          animateInitial: false,
+          preserveText: true,
+          motion: animateContent,
         });
       }
       for (const { dot, transform } of sourceMotion || []) {
@@ -363,8 +420,6 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
         );
       }
     }
-    for (const child of contentMotions)
-      WorkTimeApp.ui.motion.play(child, "motion-card-content");
   }
   return { updateHTML, updateText, updateCalendar };
 };

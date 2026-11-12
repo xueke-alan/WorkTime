@@ -5,6 +5,39 @@ const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 const setRange = require("./lib/agenda-test-range.cjs");
 
+async function compactHint(page, trigger) {
+  const hint = page.locator("#siteHint");
+  await hint.waitFor({ state: "visible" });
+  assert.equal(await trigger.getAttribute("aria-describedby"), "siteHint");
+  const style = await hint.evaluate((node) => {
+    const surface = getComputedStyle(node);
+    const arrow = getComputedStyle(node, "::after");
+    return {
+      fontSize: surface.fontSize,
+      padding: surface.padding,
+      textAlign: surface.textAlign,
+      borderColor: surface.borderTopColor,
+      radius: surface.borderRadius,
+      shadow: surface.boxShadow,
+      background: surface.backgroundColor,
+      arrowBackground: arrow.backgroundColor,
+      arrowWidth: arrow.width,
+      side: node.dataset.popArrowSide,
+      arrowCenter: parseFloat(arrow.top) + node.clientTop,
+      height: node.offsetHeight,
+    };
+  });
+  const { side, arrowCenter, height, ...appearance } = style;
+  assert.ok(["top", "bottom"].includes(side));
+  assert.ok(Math.abs(arrowCenter - (side === "top" ? 0 : height)) < 1);
+  assert.equal(style.arrowBackground, style.background);
+  assert.equal(style.arrowWidth, "10px");
+  assert.equal(style.textAlign, "center");
+  assert.equal(style.fontSize, "12px");
+  assert.equal(style.padding, "6px 10px");
+  return appearance;
+}
+
 async function verify() {
   const browser = await chromium.launch({
     channel: process.env.WORKTIME_BROWSER_CHANNEL || "msedge",
@@ -59,35 +92,75 @@ async function verify() {
         // Finish the narrow layout's scroll before opening a scroll-dismissed hint.
         await marker.scrollIntoViewIfNeeded();
         await page.waitForTimeout(100);
-        const hintText = await marker.getAttribute("title");
+        const hintText = await marker.getAttribute("data-date-marker-hint");
         await marker.hover();
         await page.locator("#siteHint").waitFor({ state: "visible" });
         assert.equal(await page.locator("#siteHint").textContent(), hintText);
-        assert.equal(
-          await page
-            .locator("#siteHint")
-            .evaluate((node) => getComputedStyle(node).textAlign),
-          "center",
-        );
-        await page.locator(".pop-arrow").waitFor({ state: "visible" });
-        assert.ok(
-          ["top", "bottom"].includes(
-            await page.locator(".pop-arrow").getAttribute("data-side"),
-          ),
-        );
+        const markerAppearance = await compactHint(page, marker);
         assert.equal(
           await marker.getAttribute("title"),
-          "",
-          "Suppress native title bubble",
+          null,
+          "The custom hint is the only marker tooltip",
         );
         const hintBox = await page.locator("#siteHint").boundingBox();
         assert.ok(hintBox.x >= 0 && hintBox.x + hintBox.width <= width);
         await page.mouse.move(0, 0);
         await page.locator("#siteHint").waitFor({ state: "hidden" });
         await page.waitForFunction(() => !document.querySelector(".pop-arrow"));
-        assert.equal(await marker.getAttribute("title"), hintText);
         await marker.focus();
         await page.locator("#siteHint").waitFor({ state: "visible" });
+        await page.keyboard.press("Escape");
+        await page.locator("#siteHint").waitFor({ state: "hidden" });
+        const hint = page.locator("#siteHint");
+        for (const [id, label] of [
+          ["prevMonth", "上个月"],
+          ["monthTitle", "年视图"],
+          ["nextMonth", "下个月"],
+          ["todayButton", "当日"],
+          ["analysisToggle", "作息分析"],
+          ["agendaMode", "日程"],
+          ["batchToggle", "批量填写"],
+          ["restore", "导入备份"],
+          ["pageSettingsOpen", "设置"],
+        ]) {
+          const control = page.locator("#" + id);
+          const title = await control.getAttribute("title");
+          await control.hover();
+          assert.deepEqual(await compactHint(page, control), markerAppearance);
+          assert.equal(await hint.textContent(), label, id);
+          await page.keyboard.press("Escape");
+          await hint.waitFor({ state: "hidden" });
+          assert.equal(await control.getAttribute("title"), title, id);
+        }
+        await page.locator("#monthTitle").focus();
+        await hint.waitFor({ state: "visible" });
+        assert.equal(await hint.textContent(), "年视图");
+        await page.keyboard.press("Escape");
+        await hint.waitFor({ state: "hidden" });
+        const today = page.locator("#todayButton");
+        await page.locator("#prevMonth").click();
+        await page.waitForFunction(
+          () => document.getElementById("todayButton").ariaLabel === "当月",
+        );
+        await today.hover();
+        await hint.waitFor({ state: "visible" });
+        assert.equal(await hint.textContent(), "当月");
+        await today.click();
+        await page.waitForFunction(
+          () => document.getElementById("todayButton").ariaLabel === "当日",
+        );
+        await page.mouse.move(0, 0);
+        await hint.waitFor({ state: "hidden" });
+        const nextDay = page.locator("#dayNextToggle");
+        const nextDayText = await nextDay.getAttribute("title");
+        await nextDay.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(100);
+        await nextDay.focus();
+        assert.deepEqual(await compactHint(page, nextDay), markerAppearance);
+        assert.equal(
+          await page.locator("#siteHint").textContent(),
+          nextDayText,
+        );
         await page.keyboard.press("Escape");
         await page.locator("#siteHint").waitFor({ state: "hidden" });
         await page.evaluate(() => {
@@ -169,6 +242,36 @@ async function verify() {
           });
         });
         await page.locator("#compatOpen").click();
+        const pickerArrow = page.locator(".pop-arrow");
+        await pickerArrow.waitFor({ state: "visible" });
+        const pickerAppearance = await page
+          .locator("#compatDatePicker")
+          .evaluate((node) => {
+            const style = getComputedStyle(node);
+            return [
+              style.backgroundColor,
+              style.borderTopColor,
+              style.borderRadius,
+              style.boxShadow,
+            ];
+          });
+        assert.deepEqual(pickerAppearance, [
+          markerAppearance.background,
+          markerAppearance.borderColor,
+          markerAppearance.radius,
+          markerAppearance.shadow,
+        ]);
+        const pickerBox = await page.locator("#compatDatePicker").boundingBox();
+        const arrowBox = await pickerArrow.boundingBox();
+        const arrowSide = await pickerArrow.getAttribute("data-pop-arrow-side");
+        assert.ok(["top", "bottom"].includes(arrowSide));
+        assert.ok(
+          Math.abs(
+            arrowBox.y +
+              arrowBox.height / 2 -
+              (pickerBox.y + (arrowSide === "top" ? 0 : pickerBox.height)),
+          ) < 1,
+        );
         await page
           .locator(
             '#compatDatePicker [data-picker-date="2026-10-28"]:not(.is-adjacent)',

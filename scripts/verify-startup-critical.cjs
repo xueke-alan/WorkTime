@@ -274,9 +274,11 @@ async function onboardingInk(browser, url, locale, width) {
         const white = await node.evaluate(
           (element) => getComputedStyle(element).color === "rgb(255, 255, 255)",
         );
-        const data = (await node.screenshot({ scale: "css" })).toString(
-          "base64",
-        );
+        // Measure the settled dialog. The app's default is full motion even
+        // when this browser context reports a reduced-motion preference.
+        const data = (
+          await node.screenshot({ scale: "css", animations: "disabled" })
+        ).toString("base64");
         const ink = await page.evaluate(
           async ({ data, white }) => {
             const image = new Image();
