@@ -1,4 +1,275 @@
 "use strict";
+/** Read-only playback: adapters render transient state without touching saves. */
+WorkTimeApp.games.createCompletionHistory = function ({
+  root,
+  host,
+  before = null,
+  signal,
+  records,
+  steps,
+  kind = "completion",
+  title = null,
+  playbackHost = null,
+  onStart,
+  onFrame,
+  onExit,
+}) {
+  const panel = document.createElement("section");
+  panel.className =
+    kind === "match" ? "game-match-history" : "game-completion-history";
+  host.insertBefore(panel, before);
+  const heading = document.createElement("h3");
+  const list = document.createElement("div");
+  const transport = document.createElement("div");
+  transport.className = "game-replay-controls";
+  panel.append(heading, list);
+  (playbackHost || panel).append(transport);
+  const t = (name, params) =>
+    WorkTimeApp.i18n.t("games.history." + name, params);
+  let record = null,
+    index = 0,
+    timer = null,
+    playing = false,
+    source = null;
+  let savedInert = [];
+  const buttons = {};
+  const progress = document.createElement("span");
+  progress.className = "game-replay-progress";
+  progress.setAttribute("role", "status");
+  function pause() {
+    clearTimeout(timer);
+    timer = null;
+    playing = false;
+  }
+  function paint() {
+    transport.hidden = !record;
+    if (!record) return;
+    progress.textContent = `${index} / ${record.path.length}`;
+    buttons.play.textContent = t(playing ? "pause" : "play");
+    buttons.previous.textContent = t("previous");
+    buttons.next.textContent = t("next");
+    buttons.exit.textContent = t("exit");
+    buttons.previous.disabled = index === 0;
+    buttons.next.disabled = index === record.path.length;
+  }
+  function frame() {
+    onFrame(record.path.slice(0, index), index === record.path.length);
+    paint();
+  }
+  function schedule() {
+    clearTimeout(timer);
+    if (!playing || !record || document.hidden || signal.aborted) return;
+    timer = setTimeout(() => {
+      index++;
+      if (index >= record.path.length) pause();
+      frame();
+      schedule();
+    }, 700);
+  }
+  function play() {
+    if (!record || document.hidden || signal.aborted) return;
+    if (index === record.path.length) {
+      index = 0;
+      frame();
+    }
+    playing = true;
+    paint();
+    schedule();
+  }
+  function exit(restoreFocus = true) {
+    if (!record) return;
+    pause();
+    record = null;
+    delete root.dataset.replaying;
+    savedInert.forEach(([element, inert]) => {
+      element.inert = inert;
+    });
+    savedInert = [];
+    onExit();
+    render();
+    if (restoreFocus) source?.focus({ preventScroll: true });
+  }
+  for (const [name, callback] of Object.entries({
+    play: () => {
+      if (playing) {
+        pause();
+        paint();
+      } else play();
+    },
+    previous: () => {
+      pause();
+      index = Math.max(0, index - 1);
+      frame();
+    },
+    next: () => {
+      pause();
+      index = Math.min(record.path.length, index + 1);
+      frame();
+    },
+    exit: () => exit(),
+  })) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "game-button";
+    button.dataset.replayAction = name;
+    button.addEventListener("click", callback, { signal });
+    buttons[name] = button;
+    transport.append(button);
+  }
+  transport.prepend(progress);
+  let signature = "";
+  function render() {
+    const values = records();
+    panel.hidden = values === null;
+    heading.textContent = t(kind === "match" ? "matchHeading" : "heading");
+    panel.setAttribute("aria-label", heading.textContent);
+    const nextSignature = JSON.stringify(values) + heading.textContent;
+    if (signature !== nextSignature) {
+      signature = nextSignature;
+      list.replaceChildren();
+      if (!values?.length)
+        list.textContent = t(kind === "match" ? "matchEmpty" : "empty");
+      for (const value of values || []) {
+        const row = document.createElement("div");
+        row.className = "game-completion-row";
+        const label = document.createElement("span");
+        const date = new Date(value.finishedAt);
+        const dateText =
+          String(date.getFullYear()).padStart(4, "0") +
+          String(date.getMonth() + 1).padStart(2, "0") +
+          String(date.getDate()).padStart(2, "0");
+        label.textContent = title
+          ? title(value, dateText)
+          : t("record", {
+              steps: steps(value.path),
+              date: dateText,
+            });
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "game-button";
+        button.dataset.replayRecord = value.id;
+        button.textContent = t("replay");
+        button.setAttribute(
+          "aria-label",
+          t("replay") + " · " + label.textContent,
+        );
+        button.addEventListener(
+          "click",
+          () => {
+            if (record) return;
+            source = button;
+            record = value;
+            index = 0;
+            root.dataset.replaying = "true";
+            onStart(record);
+            if (playbackHost) playbackHost.append(transport);
+            let branch = playbackHost ? transport : panel;
+            while (branch !== root && branch.parentElement) {
+              for (const sibling of branch.parentElement.children) {
+                if (sibling === branch) continue;
+                savedInert.push([sibling, sibling.inert]);
+                sibling.inert = true;
+              }
+              branch = branch.parentElement;
+            }
+            frame();
+            buttons.play.focus({ preventScroll: true });
+            play();
+          },
+          { signal },
+        );
+        row.append(label, button);
+        list.append(row);
+      }
+    }
+    list.inert = !!record;
+    paint();
+  }
+  for (const type of ["click", "keydown", "pointerdown", "pointerup"]) {
+    root.addEventListener(
+      type,
+      (event) => {
+        if (!record) return;
+        if (event.type === "keydown" && event.key === "Escape") {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          exit();
+          return;
+        }
+        if (
+          !panel.contains(event.target) &&
+          !transport.contains(event.target)
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      },
+      { capture: true, signal },
+    );
+  }
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+      if (document.hidden) {
+        pause();
+        paint();
+      }
+    },
+    { signal },
+  );
+  document.addEventListener("worktime:languagechange", render, { signal });
+  signal.addEventListener(
+    "abort",
+    () => {
+      pause();
+    },
+    { once: true },
+  );
+  return {
+    render,
+    get active() {
+      return !!record;
+    },
+    pause() {
+      pause();
+      paint();
+    },
+    exit,
+    dispose() {
+      pause();
+    },
+  };
+};
+
+WorkTimeApp.games.matchRecordTitle = function (id, record, date) {
+  const t = (name, params) =>
+    WorkTimeApp.i18n.t("games.history." + name, params);
+  const config = record.config;
+  let detail, result;
+  if (config.mode === "local") {
+    detail = t("local");
+    const side =
+      id === "game-jungle"
+        ? WorkTimeApp.i18n.t(
+            "games.jungle." + (record.winner === 1 ? "red" : "blue"),
+          )
+        : t(record.winner === 1 ? "xSide" : "oSide");
+    result = t("sideVictory", { side });
+  } else {
+    const prefix = {
+      "game-xiangqi": "xiangqi.ai",
+      "game-gomoku": "gomoku.ai",
+      "game-jungle": "jungle.",
+      "game-ultimate-ttt": "uttt.",
+    }[id];
+    detail = WorkTimeApp.i18n.t("games." + prefix + config.difficulty);
+    const human =
+      id === "game-xiangqi" ? (config.humanRed ? 1 : -1) : config.human;
+    result = t(record.winner === human ? "victory" : "defeat");
+  }
+  return t("matchRecord", { date, detail, result });
+};
+
 // Presentation pacing is independent of search strength and motion preferences.
 WorkTimeApp.games.createThinkTurn = function ({
   simple = false,
@@ -236,7 +507,12 @@ WorkTimeApp.games.paintLevelCard = function (
     badge.dataset.stars = String(stars);
     badge.hidden = badgeState === "available";
     badge.replaceChildren();
-    if (badgeState === "stars") badge.textContent = "★".repeat(stars);
+    if (badgeState === "stars")
+      for (let index = 0; index < stars; index++) {
+        const star = document.createElement("span");
+        star.textContent = "★";
+        badge.append(star);
+      }
     if (badgeState === "complete" || badgeState === "draft")
       badge.append(
         WorkTimeApp.games.createIcon(

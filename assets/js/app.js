@@ -142,7 +142,6 @@ WorkTimeApp.services.bootstrap.run(
       analysisMode: model.analysisMode,
       agendaViewWeeks: model.agendaViewWeeks || 0,
       agendaViewAnchor: model.agendaViewAnchor,
-      analysisIncludeManual: model.analysisIncludeManual,
       viewYear: model.viewYear,
     });
     const monthBounds = () => D.time.monthBounds(model.month);

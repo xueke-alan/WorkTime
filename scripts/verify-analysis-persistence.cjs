@@ -1,4 +1,5 @@
 "use strict";
+require("./lib/browser-test-setup.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
@@ -20,6 +21,31 @@ async function verify() {
       viewport: { width: 1920, height: 1080 },
     });
     await context.route(/^https?:/, (route) => route.abort());
+    const seed = await browser.newPage();
+    await seed.goto(url);
+    await ready(seed);
+    const manualState = await seed.evaluate(() => {
+      const state = WorkTimeApp.domain.state.defaultState();
+      state.settings.configured = true;
+      state.personal.employmentDate = "2024-01-01";
+      state.days["2026-10-20"] = {
+        kind: "work",
+        actual: {
+          start: "08:00",
+          end: "20:00",
+          nextDay: false,
+          effectiveMinutes: null,
+        },
+      };
+      return state;
+    });
+    await seed.close();
+    await context.addInitScript((state) => {
+      if (!sessionStorage.getItem("manual-seeded")) {
+        localStorage.setItem("worktime-local-v1", JSON.stringify(state));
+        sessionStorage.setItem("manual-seeded", "1");
+      }
+    }, manualState);
     await context.addInitScript(
       ({ saved, failure }) => {
         if (!sessionStorage.getItem("view-seeded")) {
@@ -109,7 +135,26 @@ async function verify() {
         ),
         { mode: "attendance", weeks, analysis: true, workdaysOnly: false },
       );
-      await page.locator("#analysisManual").check();
+      assert.equal(await page.locator("#analysisManual").count(), 0);
+      assert.equal(
+        await page
+          .locator('.analysis-range.is-manual[data-date="2026-10-20"]')
+          .count(),
+        1,
+      );
+      assert.match(
+        await page.locator("#analysisSidebarScope").textContent(),
+        /手录.*已纳入/s,
+      );
+      await page.reload();
+      await ready(page);
+      await analysis(page, true);
+      assert.equal(
+        await page
+          .locator('.analysis-range.is-manual[data-date="2026-10-20"]')
+          .count(),
+        1,
+      );
       await page.locator("#nextMonth").click();
       const writes = await page.evaluate(() => window.viewWrites);
       await page.evaluate(() =>
@@ -123,7 +168,7 @@ async function verify() {
       await page.reload();
       await ready(page);
       await analysis(page, true);
-      assert.equal(await page.locator("#analysisManual").isChecked(), false);
+      assert.equal(await page.locator("#analysisManual").count(), 0);
       assert.equal(
         await page.locator("#monthTitle").getAttribute("aria-label"),
         "本月作息",

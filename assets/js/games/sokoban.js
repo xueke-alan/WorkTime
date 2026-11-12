@@ -12,6 +12,9 @@ WorkTimeApp.games.register({
     const chaptersConfig = bank.chapters;
     const maps = levels.map(rules.parse);
     const key = "worktime.games.sokoban.v1";
+    let history = null,
+      replayState = null;
+    const historySave = { completionHistory: {} };
     const compat = WorkTimeApp.ui.animationCompat;
     const reduced = compat.preference();
     let animations = [],
@@ -58,6 +61,11 @@ WorkTimeApp.games.register({
     try {
       const saved = JSON.parse(gameStorage.getItem(key));
       if (saved?.version === 1) {
+        historySave.completionHistory =
+          WorkTimeApp.services.gameArchive.normalizeHistory(
+            "game-sokoban",
+            saved.completionHistory,
+          );
         levels.forEach((level, index) => {
           const record = rules.restore(
             maps[index],
@@ -302,9 +310,11 @@ WorkTimeApp.games.register({
     });
     let savedInert = [];
     function state() {
+      if (replayState) return replayState;
       return (drafts[levels[current].id] ||= rules.create());
     }
     function save() {
+      if (history?.active) return;
       try {
         const serialize = (records) =>
           Object.fromEntries(
@@ -321,6 +331,7 @@ WorkTimeApp.games.register({
             chapter,
             drafts: serialize(drafts),
             completed: serialize(completed),
+            completionHistory: historySave.completionHistory,
           }),
         );
         saveFailed = false;
@@ -342,6 +353,7 @@ WorkTimeApp.games.register({
     function move(direction, repeat = false) {
       if (
         choosing ||
+        history?.active ||
         confirming ||
         suspended ||
         disposed ||
@@ -365,6 +377,11 @@ WorkTimeApp.games.register({
           : rules.move(maps[current], state(), direction);
       if (!changed) return;
       if (rules.won(maps[current], state())) {
+        WorkTimeApp.services.gameArchive.addCompletion(
+          historySave,
+          levels[current].id,
+          state().path,
+        );
         const previous = completed[levels[current].id];
         if (
           !previous ||
@@ -410,6 +427,7 @@ WorkTimeApp.games.register({
     const cells = [],
       pieceNodes = new Map();
     function render(animateMove = false) {
+      history?.render();
       // Read layout once, before writes. Stable pieces share one tile geometry.
       const bounds =
         animateMove && !reduced.matches ? board.getBoundingClientRect() : null;
@@ -705,9 +723,32 @@ WorkTimeApp.games.register({
     });
     listen(board, "pointercancel", () => (touch = null));
     listen(document, "worktime:languagechange", () => render());
+    history = WorkTimeApp.games.createCompletionHistory({
+      root,
+      host: sidebar,
+      signal,
+      records: () =>
+        choosing
+          ? null
+          : (historySave.completionHistory[levels[current].id] ?? []),
+      steps: (path) => path.length,
+      onStart() {
+        stopMotion();
+        touch = null;
+      },
+      onFrame(path) {
+        replayState = rules.restore(maps[current], { path });
+        render();
+      },
+      onExit() {
+        replayState = null;
+        render();
+      },
+    });
     render();
     return {
       pause() {
+        history.pause();
         stopMotion();
         suspended = true;
         touch = null;
@@ -720,6 +761,7 @@ WorkTimeApp.games.register({
         stopMotion();
       },
       dispose() {
+        history.dispose();
         disposed = true;
         stopMotion();
         releasePreference();

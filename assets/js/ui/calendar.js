@@ -933,6 +933,13 @@ WorkTimeApp.ui.createCalendar = function (options) {
       batchBar.classList.toggle("hidden", !batchMode);
     }
     $("dayEditor").classList.toggle("hidden", batchMode);
+    if (modeChanged) {
+      const heading = document.querySelector(
+        batchMode ? ".batch-editor-header h2" : "#editorDate",
+      );
+      WorkTimeApp.ui.motion?.stop(heading);
+      WorkTimeApp.ui.motion?.play(heading, "motion-title");
+    }
     $("batchToggle").setAttribute("aria-pressed", String(batchMode));
     $("batchToggle").title = batchMode
       ? WorkTimeApp.i18n.t("copy.03b15bbfb8")

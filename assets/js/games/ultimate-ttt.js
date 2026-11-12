@@ -12,6 +12,9 @@ WorkTimeApp.games.register({
       storage = archive.session();
     const t = (key, params) => WorkTimeApp.i18n.t("games.uttt." + key, params);
     const compat = WorkTimeApp.ui.animationCompat;
+    let matchHistory = null,
+      replaySnapshot = null;
+    const matchSave = {};
     let options = {
       mode: "ai",
       difficulty: "normal",
@@ -40,8 +43,13 @@ WorkTimeApp.games.register({
     try {
       const raw = storage.getItem(archive.keys["game-ultimate-ttt"]);
       if (raw !== null) {
-        options = archive.normalize("game-ultimate-ttt", JSON.parse(raw)).state;
+        const saved = archive.normalize("game-ultimate-ttt", JSON.parse(raw));
+        options = saved.state;
+        matchSave.matchHistory = saved.matchHistory ?? [];
+        matchSave.matchSession =
+          saved.matchSession ?? archive.newMatchSession();
         state = R.replay(options.path, options.chain);
+        if (state.status !== "playing") matchSave.matchSession.recorded = true;
         active = true;
         setupOpen = false;
       }
@@ -401,6 +409,7 @@ WorkTimeApp.games.register({
       },
     });
     function restartMatch(keepEngine = false) {
+      matchSave.matchSession = archive.newMatchSession();
       resultLayer.hidden = true;
       cancel({ keepEngine });
       state = R.create(options.chain);
@@ -413,6 +422,7 @@ WorkTimeApp.games.register({
     function playable() {
       return (
         !disposed &&
+        !matchHistory?.active &&
         !paused &&
         !covered &&
         !setupOpen &&
@@ -454,11 +464,12 @@ WorkTimeApp.games.register({
       });
     }
     function persist() {
+      if (matchHistory?.active) return;
       options.path = state.path.slice();
       try {
         storage.setItem(
           archive.keys["game-ultimate-ttt"],
-          JSON.stringify({ version: 1, state: options }),
+          JSON.stringify({ version: 1, state: options, ...matchSave }),
         );
         failed = false;
       } catch {
@@ -466,9 +477,17 @@ WorkTimeApp.games.register({
       }
     }
     function accept(next) {
+      if (matchHistory?.active) return;
       clearPreview();
       const erased = next.cleared.map((p) => ({ p, mark: state.board[p] }));
       state = next;
+      if (state.status === "won")
+        archive.recordMatch(
+          matchSave,
+          "game-ultimate-ttt",
+          options,
+          state.path,
+        );
       if (state.status !== "playing") showResult();
       persist();
       render();
@@ -537,6 +556,7 @@ WorkTimeApp.games.register({
         });
     }
     function render() {
+      matchHistory?.render();
       catalog.page.hidden = !setupOpen;
       play.hidden = setupOpen;
       catalog.refresh();
@@ -749,11 +769,48 @@ WorkTimeApp.games.register({
       { signal },
     );
     signal.addEventListener("abort", cancel, { once: true });
+    matchHistory = G.createCompletionHistory({
+      root,
+      host: catalog.categories,
+      playbackHost: controls,
+      kind: "match",
+      signal,
+      records: () => matchSave.matchHistory ?? [],
+      title: (record, date) =>
+        G.matchRecordTitle("game-ultimate-ttt", record, date),
+      onStart(record) {
+        replaySnapshot = {
+          options,
+          state,
+          active,
+          setupOpen,
+          focus,
+          resultHidden: resultLayer.hidden,
+        };
+        cancel();
+        options = { ...record.config, path: [] };
+        active = true;
+        setupOpen = false;
+        resultLayer.hidden = true;
+      },
+      onFrame(path) {
+        state = R.replay(path, options.chain);
+        render();
+      },
+      onExit() {
+        ({ options, state, active, setupOpen, focus } = replaySnapshot);
+        resultLayer.hidden = replaySnapshot.resultHidden;
+        replaySnapshot = null;
+        render();
+        if (!setupOpen) advanceTurn();
+      },
+    });
     render();
     if (setupOpen) warm();
     else advanceTurn();
     return {
       pause() {
+        matchHistory.pause();
         paused = true;
         cancel();
         render();
@@ -779,6 +836,7 @@ WorkTimeApp.games.register({
         );
       },
       dispose() {
+        matchHistory.dispose();
         disposed = true;
         cancel();
         root.remove();

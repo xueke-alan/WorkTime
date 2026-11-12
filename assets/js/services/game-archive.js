@@ -73,7 +73,223 @@ WorkTimeApp.services.gameArchive = (() => {
         .map((name) => [name, clone(value[name])]),
     );
   }
+  const historyGames = [
+    "game-xiangqi",
+    "game-gomoku",
+    "game-sokoban",
+    "game-lights-out",
+  ];
+  const matchGames = [
+    "game-xiangqi",
+    "game-gomoku",
+    "game-ultimate-ttt",
+    "game-jungle",
+  ];
+  const newMatchSession = (recorded = false) => ({
+    id: window.crypto.randomUUID(),
+    recorded,
+  });
+  function mergeMatches(a = [], b = []) {
+    return [
+      ...new Map([...a, ...b].map((record) => [record.id, record])).values(),
+    ]
+      .sort((x, y) => y.finishedAt - x.finishedAt || y.id.localeCompare(x.id))
+      .slice(0, 10);
+  }
+  function restoreRecordedMatch(id, config, path) {
+    const G = WorkTimeApp.games,
+      match = { ...config, path };
+    if (id === "game-xiangqi") return G.xiangqiRules.restoreMatch(match);
+    if (id === "game-gomoku") return G.gomokuRules.restoreMatch(match);
+    const rules = id === "game-jungle" ? G.jungleRules : G.ultimateTttRules;
+    if (!rules.restore({ version: 1, state: match })) return null;
+    return rules.replay(path, config.chain);
+  }
+  function matchWinner(id, state, config) {
+    if (!state || !["won", "lost"].includes(state.status)) return 0;
+    if (id === "game-xiangqi")
+      return (state.status === "won") === config.humanRed ? 1 : -1;
+    if (id === "game-gomoku")
+      return state.status === "won" ? config.human : 3 - config.human;
+    return state.winner;
+  }
+  function normalizeMatches(id, input) {
+    requireValue(Array.isArray(input) && input.length <= 10, id);
+    return mergeMatches(
+      input.map((record) => {
+        requireValue(
+          plain(record) &&
+            typeof record.id === "string" &&
+            record.id.length > 0 &&
+            record.id.length <= 128 &&
+            integer(record.finishedAt, 8640000000000000) &&
+            plain(record.config) &&
+            Array.isArray(record.path),
+          id,
+        );
+        const state = restoreRecordedMatch(id, record.config, record.path);
+        const winner = matchWinner(id, state, record.config);
+        requireValue(
+          winner !== 0 &&
+            (record.winner === undefined || record.winner === winner),
+          id,
+        );
+        const names =
+          id === "game-xiangqi"
+            ? [
+                "difficulty",
+                "humanRed",
+                "handicaps",
+                "undosRemaining",
+                "initialBoard",
+              ]
+            : id === "game-gomoku"
+              ? ["difficulty", "human", "forbidden"]
+              : [
+                  "mode",
+                  "difficulty",
+                  "human",
+                  ...(id === "game-ultimate-ttt" ? ["chain"] : []),
+                ];
+        return {
+          ...fields(record, ["id", "finishedAt", "path"]),
+          config: fields(record.config, names),
+          winner,
+        };
+      }),
+    );
+  }
+  function recordMatch(save, id, config, path) {
+    save.matchSession ||= newMatchSession();
+    if (save.matchHistory?.some((record) => record.id === save.matchSession.id))
+      save.matchSession.recorded = true;
+    if (save.matchSession.recorded) return;
+    const state = restoreRecordedMatch(id, config, path);
+    if (!matchWinner(id, state, config)) return;
+    const [record] = normalizeMatches(id, [
+      { id: save.matchSession.id, finishedAt: Date.now(), config, path },
+    ]);
+    save.matchHistory = mergeMatches([record], save.matchHistory);
+    save.matchSession.recorded = true;
+  }
+  function mergeHistory(a = {}, b = {}) {
+    return Object.fromEntries(
+      [...new Set([...Object.keys(a), ...Object.keys(b)])].map((level) => [
+        level,
+        [
+          ...new Map(
+            [...(a[level] || []), ...(b[level] || [])].map((record) => [
+              record.id,
+              record,
+            ]),
+          ).values(),
+        ]
+          .sort(
+            (x, y) => y.finishedAt - x.finishedAt || y.id.localeCompare(x.id),
+          )
+          .slice(0, 3),
+      ]),
+    );
+  }
+  function addCompletion(save, level, path) {
+    const record = {
+      id: window.crypto.randomUUID(),
+      finishedAt: Date.now(),
+      path: typeof path === "string" ? path : [...path],
+    };
+    save.completionHistory = mergeHistory(
+      { [level]: [record] },
+      save.completionHistory,
+    );
+  }
+  function normalizeHistory(id, input = {}) {
+    requireValue(plain(input), id);
+    const bank =
+      id === "game-sokoban"
+        ? WorkTimeApp.data.sokoban.levels
+        : id === "game-lights-out"
+          ? [
+              ...WorkTimeApp.data.lightsOut,
+              ...(WorkTimeApp.data.lightsOutRetired || []),
+            ]
+          : id === "game-gomoku"
+            ? [
+                ...WorkTimeApp.data.gomoku,
+                ...(WorkTimeApp.data.gomokuRetired || []),
+              ]
+            : [
+                ...WorkTimeApp.data.xiangqi,
+                ...(WorkTimeApp.data.xiangqiRetired || []),
+              ];
+    const G = WorkTimeApp.games;
+    const result = {};
+    for (const [levelId, records] of Object.entries(input)) {
+      const level = bank.find((value) => value.id === levelId);
+      requireValue(level && Array.isArray(records) && records.length <= 3, id);
+      result[levelId] = records.map((record) => {
+        requireValue(
+          plain(record) &&
+            typeof record.id === "string" &&
+            record.id.length > 0 &&
+            record.id.length <= 128 &&
+            integer(record.finishedAt, 8640000000000000),
+          id,
+        );
+        let won = false;
+        if (id === "game-sokoban") {
+          const map = G.sokobanRules.parse(level);
+          const state = G.sokobanRules.restore(map, record);
+          won = state && G.sokobanRules.won(map, state);
+        } else if (id === "game-lights-out") {
+          requireValue(
+            Array.isArray(record.path) && record.path.length <= 100000,
+            id,
+          );
+          const state = G.lightsOutRules.create(level);
+          won =
+            record.path.every((index) =>
+              G.lightsOutRules.move(state, index, level.size),
+            ) && G.lightsOutRules.won(state.board);
+        } else {
+          const state = (
+            id === "game-gomoku" ? G.gomokuRules : G.xiangqiRules
+          ).restore(level, record.path);
+          won = state?.status === "won";
+        }
+        requireValue(won, id);
+        return fields(record, ["id", "finishedAt", "path"]);
+      });
+    }
+    return mergeHistory(result);
+  }
   function normalize(id, input) {
+    const result = normalizeBase(id, input);
+    if (historyGames.includes(id) && input.completionHistory !== undefined)
+      result.completionHistory = normalizeHistory(id, input.completionHistory);
+    if (matchGames.includes(id)) {
+      if (input.matchHistory !== undefined)
+        result.matchHistory = normalizeMatches(id, input.matchHistory);
+      if (input.matchSession !== undefined) {
+        requireValue(
+          plain(input.matchSession) &&
+            typeof input.matchSession.id === "string" &&
+            input.matchSession.id.length > 0 &&
+            input.matchSession.id.length <= 128 &&
+            typeof input.matchSession.recorded === "boolean",
+          id,
+        );
+        result.matchSession = fields(input.matchSession, ["id", "recorded"]);
+        if (
+          result.matchHistory?.some(
+            (record) => record.id === result.matchSession.id,
+          )
+        )
+          result.matchSession.recorded = true;
+      }
+    }
+    return result;
+  }
+  function normalizeBase(id, input) {
     requireValue(Object.hasOwn(keys, id), id);
     if (id === "game-jump") {
       requireValue(integer(input), id);
@@ -406,6 +622,12 @@ WorkTimeApp.services.gameArchive = (() => {
     return value;
   }
   function hasContent(id, v) {
+    if (matchGames.includes(id) && v.matchHistory?.length) return true;
+    if (
+      historyGames.includes(id) &&
+      Object.values(v.completionHistory || {}).some((records) => records.length)
+    )
+      return true;
     if (["game-xiangqi", "game-gomoku"].includes(id) && v.match) return true;
     if (id === "game-gomoku" && v.forbidden) return true;
     if (id === "game-lights-out")
@@ -549,12 +771,19 @@ WorkTimeApp.services.gameArchive = (() => {
     if (id === "game-jump") return null;
     if (id === "game-tank") return fields(v, ["custom", "muted"]);
     if (levelGames.includes(id))
-      return fields(v, ["current", "group", "chapter", "drafts", "match"]);
+      return fields(v, [
+        "current",
+        "group",
+        "chapter",
+        "drafts",
+        "match",
+        "matchSession",
+      ]);
     return fields(
       v,
       id === "game-minesweeper"
         ? ["state", "elapsed", "manualPaused"]
-        : ["state", "previous"],
+        : ["state", "previous", "matchSession"],
     );
   }
   function merge(id, local, incoming, source = "local") {
@@ -664,7 +893,7 @@ WorkTimeApp.services.gameArchive = (() => {
       out.records = local.records.map((n, i) =>
         Math.max(n, incoming.records[i]),
       );
-    else if (id !== "game-jungle" && id !== "game-ultimate-ttt") {
+    else if (!["game-jungle", "game-ultimate-ttt"].includes(id)) {
       out.drafts = {
         ...(source === "incoming" ? local.drafts : incoming.drafts),
         ...preferred.drafts,
@@ -710,8 +939,21 @@ WorkTimeApp.services.gameArchive = (() => {
         source === "incoming"
           ? (incoming.match ?? local.match)
           : (local.match ?? incoming.match);
-      if (match) out.match = clone(match);
+      if (match) {
+        out.match = clone(match);
+        const owner = match === incoming.match ? incoming : local;
+        if (owner.matchSession) out.matchSession = clone(owner.matchSession);
+        else delete out.matchSession;
+      }
     }
+    if (
+      historyGames.includes(id) &&
+      (local.completionHistory || incoming.completionHistory)
+    )
+      out.completionHistory = mergeHistory(
+        local.completionHistory,
+        incoming.completionHistory,
+      );
     // A pristine local session must not hide meaningful imported progress.
     if (
       !hasProgress(id, local) &&
@@ -720,10 +962,18 @@ WorkTimeApp.services.gameArchive = (() => {
     ) {
       Object.assign(out, progress(id, incoming));
     }
+    if (
+      matchGames.includes(id) &&
+      (local.matchHistory || incoming.matchHistory)
+    )
+      out.matchHistory = mergeMatches(
+        local.matchHistory,
+        incoming.matchHistory,
+      );
     const achievement = (v) =>
       id === "game-jump"
         ? v
-        : fields(v, ["best", "stats", "records", "completed"]);
+        : fields(v, ["best", "stats", "records", "completed", "matchHistory"]);
     return {
       value: normalize(id, out),
       conflict,
@@ -1149,6 +1399,12 @@ WorkTimeApp.services.gameArchive = (() => {
     JOURNAL,
     BACKUP,
     normalize,
+    normalizeHistory,
+    newMatchSession,
+    recordMatch,
+    restoreRecordedMatch,
+    normalizeMatches,
+    addCompletion,
     merge,
     validate,
     hasContent,

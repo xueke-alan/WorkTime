@@ -360,10 +360,12 @@ body .game-session .game-select-options > .game-button:is(:hover, :active) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 12px;
-  height: 12px;
-  padding-inline: 1px;
-  border-radius: 4px;
+  box-sizing: border-box;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
   background: var(--theme-surface-subtle, var(--paper));
   color: var(--ink);
   line-height: 1;
@@ -374,8 +376,8 @@ body .game-session .game-select-options > .game-button:is(:hover, :active) {
 }
 .game-level-badge .ui-icon {
   display: block;
-  width: 11px;
-  height: 11px;
+  width: 17px;
+  height: 17px;
 }
 .game-level-badge:is([data-state="complete"], [data-state="stars"]) {
   background: #e6f4eb;
@@ -389,8 +391,17 @@ body .game-session .game-select-options > .game-button:is(:hover, :active) {
   color: var(--muted);
 }
 .game-level-badge[data-state="stars"] {
-  font: 700 9px / 1 var(--font-ui);
-  letter-spacing: -0.5px;
+  display: grid;
+  grid-template-columns: repeat(2, 10px);
+  align-content: center;
+  font: 700 10px / 10px var(--font-ui);
+  text-align: center;
+}
+.game-level-badge[data-state="stars"] > span { width: 10px; }
+.game-level-badge[data-state="stars"][data-stars="1"] > span,
+.game-level-badge[data-state="stars"][data-stars="3"] > span:first-child {
+  grid-column: 1 / -1;
+  justify-self: center;
 }
 .game-level-badge[data-state="current"] {
   background: var(--accent-light);
@@ -398,10 +409,18 @@ body .game-session .game-select-options > .game-button:is(:hover, :active) {
 }
 .game-level-card[aria-current] .game-level-badge:is([data-state="current"], [data-state="draft"])::before {
   content: "";
-  width: 5px;
-  height: 5px;
+  width: 15px;
+  height: 15px;
   border: 2px solid currentColor;
   border-radius: 50%;
+}
+.game-level-card[aria-current] .game-level-badge[data-state="draft"]::before {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 6px;
+  height: 6px;
+  background: var(--paper);
 }
 @media (forced-colors: active) {
   .game-button.game-level-card[aria-current] {
@@ -566,3 +585,21 @@ body .game-session .game-restart-actions > .game-button {
   flex-direction: row;
 }
 body .game-session .game-restart-actions > .game-button > .ui-icon { display: none; }
+.game-completion-history { min-width: 0; width: 100%; color: var(--ink); }
+.game-completion-history h3 { margin: 0 0 .75rem; font-size: 1rem; }
+.game-completion-row { display: flex; align-items: center; gap: .5rem; margin-block: .5rem; }
+.game-completion-row > span { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: .85rem; }
+.game-completion-row > button { flex: none; min-width: 3rem; padding: .4rem .6rem; }
+.game-replay-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+.game-replay-progress { width: 100%; font-variant-numeric: tabular-nums; }
+.game-replay-controls .game-button { flex: 1 1 40%; padding: .5rem; }
+.game-completion-history[hidden], .game-replay-controls[hidden] { display: none; }
+.game-session[data-replaying="true"] .game-button:disabled { cursor: default; }
+.game-session[data-replaying="true"] :is(.xiangqi-status, .gomoku-status, .xiangqi-thinking) { visibility: hidden; }
+.game-match-history { grid-column: 1 / -1; width: 100%; min-width: 0; height: auto; max-height: clamp(8rem, 32vh, 24rem); overflow: auto; padding-block: .5rem; color: var(--ink); box-sizing: border-box; }
+.game-match-history h3 { margin: 0 0 .75rem; font-size: 1rem; }
+.game-match-history[hidden] { display: none; }
+.game-level-categories:has(> .game-match-history) { grid-auto-rows: max-content; }
+#uttt-level-page .game-level-categories:has(> .game-match-history), .game-jungle .game-level-categories:has(> .game-match-history) { grid-auto-rows: max-content; }
+.game-session .game-level-categories .game-match-history .game-button { width: auto; height: auto; min-height: 36px; padding: .3rem .5rem; }
+.game-session[data-replaying="true"] :is(.uttt-result, .jungle-result, .uttt-status, .jungle-status) { visibility: hidden; }

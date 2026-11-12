@@ -481,7 +481,7 @@ WorkTimeApp.ui.createAnalysis = function ({
           state,
           view.month,
           view.today,
-          view.analysisIncludeManual,
+          true,
         ),
         referenceStart: WorkTimeApp.domain.time.timeMin(schedule.workStart),
         referenceEnd: WorkTimeApp.domain.time.timeMin(schedule.workEnd),
@@ -489,14 +489,14 @@ WorkTimeApp.ui.createAnalysis = function ({
           state,
           view.month,
           view.today,
-          view.analysisIncludeManual,
+          true,
           { workdaysOnly: true },
         ),
         comparison: WorkTimeApp.domain.statistics.monthlyAnalysisComparison(
           state,
           view.month,
           view.today,
-          view.analysisIncludeManual,
+          true,
         ),
       };
     const language = WorkTimeApp.i18n.language,
@@ -528,7 +528,6 @@ WorkTimeApp.ui.createAnalysis = function ({
     wasVisible = view.analysisMode;
     lastLanguage = language;
     lastSignature = signature;
-    $("analysisManual").checked = view.analysisIncludeManual;
     const metrics = data.workdayMetrics,
       earliest = metrics.earliest,
       latest = metrics.latest,

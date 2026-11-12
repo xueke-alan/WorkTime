@@ -2368,7 +2368,7 @@ body .editor .settings-tabs .settings-tab:focus-visible { outline: 2px solid var
 
 body .workspace > .editor.is-settings-open { display: flex; flex-direction: column; }
 
-/* The batch tools sit on the divider above the shared action slots. */
+/* Keep the batch tools above a stationary divider between both button rows. */
 #batchBar:not(.hidden) .batch-toolbar { animation: batch-toolbar-enter 180ms ease-out both; }
 @keyframes batch-toolbar-enter { from { opacity: 0; } }
 .editor .batch-toolbar.batch-toolbar-outgoing {
@@ -2451,20 +2451,18 @@ body .editor :is(#dayForm, #batchForm) .editor-footer .day-action-row {
   gap: 0.357143rem;
   margin: 0 0 var(--section-spacing);
   padding: calc(var(--section-spacing) + var(--action-control-height) / 2) 0 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid transparent;
 }
-body .editor #dayForm .editor-footer .day-action-row {
-  border-top-color: transparent;
-}
-body .editor #dayForm .editor-footer .day-action-row::before {
+body .editor :is(#dayForm, #batchForm) .editor-footer::before {
   content: "";
   position: absolute;
   inset-inline: 0;
-  inset-block-start: 0.571429rem;
+  inset-block-start: calc(var(--section-spacing) * 1.5 + var(--action-control-height));
   height: 1px;
   background: var(--line);
   pointer-events: none;
 }
+
 body .editor :is(#dayForm, #batchForm) .editor-footer .day-action-row button {
   width: 100%;
   min-width: 0;
@@ -2489,12 +2487,13 @@ body .editor :is(#dayForm, #batchForm) .editor-preview {
 }
 #batchError:empty { display: none; }
 
-.batch-preview-card .batch-selection-count { display: block; padding: 0; margin: 0 0 .35rem; font-size: inherit; }
+.batch-preview-card .batch-selection-count { display: block; padding: 0; margin: 0 0 .5rem; color: var(--muted); font-size: var(--text-small); font-weight: 500; }
 body .editor #batchForm .batch-preview-status { margin: 0; padding: 0; border: 0; background: transparent; font-size: inherit; line-height: inherit; }
 .batch-preview-status p { margin: 0; }
-.batch-preview-time { display: block; font-size: 1.071429rem; font-weight: 650; margin-bottom: .25rem; font-variant-numeric: tabular-nums; }
-.batch-preview-counts { display: flex; flex-wrap: wrap; gap: .15rem .65rem; }
-.batch-preview-status .batch-preview-note { color: var(--muted); margin-top: .3rem; }
+.batch-preview-time { display: block; color: var(--ink); font-size: 1.142857rem; font-weight: 650; margin-bottom: .65rem; font-variant-numeric: tabular-nums; }
+.batch-preview-counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.batch-preview-counts > span { display: flex; align-items: baseline; gap: .35rem; color: var(--muted); font-size: var(--text-small); }
+.batch-preview-counts b { color: var(--ink); font-size: 1rem; font-weight: 650; font-variant-numeric: tabular-nums; }
 
 body .editor #batchForm .batch-time-fields {
   --nextday-track: calc(var(--input-height) + var(--row-spacing));

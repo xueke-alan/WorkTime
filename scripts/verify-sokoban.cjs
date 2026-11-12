@@ -410,6 +410,11 @@ async function main() {
       "status keeps board stationary",
     );
     await action("undo").click();
+    await page.waitForFunction(
+      ({ key, id }) =>
+        JSON.parse(localStorage.getItem(key)).drafts[id].path === "",
+      { key, id: bank.levels[0].id },
+    );
     assert.equal((await saved()).drafts[bank.levels[0].id].path, "");
     assert.ok(
       (await saved()).completed[bank.levels[0].id],
@@ -790,6 +795,9 @@ async function main() {
     assert.ok((await page.locator(".sokoban-warning").innerText()).length);
     await page.screenshot({ path: path.join(output, "storage-warning.png") });
     // Native animation tracks are paused and sampled to check actual geometry.
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+    );
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await action("level-0").click();

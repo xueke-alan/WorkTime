@@ -595,8 +595,11 @@ async function verifyClear() {
           throw Error("Pending clear must not exit");
         await pending;
       });
-      await page.waitForFunction(() =>
-        document.getElementById("batchBar").classList.contains("hidden"),
+      assert.equal(await page.locator("#batchBar").isVisible(), true);
+      assert.equal(await page.locator("#batchReset").isEnabled(), true);
+      assert.equal(
+        await page.locator("#batchSelectionCount").textContent(),
+        "已选 1 天",
       );
       const selectedResult = await stored(page);
       assert.deepEqual(selectedResult.days[first], {
@@ -792,6 +795,12 @@ async function verifyLayout() {
             .getBoundingClientRect().bottom;
           if (rect("batchReset").top - toolbarBottom < 12)
             problems.push("batch tools too close to action buttons");
+          const batchFooter = form.querySelector(".batch-footer");
+          const divider =
+            batchFooter.getBoundingClientRect().top +
+            parseFloat(getComputedStyle(batchFooter, "::before").top);
+          if (divider <= toolbarBottom || divider >= rect("batchReset").top)
+            problems.push("divider must sit between both button rows");
           if (
             status.top < actions.bottom - 1 ||
             status.top - actions.bottom > 20
@@ -877,12 +886,16 @@ async function verifyLayout() {
       const exit = {
         page: hasPageMotion(dayForm),
         toolbar: !!document.querySelector(".batch-toolbar-outgoing"),
+        title: document.getElementById("editorDate").getAnimations().length > 0,
       };
       document.getElementById("batchToggle").click();
       return {
         exit,
         enter: {
           page: hasPageMotion(batchForm),
+          title:
+            document.querySelector(".batch-editor-header h2").getAnimations()
+              .length > 0,
           toolbar: batchForm
             .querySelector(".batch-toolbar")
             .getAnimations()
@@ -893,9 +906,37 @@ async function verifyLayout() {
       };
     });
     assert.deepEqual(editorMotion, {
-      exit: { page: false, toolbar: true },
-      enter: { page: false, toolbar: true },
+      exit: { page: false, toolbar: true, title: true },
+      enter: { page: false, toolbar: true, title: true },
     });
+    // Check the painted baseline immediately before and after animation cleanup.
+    // Ink alignment owns transform and may refresh while the title is entering.
+    for (const batch of [false, true, false, true]) {
+      await page.evaluate((batch) => {
+        document.getElementById(batch ? "batchToggle" : "batchCancel").click();
+      }, batch);
+      const baseline = await page.evaluate(async (batch) => {
+        const title = document.querySelector(
+          batch ? ".batch-editor-header h2" : "#editorDate",
+        );
+        const animation = title.getAnimations()[0];
+        if (!animation) throw Error("Missing title animation");
+        animation.pause();
+        animation.currentTime = animation.effect.getTiming().duration - 1;
+        WorkTimeApp.ui.alignment.refresh([title]);
+        const before = title.getBoundingClientRect().top;
+        animation.finish();
+        await Promise.allSettled([animation.finished]);
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        );
+        return { before, after: title.getBoundingClientRect().top };
+      }, batch);
+      assert.ok(
+        Math.abs(baseline.before - baseline.after) < 0.1,
+        JSON.stringify({ batch, baseline }),
+      );
+    }
     const motion = await page.locator("#batchModeToggle").evaluate((button) => {
       const row = document.querySelector(".batch-time-fields");
       const next = document.getElementById("batchNextField");
@@ -959,15 +1000,27 @@ async function verifyLayout() {
                     "clearManual",
                     "sourceOpen",
                   ];
-              return ids.map((id) => {
-                const box = document.getElementById(id).getBoundingClientRect();
-                return {
-                  x: box.left - host.left,
-                  y: box.top - host.top,
-                  width: box.width,
-                  height: box.height,
-                };
-              });
+              const footer = document.querySelector(
+                batch ? "#batchForm .editor-footer" : "#dayForm .editor-footer",
+              );
+              const divider =
+                footer.getBoundingClientRect().top +
+                parseFloat(getComputedStyle(footer, "::before").top) -
+                host.top;
+              return [
+                ...ids.map((id) => {
+                  const box = document
+                    .getElementById(id)
+                    .getBoundingClientRect();
+                  return {
+                    x: box.left - host.left,
+                    y: box.top - host.top,
+                    width: box.width,
+                    height: box.height,
+                  };
+                }),
+                { x: 0, y: divider, width: 0, height: 1 },
+              ];
             }, batch);
           const normal = await geometry(false);
           await page.locator("#batchToggle").click();

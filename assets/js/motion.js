@@ -30,6 +30,7 @@
   }
   const contentMotions = new Set([
     "motion-content",
+    "motion-title",
     "motion-card-content",
     "motion-sidebar-forward",
     "motion-sidebar-back",
@@ -56,7 +57,9 @@
       : null;
     const start = current && {
       opacity: current.opacity,
-      transform: current.transform,
+      ...(name === "motion-title"
+        ? { translate: current.translate }
+        : { transform: current.transform }),
     };
     stop(element);
     if (reduced.matches || WorkTimeApp.i18n.changing) return;
@@ -88,12 +91,22 @@
               : name === "motion-calendar-year"
                 ? `translateX(${distance})`
                 : "translateY(4px)";
+      // Title transforms belong to ink alignment, which can refresh mid-animation.
+      // Animate the independent translate property so releasing the effect never
+      // restores a different vertical baseline.
+      const frames =
+        name === "motion-title"
+          ? [
+              start || { opacity: 0.4, translate: "6px 0" },
+              { opacity: 1, translate: "0px 0px" },
+            ]
+          : [
+              start || { opacity: 0.4, transform },
+              { opacity: 1, transform: "none" },
+            ];
       const animation = WorkTimeApp.ui.animationCompat.animate(
         element,
-        [
-          start || { opacity: 0.4, transform },
-          { opacity: 1, transform: "none" },
-        ],
+        frames,
         {
           duration: name.startsWith("motion-calendar")
             ? calendar.navigationDuration

@@ -9,6 +9,8 @@ WorkTimeApp.games.register({
     const levels = WorkTimeApp.data.lightsOut;
     const storage = WorkTimeApp.services.gameArchive.session();
     const key = "worktime.games.lights-out.v1";
+    let history = null,
+      replayState = null;
     const t = (name, params) =>
       WorkTimeApp.i18n.t("games.lights." + name, params);
     let failed = false,
@@ -21,7 +23,10 @@ WorkTimeApp.games.register({
     try {
       const raw = storage.getItem(key);
       if (raw !== null) {
-        data = rules.restore(JSON.parse(raw));
+        data = WorkTimeApp.services.gameArchive.normalize(
+          "game-lights-out",
+          JSON.parse(raw),
+        );
         if (!data) failed = true;
       }
     } catch {
@@ -40,7 +45,7 @@ WorkTimeApp.games.register({
         levels.findIndex((l) => l.id === data.current) / rules.perChapter,
       );
     const level = () => levels.find((l) => l.id === data.current);
-    const state = () => data.drafts[data.current];
+    const state = () => replayState ?? data.drafts[data.current];
     const node = (tag, className, parent) => {
       const el = document.createElement(tag);
       el.className = className;
@@ -174,10 +179,11 @@ WorkTimeApp.games.register({
       '<path class="lights-crystal" d="m32 5 20 13-3 29-17 13-17-13-3-29Z"/><path class="lights-facet" d="m32 5 8 22-8 33-8-33Zm-20 13 12 9 16 0 12-9M15 47l9-20m16 0 9 20"/><path class="lights-glint" d="m27 17 4-5 2 9-4 6Z"/>',
       '<circle class="lights-battery-shell" cx="32" cy="32" r="27"/><circle class="lights-battery-scale" cx="32" cy="32" r="23"/><circle class="lights-battery-core" cx="32" cy="32" r="18"/><path class="lights-battery-shine" d="M9 25A24 24 0 0 1 25 9m17 44a24 24 0 0 0 11-11"/><path class="lights-circuit" d="M17 29v6m30-6v6M29 17h6m-6 30h6"/><path class="lights-energy" transform="translate(8 8) scale(.75)" d="M35 9 17 35h13l-2 20 19-29H34Z"/>',
     ];
-    function tick() {
+    function tick(settleReplay = false) {
       const now = performance.now();
       if (
         !paused &&
+        (!history?.active || settleReplay) &&
         visible &&
         !choosing &&
         !confirming &&
@@ -188,6 +194,7 @@ WorkTimeApp.games.register({
       stamp = now;
     }
     function save() {
+      if (history?.active) return;
       try {
         storage.setItem(
           key,
@@ -236,11 +243,24 @@ WorkTimeApp.games.register({
       cells.querySelector("button")?.focus({ preventScroll: true });
     }
     function play(index) {
-      if (paused || disposed || !visible || choosing || confirming) return;
+      if (
+        paused ||
+        history?.active ||
+        disposed ||
+        !visible ||
+        choosing ||
+        confirming
+      )
+        return;
       tick();
       if (!rules.move(state(), index, level().size)) return;
       const solved = rules.won(state().board);
       if (solved) {
+        WorkTimeApp.services.gameArchive.addCompletion(
+          data,
+          data.current,
+          state().path,
+        );
         if (rules.better(state(), data.completed[data.current]))
           data.completed[data.current] = JSON.parse(JSON.stringify(state()));
       }
@@ -272,6 +292,7 @@ WorkTimeApp.games.register({
       }
     }
     function render() {
+      history?.render();
       root.dataset.theme = String(data.chapter);
       root.dataset.choosing = String(choosing);
       playLayout.hidden = choosing;
@@ -372,7 +393,7 @@ WorkTimeApp.games.register({
           );
         });
         const solved = rules.won(state().board);
-        cover.hidden = !confirming && !solved;
+        cover.hidden = !!history?.active || (!confirming && !solved);
         coverTitle.hidden = !confirming;
         coverTitle.textContent = confirming ? t("confirm") : "";
         result.hidden = !confirming;
@@ -393,7 +414,7 @@ WorkTimeApp.games.register({
         back.textContent = t("choose");
         back.hidden ||= levels.at(-1).id === data.current;
         cells.inert = !cover.hidden;
-        status.textContent = solved ? t("won") : "";
+        status.textContent = solved && !history?.active ? t("won") : "";
       }
       renderStats();
     }
@@ -450,14 +471,38 @@ WorkTimeApp.games.register({
       if (disposed) return;
       tick();
       disposed = true;
+      history?.dispose();
       paused = true;
       clearInterval(timer);
       save();
     }
     signal.addEventListener("abort", dispose, { once: true });
+    history = WorkTimeApp.games.createCompletionHistory({
+      root,
+      host: sidebar,
+      before: actions,
+      signal,
+      records: () =>
+        choosing ? null : (data.completionHistory?.[data.current] ?? []),
+      steps: (path) => path.length,
+      onStart() {
+        tick(true);
+      },
+      onFrame(path) {
+        replayState = rules.create(level());
+        for (const index of path) rules.move(replayState, index, level().size);
+        render();
+      },
+      onExit() {
+        replayState = null;
+        stamp = performance.now();
+        render();
+      },
+    });
     render();
     return {
       pause() {
+        history.pause();
         tick();
         paused = true;
         save();

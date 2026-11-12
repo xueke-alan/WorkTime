@@ -17,6 +17,11 @@ WorkTimeApp.games.register({
       }),
     );
     const archive = WorkTimeApp.services.gameArchive;
+    let history = null,
+      replaySnapshot = null;
+    let matchHistory = null,
+      matchReplaySnapshot = null;
+    const replaying = () => history?.active || matchHistory?.active;
     const storage = archive.session(),
       key = archive.keys["game-gomoku"];
     const rules = WorkTimeApp.games.gomokuRules,
@@ -48,6 +53,9 @@ WorkTimeApp.games.register({
         ? rules.restore(level, save.drafts[level.id].path)
         : null;
     let renderedBoard = state?.board.slice() ?? null;
+    save.matchSession ||= archive.newMatchSession();
+    if (save.match && rules.restoreMatch(save.match).status !== "playing")
+      save.matchSession.recorded = true;
     let group = level?.group ?? "easy",
       focus = state?.path.at(-1) ?? 112,
       paused = false,
@@ -151,6 +159,7 @@ WorkTimeApp.games.register({
             forbidden: selectedForbidden,
             path: [],
           };
+          save.matchSession = archive.newMatchSession();
           openMatch(keyboard);
         },
       ),
@@ -313,6 +322,7 @@ WorkTimeApp.games.register({
       },
       onConfirm() {
         paused = false;
+        save.matchSession = archive.newMatchSession();
         match.path = [];
         state = rules.restoreMatch(match);
         renderedBoard = state.board.slice();
@@ -340,6 +350,7 @@ WorkTimeApp.games.register({
     const warning = node(root, "p", "gomoku-warning");
     warning.setAttribute("role", "status");
     function persist() {
+      if (replaying()) return;
       try {
         storage.setItem(key, JSON.stringify(save));
         saveFailed = false;
@@ -347,15 +358,19 @@ WorkTimeApp.games.register({
         saveFailed = true;
       }
     }
-    function update() {
+    function update(record = false) {
+      if (replaying()) return;
       if (isMatch()) {
         match.path = [...state.path];
         save.match = { ...match, path: [...match.path] };
+        if (["won", "lost"].includes(state.status))
+          archive.recordMatch(save, "game-gomoku", match, state.path);
         save.current = null;
         persist();
         return;
       }
       if (state.status === "won") {
+        if (record) archive.addCompletion(save, level.id, state.path);
         save.completed[level.id] ??= { path: [...state.path] };
         delete save.drafts[level.id];
         save.current = null;
@@ -398,6 +413,7 @@ WorkTimeApp.games.register({
       delete resultLayer.dataset.result;
     }
     function showResult() {
+      if (replaying()) return;
       if (
         paused ||
         signal.aborted ||
@@ -536,7 +552,7 @@ WorkTimeApp.games.register({
         return;
       }
       state = white == null ? black : rules.placeStone(black, white, 2);
-      update();
+      update(true);
       if (white != null) {
         preview = black.board;
         const generation = searchGeneration;
@@ -560,6 +576,7 @@ WorkTimeApp.games.register({
       );
     }
     async function searchPuzzleReply() {
+      if (replaying() || paused || document.hidden || signal.aborted) return;
       const generation = searchGeneration;
       const position = state;
       thinking = true;
@@ -590,6 +607,7 @@ WorkTimeApp.games.register({
       });
     }
     async function scheduleAI() {
+      if (replaying()) return;
       if (restartPrompt.isOpen()) return;
       if (
         !isMatch() ||
@@ -663,6 +681,8 @@ WorkTimeApp.games.register({
       }
     }
     function render() {
+      history?.render();
+      matchHistory?.render();
       root.dataset.category = group;
       catalog.setReturn(
         returnLevel
@@ -876,9 +896,79 @@ WorkTimeApp.games.register({
     const unlistenResult = compat.listen(reduced, clearResult);
     signal.addEventListener("abort", unlistenResult, { once: true });
     signal.addEventListener("abort", settle, { once: true });
+    matchHistory = WorkTimeApp.games.createCompletionHistory({
+      root,
+      host: catalog.categories,
+      playbackHost: controls,
+      kind: "match",
+      signal,
+      records: () => save.matchHistory ?? [],
+      title: (record, date) =>
+        WorkTimeApp.games.matchRecordTitle("game-gomoku", record, date),
+      onStart(record) {
+        matchReplaySnapshot = {
+          state,
+          focus,
+          level,
+          returnLevel,
+          group,
+          match,
+        };
+        settle();
+        match = { ...record.config, path: [] };
+        level = { id: "ai", group: "ai" };
+        group = "ai";
+      },
+      onFrame(path) {
+        state = rules.restoreMatch({ ...match, path });
+        render();
+      },
+      onExit() {
+        ({ state, focus, level, returnLevel, group, match } =
+          matchReplaySnapshot);
+        matchReplaySnapshot = null;
+        renderedBoard = state?.board.slice() ?? null;
+        render();
+        if (level) scheduleAI();
+      },
+    });
+    history = WorkTimeApp.games.createCompletionHistory({
+      root,
+      host: controls,
+      before: actions,
+      signal,
+      records: () =>
+        !level || isMatch() ? null : (save.completionHistory?.[level.id] ?? []),
+      steps: (path) => Math.ceil(path.length / 2),
+      onStart() {
+        replaySnapshot = { state, focus };
+        settle();
+      },
+      onFrame(path) {
+        state = rules.create(level);
+        path.forEach((p, index) => {
+          state = rules.placeStone(state, p, (index % 2) + 1);
+        });
+        render();
+      },
+      onExit() {
+        ({ state, focus } = replaySnapshot);
+        replaySnapshot = null;
+        render();
+        if (
+          !paused &&
+          !document.hidden &&
+          state.status === "playing" &&
+          state.path.length % 2
+        )
+          searchPuzzleReply();
+      },
+    });
     render();
     return {
       pause() {
+        history.pause();
+        matchHistory.pause();
         paused = true;
         if (isMatch()) settle();
         else {
@@ -893,6 +983,8 @@ WorkTimeApp.games.register({
         scheduleAI();
       },
       dispose() {
+        history.dispose();
+        matchHistory.dispose();
         settle();
         root.remove();
       },

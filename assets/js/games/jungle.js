@@ -13,6 +13,9 @@ WorkTimeApp.games.register({
     const reduced = compat.preference();
     const archive = WorkTimeApp.services.gameArchive,
       storage = archive.session();
+    let matchHistory = null,
+      replaySnapshot = null;
+    const matchSave = {};
     const t = (key, params) =>
       WorkTimeApp.i18n.t("games.jungle." + key, params);
     let options = { mode: "ai", difficulty: "normal", human: 1, path: [] };
@@ -47,7 +50,10 @@ WorkTimeApp.games.register({
       if (raw !== null) {
         const save = archive.normalize("game-jungle", JSON.parse(raw));
         options = save.state;
+        matchSave.matchHistory = save.matchHistory ?? [];
+        matchSave.matchSession = save.matchSession ?? archive.newMatchSession();
         state = rules.replay(options.path);
+        if (state.status !== "playing") matchSave.matchSession.recorded = true;
         active = true;
         setupOpen = false;
       }
@@ -132,6 +138,7 @@ WorkTimeApp.games.register({
     const setupActions = node(setup, "div", "jungle-actions");
     button(setupActions, "start", "start", startMatch);
     function startMatch() {
+      matchSave.matchSession = archive.newMatchSession();
       cancel();
       options = { ...draft, path: [] };
       state = rules.create();
@@ -306,6 +313,7 @@ WorkTimeApp.games.register({
       render();
     });
     button(resultActions, "result-restart", "playAgain", () => {
+      matchSave.matchSession = archive.newMatchSession();
       cancel();
       state = rules.create();
       selected = -1;
@@ -327,6 +335,7 @@ WorkTimeApp.games.register({
         scheduleAI();
       },
       onConfirm() {
+        matchSave.matchSession = archive.newMatchSession();
         covered = false;
         engineError = false;
         state = rules.create();
@@ -622,11 +631,12 @@ WorkTimeApp.games.register({
       );
     }
     function persist() {
+      if (matchHistory?.active) return;
       options.path = state.path;
       try {
         storage.setItem(
           archive.keys["game-jungle"],
-          JSON.stringify({ version: 1, state: options }),
+          JSON.stringify({ version: 1, state: options, ...matchSave }),
         );
         failed = false;
       } catch {
@@ -645,6 +655,7 @@ WorkTimeApp.games.register({
     }
     function playable() {
       return (
+        !matchHistory?.active &&
         !paused &&
         !covered &&
         !setupOpen &&
@@ -671,6 +682,7 @@ WorkTimeApp.games.register({
       if (next) accept(next);
     }
     function accept(next) {
+      if (matchHistory?.active) return;
       settleMotion();
       const [from, to] = next.path.at(-1);
       const source = cells[displaySquare(from)],
@@ -681,6 +693,8 @@ WorkTimeApp.games.register({
         ? target.parts.piece.cloneNode(true)
         : null;
       state = next;
+      if (state.status === "won")
+        archive.recordMatch(matchSave, "game-jungle", options, state.path);
       selected = -1;
       persist();
       render();
@@ -788,6 +802,7 @@ WorkTimeApp.games.register({
       }
     }
     function render() {
+      matchHistory?.render();
       catalog.page.hidden = !setupOpen || rulesOpen;
       play.hidden = setupOpen || rulesOpen;
       rulesDialog.hidden = !rulesOpen;
@@ -1047,6 +1062,10 @@ WorkTimeApp.games.register({
       ].join(":");
     }
     function renderResult() {
+      if (matchHistory?.active) {
+        result.hidden = true;
+        return;
+      }
       const terminal = options.mode === "ai" && state.status !== "playing";
       if (!terminal) dismissedResult = "";
       result.hidden =
@@ -1108,10 +1127,56 @@ WorkTimeApp.games.register({
       scheduleAI();
     });
     signal.addEventListener("abort", unlistenMotion, { once: true });
+    matchHistory = G.createCompletionHistory({
+      root,
+      host: catalog.categories,
+      playbackHost: controls,
+      kind: "match",
+      signal,
+      records: () => matchSave.matchHistory ?? [],
+      title: (record, date) => G.matchRecordTitle("game-jungle", record, date),
+      onStart(record) {
+        replaySnapshot = {
+          options,
+          state,
+          active,
+          setupOpen,
+          selected,
+          focus,
+          dismissedResult,
+        };
+        cancel();
+        options = { ...record.config, path: [] };
+        active = true;
+        setupOpen = false;
+        selected = -1;
+      },
+      onFrame(path) {
+        state = rules.replay(path);
+        render();
+        resize(available);
+      },
+      onExit() {
+        ({
+          options,
+          state,
+          active,
+          setupOpen,
+          selected,
+          focus,
+          dismissedResult,
+        } = replaySnapshot);
+        replaySnapshot = null;
+        render();
+        resize(available);
+        if (!setupOpen) scheduleAI();
+      },
+    });
     render();
     scheduleAI();
     return {
       pause() {
+        matchHistory.pause();
         paused = true;
         cancel();
         render();
@@ -1123,6 +1188,7 @@ WorkTimeApp.games.register({
       },
       resize,
       dispose() {
+        matchHistory.dispose();
         cancel();
         celebration.dispose();
         root.remove();

@@ -37,6 +37,11 @@ WorkTimeApp.games.register({
     };
     let save = { version: 1, current: null, drafts: {}, completed: {} };
     let saveFailed = false;
+    let history = null,
+      replaySnapshot = null;
+    let matchHistory = null,
+      matchReplaySnapshot = null;
+    const replaying = () => history?.active || matchHistory?.active;
     try {
       const raw = storage.getItem(key);
       if (raw !== null)
@@ -77,6 +82,9 @@ WorkTimeApp.games.register({
       focus = path.length ? rules.decode(path.at(-1))[1] : humanRed ? 76 : 13;
     }
     const humanTurn = () => (path.length % 2 === 0) === humanRed;
+    save.matchSession ||= archive.newMatchSession();
+    if (save.match && rules.restoreMatch(save.match).status !== "playing")
+      save.matchSession.recorded = true;
     const puzzleReplyPending = () =>
       !versus &&
       !!level &&
@@ -298,6 +306,7 @@ WorkTimeApp.games.register({
     warning.setAttribute("role", "status");
 
     function persist() {
+      if (replaying()) return;
       try {
         storage.setItem(key, JSON.stringify(save));
         saveFailed = false;
@@ -334,6 +343,7 @@ WorkTimeApp.games.register({
     }
 
     function startVersus(keyboard = false) {
+      save.matchSession = archive.newMatchSession();
       cancelSearch();
       stopPresentation();
       level = versusLevel;
@@ -387,6 +397,7 @@ WorkTimeApp.games.register({
     }
 
     function saveMatch() {
+      if (replaying()) return;
       save.match = {
         difficulty,
         humanRed,
@@ -395,6 +406,8 @@ WorkTimeApp.games.register({
         initialBoard: versusInitialBoard,
         path: [...path],
       };
+      if (["won", "lost"].includes(position.status))
+        archive.recordMatch(save, "game-xiangqi", save.match, path);
       save.current = null;
       persist();
     }
@@ -446,6 +459,7 @@ WorkTimeApp.games.register({
 
     async function replyPuzzle() {
       if (
+        replaying() ||
         !puzzleReplyPending() ||
         presentation ||
         thinking ||
@@ -486,6 +500,7 @@ WorkTimeApp.games.register({
     }
 
     async function replyVersus() {
+      if (replaying()) return;
       if (restartPrompt.isOpen()) return;
       if (
         thinking ||
@@ -542,12 +557,16 @@ WorkTimeApp.games.register({
       if (position.status !== "playing") showResult();
     }
 
-    function updatePosition(nextPosition = rules.restore(level, path)) {
+    function updatePosition(
+      nextPosition = rules.restore(level, path),
+      record = false,
+    ) {
       position = nextPosition;
       if (position.status !== "won") {
         save.drafts[level.id] = { path };
         save.current = level.id;
       } else {
+        if (record) archive.addCompletion(save, level.id, path);
         save.completed[level.id] ??= { path };
         delete save.drafts[level.id];
         save.current = null;
@@ -577,6 +596,7 @@ WorkTimeApp.games.register({
     }
 
     function showResult() {
+      if (replaying()) return;
       clearResult();
       if (
         paused ||
@@ -818,7 +838,7 @@ WorkTimeApp.games.register({
       } else {
         const { defense } = nextPosition;
         path = defense === null ? [...path, move] : [...path, move, defense];
-        updatePosition(scripted ? nextPosition : undefined);
+        updatePosition(scripted ? nextPosition : undefined, true);
         showRound(before, move, puzzleReplyPending() ? undefined : defense);
       }
     }
@@ -886,6 +906,8 @@ WorkTimeApp.games.register({
     }
 
     function render() {
+      history?.render();
+      matchHistory?.render();
       const reverse = flipped();
       art.querySelectorAll("text").forEach((text, index) => {
         text.setAttribute("x", String((index === 0) !== reverse ? 2.5 : 6.5));
@@ -1378,10 +1400,111 @@ WorkTimeApp.games.register({
       },
       { once: true },
     );
+    matchHistory = WorkTimeApp.games.createCompletionHistory({
+      root,
+      host: categories,
+      playbackHost: controls,
+      kind: "match",
+      signal,
+      records: () => save.matchHistory ?? [],
+      title: (record, date) =>
+        WorkTimeApp.games.matchRecordTitle("game-xiangqi", record, date),
+      onStart(record) {
+        matchReplaySnapshot = {
+          path,
+          position,
+          selected,
+          focus,
+          message,
+          level,
+          returnLevel,
+          versus,
+          difficulty,
+          humanRed,
+          undosRemaining,
+          versusInitialBoard,
+          handicaps: [...handicaps],
+        };
+        cancelSearch();
+        stopPresentation();
+        versus = true;
+        level = versusLevel;
+        ({ difficulty, humanRed, undosRemaining } = record.config);
+        versusInitialBoard = record.config.initialBoard;
+        handicaps.clear();
+        record.config.handicaps.forEach((piece) => handicaps.add(piece));
+        selected = message = null;
+      },
+      onFrame(prefix) {
+        path = prefix;
+        position = rules.matchPosition(versusInitialBoard, path, humanRed);
+        render();
+      },
+      onExit() {
+        ({
+          path,
+          position,
+          selected,
+          focus,
+          message,
+          level,
+          returnLevel,
+          versus,
+          difficulty,
+          humanRed,
+          undosRemaining,
+          versusInitialBoard,
+        } = matchReplaySnapshot);
+        handicaps.clear();
+        matchReplaySnapshot.handicaps.forEach((piece) => handicaps.add(piece));
+        matchReplaySnapshot = null;
+        render();
+        if (level) {
+          if (versus) replyVersus();
+          else replyPuzzle();
+        }
+      },
+    });
+    history = WorkTimeApp.games.createCompletionHistory({
+      root,
+      host: controls,
+      before: actions,
+      signal,
+      records: () =>
+        !level || versus ? null : (save.completionHistory?.[level.id] ?? []),
+      steps: (path) => Math.ceil(path.length / 2),
+      onStart() {
+        replaySnapshot = { path, position, selected, focus, message };
+        cancelSearch();
+        stopPresentation();
+        selected = message = null;
+      },
+      onFrame(prefix, finished) {
+        path = prefix;
+        position = finished
+          ? rules.restore(level, path)
+          : {
+              ...rules.restore(level, []),
+              board: path.reduce(
+                (board, move) => rules.apply(board, move),
+                rules.parse(level.position),
+              ),
+            };
+        render();
+      },
+      onExit() {
+        ({ path, position, selected, focus, message } = replaySnapshot);
+        replaySnapshot = null;
+        render();
+        replyPuzzle();
+      },
+    });
     render();
     replyPuzzle();
     return {
       pause() {
+        history.pause();
+        matchHistory.pause();
         paused = true;
         if (versus || puzzleReplyPending()) cancelSearch(true);
         settle();
@@ -1398,6 +1521,8 @@ WorkTimeApp.games.register({
         if (presentation) settle();
       },
       dispose() {
+        history.dispose();
+        matchHistory.dispose();
         captureResize.disconnect();
         cancelSearch(true);
         stopPresentation();

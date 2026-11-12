@@ -291,3 +291,5 @@ Thumbs.db
 !/scripts/verify-oa-return-clipboard.cjs
 
 !/scripts/verify-batch-editor.cjs
+!/scripts/verify-completion-history.cjs
+!/scripts/verify-match-history.cjs

@@ -1,4 +1,178 @@
 "use strict";
+
+(() => {
+  const keys = [
+    "matchHeading",
+    "matchEmpty",
+    "matchRecord",
+    "victory",
+    "defeat",
+    "local",
+    "sideVictory",
+    "xSide",
+    "oSide",
+  ];
+  const catalogs = {
+    "zh-CN": [
+      "对局记录",
+      "暂无对局记录",
+      "对局记录-{date}-{detail}-{result}",
+      "胜利",
+      "失败",
+      "人人对战",
+      "{side}胜利",
+      "X方",
+      "O方",
+    ],
+    "zh-TW": [
+      "對局記錄",
+      "暫無對局記錄",
+      "對局記錄-{date}-{detail}-{result}",
+      "勝利",
+      "失敗",
+      "雙人對戰",
+      "{side}勝利",
+      "X方",
+      "O方",
+    ],
+    "zh-HK": [
+      "對局記錄",
+      "暫無對局記錄",
+      "對局記錄-{date}-{detail}-{result}",
+      "勝利",
+      "失敗",
+      "雙人對戰",
+      "{side}勝利",
+      "X方",
+      "O方",
+    ],
+    en: [
+      "Match history",
+      "No completed matches",
+      "Match-{date}-{detail}-{result}",
+      "Victory",
+      "Defeat",
+      "Local multiplayer",
+      "{side} wins",
+      "X",
+      "O",
+    ],
+    ja: [
+      "対局履歴",
+      "対局履歴はありません",
+      "対局記録-{date}-{detail}-{result}",
+      "勝利",
+      "敗北",
+      "二人対戦",
+      "{side}の勝利",
+      "X側",
+      "O側",
+    ],
+    ko: [
+      "대국 기록",
+      "완료된 대국이 없습니다",
+      "대국 기록-{date}-{detail}-{result}",
+      "승리",
+      "패배",
+      "2인 대전",
+      "{side} 승리",
+      "X 측",
+      "O 측",
+    ],
+  };
+  for (const [language, values] of Object.entries(catalogs))
+    keys.forEach((key, index) => {
+      WorkTimeApp.data.locales[language]["games.history." + key] =
+        values[index];
+    });
+})();
+
+(() => {
+  const keys = [
+    "heading",
+    "empty",
+    "record",
+    "replay",
+    "play",
+    "pause",
+    "previous",
+    "next",
+    "exit",
+  ];
+  const catalogs = {
+    "zh-CN": [
+      "通关记录",
+      "暂无通关记录",
+      "通关记录-{steps}步-{date}",
+      "回放",
+      "播放",
+      "暂停",
+      "上一步",
+      "下一步",
+      "退出回放",
+    ],
+    "zh-TW": [
+      "通關記錄",
+      "暫無通關記錄",
+      "通關記錄-{steps}步-{date}",
+      "重播",
+      "播放",
+      "暫停",
+      "上一步",
+      "下一步",
+      "退出重播",
+    ],
+    "zh-HK": [
+      "通關記錄",
+      "暫無通關記錄",
+      "通關記錄-{steps}步-{date}",
+      "重播",
+      "播放",
+      "暫停",
+      "上一步",
+      "下一步",
+      "退出重播",
+    ],
+    en: [
+      "Completion history",
+      "No completions yet",
+      "Completed-{steps} moves-{date}",
+      "Replay",
+      "Play",
+      "Pause",
+      "Previous",
+      "Next",
+      "Exit replay",
+    ],
+    ja: [
+      "クリア履歴",
+      "クリア履歴はありません",
+      "クリア記録-{steps}手-{date}",
+      "リプレイ",
+      "再生",
+      "一時停止",
+      "前の手",
+      "次の手",
+      "リプレイ終了",
+    ],
+    ko: [
+      "완료 기록",
+      "완료 기록이 없습니다",
+      "완료 기록-{steps}수-{date}",
+      "다시 보기",
+      "재생",
+      "일시 정지",
+      "이전 수",
+      "다음 수",
+      "다시 보기 종료",
+    ],
+  };
+  for (const [language, values] of Object.entries(catalogs))
+    keys.forEach((key, index) => {
+      WorkTimeApp.data.locales[language]["games.history." + key] =
+        values[index];
+    });
+})();
 for (const [language, label] of Object.entries({
   "zh-CN":
     "未获得剪贴板权限，请在浏览器的网站设置中允许访问，或手动粘贴 OA 信息。",

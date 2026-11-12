@@ -26,7 +26,6 @@ const WorkTimeServiceApplication = (() => {
       yearMode: false,
       yearViewMode: "heatmap",
       analysisMode: false,
-      analysisIncludeManual: false,
       viewYear: Number(input.today.slice(0, 4)),
       returnMonth: input.today.slice(0, 7),
     };
