@@ -309,7 +309,12 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       if (pane.open) pane.close();
     }
     render();
-    finishNavigationMotion();
+    if (
+      !sidebar
+        .querySelector(".sidebar-actions")
+        .classList.contains("is-year-mode")
+    )
+      finishNavigationMotion();
   }
   function closed(event) {
     const index = stack.findIndex((entry) => entry.id === event.target.id);

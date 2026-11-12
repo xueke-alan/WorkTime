@@ -70,6 +70,8 @@ async function verify() {
                 .querySelector(".sidebar-oa-workspace")
                 .getAnimations()
                 .map((item) => item.effect.getKeyframes().at(-1).opacity),
+              summaryMotion: document.getElementById("cards").getAnimations()
+                .length,
               copies: document.querySelectorAll(".calendar-navigation-copy")
                 .length,
             };
@@ -77,6 +79,7 @@ async function verify() {
           assert.equal(outgoing.duration, 180);
           assert.equal(outgoing.inert, true);
           if (outgoing.oa) assert.ok(outgoing.leftMotion.includes("0"));
+          else assert.equal(outgoing.summaryMotion, 0);
           assert.equal(outgoing.copies, 0);
           assert.equal(outgoing.frames[0].opacity, "1");
           assert.equal(outgoing.frames[1].opacity, "0");
@@ -100,6 +103,23 @@ async function verify() {
             return {
               frames: animation.effect.getKeyframes(),
               easing: animation.effect.getTiming().easing,
+              dateMotion: document
+                .querySelector(".sidebar-year-month")
+                .getAnimations()
+                .map((item) => item.transitionProperty),
+              buttonMotion: document
+                .getElementById("importOpen")
+                .getAnimations()
+                .map((item) => item.transitionProperty),
+              secondaryOpacityTargets: document
+                .querySelector(".import-secondary-actions")
+                .getAnimations()
+                .filter((item) => item.transitionProperty === "opacity")
+                .map((item) =>
+                  Number(item.effect.getKeyframes().at(-1).opacity),
+                ),
+              summaryMotion: document.getElementById("cards").getAnimations()
+                .length,
               nested: document
                 .getElementById("calendar")
                 .classList.contains("motion-calendar-view"),
@@ -115,6 +135,16 @@ async function verify() {
           assert.equal(incoming.easing, "cubic-bezier(0.22, 1, 0.36, 1)");
           assert.equal(incoming.nested, false);
           assert.equal(incoming.footer, true);
+          assert.equal(incoming.summaryMotion > 0, outgoing.oa);
+          if (outgoing.oa) {
+            assert.ok(incoming.dateMotion.includes("opacity"));
+            assert.ok(incoming.buttonMotion.includes("opacity"));
+            assert.ok(
+              incoming.secondaryOpacityTargets.every(
+                (opacity) => opacity === 0,
+              ),
+            );
+          }
           await finish();
           await page.waitForFunction(
             () => !document.getElementById("panelContent").inert,
@@ -167,6 +197,16 @@ async function verify() {
             .evaluate((badge) => getComputedStyle(badge).backgroundColor),
           "rgba(0, 0, 0, 0)",
         );
+        const dateStyle = await page
+          .locator(".sidebar-year-month")
+          .evaluate((badge) => {
+            const style = getComputedStyle(badge);
+            return {
+              size: parseFloat(style.fontSize),
+              weight: Number(style.fontWeight),
+            };
+          });
+        assert.ok(dateStyle.size >= 26 && dateStyle.weight >= 700);
         assert.equal(
           await page
             .locator("#monthTitleYear .summary-number-accessible")
@@ -176,6 +216,11 @@ async function verify() {
         if (target === "monthTitle") {
           await page.evaluate(() =>
             document.getElementById("nextMonth").click(),
+          );
+          assert.ok(
+            (await page
+              .locator(".sidebar-year-number .summary-number-outgoing")
+              .count()) > 0,
           );
           assert.equal(
             await page.locator(".calendar-navigation-copy").count(),

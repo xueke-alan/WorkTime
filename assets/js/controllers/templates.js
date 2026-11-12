@@ -311,7 +311,7 @@ WorkTimeApp.ui.createTemplateController = function (options) {
     renderedBatchTemplates = signature;
     const list = $("batchTimeTemplateList");
     if (!model.state.timeTemplates.length) {
-      list.innerHTML = WorkTimeApp.i18n.t("copy.84c6ec48f3");
+      list.innerHTML = "";
       renderedBatchTemplateIds = new Set();
       return;
     }

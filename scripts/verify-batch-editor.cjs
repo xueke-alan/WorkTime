@@ -787,6 +787,11 @@ async function verifyLayout() {
           const actions = form
             .querySelector(".batch-editor-actions")
             .getBoundingClientRect();
+          const toolbarBottom = form
+            .querySelector(".batch-toolbar")
+            .getBoundingClientRect().bottom;
+          if (rect("batchReset").top - toolbarBottom < 12)
+            problems.push("batch tools too close to action buttons");
           if (
             status.top < actions.bottom - 1 ||
             status.top - actions.bottom > 20
@@ -929,8 +934,74 @@ async function verifyLayout() {
       "false",
     );
     assert.deepEqual(errors, []);
+    for (const language of ["zh-CN", "zh-TW", "zh-HK", "en", "ko", "ja"]) {
+      await page.evaluate(
+        (value) => WorkTimeApp.i18n.setLanguage(value),
+        language,
+      );
+      for (const width of [320, 390, 850, 1150, 1280, 1440, 1920]) {
+        await page.setViewportSize({ width, height: 1000 });
+        for (const date of ["2026-10-19", "2026-10-24"]) {
+          await page
+            .locator('.day[data-date="' + date + '"] .day-select')
+            .click({ force: true, position: { x: 10, y: 10 } });
+          const geometry = (batch) =>
+            page.evaluate((batch) => {
+              const host = document
+                .querySelector(".workspace > .editor")
+                .getBoundingClientRect();
+              const ids = batch
+                ? ["batchReset", "batchCancel", "batchSave"]
+                : [
+                    document.getElementById("dayLeaveToggle").disabled
+                      ? "plannedOvertimeToggle"
+                      : "dayLeaveToggle",
+                    "clearManual",
+                    "sourceOpen",
+                  ];
+              return ids.map((id) => {
+                const box = document.getElementById(id).getBoundingClientRect();
+                return {
+                  x: box.left - host.left,
+                  y: box.top - host.top,
+                  width: box.width,
+                  height: box.height,
+                };
+              });
+            }, batch);
+          const normal = await geometry(false);
+          await page.locator("#batchToggle").click();
+          const direct = await geometry(true);
+          await page.locator("#batchModeToggle").click();
+          const overtime = await geometry(true);
+          await page.locator("#batchCancel").click();
+          const returned = await geometry(false);
+          for (const [mode, actual] of Object.entries({
+            direct,
+            overtime,
+            returned,
+          })) {
+            for (let index = 0; index < normal.length; index++)
+              for (const key of ["x", "y", "width", "height"])
+                assert.ok(
+                  Math.abs(actual[index][key] - normal[index][key]) < 1,
+                  JSON.stringify({
+                    language,
+                    width,
+                    date,
+                    mode,
+                    index,
+                    key,
+                    normal,
+                    actual,
+                  }),
+                );
+          }
+        }
+      }
+    }
     console.log(
-      `Verified ${layouts} batch preview layouts across six languages and seven widths.`,
+      `Verified ${layouts} batch preview layouts and stable action geometry across six languages and seven widths.`,
     );
   })().finally(async () => browser?.close());
 }

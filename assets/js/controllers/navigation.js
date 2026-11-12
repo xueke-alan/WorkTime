@@ -82,6 +82,11 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       animations: [],
       elements: new Map(),
       sidebarTransition: sidebarTransition || model.yearMode,
+      summaryTransition:
+        (sidebarTransition || model.yearMode) &&
+        document
+          .querySelector(".summary-sidebar")
+          .classList.contains("is-oa-open"),
     };
     pageTransition = transition;
     const play = (entering) => {
@@ -96,7 +101,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
         elements = [
           content,
           ...document.querySelectorAll(".calendar-footer > :not(.site-meta)"),
-          ...(transition.sidebarTransition
+          ...(transition.summaryTransition
             ? [
                 ...document.querySelectorAll(
                   ".summary-sidebar > :is(.cards, .target-panel, .sidebar-oa-workspace)",

@@ -593,11 +593,6 @@ body .notification-empty {
   height: 44px;
 }
 
-.batch-template-area .template-toolbar {
-  overflow-x: auto;
-  flex-wrap: nowrap;
-  padding: 2px 0;
-}
 .template-toolbar #batchAddTimeTemplate {
   flex: none;
   width: 34px;
@@ -1559,6 +1554,7 @@ body
   justify-content: center;
 }
 body .editor .editor-mode-header {
+  min-height: 2.428571rem;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -2296,8 +2292,8 @@ body #dayPreview #previewAverage { margin-top: 0.15rem; }
 
 /* Accessible appearance picker, using the existing sidebar's scrolling body. */
 body .editor #dayForm .day-action-row #plannedOvertimeToggle {
-  width: var(--planned-overtime-width, 7.142857rem);
-  min-width: var(--planned-overtime-width, 7.142857rem);
+  width: 100%;
+  min-width: 0;
   white-space: nowrap;
 }
 body .editor #dayForm #clearManual.is-planned-reset {
@@ -2384,12 +2380,13 @@ body .workspace > .editor.is-settings-open { display: flex; flex-direction: colu
 :where(html[data-reduced-motion="true"]) #batchBar:not(.hidden) .batch-toolbar { animation: none; }
 .batch-toolbar {
   --batch-toolbar-height: var(--action-control-height);
-  position: relative;
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: var(--section-spacing);
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--row-spacing);
-  margin-bottom: calc(var(--batch-toolbar-height) / -2);
 }
 .batch-selection-group {
   display: flex;
@@ -2435,13 +2432,63 @@ body .editor .batch-toolbar .batch-selection-group > button.ui-button {
 body .editor #batchForm .batch-editor-actions {
   --button-icon-inset: 0.285714rem;
   margin-top: 0;
-  padding-top: calc(var(--section-spacing) + var(--action-control-height) / 2);
+  padding-top: var(--section-spacing);
   padding-bottom: 0;
 }
 body .editor #batchForm .batch-editor-actions button { gap: 0.214286rem; }
-.batch-footer { display: flex; flex-direction: column; margin-top: auto; }
+/* Both modes share the same footer geometry, independently of their copy. */
+body .editor .editor-footer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  margin-top: auto;
+  padding-block-start: calc(var(--section-spacing) + var(--action-control-height) / 2);
+}
+body .editor :is(#dayForm, #batchForm) .editor-footer .day-action-row {
+  --day-action-columns: minmax(0, 4fr) repeat(2, minmax(0, 3fr));
+  grid-template-columns: var(--day-action-columns);
+  gap: 0.357143rem;
+  margin: 0 0 var(--section-spacing);
+  padding: calc(var(--section-spacing) + var(--action-control-height) / 2) 0 0;
+  border-top: 1px solid var(--line);
+}
+body .editor #dayForm .editor-footer .day-action-row {
+  border-top-color: transparent;
+}
+body .editor #dayForm .editor-footer .day-action-row::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0.571429rem;
+  height: 1px;
+  background: var(--line);
+  pointer-events: none;
+}
+body .editor :is(#dayForm, #batchForm) .editor-footer .day-action-row button {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+body .editor .editor-footer .day-action-row .button-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body .editor :is(#dayForm, #batchForm) .editor-preview {
+  box-sizing: border-box;
+  block-size: 9.5rem;
+  flex: none;
+  overflow: auto;
+  margin: 0 0 var(--section-spacing);
+  padding: 0.857143rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, white);
+  border-radius: 0.857143rem;
+  background: color-mix(in srgb, var(--accent) 4%, white);
+  box-shadow: 0 2px 8px rgba(var(--theme-rgb, 32, 59, 54), 0.019608);
+}
 #batchError:empty { display: none; }
-.batch-preview-card { box-sizing: border-box; block-size: 9.5rem; overflow: auto; }
+
 .batch-preview-card .batch-selection-count { display: block; padding: 0; margin: 0 0 .35rem; font-size: inherit; }
 body .editor #batchForm .batch-preview-status { margin: 0; padding: 0; border: 0; background: transparent; font-size: inherit; line-height: inherit; }
 .batch-preview-status p { margin: 0; }
@@ -2457,6 +2504,12 @@ body .editor #batchForm .batch-time-fields {
   overflow: clip;
   overflow-clip-margin: 4px;
   transition: padding-inline-end 240ms var(--motion-ease);
+}
+body .editor .editor-time-fields .field > label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 #batchNextField {
   position: absolute;

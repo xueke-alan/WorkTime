@@ -194,13 +194,6 @@ html:not([lang="zh-CN"]) body #dateInfoPanel.festivals-panel .date-info-rows dt 
 html:not([lang="zh-CN"]) .button-label { min-width: 0; }
 html[lang="ko"] { word-break: keep-all; }
 
-/* Keep action states at one width; reserve extra room for Korean labels. */
-html[lang="ko"] body .editor #dayForm #plannedOvertimeToggle {
-  --planned-overtime-width: 9.142857rem;
-}
-
-html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row { --day-action-columns: minmax(max-content, 1fr) max-content max-content; }
-html:not([lang="zh-CN"]) body .editor #dayForm .day-action-row :is(#clearManual, #sourceOpen) { width: auto; }
 /* Translated batch actions need enough room for their icon, label and insets. */
 html:not([lang="zh-CN"]) body .editor #batchForm .batch-editor-actions {
   grid-template-columns: minmax(0, 4fr) repeat(2, minmax(0, 3fr));
