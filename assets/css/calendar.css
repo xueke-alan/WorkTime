@@ -2194,7 +2194,7 @@ body .calendar .day-date .daynum-text .summary-number-column {
   background-position: bottom left;
   max-width: calc(100% - clamp(32px, 3.5vw, 56px) - 1.5rem);
 }
-body .calendar .day.planned-overtime-day:not(.selected, .batchselected, .full-leave) {
+body .calendar .day:is(.planned-overtime-day, .rest-overtime):not(.full-leave) {
   --day-surface: color-mix(in srgb, var(--paper) 96%, #aaa);
   background-color: var(--day-surface);
 }

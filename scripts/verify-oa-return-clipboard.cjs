@@ -164,6 +164,13 @@ const entry = pathToFileURL(
     await page.waitForFunction(
       () => !document.querySelector("#commitImport").disabled,
     );
+    const notice = page.locator("#importClipboardNotice");
+    assert.equal(await notice.isVisible(), true);
+    const noticeBox = await notice.boundingBox(),
+      pasteBox = await page.locator("#pasteOAClipboard").boundingBox();
+    assert.ok(Math.abs(noticeBox.height - pasteBox.height) < 1);
+    assert.ok(Math.abs(noticeBox.y - pasteBox.y) < 1);
+    assert.ok(noticeBox.x + noticeBox.width < pasteBox.x);
     assert.equal(
       await page.locator("#importHistoryList [data-view-import]").count(),
       0,
@@ -175,6 +182,7 @@ const entry = pathToFileURL(
     await resume();
     assert.equal(await page.evaluate(() => window.readCount), 1);
     await input.fill("");
+    assert.equal(await notice.isVisible(), false);
     await site.evaluate((button) => button.click());
     await page.evaluate(() => {
       window.clipboardText = "";
@@ -217,6 +225,35 @@ const entry = pathToFileURL(
     await page.evaluate(() => window.resolveClipboard());
     await page.waitForTimeout(300);
     assert.equal(await input.inputValue(), "");
+    // The left entry also arms a single return read; unrelated text stays out.
+    await page.evaluate(() => {
+      window.deferClipboard = false;
+      window.clipboardText = "unrelated clipboard text";
+      window.oaFocused = false;
+      window.dispatchEvent(new Event("blur"));
+    });
+    const beforeInvalid = await page.evaluate(() => window.readCount);
+    await resume();
+    await page.waitForFunction(
+      (count) => window.readCount > count,
+      beforeInvalid,
+    );
+    assert.equal(await input.inputValue(), "");
+    assert.equal(await notice.isVisible(), false);
+    await page.locator("#pasteOAClipboard").click();
+    assert.equal(await input.inputValue(), "");
+    await page.evaluate(() => document.querySelector("#importDialog").close());
+    await page.locator("#importOpen").click();
+    await page.evaluate(() => {
+      window.clipboardText = "10/11\n08:00\n18:00";
+      window.oaFocused = false;
+      window.dispatchEvent(new Event("blur"));
+    });
+    await resume();
+    await page.waitForFunction(() =>
+      document.querySelector("#pasteText").value.includes("10/11"),
+    );
+    assert.equal(await notice.isVisible(), true);
     assert.deepEqual(errors, []);
     await page.close();
   }

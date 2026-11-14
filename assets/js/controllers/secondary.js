@@ -407,9 +407,10 @@ WorkTimeApp.ui.createImportController = function (options) {
         "importOASite",
       ])
         $(id).dataset.secondaryEntry = "imports";
-      events.handler($("importOpen"), "onclick", () =>
-        run("openImport", $("importOpen"), undefined),
-      );
+      events.handler($("importOpen"), "onclick", () => {
+        oaReturn = { left: false, consumed: false };
+        run("openImport", $("importOpen"), undefined);
+      });
       events.handler($("sourceOpen"), "onclick", () =>
         run("showSources", $("sourceOpen")),
       );
@@ -431,7 +432,10 @@ WorkTimeApp.ui.createImportController = function (options) {
       hold = WorkTimeApp.ui.createHoldAction({
         button: $("oaShortcut"),
         enabled: () => !!options.model.state.oaUrl,
-        onShort: openWebsite,
+        onShort: () => {
+          oaReturn = { left: false, consumed: false };
+          if (!openWebsite()) oaReturn = null;
+        },
         onLong: editLink,
         cancelShortAfterFeedback: true,
       });

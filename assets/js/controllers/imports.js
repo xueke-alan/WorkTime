@@ -59,6 +59,7 @@ WorkTimeApp.ui.secondary.imports = function (options) {
   }
   function resetImportInput() {
     inputRevision++;
+    $("importClipboardNotice").hidden = true;
     $("pasteText").value = "";
     $("importRows").innerHTML = "";
     invalidatePreview();
@@ -98,7 +99,16 @@ WorkTimeApp.ui.secondary.imports = function (options) {
       animateResults("history");
     }
   }
-  function parseImport() {
+  function prepareClipboardText(text) {
+    return WorkTimeApp.services.imports.prepare(
+      C,
+      model.state,
+      [{ name: "粘贴文本", raw: text }],
+      clock.year(),
+      clock.today(),
+    );
+  }
+  function parseImport(preparedPlan) {
     invalidatePreview(false);
     const year = clock.year(),
       sources = [];
@@ -109,13 +119,15 @@ WorkTimeApp.ui.secondary.imports = function (options) {
       return;
     }
     try {
-      const plan = WorkTimeApp.services.imports.prepare(
-          C,
-          model.state,
-          sources,
-          year,
-          clock.today(),
-        ),
+      const plan =
+          preparedPlan ||
+          WorkTimeApp.services.imports.prepare(
+            C,
+            model.state,
+            sources,
+            year,
+            clock.today(),
+          ),
         { records, warnings, rows } = plan;
       preview = rows.length ? plan : null;
       $("importWarnings").textContent = warnings
@@ -393,8 +405,12 @@ WorkTimeApp.ui.secondary.imports = function (options) {
     try {
       const text = await clipboard.readText();
       if (!current() || !text.trim()) return;
+      const plan = prepareClipboardText(text);
+      if (!plan.rows.length || !current()) return;
       input.value = text;
-      input.dispatchEvent(new Event("input", { bubbles: true }));
+      inputRevision++;
+      parseImport(plan);
+      $("importClipboardNotice").hidden = !preview;
     } catch {
       if (current())
         actions.toast(WorkTimeApp.i18n.t("copy.a97d627f90"), "error");
@@ -491,6 +507,7 @@ WorkTimeApp.ui.secondary.imports = function (options) {
     });
     events.handler($("pasteText"), "oninput", () => {
       inputRevision++;
+      $("importClipboardNotice").hidden = true;
       scheduleImportParse();
     });
     events.handler($("pasteOAClipboard"), "onclick", async () => {
@@ -505,6 +522,10 @@ WorkTimeApp.ui.secondary.imports = function (options) {
         if (disposed || !$("importDialog").open) return;
         if (!text.trim()) {
           actions.toast(WorkTimeApp.i18n.t("copy.041c1e0625"));
+          return;
+        }
+        if (!prepareClipboardText(text).rows.length) {
+          actions.toast(WorkTimeApp.i18n.t("copy.7a813c10de"), "error");
           return;
         }
         input.setRangeText(text, start, end, "end");

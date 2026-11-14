@@ -1,6 +1,19 @@
 "use strict";
 
 (() => {
+  const messages = {
+    "zh-CN": "已自动填入剪切板记录",
+    "zh-TW": "已自動填入剪貼簿記錄",
+    "zh-HK": "已自動填入剪貼簿記錄",
+    en: "Clipboard records filled automatically",
+    ja: "クリップボードの記録を自動入力しました",
+    ko: "클립보드 기록을 자동으로 입력했습니다",
+  };
+  for (const [locale, message] of Object.entries(messages))
+    WorkTimeApp.data.locales[locale]["import.clipboardAutofilled"] = message;
+})();
+
+(() => {
   const keys = [
     "matchHeading",
     "matchEmpty",
