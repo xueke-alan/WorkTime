@@ -293,3 +293,10 @@ Thumbs.db
 !/scripts/verify-batch-editor.cjs
 !/scripts/verify-completion-history.cjs
 !/scripts/verify-match-history.cjs
+
+!/scripts/verify-uno.cjs
+!/scripts/verify-uno-motion.cjs
+!/scripts/verify-uno-draw.cjs
+!/scripts/verify-uno-official.cjs
+!/scripts/verify-uno-performance.cjs
+!/scripts/UNO.md

@@ -22,6 +22,76 @@ function prepareAssets({ check = false } = {}) {
       fs.writeFileSync(file, source);
     }
   }
+  // Generate identities/dependencies before embedding this catalog in view-runtime.
+  const games = [
+    "2048",
+    "minesweeper",
+    "snake",
+    "sudoku",
+    "jump",
+    "sokoban",
+    "link",
+    "garden",
+    "tank",
+    "xiangqi",
+    "gomoku",
+    "sliding-puzzle",
+    "lights-out",
+    "jungle",
+    "ultimate-ttt",
+    "uno",
+  ];
+  const entries = games.map((id) => {
+    const source = fs.readFileSync(
+      path.join(root, "assets/js/games", id + ".js"),
+      "utf8",
+    );
+    const tree = acorn.parse(source, { ecmaVersion: "latest" });
+    const call = tree.body.find(
+      (node) => node.expression?.callee?.property?.name === "register",
+    ).expression;
+    const metadata = Object.fromEntries(
+      call.arguments[0].properties
+        .filter((node) =>
+          ["id", "nameKey", "descriptionKey", "icon"].includes(node.key.name),
+        )
+        .map((node) => [node.key.name, node.value.value]),
+    );
+    const rules = [];
+    if (id === "lights-out") rules.push("assets/data/lights-out-legacy.js");
+    if (id === "gomoku") rules.push("assets/data/gomoku-legacy.js");
+    if (["sudoku", "sokoban", "xiangqi", "gomoku", "lights-out"].includes(id))
+      rules.push("assets/data/" + id + ".js");
+    if (id === "tank") rules.push("assets/js/games/tank-stages.js");
+    if (id === "gomoku")
+      rules.push(
+        "assets/js/games/gomoku-search.js",
+        "assets/js/games/gomoku-engine.js",
+      );
+    if (id === "ultimate-ttt")
+      rules.push("assets/js/games/ultimate-ttt-engine.js");
+    if (id === "xiangqi") rules.push("assets/js/games/xiangqi-engine.js");
+    if (id === "jungle")
+      rules.push(
+        "assets/js/games/jungle-art.js",
+        "assets/js/games/jungle-engine.js",
+      );
+    rules.push("assets/js/games/" + id + "-rules.js");
+    if (id === "uno")
+      rules.push("assets/js/games/uno-ai.js", "assets/js/games/uno-view.js");
+    return {
+      ...metadata,
+      rules,
+      source: "assets/js/games/" + id + ".js",
+      style: "assets/css/" + id + ".css",
+    };
+  });
+  write(
+    "assets/js/games/catalog.js",
+    '"use strict";\n// Generated menu identities; game implementations load only on demand.\nWorkTimeApp.games.define(' +
+      JSON.stringify(entries) +
+      ");\n",
+  );
   // Keep upstream source readable; runtime compaction leaves its expressions
   // intact and renames only local identifiers, never exported properties.
   const lunar = minify(
@@ -364,6 +434,7 @@ function prepareAssets({ check = false } = {}) {
     "lights-out",
     "jungle",
     "ultimate-ttt",
+    "uno",
   ])
     vm.runInContext(
       fs.readFileSync(
@@ -411,72 +482,6 @@ function prepareAssets({ check = false } = {}) {
     );
     write("assets/js/locales/runtime/" + id + ".js", source);
   }
-  const games = [
-    "2048",
-    "minesweeper",
-    "snake",
-    "sudoku",
-    "jump",
-    "sokoban",
-    "link",
-    "garden",
-    "tank",
-    "xiangqi",
-    "gomoku",
-    "sliding-puzzle",
-    "lights-out",
-    "jungle",
-    "ultimate-ttt",
-  ];
-  const entries = games.map((id) => {
-    const source = fs.readFileSync(
-      path.join(root, "assets/js/games", id + ".js"),
-      "utf8",
-    );
-    const tree = acorn.parse(source, { ecmaVersion: "latest" });
-    const call = tree.body.find(
-      (node) => node.expression?.callee?.property?.name === "register",
-    ).expression;
-    const metadata = Object.fromEntries(
-      call.arguments[0].properties
-        .filter((node) =>
-          ["id", "nameKey", "descriptionKey", "icon"].includes(node.key.name),
-        )
-        .map((node) => [node.key.name, node.value.value]),
-    );
-    const rules = [];
-    if (id === "lights-out") rules.push("assets/data/lights-out-legacy.js");
-    if (id === "gomoku") rules.push("assets/data/gomoku-legacy.js");
-    if (["sudoku", "sokoban", "xiangqi", "gomoku", "lights-out"].includes(id))
-      rules.push("assets/data/" + id + ".js");
-    if (id === "tank") rules.push("assets/js/games/tank-stages.js");
-    if (id === "gomoku")
-      rules.push(
-        "assets/js/games/gomoku-search.js",
-        "assets/js/games/gomoku-engine.js",
-      );
-    if (id === "ultimate-ttt")
-      rules.push("assets/js/games/ultimate-ttt-engine.js");
-    if (id === "xiangqi") rules.push("assets/js/games/xiangqi-engine.js");
-    if (id === "jungle")
-      rules.push(
-        "assets/js/games/jungle-art.js",
-        "assets/js/games/jungle-engine.js",
-      );
-    rules.push("assets/js/games/" + id + "-rules.js");
-    return {
-      ...metadata,
-      rules,
-      source: "assets/js/games/" + id + ".js",
-      style: "assets/css/" + id + ".css",
-    };
-  });
-  write(
-    "assets/js/games/catalog.js",
-    '"use strict";\n// Generated menu identities; game implementations load only on demand.\nWorkTimeApp.games.define(' +
-      JSON.stringify(entries) +
-      ");\n",
-  );
   write(
     "offline-shell.js",
     require("./lib/offline-shell.cjs").offlineShell(root),

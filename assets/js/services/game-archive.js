@@ -29,6 +29,7 @@ WorkTimeApp.services.gameArchive = (() => {
         "gomoku",
         "jungle",
         "ultimate-ttt",
+        "uno",
       ].map((id) => [
         "game-" + id,
         "worktime.games." + id + (id === "jump" ? ".best" : "") + ".v1",
@@ -300,6 +301,11 @@ WorkTimeApp.services.gameArchive = (() => {
       fail("version", id);
     const G = WorkTimeApp.games;
     let result;
+    if (id === "game-uno") {
+      result = G.unoRules.restore(input.state);
+      requireValue(result, id);
+      return { version: 1, state: result };
+    }
     if (id === "game-lights-out") {
       result = G.lightsOutRules.restore(input);
       requireValue(result, id);
@@ -622,6 +628,7 @@ WorkTimeApp.services.gameArchive = (() => {
     return value;
   }
   function hasContent(id, v) {
+    if (id === "game-uno") return true;
     if (matchGames.includes(id) && v.matchHistory?.length) return true;
     if (
       historyGames.includes(id) &&
@@ -672,6 +679,7 @@ WorkTimeApp.services.gameArchive = (() => {
     });
   }
   function hasProgress(id, v) {
+    if (id === "game-uno") return v.state.matchWinner === null;
     if (["game-xiangqi", "game-gomoku"].includes(id) && v.match) return true;
     if (id === "game-sliding-puzzle")
       return Object.values(v.sessions).some((s) => s.started);
@@ -893,7 +901,7 @@ WorkTimeApp.services.gameArchive = (() => {
       out.records = local.records.map((n, i) =>
         Math.max(n, incoming.records[i]),
       );
-    else if (!["game-jungle", "game-ultimate-ttt"].includes(id)) {
+    else if (!["game-jungle", "game-ultimate-ttt", "game-uno"].includes(id)) {
       out.drafts = {
         ...(source === "incoming" ? local.drafts : incoming.drafts),
         ...preferred.drafts,
@@ -1002,6 +1010,8 @@ WorkTimeApp.services.gameArchive = (() => {
       if (!plain(save) || (save.version !== undefined && save.version !== 1))
         return { kind: "empty" };
       switch (id) {
+        case "game-uno":
+          return summary("best", 0, Array.isArray(save.state?.hands));
         case "game-sliding-puzzle":
           return summary(
             "completed",
@@ -1144,6 +1154,7 @@ WorkTimeApp.services.gameArchive = (() => {
             "game-gomoku",
             "game-jungle",
             "game-ultimate-ttt",
+            "game-uno",
             "game-sliding-puzzle",
             "game-lights-out",
           ].includes(id) || Object.hasOwn(raw ?? {}, id),

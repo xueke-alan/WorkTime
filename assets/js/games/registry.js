@@ -34,6 +34,7 @@ WorkTimeApp.games = (() => {
   // Minimal menu artwork: a shared 32px grid and uniform rounded outlines.
   // Inline SVG keeps the offline entry self-contained and crisp at any scale.
   const gameIcons = {
+    "game-uno": `<rect x="5" y="5" width="16" height="23" rx="3"/><path d="m12 5 8-2a3 3 0 0 1 4 2l4 17a3 3 0 0 1-2 4l-5 1"/><ellipse cx="13" cy="16" rx="5" ry="7"/><path d="m11 19 4-6"/>`,
     "game-ultimate-ttt": `<rect x="3" y="3" width="26" height="26" rx="3"/><path d="M12 3v26M20 3v26M3 12h26M3 20h26M6 6l3 3m0-3L6 9"/><circle cx="24.5" cy="24.5" r="2"/>`,
     "game-lights-out": `<rect x="3" y="3" width="26" height="26" rx="5"/><g fill="currentColor" stroke="none"><circle cx="16" cy="9" r="2.5"/><circle cx="9" cy="16" r="2.5"/><circle cx="16" cy="16" r="2.5"/><circle cx="23" cy="16" r="2.5"/><circle cx="16" cy="23" r="2.5"/></g><g stroke-width="1.4"><circle cx="9" cy="9" r="2.5"/><circle cx="23" cy="9" r="2.5"/><circle cx="9" cy="23" r="2.5"/><circle cx="23" cy="23" r="2.5"/></g>`,
     shuffle: `<path d="M5 8h3c7 0 9 16 16 16h3m-5-5 5 5-5 5M5 24h3c7 0 9-16 16-16h3m-5-5 5 5-5 5"/>`,

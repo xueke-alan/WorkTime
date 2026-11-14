@@ -36,6 +36,7 @@ function checkI18n() {
     "lights-out",
     "jungle",
     "ultimate-ttt",
+    "uno",
     "link",
     "garden",
     "tank",
