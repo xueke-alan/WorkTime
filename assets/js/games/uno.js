@@ -7,11 +7,20 @@ WorkTimeApp.games.register({
   create({ container, signal }) {
     const G = WorkTimeApp.games,
       R = G.unoRules,
-      A = G.unoAi;
+      A = G.unoAi,
+      model = G.unoModelFactory(R, A),
+      ranking = G.unoRanking;
     const archive = WorkTimeApp.services.gameArchive,
       storage = archive.session();
     const t = (key, params) => WorkTimeApp.i18n.t("games.uno." + key, params);
     const seed = () => crypto.getRandomValues(new Uint32Array(1))[0] || 1;
+    let weights = null;
+    const modelReady = WorkTimeApp.services.assets
+      .script("assets/js/games/uno-weights.js")
+      .then(() => {
+        if (model.valid(G.unoWeights)) weights = G.unoWeights;
+      })
+      .catch(() => {});
     let state = null,
       setup = true,
       localPause = false,
@@ -27,6 +36,7 @@ WorkTimeApp.games.register({
     let count = 4,
       difficulty = "normal",
       degraded = false;
+    let dealerSelection = null;
     let openingCards = null,
       openingShown = 0;
     let queuedHeight = null;
@@ -38,15 +48,25 @@ WorkTimeApp.games.register({
     let shownDeckCount = null,
       flightOrigin = null;
     const aiShifts = new Map();
-    const normalPaints = new Map(),
-      flightFaces = new Map(),
+    const flightFaces = new Map(),
       aiGeometry = new Map();
     let renderHost = null;
     const { setArt, referenceView, patchView, moveView } = G.unoViewFactory();
     const seatViews = new Map();
     let ownView = null;
-    let targetScore = 500,
+    const MATCH_TARGET = 500;
+    const MODE_KEY = "worktime.games.uno.preferredMode";
+    let mode = "normal",
+      showRules = false,
+      match = null,
+      profile = ranking.emptyProfile();
+    let activeSettlement = null,
       pickerAbort = null;
+    const matchId = () =>
+      crypto.randomUUID?.() ??
+      Array.from(crypto.getRandomValues(new Uint32Array(4)), (n) =>
+        n.toString(16).padStart(8, "0"),
+      ).join("");
     let hoveredCard = null,
       hoverBounds = null;
     let wildMenu = null,
@@ -88,8 +108,8 @@ WorkTimeApp.games.register({
       "M29 8Q54 8 49 29Q48 36 42 39Q58 47 48 64Q39 79 17 69Q0 59 14 40Q1 33 10 16Q16 8 29 8ZM29 20Q19 22 25 32Q35 38 36 27Q36 20 29 20ZM29 46Q15 49 24 59Q39 66 37 52Q36 46 29 46Z",
       "M13 67L20 54Q38 62 38 41Q13 53 9 30Q7 6 30 8Q52 8 52 35Q54 77 13 67ZM30 35Q43 35 36 22Q24 14 24 29Q24 35 30 35Z",
     ];
-    function glyph(value) {
-      if (value <= 9) return `<path fill-rule="evenodd" d="${digits[value]}"/>`;
+    function glyph(value, outline = digits[value]) {
+      if (value <= 9) return `<path fill-rule="evenodd" d="${outline}"/>`;
       if (value === 10)
         return '<path fill-rule="evenodd" d="M30 14C-5 13-5 67 30 66C65 67 65 13 30 14ZM15 29C8 39 13 53 25 56Q32 59 39 53ZM21 27L45 51C53 39 45 24 33 23Q26 22 21 27Z"/>';
       if (value === 11)
@@ -98,8 +118,10 @@ WorkTimeApp.games.register({
         return '<path d="M30 9Q33 33 53 40Q32 47 30 71Q26 49 7 40Q26 32 30 9Z"/>';
       return `<path d="M3 35L15 35L15 23L25 23L25 35L37 35L37 45L25 45L25 57L15 57L15 45L3 45Z"/><g transform="translate(40 0)">${glyph(value === 12 ? 2 : 4)}</g>`;
     }
+    const cardZero =
+      "M31 11C14 10 5 21 5 40C5 58 14 69 29 69C46 70 55 58 55 39C55 22 47 11 31 11ZM30 25C38 25 41 30 41 40C41 50 37 55 29 55C22 55 19 50 19 40C19 30 23 25 30 25Z";
     function faceMark(value, cls) {
-      return `<svg class="${cls}" viewBox="${value === 12 || value === 14 ? "0 0 100 80" : "0 0 60 80"}" aria-hidden="true">${glyph(value)}</svg>`;
+      return `<svg class="${cls}" viewBox="${value === 12 || value === 14 ? "0 0 100 80" : "0 0 60 80"}" aria-hidden="true">${glyph(value, value === 0 ? cardZero : undefined)}</svg>`;
     }
     const unoWordArt =
       '<svg viewBox="0 0 180 80" aria-hidden="true"><path d="M10 12L25 12L21 46Q19 60 31 60Q42 60 43 45L47 12L62 13L58 48Q55 76 29 74Q2 73 6 46ZM72 13L65 72L80 72L84 36L105 71L119 70L126 12L111 13L107 48L86 13Z"/><path fill-rule="evenodd" d="M151 10Q179 10 174 42Q172 75 147 74Q121 72 126 40Q128 9 151 10ZM150 25Q141 25 140 43Q137 60 148 60Q159 61 160 42Q163 24 150 25Z"/></svg>';
@@ -148,7 +170,9 @@ WorkTimeApp.games.register({
       );
       score.title = score.getAttribute("aria-label");
     }
-    function playerInfo(parent, player) {
+    const crownArt =
+      '<svg viewBox="0 0 40 28" aria-hidden="true"><path d="M5 21L3 7L13 13L20 2L27 13L37 7L34 22Q20 26 5 21Z"/><path d="M7 25Q20 28 33 25M10 18L9 15M20 17V12M30 18L31 15"/></svg>';
+    function playerInfo(parent, player, label = name(player)) {
       const info = node(
         parent,
         "div",
@@ -162,14 +186,11 @@ WorkTimeApp.games.register({
         crown.setAttribute("role", "img");
         crown.setAttribute("aria-label", t("dealer", { name: name(player) }));
         crown.title = crown.getAttribute("aria-label");
-        setArt(
-          crown,
-          '<svg viewBox="0 0 40 28" aria-hidden="true"><path d="M5 21L3 7L13 13L20 2L27 13L37 7L34 22Q20 26 5 21Z"/><path d="M7 25Q20 28 33 25M10 18L9 15M20 17V12M30 18L31 15"/></svg>',
-        );
+        setArt(crown, crownArt);
       }
       const labels = node(info, "div", "uno-seat-labels");
       const nameLine = node(labels, "div", "uno-name-line");
-      node(nameLine, "strong", "", name(player)).title = name(player);
+      node(nameLine, "strong", "", label).title = label;
       if (state.hands[player].length === 1 && state.status === "playing")
         oneMark(nameLine, "uno-call");
       const stats = node(labels, "div", "uno-player-stats");
@@ -199,16 +220,41 @@ WorkTimeApp.games.register({
         ) {
           warning = "tooManyPlayers";
         } else {
-          state = archive.normalize("game-uno", saved).state;
-          count = state.hands.length;
-          difficulty = state.difficulty;
-          targetScore = state.targetScore;
-          discardLimit = R.DISCARD_LIMIT;
-          setup = false;
+          const restored = archive.normalize("game-uno", saved);
+          state = restored.state;
+          profile = restored.profile ?? profile;
+          if (state) {
+            match =
+              restored.match ??
+              (state.matchWinner === null
+                ? ranking.newMatch(matchId(), "normal")
+                : null);
+            if (!restored.match && match) {
+              match.completedRounds =
+                state.round - (state.status === "playing" ? 1 : 0);
+            }
+            activeSettlement = match?.settled
+              ? profile.history.find((row) => row.id === match.id)
+              : null;
+            if (match?.mode !== "ranked") {
+              count = state.hands.length;
+              difficulty = state.difficulty;
+            }
+            discardLimit = R.DISCARD_LIMIT;
+            setup = false;
+          }
         }
       }
     } catch {
       warning = "invalid";
+    }
+    mode = match?.mode ?? "normal";
+    try {
+      const preferredMode = localStorage.getItem(MODE_KEY);
+      if (preferredMode === "normal" || preferredMode === "ranked")
+        mode = preferredMode;
+    } catch {
+      // A blocked preference store does not prevent playing.
     }
     const identity = (i) => {
       const n =
@@ -307,16 +353,26 @@ WorkTimeApp.games.register({
         !!confirmation
       );
     }
-    function save() {
-      if (!state) return;
+    function save(
+      savedState = state,
+      savedProfile = profile,
+      savedMatch = match,
+    ) {
       try {
         storage.setItem(
           archive.keys["game-uno"],
-          JSON.stringify({ version: 1, state }),
+          JSON.stringify({
+            version: 1,
+            state: savedState,
+            profile: savedProfile,
+            ...(savedMatch ? { match: savedMatch } : {}),
+          }),
         );
         if (warning === "saveFailed") warning = "";
+        return true;
       } catch {
         warning = "saveFailed";
+        return false;
       }
     }
     function commit(action) {
@@ -325,7 +381,7 @@ WorkTimeApp.games.register({
       const next = R.apply(state, action);
       if (!next) return;
       if (action.type === "color") {
-        stop();
+        stop(true);
         state = next;
         save();
         render();
@@ -371,6 +427,10 @@ WorkTimeApp.games.register({
           shownDiscard = previous.discard.slice(0, -1);
       }
       revealResult = next.status === "playing" || reducedMotion();
+      if (match && next.status !== "playing") {
+        ranking.countRound(match, next);
+        activeSettlement = ranking.settle(profile, match, next, Date.now());
+      }
       save();
       if (!reducedMotion()) busy();
       render();
@@ -380,7 +440,7 @@ WorkTimeApp.games.register({
       stop();
       degraded = true;
       if (!paused() && state?.status === "playing" && state.turn !== 0)
-        commit(A.choose(R.observe(state), "normal", state.rng));
+        commit(A.choose(R.observe(state), "normal", seed()));
       else render();
     }
     function schedule() {
@@ -404,21 +464,29 @@ WorkTimeApp.games.register({
       }
       if (refillEmptyDeck() || state.turn === 0) return;
       const token = generation;
-      timer = setTimeout(() => {
+      timer = setTimeout(async () => {
         timer = null;
+        thinking = true;
+        await modelReady;
         if (token !== generation || paused()) return;
+        const observation = R.observe(state);
+        const decisionSeed = seed();
         if (state.difficulty !== "hard" || degraded) {
-          commit(
-            A.choose(
-              R.observe(state),
-              degraded ? "normal" : state.difficulty,
-              state.rng,
-            ),
-          );
+          try {
+            const level = degraded ? "normal" : state.difficulty;
+            const action =
+              !degraded && weights
+                ? model.choose(observation, level, decisionSeed, weights)
+                : A.choose(observation, level, decisionSeed);
+            if (action) commit(action);
+            else fallback();
+          } catch {
+            fallback();
+          }
           return;
         }
         try {
-          const source = `const R=(${G.unoRulesFactory.toString()})();const A=(${G.unoAiFactory.toString()})(R);onmessage=e=>{postMessage(A.choose(e.data.observation,"hard",e.data.seed,250))};`;
+          const source = `const R=(${G.unoRulesFactory.toString()})();const A=(${G.unoAiFactory.toString()})(R);const M=(${G.unoModelFactory.toString()})(R,A);onmessage=({data})=>{postMessage(data.weights?M.choose(data.observation,"hard",data.seed,data.weights):A.choose(data.observation,"hard",data.seed,data.observation.counts.length===4?600:250))};`;
           workerUrl = URL.createObjectURL(
             new Blob([source], { type: "text/javascript" }),
           );
@@ -442,8 +510,9 @@ WorkTimeApp.games.register({
             if (token === generation) fallback();
           };
           worker.postMessage({
-            observation: R.observe(state),
-            seed: state.rng,
+            observation,
+            seed: decisionSeed,
+            weights,
           });
           timer = setTimeout(() => {
             if (token === generation) fallback();
@@ -453,8 +522,34 @@ WorkTimeApp.games.register({
         }
       }, 740);
     }
-    function begin() {
-      startRound(R.create(count, difficulty, seed(), targetScore));
+    function unfinishedRanked() {
+      return (
+        match?.mode === "ranked" &&
+        state?.matchWinner === null &&
+        !match.settled
+      );
+    }
+    function nextRankedSettings() {
+      const rating = unfinishedRanked()
+        ? Math.max(0, profile.rating - 15)
+        : profile.rating;
+      return ranking.rankedSettings(rating);
+    }
+    function begin(newMode) {
+      const draws = [];
+      const options = newMode === "ranked" ? nextRankedSettings() : null;
+      const next = R.create(
+        options?.players ?? count,
+        options?.difficulty ?? difficulty,
+        seed(),
+        MATCH_TARGET,
+        (round) => draws.push(round),
+      );
+      const nextMatch = ranking.newMatch(matchId(), newMode);
+      if (unfinishedRanked())
+        ranking.settle(profile, match, state, Date.now(), true);
+      match = nextMatch;
+      startRound(next, draws);
     }
     function advanceRound() {
       if (paused() || visualBusy || !state) return;
@@ -548,10 +643,16 @@ WorkTimeApp.games.register({
         ),
       );
     }
-    function startRound(next) {
+    function startRound(next, selection = null) {
       stop();
-      spinReady = false;
-      spinAngle = 0;
+      // Keep the ring's angle while adopting the new round's cruising speed.
+      if (!root.querySelector(".uno-direction")) {
+        spinReady = false;
+        spinAngle = 0;
+      }
+      spinDirection = next.direction;
+      spinRate = next.direction * 0.032;
+      spinMirror = next.direction;
       spinBurst = 0;
       pointerMotion?.cancel();
       pointerMotion = null;
@@ -559,6 +660,11 @@ WorkTimeApp.games.register({
       pointerSeat = null;
       pointerRadius = null;
       state = next;
+      activeSettlement = null;
+      dealerSelection = reducedMotion() ? null : selection;
+      busy();
+      shownDeckCount = R.cards.length;
+      root.dataset.handPhase = "countdown";
       state.discardLimit = discardLimit;
       openingCards = reducedMotion() ? null : state.discard.slice();
       openingShown = 0;
@@ -569,20 +675,97 @@ WorkTimeApp.games.register({
       if (["invalid", "tooManyPlayers"].includes(warning)) warning = "";
       save();
       render();
-      animateDeal();
+      void countdown(generation);
+    }
+    async function countdown(token) {
+      const live = () => token === generation && !paused();
+      while (
+        live() &&
+        root.closest(".workspace")?.classList.contains("is-game-transitioning")
+      )
+        await waitVisual(40);
+      if (!live()) return;
+
+      const counter = node(
+        root.querySelector(".uno-table"),
+        "div",
+        "uno-countdown",
+      );
+      counter.setAttribute("role", "status");
+      flights.add(counter);
+      for (const value of [3, 2, 1]) {
+        const digit = document.createDocumentFragment();
+        setArt(digit, numberArt(value));
+        counter.replaceChildren(digit);
+        counter.setAttribute("aria-label", String(value));
+        if (!reducedMotion())
+          void track(
+            counter,
+            [
+              { transform: "scale(1)" },
+              { transform: "scale(1.07)", offset: 0.35 },
+              { transform: "scale(1)" },
+            ],
+            { duration: 300, easing: "ease-in-out" },
+          );
+        await waitVisual(1000);
+        if (!live()) return;
+      }
+      counter.remove();
+      flights.delete(counter);
+      if (!openingCards || reducedMotion()) {
+        finishVisuals(token, []);
+      } else if (dealerSelection) {
+        root.dataset.handPhase = "dealer";
+        void animateDealerSelection(token);
+      } else {
+        animateDeal();
+      }
     }
     function requestStart() {
-      if (!setup && state) {
+      const newMode = setup ? mode : (match?.mode ?? "normal");
+      if (!setup && state && newMode === "normal") {
         count = state.hands.length;
         difficulty = state.difficulty;
-        targetScore = state.targetScore;
       }
       if (state && state.matchWinner === null) {
         stop();
-        confirmation = begin;
+        confirmation = () => begin(newMode);
         render();
-      } else begin();
+      } else begin(newMode);
     }
+    function requestExit() {
+      if (!unfinishedRanked()) {
+        exitToSetup();
+        return;
+      }
+      stop();
+      confirmation = exitToSetup;
+      render();
+    }
+
+    function exitToSetup() {
+      if (unfinishedRanked()) {
+        const nextProfile = { ...profile };
+        ranking.settle(nextProfile, { ...match }, state, Date.now(), true);
+        // Persist the penalty and removal of the resume slot together.
+        if (!save(null, nextProfile, null)) {
+          confirmation = null;
+          render();
+          schedule();
+          return;
+        }
+        profile = nextProfile;
+        state = match = activeSettlement = null;
+      }
+      stop();
+      confirmation = null;
+      localPause = false;
+      setup = true;
+      showRules = false;
+      render();
+    }
+
     function reducedMotion() {
       return (
         document.documentElement.dataset.reducedMotion === "true" ||
@@ -618,6 +801,8 @@ WorkTimeApp.games.register({
       shownDeckCount = null;
       openingCards = null;
       openingShown = 0;
+      dealerSelection = null;
+      delete root.dataset.dealerChosen;
       delete root.dataset.handPhase;
       delete root.dataset.visualBusy;
       root.removeAttribute("aria-busy");
@@ -905,50 +1090,53 @@ WorkTimeApp.games.register({
       }
       return jobs.map((run) => run());
     }
+    // Keep the action button anchored to the neutral fan pose.
+    function handCardBounds(card) {
+      const pose = aiPose(card);
+      const angle =
+        ((parseFloat(card.style.getPropertyValue("--card-angle")) || 0) *
+          Math.PI) /
+        180;
+      const lift = parseFloat(card.style.getPropertyValue("--card-lift")) || 0;
+      const width = card.offsetWidth,
+        height = card.offsetHeight;
+      const cosine = Math.cos(angle),
+        sine = Math.sin(angle);
+      const x = pose.layoutX + (sine * height) / 2;
+      const y = pose.layoutY + ((1 - cosine) * height) / 2 + lift;
+      const halfWidth =
+        (Math.abs(cosine * width) + Math.abs(sine * height)) / 2;
+      return { left: x - halfWidth, right: x + halfWidth, y };
+    }
     function positionHandActions() {
       const own = root.querySelector(".uno-own"),
-        hand = own?.querySelector(".uno-hand"),
         actions = own?.querySelector(".uno-hand-actions");
       if (!actions || actions.hidden) return;
+      if (matchMedia("(max-width:700px)").matches) {
+        actions.style.removeProperty("left");
+        actions.style.removeProperty("top");
+        return;
+      }
+      const hand = own.querySelector(".uno-hand");
       const ownBox = own.getBoundingClientRect(),
         handBox = hand.getBoundingClientRect();
       const last = hand.querySelector(".uno-card:last-child");
-      const small = matchMedia("(max-width:700px)").matches,
-        gap = small ? 12 : 16;
-      let edge = ownBox.left + ownBox.width / 2 + (small ? 60 : 75);
-      let centerY = ownBox.top + (small ? 96 : 105);
-      if (last) {
-        const pose = aiPose(last),
-          scale = small ? 0.7 : 1;
-        const angle =
-          ((parseFloat(last.style.getPropertyValue("--card-angle")) || 0) *
-            scale *
-            Math.PI) /
-          180;
-        const lift =
-          (parseFloat(last.style.getPropertyValue("--card-lift")) || 0) * scale;
-        const width = last.offsetWidth,
-          height = last.offsetHeight;
-        const cosine = Math.cos(angle),
-          sine = Math.sin(angle);
-        edge =
-          pose.layoutX +
-          (sine * height) / 2 +
-          (Math.abs(cosine * width) + Math.abs(sine * height)) / 2;
-        edge = Math.min(
-          edge,
-          handBox.right - parseFloat(getComputedStyle(hand).paddingRight),
-        );
-        centerY = pose.layoutY + ((1 - cosine) * height) / 2 + lift;
-      }
-      const left = Math.max(
-        8,
-        Math.min(
-          ownBox.width - actions.offsetWidth - 8,
-          edge - ownBox.left + gap,
-        ),
-      );
-      actions.style.left = left + "px";
+      const lastPose = last ? handCardBounds(last) : null;
+      const centerY = lastPose?.y ?? ownBox.top + 105;
+      const edge = lastPose
+        ? Math.min(
+            lastPose.right,
+            handBox.right - parseFloat(getComputedStyle(hand).paddingRight),
+          )
+        : ownBox.left + ownBox.width / 2 + 75;
+      actions.style.left =
+        Math.max(
+          8,
+          Math.min(
+            ownBox.width - actions.offsetWidth - 8,
+            edge - ownBox.left + 16,
+          ),
+        ) + "px";
       actions.style.top = centerY - ownBox.top + "px";
     }
     function poseHandCard(card, index, count) {
@@ -1020,15 +1208,17 @@ WorkTimeApp.games.register({
       flights.add(flight);
       // Use a complete card's typography, then scale the whole face. Resizing
       // an AI's small card box alone leaves full-size labels overlapping.
-      const faceKey = card === undefined ? "back" : "face";
+      const faceKey = drawing === true || card === undefined ? "back" : "face";
       let face = flightFaces.get(faceKey);
       if (!face) {
         const model =
             root.querySelector(
-              card === undefined
-                ? ".uno-draw-dock .uno-card"
+              drawing === true || card === undefined
+                ? ".uno-deck-card"
                 : ".uno-discard .uno-stack-top",
-            ) || root.querySelector(".uno-hand .uno-card"),
+            ) ||
+            root.querySelector(".uno-discard .uno-stack-top") ||
+            root.querySelector(".uno-hand .uno-card"),
           style = getComputedStyle(model);
         const corner = model.querySelector(".uno-card-corner"),
           cornerStyle = corner ? getComputedStyle(corner) : null;
@@ -1094,6 +1284,9 @@ WorkTimeApp.games.register({
                 transform:
                   drawing === "recycle" ? "rotateY(180deg)" : "rotateY(0deg)",
               },
+              ...(drawing === true
+                ? [{ transform: "rotateY(0deg)", offset: 0.12 }]
+                : []),
               {
                 transform:
                   drawing === "recycle" ? "rotateY(0deg)" : "rotateY(180deg)",
@@ -1171,31 +1364,8 @@ WorkTimeApp.games.register({
         filter: style.filter,
       };
     }
-    function normalPaint(id) {
-      const key = R.cards[id].color;
-      if (normalPaints.has(key)) return normalPaints.get(key);
-      const probe = drawCard(root, id);
-      Object.assign(probe.style, {
-        position: "absolute",
-        visibility: "hidden",
-        pointerEvents: "none",
-      });
-      const result = paint(probe);
-      probe.remove();
-      normalPaints.set(key, result);
-      return result;
-    }
-    function fadePaint(el, from) {
-      const to = paint(el);
-      if (
-        reducedMotion() ||
-        Object.keys(to).every((key) => to[key] === from[key])
-      )
-        return Promise.resolve();
-      return track(el, [from, to], { duration: 280, easing: "ease-in-out" });
-    }
     function freezeRing() {
-      if (!ringMotion) return;
+      if (!ringMotion || ringMotion.playState === "paused") return;
       const time = ringMotion.currentTime;
       ringMotion.pause();
       if (typeof time === "number") ringMotion.currentTime = time;
@@ -1412,6 +1582,197 @@ WorkTimeApp.games.register({
       pile.setAttribute("aria-label", t("discard"));
       return pile;
     }
+    async function animateDealerSelection(token) {
+      // The same lifecycle token cancels selection, flights and waits on exit.
+      const live = () => token === generation && !paused() && !!dealerSelection;
+      while (
+        live() &&
+        root.closest(".workspace")?.classList.contains("is-game-transitioning")
+      )
+        await waitVisual(40);
+      if (!live()) return;
+      const table = root.querySelector(".uno-table");
+      const deck = root.querySelector(".uno-draw-dock");
+      const announcement = node(table, "div", "uno-dealer-announcement");
+      setArt(announcement, crownArt);
+      const message = node(announcement, "span", "uno-status");
+      message.setAttribute("role", "status");
+      message.setAttribute("aria-live", "polite");
+      message.textContent = t("dealerSelecting");
+      flights.add(announcement);
+      await track(
+        announcement,
+        [
+          { opacity: 0, transform: "scale(.82)" },
+          { opacity: 1, transform: "scale(1)" },
+        ],
+        { duration: 280, easing: "ease-out" },
+      );
+      if (!live()) return;
+      await waitVisual(500);
+      if (!live()) return;
+      for (const [roundIndex, draws] of dealerSelection.entries()) {
+        if (!live()) return;
+        if (roundIndex) message.textContent = t("dealerRedraw");
+        const origin = root.getBoundingClientRect();
+        const source = rect(deck.querySelector(".uno-deck-card"));
+        const targets = draws.map((draw) => {
+          const hand = root.querySelector(
+            draw.player === 0
+              ? ".uno-hand"
+              : `[data-seat="${draw.player}"] .uno-seat-hand`,
+          );
+          const box = hand.getBoundingClientRect();
+          const width =
+            draw.player === 0
+              ? Math.min(88, source.cardWidth)
+              : Math.max(
+                  36,
+                  Math.min(
+                    82,
+                    hand.querySelector(".uno-mini-back").offsetWidth * 1.25,
+                  ),
+                );
+          const height = width * 1.44;
+          const centeredY = box.y + (box.height - height) / 2;
+          const info = hand.parentElement.querySelector(".uno-seat-info");
+          // Leave space for the enlarged card and the dealer crown below it.
+          const y = info
+            ? Math.min(
+                centeredY,
+                info.getBoundingClientRect().top - height * 1.15 - 15,
+              )
+            : centeredY;
+          return {
+            x: box.x + box.width / 2 - width / 2,
+            y,
+            width,
+            height,
+            cardWidth: width,
+            cardHeight: height,
+          };
+        });
+        const shown = draws.map((draw, i) => {
+          const card = drawCard(root, draw.card);
+          card.classList.add("uno-dealer-card");
+          card.dataset.dealerPlayer = String(draw.player);
+          card.style.cssText = `left:${targets[i].x - origin.x}px;top:${targets[i].y - origin.y}px;width:${targets[i].width}px;min-width:0;height:${targets[i].height}px;visibility:hidden;`;
+          flights.add(card);
+          return card;
+        });
+        await Promise.all(
+          draws.map((draw, i) =>
+            afterVisualDelay(i * 150, token, () => {
+              if (!live()) return;
+              return flyFromDeck(
+                deck,
+                targets[i],
+                draw.card,
+                460,
+                210 + i,
+                null,
+                () => {
+                  if (live()) shown[i].style.visibility = "";
+                },
+              );
+            }),
+          ),
+        );
+        if (!live()) return;
+        const high = Math.max(...draws.map((draw) => draw.value));
+        const leaders = draws.filter((draw) => draw.value === high);
+        const final = leaders.length === 1;
+        message.textContent = final
+          ? t("dealerSelected", { name: name(state.dealer) })
+          : t("dealerTied");
+        if (final) root.dataset.dealerChosen = "true";
+        await Promise.all(
+          shown.map((card, i) => {
+            const highest = draws[i].value === high;
+            card.classList.toggle("uno-dealer-highest", highest);
+            // animationCompat releases fill effects on completion; persist the
+            // final pose underneath so the winning card holds its larger size.
+            if (!highest) card.style.opacity = ".55";
+            return track(
+              card,
+              highest
+                ? [
+                    { transform: "scale(1)" },
+                    { transform: "scale(1.3) rotate(-3deg)", offset: 0.75 },
+                    { transform: "scale(1.25) rotate(-2deg)" },
+                  ]
+                : [{ opacity: 1 }, { opacity: 0.55 }],
+              {
+                duration: 420,
+                easing: "cubic-bezier(.22,.65,.3,1)",
+                fill: "forwards",
+              },
+            );
+          }),
+        );
+        await waitVisual(final ? 650 : 450);
+        if (!live()) return;
+        const destination = rect(
+          root.querySelector('[data-uno-action="draw"]'),
+        );
+        const sources = shown.map((card) => {
+          const from = rect(card),
+            matrix = new DOMMatrix(getComputedStyle(card).transform);
+          from.cardWidth *= Math.hypot(matrix.a, matrix.b);
+          from.cardHeight *= Math.hypot(matrix.c, matrix.d);
+          return from;
+        });
+        const collecting = shown.map((card, i) =>
+          afterVisualDelay(i * 55, token, () => {
+            if (!live()) return;
+            card.style.visibility = "hidden";
+            return fly(
+              sources[i],
+              destination,
+              draws[i].card,
+              0,
+              420,
+              "recycle",
+              210 + i,
+            ).then(() => {
+              if (live())
+                paintDrawPile(
+                  root.querySelector(".uno-draw-dock"),
+                  R.cards.length - draws.length + i + 1,
+                );
+              card.remove();
+              flights.delete(card);
+            });
+          }),
+        );
+        if (final)
+          collecting.push(
+            afterVisualDelay(
+              Math.max(0, 420 + (shown.length - 1) * 55 - 240),
+              token,
+              () => {
+                announcement.classList.add("uno-dealer-leaving");
+                return track(
+                  announcement,
+                  [
+                    { opacity: 1, transform: "scale(1)" },
+                    { opacity: 0, transform: "scale(.84)" },
+                  ],
+                  { duration: 240, easing: "ease-in" },
+                );
+              },
+            ),
+          );
+        await Promise.all(collecting);
+      }
+      if (!live()) return;
+      announcement.remove();
+      flights.delete(announcement);
+      dealerSelection = null;
+      delete root.dataset.dealerChosen;
+      animateDeal();
+    }
+
     function animateDeal() {
       if (reducedMotion() || paused()) {
         schedule();
@@ -1422,6 +1783,7 @@ WorkTimeApp.games.register({
       root.dataset.handPhase = "dealing";
       const token = generation;
       const dealt = state.hands.map(() => 0);
+      const deck = root.querySelector(".uno-draw-dock");
       const status = root.querySelector(".uno-status");
       if (status) status.textContent = t("dealing");
       const hidden = [
@@ -1445,28 +1807,27 @@ WorkTimeApp.games.register({
           }, 40);
           return;
         }
-        const from = rect(
-          root.querySelector('.uno-draw-dock > button[data-uno-action="draw"]'),
-        );
         // Measure every destination before inserting flights to avoid one forced
         // layout per dealt card on dense tables.
         const launches = [];
+        const players = state.hands.length;
         for (let round = 0; round < 7; round++) {
-          for (let player = 0; player < state.hands.length; player++) {
+          for (let offset = 1; offset <= players; offset++) {
+            const player = (state.dealer + offset) % players;
             const destination =
               player === 0
                 ? playerRect(0, state.hands[0][round])
                 : aiDealEnd(player, round + 1);
-            const delay = (round * state.hands.length + player) * 42;
+            const delay = (round * players + offset - 1) * 42;
             launches.push(() =>
-              fly(
-                from,
-                destination,
-                player === 0 ? state.hands[0][round] : undefined,
-                delay,
-                300,
-                player === 0,
-                player === 0 ? 10 + round : 200,
+              afterVisualDelay(delay, token, () =>
+                flyFromDeck(
+                  deck,
+                  destination,
+                  player === 0 ? state.hands[0][round] : undefined,
+                  300,
+                  player === 0 ? 10 + round : 200,
+                ),
               ).then(() => {
                 if (token !== generation || !dealing) return;
                 dealt[player]++;
@@ -1483,8 +1844,6 @@ WorkTimeApp.games.register({
                   target.style.display = "";
                   delete target.dataset.unoHidden;
                 }
-                if (player === 0 && target)
-                  return fadePaint(target, normalPaint(state.hands[0][round]));
                 if (player !== 0) return stageAiHand(player, dealt[player]);
               }),
             );
@@ -1504,6 +1863,7 @@ WorkTimeApp.games.register({
     function animateOpening(token) {
       if (!openingCards || token !== generation) return Promise.resolve();
       root.dataset.handPhase = "opening";
+      const deck = root.querySelector(".uno-draw-dock");
       let sequence = Promise.resolve();
       for (const id of openingCards) {
         sequence = sequence.then(() => {
@@ -1516,12 +1876,7 @@ WorkTimeApp.games.register({
           const top = pile.querySelector(".uno-stack-top");
           top.style.visibility = "hidden";
           top.dataset.unoHidden = "true";
-          const source = rect(
-            root.querySelector(
-              '.uno-draw-dock > button[data-uno-action="draw"]',
-            ),
-          );
-          return fly(source, rect(top), id, 0, 340, false, 200).then(() => {
+          return flyFromDeck(deck, rect(top), id, 340, 200).then(() => {
             if (token !== generation || !openingCards) return;
             top.style.visibility = "";
             delete top.dataset.unoHidden;
@@ -1542,13 +1897,11 @@ WorkTimeApp.games.register({
               player === 0
                 ? root.querySelector(`.uno-hand [data-card="${id}"]`)
                 : null;
-            await fly(
-              rect(root.querySelector('[data-uno-action="draw"]')),
+            await flyFromDeck(
+              deck,
               player === 0 ? playerRect(0, id) : aiDealEnd(player, 7),
               player === 0 ? id : undefined,
-              0,
               420,
-              true,
             );
             if (token !== generation || disposed) return;
             if (target) {
@@ -1583,10 +1936,49 @@ WorkTimeApp.games.register({
       busy();
       render();
       const token = generation;
-      finishVisuals(token, animateRecycle(cards, 0, token).tasks);
+      finishVisuals(token, [animateRecycle(cards, 0, token)]);
       return true;
     }
-    function paintDrawPile(pile, count) {
+    function flyFromDeck(
+      pile,
+      to,
+      card,
+      duration,
+      layer = 200,
+      arrivalPaint = null,
+      onArrival = null,
+    ) {
+      const from = rect(pile.querySelector(".uno-deck-card"));
+      if (!from) return Promise.resolve();
+      const flight = fly(
+        from,
+        to,
+        card,
+        0,
+        duration,
+        true,
+        layer,
+        null,
+        arrivalPaint,
+        onArrival,
+      );
+      shownDeckCount = Number(pile.dataset.count) - 1;
+      paintDrawPile(pile, shownDeckCount, true);
+      return flight;
+    }
+    // Index poses by cards remaining, so a card keeps its offset and angle
+    // when the card above it leaves and when the table renders again.
+    const deckPoses = [
+      "translate(0,0) rotate(0deg)",
+      "translate(4px,6px) rotate(3deg)",
+      "translate(0,3px) rotate(-6deg)",
+      "translate(-4px,0) rotate(5deg)",
+      "translate(2px,1px) rotate(-4deg)",
+      "translate(-3px,5px) rotate(6deg)",
+      "translate(4px,3px) rotate(-2deg)",
+      "translate(-2px,6px) rotate(-7deg)",
+    ];
+    function paintDrawPile(pile, count, advancing = false) {
       pile.dataset.count = String(count);
       const caption = pile.querySelector(".uno-pile-caption");
       if (caption && caption.dataset.count !== String(count)) {
@@ -1600,21 +1992,31 @@ WorkTimeApp.games.register({
         caption.replaceChildren();
         setArt(caption, numberArt(count));
       }
-      const under = [...pile.querySelectorAll(".uno-deck-under")];
-      const visible = Math.min(3, Math.max(0, count - 1));
-      for (let i = 0; i < Math.max(visible, under.length); i++) {
+      const button = pile.querySelector("button");
+      const cards = [...button.children];
+      if (advancing) cards.shift().remove();
+      const visible = Math.min(4, count);
+      for (let i = 0; i < Math.max(visible, cards.length); i++) {
         if (i >= visible) {
-          under[i]?.remove();
+          cards[i].remove();
           continue;
         }
         const card =
-          under[i] || node(pile, "div", "uno-card uno-back uno-deck-under");
-        if (!under[i]) {
+          cards[i] || node(button, "span", "uno-card uno-back uno-deck-card");
+        if (!cards[i]) {
           card.setAttribute("aria-hidden", "true");
           setArt(card, backArt);
         }
-        card.style.transform = `translate(${(i - 1) * 4}px,${i * 3}px) rotate(${[5, -6, 3][i]}deg)`;
-        card.style.zIndex = String(i);
+        card.classList.toggle("uno-deck-under", i > 0);
+        card.style.transform =
+          deckPoses[(R.cards.length - count + i) % deckPoses.length];
+        card.style.zIndex = String(4 - i);
+        if (advancing && !cards[i])
+          void track(card, [{ opacity: 0 }, { opacity: 1 }], {
+            duration: 120,
+            easing: "ease-out",
+            fill: "backwards",
+          });
       }
     }
     // Delays are cancellable timers, not empty animations on the entire table.
@@ -1659,7 +2061,7 @@ WorkTimeApp.games.register({
           );
         });
       });
-      return { tasks, duration: 520 + (shown.length - 1) * 22 };
+      return Promise.all(tasks);
     }
     function animateAction(previous, action, from, beforeHand, beforeAi) {
       if (reducedMotion()) {
@@ -1683,6 +2085,7 @@ WorkTimeApp.games.register({
       }
       const token = generation,
         promises = moveHand(beforeHand);
+      const deck = root.querySelector(".uno-draw-dock");
       const recycled = previous.discard.filter(
         (id) => !state.discard.includes(id),
       );
@@ -1692,19 +2095,41 @@ WorkTimeApp.games.register({
       const recycling = recycled.length
         ? animateRecycle(recycled, recycleStart, token)
         : null;
-      if (recycling) promises.push(...recycling.tasks);
+      if (recycling) promises.push(recycling);
       let drawIndex = 0;
       if (action.type === "play") {
-        const landing = root.querySelector(".uno-discard .uno-stack-top");
+        const landing = root.querySelector(".uno-discard .uno-stack-top"),
+          destination = rect(landing),
+          flightDuration = 420,
+          fadeDuration = 320,
+          older = [
+            ...landing.parentElement.querySelectorAll(".uno-stack-under"),
+          ];
         landing.style.visibility = "hidden";
         landing.dataset.unoHidden = "true";
+        // Fade cards at the bottom of the stack during the flight so the
+        // handoff can start as soon as the new top card lands.
+        for (const el of older.slice(
+          0,
+          Math.max(0, older.length + 1 - state.discardLimit),
+        ))
+          promises.push(
+            track(el, [{ opacity: 1 }, { opacity: 0 }], {
+              duration: fadeDuration,
+              delay: flightDuration - fadeDuration,
+              easing: "ease-out",
+              fill: "forwards",
+            }).then(() => {
+              if (token === generation) el.remove();
+            }),
+          );
         promises.push(
           fly(
             from,
-            rect(landing),
+            destination,
             action.card,
             0,
-            420,
+            flightDuration,
             false,
             200,
             action.color,
@@ -1712,24 +2137,8 @@ WorkTimeApp.games.register({
             if (token === generation) {
               landing.style.visibility = "";
               delete landing.dataset.unoHidden;
-              const settling = [];
               if (R.cards[action.card].value >= 13)
                 landing.classList.add("uno-settled", "uno-" + action.color);
-              const older = [
-                ...landing.parentElement.querySelectorAll(".uno-stack-under"),
-              ];
-              older
-                .slice(0, Math.max(0, older.length + 1 - state.discardLimit))
-                .forEach((el) =>
-                  settling.push(
-                    track(el, [{ opacity: 1 }, { opacity: 0 }], {
-                      duration: 320,
-                      easing: "ease-out",
-                      fill: "forwards",
-                    }).then(() => el.remove()),
-                  ),
-                );
-              return Promise.all(settling);
             }
           }),
         );
@@ -1744,10 +2153,7 @@ WorkTimeApp.games.register({
           const order = drawIndex++;
           const afterRecycle = recycling && order >= previous.deck.length;
           const departure = afterRecycle
-            ? recycleStart +
-              recycling.duration +
-              30 +
-              (order - previous.deck.length) * 170
+            ? 30 + (order - previous.deck.length) * 170
             : drawStart + order * 170;
           const destination =
             player === 0
@@ -1761,57 +2167,43 @@ WorkTimeApp.games.register({
               ? root.querySelector(`.uno-hand [data-card="${id}"]`)
               : null;
           if (target) {
-            target.classList.add("uno-arriving");
             target.style.visibility = "hidden";
             target.dataset.unoHidden = "true";
           }
+          const ready = afterRecycle ? recycling : Promise.resolve();
           promises.push(
-            afterVisualDelay(departure, token, () => {
-              shownDeckCount = afterRecycle
-                ? Math.max(
-                    0,
-                    recycled.length - (order - previous.deck.length) - 1,
-                  )
-                : Math.max(0, previous.deck.length - order - 1);
-              paintDrawPile(
-                root.querySelector(".uno-draw-dock"),
-                shownDeckCount,
-              );
-              return fly(
-                rect(
-                  root.querySelector(
-                    '.uno-draw-dock > button[data-uno-action="draw"]',
-                  ),
-                ),
-                destination,
-                player === 0 ? id : undefined,
-                0,
-                760,
-                true,
-                target ? Number(target.style.zIndex) : 200 + index,
-                null,
-                player === 0
-                  ? null
-                  : paint(
-                      root.querySelector(
-                        `[data-seat="${player}"] .uno-mini-back`,
-                      ),
-                    ),
-                () => {
-                  if (target && token === generation) {
-                    target.style.visibility = "";
-                    delete target.dataset.unoHidden;
-                    target.classList.remove("uno-arriving");
-                  }
-                },
-              );
-            }).then(() => {
-              if (player !== 0 && token === generation)
-                return stageAiHand(
-                  player,
-                  previous.hands[player].length + index + 1,
-                );
-            }),
+            ready
+              .then(() =>
+                afterVisualDelay(departure, token, () => {
+                  return flyFromDeck(
+                    deck,
+                    destination,
+                    player === 0 ? id : undefined,
+                    player === 0 ? 540 : 760,
+                    target ? Number(target.style.zIndex) : 200 + index,
+                    player === 0
+                      ? null
+                      : paint(
+                          root.querySelector(
+                            `[data-seat="${player}"] .uno-mini-back`,
+                          ),
+                        ),
+                    () => {
+                      if (target && token === generation) {
+                        target.style.visibility = "";
+                        delete target.dataset.unoHidden;
+                      }
+                    },
+                  );
+                }),
+              )
+              .then(() => {
+                if (player !== 0 && token === generation)
+                  return stageAiHand(
+                    player,
+                    previous.hands[player].length + index + 1,
+                  );
+              }),
           );
         });
       }
@@ -2105,12 +2497,7 @@ WorkTimeApp.games.register({
       clearTimeout(wildTimer);
       cancelAnimationFrame(wildFrame);
       wildFrame = null;
-      const card = root.querySelector(".uno-wild-open");
-      if (card) {
-        card.classList.remove("uno-wild-open");
-        card.style.removeProperty("--uno-preview");
-        delete card.dataset.preview;
-      }
+      root.querySelector(".uno-wild-open")?.classList.remove("uno-wild-open");
       wildMenu?.remove();
       wildMenu = null;
     }
@@ -2152,18 +2539,6 @@ WorkTimeApp.games.register({
         "M14 3C23 1 28 8 27 15C28 24 19 29 11 26C2 25 0 16 4 9Q7 4 14 3Z",
         "M7 5Q19 0 25 8Q29 17 22 23Q13 29 4 22Q0 11 7 5Z",
       ];
-      const preview = (color) => {
-        card.dataset.preview = color;
-        card.style.setProperty(
-          "--uno-preview",
-          {
-            red: "#bc3742",
-            yellow: "#ebc443",
-            green: "#268053",
-            blue: "#2e6ab1",
-          }[color],
-        );
-      };
       for (const [index, color] of R.colors.entries()) {
         const choice = node(
           menu,
@@ -2175,11 +2550,6 @@ WorkTimeApp.games.register({
         choice.setAttribute("aria-label", t(color));
         choice.title = t(color);
         choice.innerHTML = `<svg viewBox="0 0 30 30" aria-hidden="true"><path d="${shapes[index]}"/><path class="uno-swatch-highlight" d="M8 9Q13 5 20 8"/></svg>`;
-        choice.onmouseenter = choice.onfocus = () => preview(color);
-        choice.onmouseleave = choice.onblur = () => {
-          card.style.removeProperty("--uno-preview");
-          delete card.dataset.preview;
-        };
         choice.onclick = () =>
           commit({ type: "play", card: Number(card.dataset.card), color });
       }
@@ -2210,6 +2580,112 @@ WorkTimeApp.games.register({
           { duration: 150, easing: "ease-out" },
         );
     }
+    function signed(value, precision = 0) {
+      return new Intl.NumberFormat(document.documentElement.lang, {
+        signDisplay: "exceptZero",
+        maximumFractionDigits: precision,
+      }).format(value);
+    }
+    const rankMarks = {
+      iron: '<path d="M14 15L24 11L34 15V27Q33 33 24 38Q15 33 14 27Z"/><path d="M20 24L24 20L28 24L24 28Z" class="uno-rank-shine"/>',
+      silver:
+        '<path d="M16 12L24 20L32 12L35 18L29 26H19L13 18Z"/><circle cx="24" cy="29" r="9"/><path d="M24 24V34M19 29H29" class="uno-rank-shine"/>',
+      gold: '<path d="M17 12H31V21Q31 29 24 30Q17 29 17 21ZM17 16H12V20Q12 25 18 25M31 16H36V20Q36 25 30 25M24 30V36M17 37H31"/><path d="M24 16V22M21 19H27" class="uno-rank-shine"/>',
+      diamond:
+        '<path d="M15 14H33L38 22L24 37L10 22Z"/><path d="M10 22H38M19 14L17 22L24 37L31 22L29 14" class="uno-rank-shine"/>',
+      king: '<path d="M14 34L11 19L19 23L24 14L29 23L37 19L34 34Q24 38 14 34Z"/><path d="M14 30Q24 34 34 30M24 8V11M11 12L13 15M37 12L35 15" class="uno-rank-shine"/>',
+    };
+
+    function rankBadge(parent, tier, label) {
+      const badge = node(parent, "span", "uno-rank-badge");
+      badge.dataset.tier = tier.name;
+      if (label) {
+        badge.setAttribute("role", "img");
+        badge.setAttribute("aria-label", label);
+        badge.title = label;
+      } else {
+        badge.setAttribute("aria-hidden", "true");
+      }
+      setArt(
+        badge,
+        `<svg viewBox="0 0 48 48" focusable="false" aria-hidden="true">${rankMarks[tier.name]}</svg>`,
+      );
+      return badge;
+    }
+
+    function renderHistory(panel) {
+      panel.tabIndex = 0;
+      panel.setAttribute("aria-label", t("records"));
+      const header = node(panel, "header", "uno-history-header");
+      node(header, "h3", "", t("records"));
+      const tier = ranking.tier(profile.rating);
+      header.dataset.tier = tier.name;
+      const rank = node(header, "div", "uno-rank-summary");
+      const identity = node(rank, "div", "uno-rank-identity");
+      rankBadge(identity, tier);
+      node(identity, "strong", "", t(tier.name) + " " + tier.division);
+      node(rank, "span", "", t("points", { n: profile.rating }));
+      const progress = node(header, "progress", "uno-rank-progress");
+      progress.max = 100;
+      progress.value = tier.progress;
+      const label = t(profile.rating === 1500 ? "rankFull" : "rankProgress", {
+        n: tier.progress,
+      });
+      progress.setAttribute("aria-label", label);
+
+      const list = node(panel, "div", "uno-history-list");
+      list.tabIndex = 0;
+      list.setAttribute("aria-label", t("records"));
+      if (!profile.history.length)
+        node(list, "p", "uno-history-empty", t("noRecords"));
+      const date = new Intl.DateTimeFormat(document.documentElement.lang, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+      const rows = [...profile.history].sort((a, b) => b.endedAt - a.endedAt);
+      for (const entry of rows) {
+        const card = node(list, "article", "uno-history-card");
+        card.id = "uno-record-" + entry.id;
+        const main = node(card, "div", "uno-history-main");
+        const text = node(main, "div", "uno-history-text");
+        const mode = t(entry.mode === "ranked" ? "rankedMode" : "casualMode");
+        node(text, "strong", "", mode + " · " + t(entry.result));
+        const time = node(text, "time", "", date.format(entry.endedAt));
+        time.dateTime = new Date(entry.endedAt).toISOString();
+        const parts = [
+          t("recordScore", { n: entry.points }),
+          t("recordRounds", { n: entry.rounds }),
+        ];
+        if (entry.place !== null)
+          parts.unshift(
+            t(entry.tied > 1 ? "recordTiedPlace" : "recordPlace", {
+              n: entry.place,
+            }),
+          );
+        node(text, "p", "", parts.join(" · "));
+        // Rating only changes at settlement, so before is also the opening rating.
+        const openingTier = ranking.tier(entry.before);
+        rankBadge(
+          main,
+          openingTier,
+          t(openingTier.name) + " " + openingTier.division,
+        );
+        if (entry.mode === "ranked") {
+          const score =
+            entry.result === "abandoned" ? -15 : entry.detail.requested;
+          const result = node(
+            main,
+            "strong",
+            "uno-history-delta",
+            signed(score),
+          );
+          result.dataset.sign =
+            score > 0 ? "gain" : score < 0 ? "loss" : "even";
+        } else {
+          node(main, "span", "uno-history-unrated", t("unrankedResult"));
+        }
+      }
+    }
     function render() {
       if (disposed) return;
       pickerAbort?.abort();
@@ -2220,6 +2696,8 @@ WorkTimeApp.games.register({
         : null;
       const focusAction = focused?.dataset.unoAction,
         focusCard = focused?.dataset.card;
+      const historyScroll =
+        root.querySelector(".uno-history-list")?.scrollTop ?? 0;
       const handScroll = root.querySelector(".uno-hand")?.scrollLeft || 0;
       const fresh = document.createDocumentFragment();
       const seatSignatures = new Map();
@@ -2227,6 +2705,8 @@ WorkTimeApp.games.register({
       renderHost = fresh;
       try {
         const stage = state && !setup ? node(root, "div", "uno-stage") : root;
+        if (stage !== root && match?.mode === "ranked")
+          stage.classList.add("uno-ranked-stage");
         if (warning)
           node(root, "p", "uno-warning", t(warning)).setAttribute(
             "role",
@@ -2243,7 +2723,7 @@ WorkTimeApp.games.register({
           const form = node(layout, "section", "uno-setup");
           node(form, "h3", "", t("settings"));
           node(form, "p", "uno-intro", t("description"));
-          const field = (key, choices, selected, change) => {
+          const field = (key, choices, selected, change, fixed = false) => {
             const row = node(form, "div", "uno-field");
             const label = node(row, "label", "", t(key));
             label.id = "uno-" + key + "-label";
@@ -2251,6 +2731,7 @@ WorkTimeApp.games.register({
             const select = node(host, "select");
             select.id = "uno-" + key;
             select.dataset.unoSetting = key;
+            select.disabled = fixed;
             for (const [value, text] of choices) {
               const option = node(select, "option", "", text);
               option.value = String(value);
@@ -2258,71 +2739,102 @@ WorkTimeApp.games.register({
             }
             select.onchange = (event) => change(event.currentTarget.value);
           };
+          const ranked = mode === "ranked";
+          const rankedOptions = ranked ? nextRankedSettings() : null;
           field(
             "players",
             Array.from({ length: R.MAX_PLAYERS - 1 }, (_, i) => [
               i + 2,
               String(i + 2),
             ]),
-            count,
+            rankedOptions?.players ?? count,
             (value) => {
               count = Number(value);
             },
+            ranked,
           );
           field(
             "difficulty",
             ["easy", "normal", "hard"].map((value) => [value, t(value)]),
-            difficulty,
+            rankedOptions?.difficulty ?? difficulty,
             (value) => {
               difficulty = value;
             },
+            ranked,
           );
-          field(
-            "targetScore",
-            R.TARGET_SCORES.map((value) => [value, t("points", { n: value })]),
-            targetScore,
-            (value) => {
-              targetScore = Number(value);
-              for (const paragraph of root.querySelectorAll(
-                "[data-uno-rules-body]",
-              )) {
-                const key = paragraph.dataset.unoRulesBody;
-                paragraph.textContent = t(key, { target: targetScore });
-              }
-            },
-          );
-          node(form, "p", "uno-setup-note", t("scoreHint"));
+          const modeSwitch = node(form, "button", "uno-mode-switch");
+          modeSwitch.type = "button";
+          modeSwitch.dataset.unoAction = "mode";
+          modeSwitch.setAttribute("role", "switch");
+          modeSwitch.setAttribute("aria-label", t("rankedMode"));
+          modeSwitch.setAttribute("aria-checked", String(ranked));
+          for (const key of ["casualMode", "rankedMode"]) {
+            node(modeSwitch, "span", "uno-mode-option", t(key)).setAttribute(
+              "aria-hidden",
+              "true",
+            );
+          }
+          modeSwitch.onclick = () => {
+            mode = mode === "ranked" ? "normal" : "ranked";
+            try {
+              localStorage.setItem(MODE_KEY, mode);
+            } catch {
+              // The selection still applies during this session.
+            }
+            render();
+          };
           button(form, "start", requestStart);
           if (state)
             button(form, "continue", () => {
               setup = false;
               state.discardLimit = R.DISCARD_LIMIT;
-              targetScore = state.targetScore;
               save();
               render();
               schedule();
             });
-          const rules = node(layout, "aside", "uno-setup-rules");
-          rules.tabIndex = 0;
-          rules.setAttribute("aria-label", t("rules"));
-          node(rules, "h3", "", t("rules"));
-          for (const section of [
-            "Goal",
-            "Start",
-            "Play",
-            "Special",
-            "Draw",
-            "Score",
-          ]) {
-            const block = node(rules, "section", "uno-rule-section");
-            node(block, "h4", "", t("rules" + section + "Title"));
-            const paragraph = node(
-              block,
-              "p",
-              "",
-              t("rules" + section, { target: targetScore }),
-            );
-            paragraph.dataset.unoRulesBody = "rules" + section;
+          const switchPanel = button(
+            form,
+            showRules ? "backToRecords" : "viewRules",
+            () => {
+              showRules = !showRules;
+              render();
+              root
+                .querySelector(".uno-setup-panel")
+                ?.focus({ preventScroll: true });
+            },
+          );
+          switchPanel.setAttribute("aria-controls", "uno-setup-panel");
+          const rules = node(
+            layout,
+            "aside",
+            showRules
+              ? "uno-setup-panel uno-setup-rules"
+              : "uno-setup-panel uno-history",
+          );
+          rules.id = "uno-setup-panel";
+          if (!showRules) renderHistory(rules);
+          else {
+            rules.tabIndex = 0;
+            rules.setAttribute("aria-label", t("rules"));
+            node(rules, "h3", "", t("rules"));
+            for (const section of [
+              "Goal",
+              "Start",
+              "Play",
+              "Special",
+              "Draw",
+              "Score",
+            ]) {
+              const block = node(rules, "section", "uno-rule-section");
+              node(block, "h4", "", t("rules" + section + "Title"));
+              const paragraph = node(
+                block,
+                "p",
+                "",
+                t("rules" + section, { target: MATCH_TARGET }),
+              );
+              paragraph.dataset.unoRulesBody = "rules" + section;
+            }
           }
         } else if (state) {
           const displayTurn = presentingPlayer ?? state.turn;
@@ -2357,7 +2869,10 @@ WorkTimeApp.games.register({
           state.hands.forEach((hand, i) => {
             if (i === 0) return;
             const active =
-              state.status === "playing" && !paused() && displayTurn === i;
+              state.status === "playing" &&
+              !paused() &&
+              !dealerSelection &&
+              displayTurn === i;
             const ended = state.status !== "playing" && revealResult;
             const signature = JSON.stringify([
               identity(i).n,
@@ -2444,6 +2959,7 @@ WorkTimeApp.games.register({
           const table = node(arena, "div", "uno-table");
           paintTableColor(table);
           table.dataset.current = String(displayTurn);
+          table.dataset.round = String(state.round);
           const status = node(table, "p", "uno-status");
           status.setAttribute("role", "status");
           status.setAttribute("aria-live", "polite");
@@ -2474,13 +2990,16 @@ WorkTimeApp.games.register({
           const pointer = node(table, "div", "uno-player-pointer");
 
           pointer.setAttribute("aria-hidden", "true");
+          pointer.classList.toggle(
+            "uno-pointer-visible",
+            state.status === "playing" && !openingCards && !paused(),
+          );
           setArt(pointer, `<svg viewBox="0 0 48 48">${arrowShape}</svg>`);
           const piles = node(table, "div", "uno-piles");
           const drawPile = node(stage, "div", "uno-pile uno-draw-dock");
           const deck = node(drawPile, "button", "uno-card uno-back");
           deck.type = "button";
           deck.dataset.unoAction = "draw";
-          setArt(deck, backArt);
           deck.setAttribute("aria-label", t("draw"));
           node(drawPile, "span", "uno-pile-caption", "");
           paintDrawPile(drawPile, shownDeckCount ?? state.deck.length);
@@ -2530,27 +3049,45 @@ WorkTimeApp.games.register({
           );
           const sorted =
             handOrder?.slice() || state.hands[0].slice().sort((a, b) => a - b);
-          const muted =
-            displayTurn === 0 && state.turn === 0 && state.status === "playing";
+          const ownTurn =
+            !dealerSelection &&
+            !openingCards &&
+            displayTurn === 0 &&
+            state.turn === 0 &&
+            state.status === "playing";
+          const playable = new Set(legal.map((action) => action.card));
+          let handHint = "";
+          if (state.turn === 0 && state.status === "playing") {
+            if (state.drawn !== null) handHint = t("drawnHint");
+            else if (human && legal.length === 1 && legal[0].type === "draw")
+              handHint = t("drawOnlyHint");
+          }
+          const tier = ranking.tier(profile.rating);
+          const ownLabel = t("ownRank", {
+            tier: t(tier.name),
+            division: { I: 1, II: 2, III: 3 }[tier.division],
+          });
           nextOwnSignature = JSON.stringify([
             state.status !== "playing" && (paused() || visualBusy),
             visibleScore(0),
             state.dealer === 0,
+            ownLabel,
             Math.max(...state.scores.map((_, player) => visibleScore(player))),
             sorted,
             human,
-            muted,
-            !paused() && displayTurn === 0 && state.status === "playing",
+            ownTurn,
+            !paused() &&
+              !dealerSelection &&
+              displayTurn === 0 &&
+              state.status === "playing",
             state.drawn,
             state.status,
             state.winner,
             state.matchWinner,
             revealResult,
-            muted || human
-              ? legal.filter((a) => a.card !== undefined).map((a) => a.card)
-              : [],
+            ownTurn ? sorted.filter((id) => playable.has(id)) : [],
             t("cards", { n: sorted.length }),
-            t("drawnHint"),
+            handHint,
             t("pass"),
             t("nextRound"),
             t("newMatch"),
@@ -2565,14 +3102,17 @@ WorkTimeApp.games.register({
               stage,
               "section",
               "uno-own" +
-                (!paused() && displayTurn === 0 && state.status === "playing"
+                (!paused() &&
+                !dealerSelection &&
+                displayTurn === 0 &&
+                state.status === "playing"
                   ? " uno-active"
                   : ""),
             );
             if (state.status === "won" && revealResult && state.winner === 0)
               winnerMark(own);
             const ownHeader = node(own, "div", "uno-own-header");
-            playerInfo(ownHeader, 0);
+            playerInfo(ownHeader, 0, ownLabel);
             const hand = node(own, "div", "uno-hand");
             const sorted =
               handOrder?.slice() ||
@@ -2585,15 +3125,9 @@ WorkTimeApp.games.register({
                 spread,
                 id,
                 true,
-                human && legal.some((a) => a.card === id),
+                human && playable.has(id),
               );
-              card.classList.toggle(
-                "uno-muted",
-                displayTurn === 0 &&
-                  state.turn === 0 &&
-                  state.status === "playing" &&
-                  !legal.some((action) => action.card === id),
-              );
+              card.classList.toggle("uno-muted", ownTurn && !playable.has(id));
               poseHandCard(card, index, sorted.length);
               const onCardFocus = card.onfocus;
               card.onfocus = (event) => {
@@ -2606,16 +3140,7 @@ WorkTimeApp.games.register({
               };
             }
             hand.scrollLeft = handScroll;
-            const hint = node(
-              own,
-              "p",
-              "uno-drawn-hint",
-              state.drawn !== null &&
-                state.turn === 0 &&
-                state.status === "playing"
-                ? t("drawnHint")
-                : "",
-            );
+            const hint = node(own, "p", "uno-drawn-hint", handHint);
             hint.setAttribute("aria-live", "polite");
             const actions = node(own, "nav", "uno-hand-actions");
             if (
@@ -2630,9 +3155,24 @@ WorkTimeApp.games.register({
               handAction(
                 actions,
                 state.matchWinner === null ? "nextRound" : "newMatch",
-                state.matchWinner === null ? advanceRound : begin,
+                state.matchWinner === null
+                  ? advanceRound
+                  : () => begin(match?.mode ?? "normal"),
               ).disabled = paused() || visualBusy;
             actions.hidden = actions.childElementCount === 0;
+            if (revealResult && activeSettlement?.mode === "ranked") {
+              const note = node(
+                ownHeader,
+                "span",
+                "uno-rating-result",
+                t("ratingApplied", {
+                  requested: signed(activeSettlement.detail.requested),
+                  delta: signed(activeSettlement.delta),
+                  total: activeSettlement.after,
+                }),
+              );
+              note.setAttribute("role", "status");
+            }
           }
           if (!confirmation && localPause) {
             const cover = overlay("uno-pause", "paused");
@@ -2641,42 +3181,66 @@ WorkTimeApp.games.register({
               render();
               schedule();
             });
-            button(cover, "settings", () => {
-              setup = true;
-              render();
-            });
+            button(cover, "exit", requestExit);
           }
           const controls = node(root, "nav", "uno-corner-controls");
-          const restart = button(controls, "restart", requestStart);
-          const settings = button(controls, "settings", () => {
-            stop();
-            setup = true;
-            render();
-          });
-          for (const [control, icon, label] of [
-            [restart, "restart-alt", "restart"],
-            [settings, "settings", "settings"],
-          ]) {
-            control.textContent = "";
-            control.append(G.createIcon(icon));
-            control.title = t(label);
-            control.setAttribute("aria-label", t(label));
+          if (match?.mode !== "ranked") {
+            const restart = button(controls, "restart", requestStart);
+            restart.textContent = "";
+            restart.append(G.createIcon("restart-alt"));
+            restart.title = t("restart");
+            restart.setAttribute("aria-label", t("restart"));
           }
+          const exit = button(controls, "exit", requestExit);
+          exit.textContent = "";
+          exit.append(G.createIcon("logout"));
+          exit.title = t("exit");
+          exit.setAttribute("aria-label", t("exit"));
         }
 
         if (confirmation) {
-          const confirm = overlay("uno-confirm", "confirm");
-          button(confirm, "restart", () => confirmation());
-          button(confirm, "cancel", () => {
+          const exiting = confirmation === exitToSetup;
+          const confirm = overlay(
+            "uno-confirm",
+            exiting
+              ? "confirmExitRanked"
+              : unfinishedRanked()
+                ? "confirmAbandonRanked"
+                : "confirm",
+          );
+          const cancel = () => {
             confirmation = null;
             render();
             schedule();
-          });
+          };
+          if (exiting) {
+            confirm.parentElement.classList.add("uno-ranked-exit-overlay");
+            confirm.classList.add("uno-ranked-exit");
+            const penalty = node(confirm, "div", "uno-exit-penalty");
+            penalty.setAttribute("role", "img");
+            penalty.setAttribute(
+              "aria-label",
+              t("rankedExitPenalty", { n: 15 }),
+            );
+            const mark = node(penalty, "span", "uno-exit-mark");
+            mark.setAttribute("aria-hidden", "true");
+            node(mark, "span", "uno-exit-minus");
+            const digits = node(mark, "span", "uno-exit-digits");
+            setArt(digits, numberArt(15));
+            const actions = node(confirm, "div", "uno-exit-actions");
+            handAction(actions, "cancel", cancel);
+            handAction(actions, "exit", () => confirmation());
+          } else {
+            button(confirm, "restart", () => confirmation());
+            button(confirm, "cancel", cancel);
+          }
         }
       } finally {
         renderHost = null;
       }
       patchView(root, fresh);
+      const historyList = root.querySelector(".uno-history-list");
+      if (historyList) historyList.scrollTop = historyScroll;
       if (setup) {
         pickerAbort = new AbortController();
         for (const select of root.querySelectorAll(".uno-select-host select")) {
@@ -2778,13 +3342,16 @@ WorkTimeApp.games.register({
     }
     function paintTableColor(table) {
       if (!table || !state) return;
-      const color = state.openingColor
-        ? null
-        : openingCards
-          ? openingShown > 0
-            ? R.cards[openingCards[openingShown - 1]].color
-            : null
-          : state.color;
+      const color =
+        dealerSelection || root.dataset.handPhase === "countdown"
+          ? null
+          : state.openingColor
+            ? null
+            : openingCards
+              ? openingShown > 0
+                ? R.cards[openingCards[openingShown - 1]].color
+                : null
+              : state.color;
       const colors = {
         red: "#c44250",
         yellow: "#be921a",
@@ -2807,23 +3374,30 @@ WorkTimeApp.games.register({
       if (!pointer || !state) return;
       const source = table.getBoundingClientRect();
       const displayTurn = presentingPlayer ?? state.turn;
-      const target = rect(
-        root.querySelector(
-          displayTurn === 0
-            ? ".uno-hand"
-            : `[data-seat="${displayTurn}"] .uno-seat-info`,
-        ),
+      const seat = root.querySelector(
+        displayTurn === 0 ? ".uno-hand" : `[data-seat="${displayTurn}"]`,
       );
-      if (!target) return;
+      if (!seat) return;
+      const anchor =
+        displayTurn === 0
+          ? seat
+          : seat.querySelector(
+              seat.dataset.position === "top"
+                ? ".uno-seat-hand"
+                : ".uno-seat-info",
+            );
+      if (!anchor) return;
+      const target = anchor.getBoundingClientRect();
       let nextRadius = source.width / 2 + 32;
       if (displayTurn === 0) {
-        const info = rect(root.querySelector(".uno-own-info"));
-        if (info)
+        const handTop =
+          target.top + parseFloat(getComputedStyle(seat).paddingTop);
+        if (Number.isFinite(handTop))
           nextRadius = Math.max(
             source.width / 4,
             Math.min(
               nextRadius,
-              info.y -
+              handTop -
                 (source.y + source.height / 2) -
                 pointer.offsetHeight / 2 -
                 10,
@@ -2843,12 +3417,16 @@ WorkTimeApp.games.register({
         pointerSeat !== displayTurn ||
         pointerTarget === null ||
         Math.abs(angleDifference(targetAngle, pointerTarget)) > 0.1;
-      if (reroute && pointerMotion && pointerMotionElement === pointer) {
+      if (!reroute && pointerMotionElement === pointer) return;
+      if (pointerMotion && pointerMotionElement === pointer) {
         const matrix = new DOMMatrix(getComputedStyle(pointer).transform);
         const visible = (Math.atan2(matrix.f, matrix.e) * 180) / Math.PI;
         pointerAngle += angleDifference(visible, pointerAngle);
         startRadius = Math.hypot(matrix.e, matrix.f);
       }
+      pointerMotion?.cancel();
+      pointerMotion = null;
+      pointerMotionElement = pointer;
       if (pointerAngle === null) pointerTarget = targetAngle;
       else if (pointerSeat !== displayTurn) {
         const clockwise = (((targetAngle - pointerAngle) % 360) + 360) % 360;
@@ -2867,14 +3445,12 @@ WorkTimeApp.games.register({
       pointer.style.setProperty("--uno-pointer-radius", nextRadius + "px");
       pointer.style.setProperty("--player-angle", pointerAngle + "deg");
       if (
-        reroute &&
         !reducedMotion() &&
         !paused() &&
         (Math.abs(pointerTarget - pointerAngle) > 0.1 ||
           Math.abs(nextRadius - startRadius) > 0.1) &&
         !nativePointerUnavailable
       ) {
-        pointerMotion?.cancel();
         const transform = (angle, radius) =>
             `rotate(${angle}deg) translateX(${radius}px) rotate(90deg)`,
           target = pointerTarget;
@@ -2891,7 +3467,6 @@ WorkTimeApp.games.register({
             },
           );
           pointerMotion = animation;
-          pointerMotionElement = pointer;
           animation.finished.then(
             () => {
               if (pointerMotion !== animation) return;

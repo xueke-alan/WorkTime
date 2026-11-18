@@ -38,6 +38,7 @@ WorkTimeApp.games.unoRulesFactory = function () {
     difficulty = "normal",
     seed = 1,
     targetScore = 500,
+    onDealerDraw = null,
   ) {
     if (!Number.isInteger(count) || count < 2 || count > MAX_PLAYERS)
       throw Error("Invalid player count");
@@ -77,9 +78,13 @@ WorkTimeApp.games.unoRulesFactory = function () {
         s,
       );
       const draws = contenders.map((player) => {
-        const value = cards[pack.pop()].value;
-        return { player, value: value <= 9 ? value : 0 };
+        const card = pack.pop(),
+          value = cards[card].value;
+        return { player, card, value: value <= 9 ? value : 0 };
       });
+      // Presentation receives the real draw trace without adding transient
+      // selection cards to the saved 108-card game state.
+      onDealerDraw?.(draws.map((draw) => ({ ...draw })));
       const highest = Math.max(...draws.map((d) => d.value));
       contenders = draws
         .filter((d) => d.value === highest)
@@ -151,23 +156,41 @@ WorkTimeApp.games.unoRulesFactory = function () {
     s.dealer = (s.dealer + 1) % s.hands.length;
     return deal(s);
   }
+  function matches(card, color, value) {
+    return card.value === 13 || card.color === color || card.value === value;
+  }
+  function allowsDrawFour(hand, color) {
+    return !hand.some((id) => cards[id].color === color);
+  }
   function playable(s, id) {
-    const c = cards[id],
-      top = cards[s.discard[s.discard.length - 1]];
-    if (!c) return false;
-    if (c.value === 14)
-      return !s.hands[s.turn].some((other) => cards[other].color === s.color);
-    return c.value === 13 || c.color === s.color || c.value === top.value;
+    const card = cards[id];
+    if (!card) return false;
+    if (card.value === 14) return allowsDrawFour(s.hands[s.turn], s.color);
+    return matches(card, s.color, cards[s.discard.at(-1)].value);
   }
   function legal(s) {
     if (s.status !== "playing") return [];
     if (s.openingColor)
       return colors.map((color) => ({ type: "color", color }));
+    const hand = s.hands[s.turn];
+    const topValue = cards[s.discard.at(-1)]?.value;
     const result = [];
-    for (const id of s.hands[s.turn]) {
-      if ((s.drawn !== null && id !== s.drawn) || !playable(s, id)) continue;
-      for (const color of cards[id].value >= 13 ? colors : [cards[id].color])
-        result.push({ type: "play", card: id, color });
+    let canDrawFour;
+    for (const id of hand) {
+      if (s.drawn !== null && id !== s.drawn) continue;
+      const card = cards[id];
+      if (!card) continue;
+      if (card.value === 14) {
+        canDrawFour ??= allowsDrawFour(hand, s.color);
+        if (!canDrawFour) continue;
+      } else if (!matches(card, s.color, topValue)) continue;
+
+      if (card.value >= 13) {
+        for (const color of colors)
+          result.push({ type: "play", card: id, color });
+      } else {
+        result.push({ type: "play", card: id, color: card.color });
+      }
     }
     result.push({ type: s.drawn === null ? "draw" : "pass" });
     return result;
@@ -191,36 +214,47 @@ WorkTimeApp.games.unoRulesFactory = function () {
     return s;
   }
   function take(s, player, count) {
-    const taken = [];
-    while (taken.length < count) {
-      recycle(s);
-      if (!s.deck.length) break;
-      const id = s.deck.pop();
-      s.hands[player].push(id);
-      taken.push(id);
-      recycle(s);
+    const hand = s.hands[player];
+    let taken = 0;
+    if (!s.deck.length) recycle(s);
+    while (taken < count && s.deck.length) {
+      hand.push(s.deck.pop());
+      taken++;
+      if (!s.deck.length) recycle(s);
     }
     return taken;
   }
-  function apply(state, action) {
+  function apply(state, action, simulation = false, reuseState = false) {
     if (
       !action ||
-      !legal(state).some(
-        (a) =>
-          a.type === action.type &&
-          a.card === action.card &&
-          a.color === action.color,
-      )
+      (!simulation &&
+        !legal(state).some(
+          (a) =>
+            a.type === action.type &&
+            a.card === action.card &&
+            a.color === action.color,
+        ))
     )
       return null;
-    const s = JSON.parse(JSON.stringify(state));
+    let s = state;
+    if (!simulation) {
+      s = JSON.parse(JSON.stringify(state));
+    } else if (!reuseState) {
+      s = {
+        ...state,
+        hands: state.hands.map((hand) => hand.slice()),
+        deck: state.deck.slice(),
+        discard: state.discard.slice(),
+        scores: state.scores.slice(),
+      };
+    }
     const player = s.turn;
-    const event = { player, type: action.type };
+    const event = simulation ? null : { player, type: action.type };
     s.actions++;
     if (action.type === "color") {
       s.color = action.color;
       s.openingColor = false;
-      event.color = action.color;
+      if (event) event.color = action.color;
     } else if (action.type === "play") {
       const card = cards[action.card];
       s.hands[player].splice(s.hands[player].indexOf(card.id), 1);
@@ -228,8 +262,8 @@ WorkTimeApp.games.unoRulesFactory = function () {
       s.color = action.color;
       s.drawn = null;
       s.blocked = 0;
-      event.card = card.id;
-      event.color = action.color;
+      if (event) event.card = card.id;
+      if (event) event.color = action.color;
       let steps = 1;
       if (card.value === 11) {
         s.direction *= -1;
@@ -237,19 +271,20 @@ WorkTimeApp.games.unoRulesFactory = function () {
       }
       if (card.value === 10) steps = 2;
       if (card.value === 12 || card.value === 14) {
-        event.target = next(s);
-        event.count = take(s, event.target, card.value === 12 ? 2 : 4).length;
+        const target = next(s);
+        const count = take(s, target, card.value === 12 ? 2 : 4);
+        if (event) Object.assign(event, { target, count });
         steps = 2;
       }
       if (!s.hands[player].length) settle(s, player);
       else s.turn = next(s, steps);
-      event.uno = s.hands[player].length === 1;
+      if (event) event.uno = s.hands[player].length === 1;
     } else if (action.type === "draw") {
       const taken = take(s, player, 1);
-      event.count = taken.length;
-      if (taken.length) {
+      if (event) event.count = taken;
+      if (taken) {
         s.blocked = 0;
-        s.drawn = taken[0];
+        s.drawn = s.hands[player].at(-1);
         if (!playable(s, s.drawn)) {
           s.drawn = null;
           s.turn = next(s);
@@ -265,10 +300,10 @@ WorkTimeApp.games.unoRulesFactory = function () {
       s.turn = next(s);
     }
     recycle(s);
-    s.log = [...s.log, event].slice(-16);
+    if (event) s.log = [...s.log, event].slice(-16);
     return s;
   }
-  function observe(s) {
+  function observe(s, includeLog = true) {
     return {
       rulesVersion: s.rulesVersion,
       targetScore: s.targetScore ?? 500,
@@ -288,7 +323,7 @@ WorkTimeApp.games.unoRulesFactory = function () {
       blocked: s.blocked,
       difficulty: s.difficulty,
       actions: s.actions,
-      log: JSON.parse(JSON.stringify(s.log)),
+      log: includeLog ? JSON.parse(JSON.stringify(s.log)) : [],
     };
   }
   function restore(input) {
@@ -485,6 +520,7 @@ WorkTimeApp.games.unoRulesFactory = function () {
     create,
     nextRound,
     points,
+    matches,
     legal,
     apply,
     refill,

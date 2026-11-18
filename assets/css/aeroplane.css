@@ -1,0 +1,313 @@
+.game-content:has(> .game-aeroplane) { scrollbar-gutter: auto; }
+.game-aeroplane {
+  --aero-red: #d37068;
+  --aero-yellow: #d6a341;
+  --aero-blue: #659bc6;
+  --aero-green: #5ca48b;
+  --aero-paper: color-mix(in srgb, var(--paper) 96%, var(--ink));
+  --aero-line: color-mix(in srgb, var(--paper) 82%, var(--ink));
+  --aero-ease: cubic-bezier(.2,.65,.3,1);
+  container-type: size;
+  box-sizing: border-box;
+  block-size: 100%;
+  padding: clamp(8px, 1.2vw, 16px);
+  color: var(--ink);
+}
+.aero-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 226px;
+  grid-template-rows: minmax(max-content, 1fr);
+  align-items: center;
+  gap: clamp(16px, 2vw, 26px);
+  block-size: 100%;
+  max-width: min(1160px, calc(100cqh + 252px));
+  margin-inline: auto;
+}
+.aero-board-wrap {
+  position: relative;
+  container-type: size;
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  min-block-size: 160px;
+  min-width: 0;
+}
+.aero-board { position: relative; width: min(100%, 100cqh, 900px); aspect-ratio: 1; filter: drop-shadow(0 5px 12px #182d2812); }
+.aero-art { display: block; width: 100%; height: 100%; overflow: visible; }
+.aero-board-paper { fill: var(--aero-paper); stroke: var(--aero-line); stroke-width: .05; }
+.aero-red { --aero-color: var(--aero-red); }
+.aero-yellow { --aero-color: var(--aero-yellow); }
+.aero-blue { --aero-color: var(--aero-blue); }
+.aero-green { --aero-color: var(--aero-green); }
+.aero-airport { fill: color-mix(in srgb, var(--aero-color) 17%, var(--aero-paper)); stroke: color-mix(in srgb, var(--aero-color) 43%, var(--aero-paper)); stroke-width: .04; }
+.aero-hangar { fill: color-mix(in srgb, var(--aero-color) 7%, var(--paper)); stroke: color-mix(in srgb, var(--aero-color) 52%, var(--aero-paper)); stroke-width: .025; }
+.aero-square, .aero-home, .aero-start, .aero-finish { stroke: var(--aero-paper); stroke-width: .045; stroke-linejoin: round; }
+.aero-square { fill: color-mix(in srgb, var(--aero-color) 56%, var(--aero-paper)); }
+.aero-home { fill: color-mix(in srgb, var(--aero-color) 68%, var(--aero-paper)); }
+.aero-start { fill: color-mix(in srgb, var(--aero-color) 24%, var(--aero-paper)); }
+.aero-finish { fill: color-mix(in srgb, var(--aero-color) 90%, var(--aero-paper)); }
+.aero-stop { fill: var(--paper); opacity: .87; }
+.aero-flight-line { stroke: color-mix(in srgb, var(--aero-color) 72%, var(--ink)); stroke-dasharray: .11 .13; stroke-width: .042; fill: none; opacity: .73; stroke-linecap: round; }
+.aero-flight-arrow { stroke-dasharray: none; stroke-width: .055; }
+.aero-launch-arrow { stroke: color-mix(in srgb, var(--aero-color) 69%, #17292a); fill: none; stroke-width: .06; stroke-linecap: round; }
+.game-aeroplane .aero-plane, .game-aeroplane .aero-plane:is(:hover,:active,:disabled) {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 5.2%;
+  height: 5.2%;
+  padding: .15%;
+  border: 1.5px solid color-mix(in oklab, var(--aero-color) 70%, #253735);
+  border-radius: 50%;
+  background: var(--aero-color);
+  box-shadow: none;
+  filter: none;
+  opacity: 1;
+  z-index: 2;
+}
+.aero-plane-model { position: absolute; inset: 11%; display: block; transform: rotate(25deg); }
+.aero-plane svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.aero-plane-body { fill: color-mix(in oklab, var(--aero-color) 43%, #253735); }
+.game-aeroplane .aero-plane:disabled { cursor: default; }
+.game-aeroplane .aero-plane.aero-legal:not(:disabled) {
+  z-index: 4;
+  cursor: pointer;
+  outline: 1px solid color-mix(in oklab, var(--aero-color) 53%, #253735);
+  outline-offset: 2px;
+  transition: transform 160ms var(--aero-ease);
+}
+@media (hover: hover) {
+  .game-aeroplane .aero-plane.aero-legal:hover:not(:disabled) { transform: translate(-50%, -50%) scale(1.13); }
+}
+.game-aeroplane .aero-plane.aero-legal:focus-visible:not(:disabled) { outline-width: 2px; }
+.game-aeroplane .aero-plane.aero-arrived { width: 2.35%; height: 2.35%; padding: .05%; }
+.game-aeroplane .aero-plane.aero-moving { z-index: 8; will-change: transform; }
+.game-aeroplane[data-visual-busy] .aero-plane-choices { pointer-events: none; }
+.aero-sidebar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  padding: 11px;
+  background: var(--aero-paper);
+  border: 1px solid var(--aero-line);
+  border-radius: 14px;
+}
+.aero-sidebar > :not(.aero-player) { grid-column: 1 / -1; }
+.aero-player {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 9px;
+  box-sizing: border-box;
+  block-size: 48px;
+  padding: 0 10px;
+  border: 1px solid var(--aero-line);
+  border-radius: 10px;
+  background: var(--paper);
+  transition: background-color 220ms ease, border-color 220ms ease;
+}
+.aero-player[aria-current="true"] {
+  border-color: var(--aero-color);
+  background: color-mix(in srgb, var(--aero-color) 12%, var(--paper));
+}
+.aero-player-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--aero-color);
+}
+.aero-player-details { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; line-height: 1.2; }
+.aero-player-details strong { font-size: 13px; white-space: nowrap; }
+.aero-player-kind { color: var(--muted); font-size: 11px; }
+.aero-progress {
+  justify-self: end;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.game-aeroplane button.aero-switch {
+  position: relative;
+  width: 42px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  cursor: pointer;
+}
+.aero-switch::before, .aero-switch::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  box-sizing: border-box;
+  border-radius: 99px;
+  transform: translateY(-50%);
+}
+.aero-switch::before {
+  inset-inline: 0;
+  height: 24px;
+  border: 1px solid color-mix(in srgb, var(--muted) 54%, var(--paper));
+  background: color-mix(in srgb, var(--muted) 24%, var(--paper));
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
+.aero-switch::after {
+  inset-inline-start: 4px;
+  width: 16px;
+  height: 16px;
+  background: #fffdf8;
+  transition: inset-inline-start 180ms var(--aero-ease);
+}
+.aero-switch[aria-checked="true"]::before {
+  border-color: var(--aero-color);
+  background: var(--aero-color);
+}
+.aero-switch[aria-checked="true"]::after { inset-inline-start: 22px; }
+.game-aeroplane button.aero-switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 8px;
+}
+.aero-feedback { display: grid; align-content: center; gap: 4px; block-size: 68px; }
+.aero-status { margin: 0; text-align: center; font-size: 12px; line-height: 1.4; }
+.game-aeroplane .aero-button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid var(--aero-line);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+.game-aeroplane .aero-sidebar > .aero-button[data-aero-action="start"] {
+  background: color-mix(in srgb, var(--aero-green) 26%, var(--paper));
+  border-color: color-mix(in srgb, var(--aero-green) 65%, var(--paper));
+  font-weight: 650;
+}
+.game-aeroplane .aero-button:disabled { cursor: default; opacity: .55; }
+.game-aeroplane .aero-button:hover:not(:disabled) { background: var(--control-hover); }
+.aero-plane-choices { display: flex; gap: 6px; }
+.game-aeroplane .aero-plane-choices .aero-button { flex: 1; min-height: 36px; padding: 4px; color: var(--ink); border-color: color-mix(in srgb, var(--aero-color) 55%, var(--paper)); }
+.aero-warning { font-size: 12px; color: var(--red); line-height: 1.6; }
+.aero-warning button { display: block; margin-top: 8px; }
+.aero-dialog {
+  position: absolute;
+  z-index: 10;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: min(420px, calc(100% - 24px));
+  max-height: calc(100% - 16px);
+  overflow: auto;
+  padding: clamp(14px, 4cqh, 28px);
+  background: var(--paper);
+  border: 1px solid var(--aero-line);
+  border-radius: 16px;
+  box-shadow: var(--shadow), 0 10px 28px #233c3a26;
+  animation: aero-dialog-in 200ms var(--aero-ease);
+}
+.aero-dialog h3 { margin: 0 0 8px; font-size: 18px; }
+.aero-dialog p { margin: 0 0 18px; font-size: 14px; line-height: 1.5; }
+.aero-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.game-aeroplane .aero-dialog-actions .aero-button { min-height: 40px; min-width: 72px; }
+@media (max-width: 660px) {
+  .aero-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(160px, 1fr) auto;
+    gap: 10px;
+    max-width: none;
+    --aero-sidebar-space: 246px;
+    block-size: min(100%, calc(100cqw + var(--aero-sidebar-space)));
+    margin-block: max(0px, calc((100cqh - 100cqw - var(--aero-sidebar-space)) / 2));
+  }
+  .aero-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 8px; }
+}
+
+.game-aeroplane button.aero-dice, .game-aeroplane button.aero-dice:is(:hover,:active,:disabled,:focus-visible) {
+  position: absolute;
+  z-index: 6;
+  width: max(44px, 13%);
+  height: auto;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+  transform: translate(-50%, -50%);
+  cursor: default;
+  container-type: inline-size;
+  --die-size: 53cqw;
+  --die-pips: color-mix(in srgb, var(--aero-color) 48%, #192c2c);
+}
+.game-aeroplane button.aero-dice.aero-dice-ready { cursor: pointer; }
+.game-aeroplane button.aero-dice:disabled { pointer-events: none; }
+.game-aeroplane button.aero-dice:focus-visible { outline: 2px solid var(--aero-color); outline-offset: 1px; border-radius: 12px; }
+.aero-dice-scene { position: absolute; inset: 0; perspective: 425cqw; pointer-events: none; }
+.aero-dice-enter .aero-dice-scene { animation: aero-dice-in 200ms var(--aero-ease); }
+.aero-choices-enter { animation: aero-choices-in 180ms var(--aero-ease); }
+@keyframes aero-dice-in {
+  from { opacity: 0; transform: translateY(6%) scale(.86); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes aero-choices-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes aero-dialog-in {
+  from { opacity: 0; transform: translate(-50%, -47%) scale(.98); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+html[data-reduced-motion="true"] .game-aeroplane *,
+html[data-reduced-motion="true"] .game-aeroplane *::before,
+html[data-reduced-motion="true"] .game-aeroplane *::after {
+  animation: none !important;
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-aeroplane *, .game-aeroplane *::before, .game-aeroplane *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+.aero-dice-lift {
+  position: absolute;
+  width: var(--die-size);
+  height: var(--die-size);
+  left: 23.5%;
+  top: 21%;
+  transform-style: preserve-3d;
+}
+.aero-dice-cube { position: absolute; inset: 0; transform-style: preserve-3d; }
+.aero-die-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 16%;
+  background: linear-gradient(148deg, #fffdf7 12%, #f2efe7 62%, #e2ddd0);
+  box-shadow: inset 0 0 0 .75cqw #ffffff76, inset 0 -1.5cqw 2.5cqw #756b5326;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+/* Inner faces close the gaps between rounded corners as the die tumbles. */
+.aero-die-face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 11%;
+  background: #d3cec0;
+  transform: translateZ(-3.5cqw) scale(.9);
+  backface-visibility: hidden;
+}
+.aero-die-face svg { display: block; width: 100%; height: 100%; }
+.aero-die-front { transform: translateZ(calc(var(--die-size) / 2)); }
+.aero-die-back { transform: rotateY(180deg) translateZ(calc(var(--die-size) / 2)); }
+.aero-die-right { transform: rotateY(90deg) translateZ(calc(var(--die-size) / 2)); }
+.aero-die-left { transform: rotateY(-90deg) translateZ(calc(var(--die-size) / 2)); }
+.aero-die-top { transform: rotateX(90deg) translateZ(calc(var(--die-size) / 2)); }
+.aero-die-bottom { transform: rotateX(-90deg) translateZ(calc(var(--die-size) / 2)); }
+.aero-die-pip { fill: var(--die-pips); stroke: #0b1c1938; stroke-width: 1.4; }
+.aero-die-face[data-face-value="1"] .aero-die-pip { fill: color-mix(in srgb, var(--aero-color) 80%, #192c2c); }

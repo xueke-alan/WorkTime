@@ -300,3 +300,11 @@ Thumbs.db
 !/scripts/verify-uno-official.cjs
 !/scripts/verify-uno-performance.cjs
 !/scripts/UNO.md
+
+!/scripts/uno/
+!/scripts/uno/**
+/.cache/uno-training/
+
+!/scripts/aeroplane/
+!/scripts/aeroplane/**
+!/scripts/verify-aeroplane.cjs

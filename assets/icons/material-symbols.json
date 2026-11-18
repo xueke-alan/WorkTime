@@ -489,6 +489,13 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/keyboard_double_arrow_right/materialsymbolsrounded/keyboard_double_arrow_right_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "11faf9d758c683d46ec70114103a2598c00e7b699fb7fb22f93b58a199908e1a"
+    },
+    {
+      "id": "ms-logout",
+      "name": "logout",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/logout/materialsymbolsrounded/logout_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "d91c1c549d521b9644fbba4b663a94a010a4c699db123bcbfdbc2d21d63d68f4"
     }
   ]
 }

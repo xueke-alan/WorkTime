@@ -30,6 +30,7 @@ WorkTimeApp.services.gameArchive = (() => {
         "jungle",
         "ultimate-ttt",
         "uno",
+        "aeroplane",
       ].map((id) => [
         "game-" + id,
         "worktime.games." + id + (id === "jump" ? ".best" : "") + ".v1",
@@ -301,10 +302,39 @@ WorkTimeApp.services.gameArchive = (() => {
       fail("version", id);
     const G = WorkTimeApp.games;
     let result;
-    if (id === "game-uno") {
-      result = G.unoRules.restore(input.state);
+    if (id === "game-aeroplane") {
+      result = G.aeroplaneRules.restore(input.state);
       requireValue(result, id);
       return { version: 1, state: result };
+    }
+    if (id === "game-uno") {
+      if (input.state === null) {
+        requireValue(
+          input.match === undefined && input.profile !== undefined,
+          id,
+        );
+        const profile = G.unoRanking.restoreProfile(input.profile);
+        requireValue(profile, id);
+        return { version: 1, state: null, profile };
+      }
+      result = G.unoRules.restore(input.state);
+      requireValue(result, id);
+      // Preserve the legacy shape until a profile or match is actually written.
+      if (input.profile === undefined && input.match === undefined)
+        return { version: 1, state: result };
+      const profile = G.unoRanking.restoreProfile(input.profile);
+      requireValue(profile, id);
+      const match =
+        input.match === undefined
+          ? null
+          : G.unoRanking.restoreMatch(input.match, result, profile);
+      requireValue(input.match === undefined || match, id);
+      return {
+        version: 1,
+        state: result,
+        profile,
+        ...(match ? { match } : {}),
+      };
     }
     if (id === "game-lights-out") {
       result = G.lightsOutRules.restore(input);
@@ -628,6 +658,7 @@ WorkTimeApp.services.gameArchive = (() => {
     return value;
   }
   function hasContent(id, v) {
+    if (id === "game-aeroplane") return true;
     if (id === "game-uno") return true;
     if (matchGames.includes(id) && v.matchHistory?.length) return true;
     if (
@@ -679,7 +710,8 @@ WorkTimeApp.services.gameArchive = (() => {
     });
   }
   function hasProgress(id, v) {
-    if (id === "game-uno") return v.state.matchWinner === null;
+    if (id === "game-aeroplane") return v.state.phase !== "won";
+    if (id === "game-uno") return !!v.state && v.state.matchWinner === null;
     if (["game-xiangqi", "game-gomoku"].includes(id) && v.match) return true;
     if (id === "game-sliding-puzzle")
       return Object.values(v.sessions).some((s) => s.started);
@@ -801,6 +833,14 @@ WorkTimeApp.services.gameArchive = (() => {
         conflict: false,
         improved: hasContent(id, incoming),
       };
+    if (id === "game-uno" && (local.profile || incoming.profile)) {
+      const equal = same(local, incoming);
+      return {
+        value: clone(source === "incoming" ? incoming : local),
+        conflict: !equal,
+        improved: false,
+      };
+    }
     let conflict = false;
     if (levelGames.includes(id)) {
       conflict = Object.keys(local.drafts).some(
@@ -901,7 +941,14 @@ WorkTimeApp.services.gameArchive = (() => {
       out.records = local.records.map((n, i) =>
         Math.max(n, incoming.records[i]),
       );
-    else if (!["game-jungle", "game-ultimate-ttt", "game-uno"].includes(id)) {
+    else if (
+      ![
+        "game-jungle",
+        "game-ultimate-ttt",
+        "game-uno",
+        "game-aeroplane",
+      ].includes(id)
+    ) {
       out.drafts = {
         ...(source === "incoming" ? local.drafts : incoming.drafts),
         ...preferred.drafts,
@@ -1010,8 +1057,14 @@ WorkTimeApp.services.gameArchive = (() => {
       if (!plain(save) || (save.version !== undefined && save.version !== 1))
         return { kind: "empty" };
       switch (id) {
+        case "game-aeroplane":
+          return summary("best", 0, Array.isArray(save.state?.pieces));
         case "game-uno":
-          return summary("best", 0, Array.isArray(save.state?.hands));
+          return summary(
+            "best",
+            0,
+            Array.isArray(save.state?.hands) || !!save.profile?.history?.length,
+          );
         case "game-sliding-puzzle":
           return summary(
             "completed",
@@ -1155,6 +1208,7 @@ WorkTimeApp.services.gameArchive = (() => {
             "game-jungle",
             "game-ultimate-ttt",
             "game-uno",
+            "game-aeroplane",
             "game-sliding-puzzle",
             "game-lights-out",
           ].includes(id) || Object.hasOwn(raw ?? {}, id),

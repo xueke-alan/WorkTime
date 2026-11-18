@@ -40,6 +40,7 @@ function prepareAssets({ check = false } = {}) {
     "jungle",
     "ultimate-ttt",
     "uno",
+    "aeroplane",
   ];
   const entries = games.map((id) => {
     const source = fs.readFileSync(
@@ -78,7 +79,13 @@ function prepareAssets({ check = false } = {}) {
       );
     rules.push("assets/js/games/" + id + "-rules.js");
     if (id === "uno")
-      rules.push("assets/js/games/uno-ai.js", "assets/js/games/uno-view.js");
+      rules.push(
+        "assets/js/games/uno-ai.js",
+        "assets/js/games/uno-model.js",
+        "assets/js/games/uno-view.js",
+        "assets/js/games/uno-ranking.js",
+      );
+    if (id === "aeroplane") rules.push("assets/js/games/aeroplane-ai.js");
     return {
       ...metadata,
       rules,
@@ -435,6 +442,7 @@ function prepareAssets({ check = false } = {}) {
     "jungle",
     "ultimate-ttt",
     "uno",
+    "aeroplane",
   ])
     vm.runInContext(
       fs.readFileSync(

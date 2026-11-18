@@ -1,0 +1,15 @@
+{
+  "format": 1,
+  "rules": 2,
+  "model": "model.js",
+  "payloadHash": "f12ac3546806c5fb1748ef1aa360d55ad5ef052309074259870765299442fed4",
+  "source": "Locally trained for WorkTime; no third-party weights",
+  "training": {
+    "seed": 81621,
+    "samples": 55524,
+    "method": "search distillation + evolutionary self-play",
+    "generations": 12,
+    "games": 15360,
+    "valueSamples": 169158
+  }
+}

@@ -92,9 +92,19 @@ async function verifyMotion(site = root) {
     };
     const output = path.join(root, "test-results/uno");
     fs.mkdirSync(output, { recursive: true });
-    let openingSeed = 1;
-    while (R.cards[R.create(6, "normal", openingSeed).discard[0]].value !== 11)
-      openingSeed++;
+    let openingSeed = 1,
+      dealerTrace;
+    for (; ; openingSeed++) {
+      dealerTrace = [];
+      const candidate = R.create(6, "normal", openingSeed, 500, (draws) =>
+        dealerTrace.push(draws),
+      );
+      if (
+        R.cards[candidate.discard[0]].value === 11 &&
+        dealerTrace.length === 2
+      )
+        break;
+    }
     await page.evaluate((seed) => {
       window.unoOriginalRandom = crypto.getRandomValues.bind(crypto);
       crypto.getRandomValues = (array) => {
@@ -123,8 +133,99 @@ async function verifyMotion(site = root) {
         .closest(".workspace")
         .classList.remove("is-game-transitioning"),
     );
+    const counter = page.locator(".uno-table .uno-countdown");
+    for (const digit of ["3", "2", "1"]) {
+      await page.locator(`.uno-countdown[aria-label="${digit}"]`).waitFor();
+      assert.equal(
+        await page.locator(".uno-flight,.uno-dealer-card").count(),
+        0,
+      );
+    }
+    await counter.waitFor({ state: "detached" });
+    const crown = page.locator(".uno-table .uno-dealer-announcement");
+    await crown.evaluate(async (el) => {
+      await Promise.all(
+        el.getAnimations().map((animation) => animation.finished),
+      );
+    });
+    assert.equal(await page.locator(".uno-dealer-card").count(), 0);
+    await page
+      .locator(".uno-dealer-card")
+      .first()
+      .waitFor({ state: "attached" });
     await page.waitForFunction(
-      () => document.querySelectorAll(".uno-flight").length === 42,
+      () => document.querySelectorAll(".uno-dealer-highest").length > 1,
+    );
+    assert.equal(await crown.locator("svg").count(), 1);
+    assert.equal(
+      await crown
+        .locator(".uno-status")
+        .evaluate((el) => getComputedStyle(el).clipPath),
+      "inset(50%)",
+    );
+    const firstHigh = Math.max(...dealerTrace[0].map((draw) => draw.value));
+    assert.deepEqual(
+      await page
+        .locator(".uno-dealer-highest")
+        .evaluateAll((els) =>
+          els.map((el) => Number(el.dataset.card)).sort((a, b) => a - b),
+        ),
+      Array.from(dealerTrace[0])
+        .filter((draw) => draw.value === firstHigh)
+        .map((draw) => draw.card)
+        .sort((a, b) => a - b),
+    );
+    await page.waitForTimeout(450);
+    assert.ok(
+      await page
+        .locator(".uno-dealer-highest")
+        .first()
+        .evaluate(
+          (el) => new DOMMatrix(getComputedStyle(el).transform).a > 1.15,
+        ),
+    );
+    await page.screenshot({ path: path.join(output, "dealer-tie.png") });
+    await page.waitForFunction(
+      () => document.querySelector(".game-uno").dataset.dealerChosen === "true",
+    );
+    assert.equal(
+      await page
+        .locator(".uno-dealer-highest")
+        .getAttribute("data-dealer-player"),
+      String((await read()).dealer),
+    );
+    assert.equal((await read()).actions, 0, "no AI action during selection");
+    assert.equal(
+      await page
+        .locator(".uno-player-pointer")
+        .evaluate((el) => getComputedStyle(el).opacity),
+      "0",
+    );
+    await page.waitForFunction(() =>
+      document
+        .querySelector(".uno-dealer-leaving")
+        ?.getAnimations()
+        .some((a) =>
+          a.effect
+            .getKeyframes()
+            .some((f) => f.opacity === "0" || f.opacity === 0),
+        ),
+    );
+    assert.equal(
+      await page.locator(".uno-hand .uno-card:visible").count(),
+      0,
+      "formal hands stay hidden during selection",
+    );
+    await page.screenshot({ path: path.join(output, "dealer-chosen.png") });
+    await page.waitForFunction(
+      () => {
+        const pile = document.querySelector(".uno-draw-dock");
+        return (
+          document.querySelector(".game-uno").dataset.handPhase === "dealing" &&
+          Number(pile.dataset.count) <= 106 &&
+          document.querySelectorAll(".uno-flight").length >= 2
+        );
+      },
       null,
       { polling: "raf" },
     );
@@ -414,6 +515,12 @@ async function verifyMotion(site = root) {
     }
     await page.evaluate(() => {
       const pointer = document.querySelector(".uno-player-pointer");
+      const pile = document.querySelector(".uno-draw-dock button");
+      window.unoDeckBeforeDraw = [...pile.children].map((card) => ({
+        card,
+        pose: getComputedStyle(card).transform,
+        box: card.getBoundingClientRect().toJSON(),
+      }));
       window.unoMotionAnchor = {
         table: document.querySelector(".uno-table"),
         ring: document.querySelector(".uno-direction"),
@@ -427,6 +534,46 @@ async function verifyMotion(site = root) {
     });
     await page.locator('[data-uno-action="draw"]').click();
     assert.ok((await page.locator(".uno-flight").count()) > 0);
+    const deckDeparture = await page.evaluate(() => {
+      const pile = document.querySelector(".uno-draw-dock button");
+      const flight = document.querySelector(".uno-draw-flight");
+      const before = window.unoDeckBeforeDraw;
+      const after = [...pile.children];
+      const firstFrame = flight.getAnimations()[0].effect.getKeyframes()[0];
+      const matrix = new DOMMatrix(firstFrame.transform);
+      const flightBox = flight.closest(".game-uno").getBoundingClientRect();
+      const width = parseFloat(flight.style.width);
+      const height = parseFloat(flight.style.height);
+      const { box, pose } = before[0];
+      const topMatrix = new DOMMatrix(pose);
+      const centerX = flightBox.x + parseFloat(flight.style.left) + width / 2;
+      const centerY = flightBox.y + parseFloat(flight.style.top) + height / 2;
+      return {
+        departed: !before[0].card.isConnected,
+        promoted: after
+          .slice(0, 3)
+          .every(
+            (card, i) =>
+              card === before[i + 1].card &&
+              getComputedStyle(card).transform === before[i + 1].pose,
+          ),
+        replenished:
+          after.length === 4 && before.every(({ card }) => card !== after[3]),
+        startsAtTop:
+          Math.abs(centerX - box.x - box.width / 2) < 1 &&
+          Math.abs(centerY - box.y - box.height / 2) < 1 &&
+          Math.abs(matrix.a - topMatrix.a) < 0.01 &&
+          Math.abs(matrix.b - topMatrix.b) < 0.01,
+        count: Number(pile.parentElement.dataset.count),
+      };
+    });
+    assert.deepEqual(deckDeparture, {
+      departed: true,
+      promoted: true,
+      replenished: true,
+      startsAtTop: true,
+      count: draw.deck.length - 1,
+    });
     assert.ok(
       await page
         .locator(".uno-draw-dock .uno-pile-caption")
@@ -510,6 +657,18 @@ async function verifyMotion(site = root) {
     );
     await idle();
     assert.equal((await read()).drawn, drawn);
+    assert.equal(
+      await deckButton
+        .locator(".uno-deck-card")
+        .first()
+        .evaluate(
+          (card) =>
+            getComputedStyle(card).transform ===
+            window.unoDeckBeforeDraw[1].pose,
+        ),
+      true,
+      "the newly exposed top keeps its own pose after the action renders",
+    );
     await page.setViewportSize({ width: 1280, height: 900 });
     const disabledDeck = await deckStyle();
     await deckButton.hover({ position: { x: 20, y: 20 } });
@@ -811,9 +970,7 @@ async function verifyMotion(site = root) {
         .evaluate((el) => getComputedStyle(el).transform),
       frozenRing,
     );
-    await page
-      .locator('.uno-corner-controls [data-uno-action="settings"]')
-      .click();
+    await page.locator('.uno-corner-controls [data-uno-action="exit"]').click();
     assert.equal(
       await page.locator('[data-uno-setting="discard-limit"]').count(),
       0,
@@ -830,7 +987,7 @@ async function verifyMotion(site = root) {
     await reopen(await read());
     assert.equal(await page.locator(".uno-discard-card").count(), 5);
 
-    // A newly drawn unplayable card fades its entire opaque face and lettering.
+    // An unplayable draw passes the turn and restores normal hand colors.
     const unavailable = fixture([
       [card("red", 2), card("green", 1)],
       [card("blue", 1), card("green", 2)],
@@ -872,12 +1029,24 @@ async function verifyMotion(site = root) {
     ]);
     handoff.turn = 1;
     await reopen(handoff);
+    const ownIdentityBox = () =>
+      page.locator(".uno-own-info > .uno-avatar").boundingBox();
+    const ownIdentity = await ownIdentityBox();
+    await page.evaluate(() => {
+      window.handoffRing = document
+        .querySelector(".uno-direction")
+        .getAnimations()
+        .find(
+          (animation) => animation.effect.getTiming().iterations === Infinity,
+        );
+    });
     await page.waitForFunction(
       () =>
         JSON.parse(localStorage.getItem("worktime.games.uno.v1")).state
           .actions > 0,
     );
     await idle();
+    assert.deepEqual(await ownIdentityBox(), ownIdentity);
     assert.ok(
       await page
         .locator(".uno-mini-back")
@@ -891,6 +1060,17 @@ async function verifyMotion(site = root) {
           ),
         ),
       "AI colors animate at turn handoff",
+    );
+    assert.ok(
+      await page.evaluate(() => {
+        const ring = document.querySelector(".uno-direction");
+        return (
+          ring.getAnimations().includes(window.handoffRing) &&
+          window.handoffRing.playState === "running" &&
+          ring.querySelector("svg").getAnimations().length === 0
+        );
+      }),
+      "handoff keeps the wheel rotating without a separate scale animation",
     );
     const pointerStart = await page
       .locator(".uno-player-pointer")
@@ -1136,24 +1316,23 @@ async function verifyMotion(site = root) {
       .locator(".uno-color-swatch svg path:first-child")
       .evaluateAll((els) => els.map((el) => el.getAttribute("d")));
     assert.equal(new Set(choiceShapes).size, 4);
-    await page.locator('.uno-color-swatch[data-uno-color="green"]').hover();
-    await page.waitForTimeout(180);
-    assert.equal(
-      await wildCard.evaluate((el) => getComputedStyle(el).backgroundColor),
-      "rgb(38, 128, 83)",
-    );
-    assert.equal(
-      JSON.stringify(await read()),
-      untouchedWild,
-      "preview does not play the wild",
-    );
-    await page.locator('.uno-color-swatch[data-uno-color="yellow"]').hover();
-    await page.waitForTimeout(180);
-    assert.equal(
-      await wildCard.evaluate((el) => getComputedStyle(el).color),
-      "rgb(58, 44, 6)",
-      "yellow preview uses matching dark glyph ink",
-    );
+    const faceColors = () =>
+      wildCard.evaluate((el) => {
+        const { backgroundColor, color, filter } = getComputedStyle(el);
+        return { backgroundColor, color, filter };
+      });
+    const wildColors = await faceColors();
+    for (const color of R.colors) {
+      await page
+        .locator(`.uno-color-swatch[data-uno-color="${color}"]`)
+        .hover();
+      assert.deepEqual(
+        await faceColors(),
+        wildColors,
+        "swatches leave the held wild face at its normal colors",
+      );
+    }
+    assert.equal(JSON.stringify(await read()), untouchedWild);
     await page.locator('.uno-color-swatch[data-uno-color="blue"]').click();
     assert.equal((await read()).color, "blue");
     assert.equal(await page.locator(".uno-color-choice").count(), 0);
@@ -1246,12 +1425,18 @@ async function verifyMotion(site = root) {
           const info = seat
             .querySelector(".uno-seat-info")
             .getBoundingClientRect();
-          return [...seat.querySelectorAll(".uno-mini-back")].every(
-            (card) => card.getBoundingClientRect().bottom <= info.top + 1,
-          );
+          return [...seat.querySelectorAll(".uno-mini-back")].every((card) => {
+            const bounds = card.getBoundingClientRect();
+            return (
+              bounds.bottom <= info.top + 1 ||
+              (seat.dataset.position === "top" &&
+                (bounds.top >= info.bottom - 1 ||
+                  bounds.right <= info.left + 1))
+            );
+          });
         }),
       ),
-      "names, avatars and counts are below the full fan bounds",
+      "player details stay clear of the full fan bounds",
     );
     // Back art is identical, textual decoration is absent, and only the lower pile is clipped.
     const art = await page.evaluate(() => ({
@@ -1282,20 +1467,27 @@ async function verifyMotion(site = root) {
       .map((c) => c.id)
       .filter((id) => !held.has(id) && !deepPile.discard.includes(id));
     await reopen(deepPile);
+    const avatarBeforePlay = await ownIdentityBox();
     await page.locator(`.uno-hand [data-card="${card("red", 1)}"]`).click();
     await page.waitForFunction(
       () =>
+        document.querySelector(".uno-flight") &&
         [...document.querySelectorAll(".uno-stack-under")].some((el) =>
           el
             .getAnimations()
-            .some((a) =>
-              a.effect.getKeyframes().some((f) => f.opacity === "0"),
+            .some(
+              (a) =>
+                a.currentTime >= a.effect.getTiming().delay &&
+                a.effect.getKeyframes().some((f) => f.opacity === "0"),
             ),
         ),
       null,
       { polling: "raf" },
     );
     await idle();
+    const avatarAfterPlay = await ownIdentityBox();
+    for (const key of ["x", "y", "width", "height"])
+      assert.ok(Math.abs(avatarAfterPlay[key] - avatarBeforePlay[key]) < 0.1);
     assert.equal(await page.locator(".uno-discard-card").count(), 10);
     assert.equal((await read()).discard.length, 16);
     await setDocumentHidden(page, true);
@@ -1479,7 +1671,7 @@ async function verifyMotion(site = root) {
       path: path.join(output, "revealed-eight-players.png"),
     });
 
-    // Stopping a deal reveals the already-saved full state without late callbacks.
+    // Stopping selection reveals the already-saved full state without late callbacks.
     await exit();
     await page.evaluate(() => localStorage.removeItem("worktime.games.uno.v1"));
     await setDocumentHidden(page, false);
@@ -1487,6 +1679,10 @@ async function verifyMotion(site = root) {
     await page.locator('[data-uno-action="start"]').click();
     await setDocumentHidden(page, true);
     const frozen = JSON.stringify(await read());
+    assert.equal(
+      await page.locator(".uno-dealer-card,.uno-dealer-announcement").count(),
+      0,
+    );
     assert.equal(await page.locator(".uno-flight").count(), 0);
     await page.waitForTimeout(2200);
     assert.equal(JSON.stringify(await read()), frozen);

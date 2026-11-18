@@ -23,7 +23,12 @@ const scope = vm.createContext({
   TextEncoder,
   WorkTimeApp: { games: {}, services: {} },
 });
-for (const name of ["games/uno-rules", "games/uno-ai", "services/game-archive"])
+for (const name of [
+  "games/uno-rules",
+  "games/uno-ai",
+  "games/uno-ranking",
+  "services/game-archive",
+])
   vm.runInContext(
     fs.readFileSync(path.join(root, "assets/js", name + ".js"), "utf8"),
     scope,
@@ -67,12 +72,196 @@ function valid(s) {
   assert.ok(R.restore(s), "every transition must produce a valid save");
   assert.equal(new Set([...s.hands.flat(), ...s.deck, ...s.discard]).size, 108);
 }
+function rankingRules() {
+  const ranking = scope.WorkTimeApp.games.unoRanking;
+  const tiers = ["iron", "silver", "gold", "diamond", "king"];
+  for (let step = 0; step < 15; step++) {
+    for (const offset of [0, 99]) {
+      const tier = ranking.tier(step * 100 + offset);
+      assert.equal(tier.name, tiers[Math.floor(step / 3)]);
+      assert.equal(tier.division, ["III", "II", "I"][step % 3]);
+      assert.equal(tier.progress, offset);
+    }
+  }
+  assert.deepEqual(
+    [0, 299, 300, 899, 900, 1500].map((rating) => {
+      const { players, difficulty } = ranking.rankedSettings(rating);
+      return [players, difficulty];
+    }),
+    [
+      [4, "easy"],
+      [4, "easy"],
+      [6, "normal"],
+      [6, "normal"],
+      [8, "hard"],
+      [8, "hard"],
+    ],
+  );
+  assert.equal(ranking.tier(1500).progress, 100);
+  const evaluate = (
+    before,
+    stats,
+    state,
+    abandoned = false,
+    mode = "ranked",
+  ) => {
+    const profile = ranking.emptyProfile();
+    profile.rating = before;
+    const match = Object.assign(ranking.newMatch("fixture", mode), stats);
+    const record = ranking.settle(profile, match, state, 100, abandoned);
+    if (record) {
+      assert.equal(ranking.settle(profile, match, state, 101, abandoned), null);
+      assert.equal(
+        ranking.settle(
+          profile,
+          { ...match, settled: false },
+          state,
+          101,
+          abandoned,
+        ),
+        null,
+      );
+      assert.equal(profile.history.length, 1);
+      assert.ok(ranking.restoreProfile(profile));
+    }
+    return record;
+  };
+  const partial = fixture([
+    [id("red", 1)],
+    [id("blue", 2)],
+    [id("green", 3)],
+    [id("yellow", 4)],
+  ]);
+  const match = ranking.newMatch("stats", "ranked");
+  ranking.countRound(match, { status: "draw" });
+  ranking.countRound(match, {
+    status: "won",
+    winner: 1,
+    roundPoints: [20, 0, 40, 60],
+  });
+  assert.equal(match.completedRounds, 2);
+  assert.equal(match.decisive, 1);
+  assert.equal(match.burden, 60);
+  assert.equal(evaluate(100, match, partial), null);
+  assert.equal(evaluate(100, match, partial, true).after, 85);
+  assert.equal(evaluate(3, match, partial, true).delta, -3);
+  const end = { ...partial, matchWinner: 1, scores: [100, 500, 100, 0] };
+  const tied = evaluate(199, { decisive: 4, wins: 1, burden: 0 }, end);
+  assert.equal(tied.place, 2);
+  assert.equal(tied.tied, 2);
+  assert.equal(tied.detail.base, 0);
+  assert.equal(tied.delta, 0);
+  assert.equal(
+    evaluate(199, { decisive: 4, wins: 2, burden: 200 }, end).delta,
+    9,
+  );
+  assert.equal(
+    evaluate(199, { decisive: 2, wins: 0 }, end, false, "normal").delta,
+    0,
+  );
+  const win = { ...end, matchWinner: 0, scores: [510, 100, 20, 0] };
+  assert.equal(evaluate(285, { decisive: 1, wins: 1 }, win).after, 317);
+  assert.equal(evaluate(1499, { decisive: 1, wins: 1 }, win).delta, 1);
+  const last = { ...end, scores: [0, 500, 200, 100] };
+  assert.equal(
+    evaluate(103, { decisive: 1, wins: 0, burden: -200 }, last).after,
+    71,
+  );
+  const saved = {
+    version: 1,
+    state: clone(R.create(4)),
+    profile: ranking.emptyProfile(),
+    match: ranking.newMatch("active", "ranked"),
+  };
+  const valid = archive.normalize("game-uno", saved);
+  const old = archive.normalize("game-uno", {
+    version: 1,
+    state: R.create(2, "normal", 1, 200),
+  });
+  assert.equal(
+    archive.merge("game-uno", valid, valid, "incoming").conflict,
+    false,
+  );
+  assert.equal(archive.merge("game-uno", valid, old).conflict, true);
+  assert.equal(
+    archive.merge("game-uno", valid, old, "incoming").value.state.targetScore,
+    200,
+  );
+  assert.throws(() =>
+    archive.normalize("game-uno", {
+      ...saved,
+      profile: { rating: 999, history: [] },
+    }),
+  );
+  assert.throws(() =>
+    archive.normalize("game-uno", { ...saved, state: R.create(2) }),
+  );
+  for (const before of [300, 900]) {
+    const { players, difficulty } = ranking.rankedSettings(before);
+    const history = [evaluate(before + 15, match, partial, true)];
+    const active = {
+      ...saved,
+      state: R.create(players, difficulty, 123),
+      profile: { rating: before, history },
+    };
+    const restored = archive.normalize("game-uno", active);
+    assert.equal(restored.state.hands.length, players);
+    assert.equal(restored.state.difficulty, difficulty);
+    const stats = ranking.newMatch("large", "ranked");
+    ranking.countRound(stats, {
+      status: "won",
+      winner: 1,
+      roundPoints: [50, 0, ...Array(players - 2).fill(40)],
+    });
+    const large = {
+      ...restored.state,
+      matchWinner: 1,
+      scores: [0, 500, ...Array(players - 2).fill(20)],
+    };
+    const lastPlace = evaluate(before, stats, large);
+    assert.equal(lastPlace.place, players);
+    assert.equal(lastPlace.detail.base, -22);
+    assert.equal(lastPlace.detail.hand, -1);
+    assert.equal(lastPlace.detail.winRate, -16 / players);
+  }
+}
+rankingRules();
+
 function officialRules() {
   const seen = new Set();
   for (let seed = 1; seed <= 500; seed++) {
     for (const count of [2, 4, 8]) {
       const s = R.create(count, "normal", seed);
       valid(s);
+      if (seed <= 20) {
+        const trace = [];
+        const observed = R.create(count, "normal", seed, 500, (draws) =>
+          trace.push(draws),
+        );
+        assert.equal(
+          JSON.stringify(observed),
+          JSON.stringify(s),
+          "recording selection must not change the game RNG or save",
+        );
+        let contenders = Array.from({ length: count }, (_, i) => i);
+        for (const draws of trace) {
+          assert.deepEqual(
+            Array.from(draws, (d) => d.player),
+            contenders,
+          );
+          assert.equal(new Set(draws.map((d) => d.card)).size, draws.length);
+          const high = Math.max(...draws.map((d) => d.value));
+          contenders = Array.from(draws)
+            .filter((d) => d.value === high)
+            .map((d) => d.player);
+          for (const draw of draws)
+            assert.equal(
+              draw.value,
+              R.cards[draw.card].value <= 9 ? R.cards[draw.card].value : 0,
+            );
+        }
+        assert.deepEqual(contenders, [s.dealer]);
+      }
       const value = R.cards[s.discard[0]].value;
       seen.add(value);
       const first = (s.dealer + 1) % count;
@@ -371,6 +560,12 @@ async function unit() {
   n = R.apply(s, { type: "draw" });
   assert.equal(n.drawn, drawn);
   assert.equal(n.turn, 0);
+  const world = clone(s);
+  const branch = R.apply(world, { type: "draw" }, true);
+  const expected = R.apply(branch, play(drawn), true);
+  assert.equal(R.apply(branch, play(drawn), true, true), branch);
+  assert.deepEqual(branch, expected);
+  assert.deepEqual(world, clone(s));
   valid(n);
   assert.equal(R.apply(n, play(r1)), null);
   assert.ok(R.apply(n, play(drawn)));
@@ -554,6 +749,60 @@ async function unit() {
       JSON.stringify(A.choose(R.observe(s), d, 77, 0)),
       JSON.stringify(A.choose(R.observe(hidden), d, 77, 0)),
     );
+  const redFive = id("red", 5);
+  const redSix = id("red", 6);
+  let drawThenPlay = fixture(
+    [
+      [redFive, id("yellow", 7)],
+      [id("blue", 7)],
+      [id("red", 7), id("green", 6)],
+      [id("blue", 8)],
+      [id("yellow", 8)],
+      [id("green", 8)],
+      [id("yellow", 9)],
+      [id("green", 9)],
+    ],
+    id("red", 2),
+  );
+  drawThenPlay.deck.splice(drawThenPlay.deck.indexOf(redSix), 1);
+  drawThenPlay.deck.push(redSix);
+  drawThenPlay = R.apply(drawThenPlay, play(redFive));
+  drawThenPlay = R.apply(drawThenPlay, { type: "draw" });
+  drawThenPlay = R.apply(drawThenPlay, play(redSix));
+  const observation = R.observe(drawThenPlay);
+  function matchingLastCards(o) {
+    const worlds = new Set();
+    let matching = 0;
+    const ai = scope.WorkTimeApp.games.unoAiFactory({
+      ...R,
+      apply(state, action, simulation, reuseState) {
+        if (!reuseState && state.actions === o.actions && !worlds.has(state)) {
+          worlds.add(state);
+          assert.equal(
+            new Set([...state.hands.flat(), ...state.deck, ...state.discard])
+              .size,
+            108,
+          );
+          assert.equal(
+            JSON.stringify(state.hands[o.turn]),
+            JSON.stringify(o.hand),
+          );
+          const last = R.cards[state.hands[1][0]];
+          if (last.color === "red" || last.value === 5 || last.value >= 13)
+            matching++;
+        }
+        return R.apply(state, action, simulation, reuseState);
+      },
+    });
+    const action = ai.choose(o, "hard", 7481, 3000, 128);
+    assert.ok(R.apply(drawThenPlay, action));
+    assert.equal(worlds.size, 128);
+    return matching;
+  }
+  assert.ok(
+    matchingLastCards(observation) <
+      matchingLastCards({ ...observation, log: [] }) / 2,
+  );
   console.log(
     "UNO rules, saves, fair observations and 63 seeded AI matches verified.",
   );
@@ -587,12 +836,16 @@ async function browser() {
       .click();
     await page.locator('[data-uno-action="start"]').click();
     assert.equal(await page.locator(".uno-seat").count(), 5);
-    await page.waitForFunction(() => {
-      const s = JSON.parse(
-        localStorage.getItem("worktime.games.uno.v1"),
-      )?.state;
-      return s && (s.turn === 0 || s.actions > 2);
-    });
+    await page.waitForFunction(
+      () => {
+        const s = JSON.parse(
+          localStorage.getItem("worktime.games.uno.v1"),
+        )?.state;
+        return s && (s.turn === 0 || s.actions > 2);
+      },
+      undefined,
+      { timeout: 45000 },
+    );
     await setDocumentHidden(page, true);
     const saved = await page.evaluate(() =>
       localStorage.getItem("worktime.games.uno.v1"),
@@ -907,10 +1160,16 @@ async function browser() {
             const h = document
                 .querySelector(".uno-hand")
                 .getBoundingClientRect(),
-              t = document.querySelector(".uno-table").getBoundingClientRect();
-            return Math.abs(h.x + h.width / 2 - t.x - t.width / 2) < 1;
+              t = document.querySelector(".uno-table").getBoundingClientRect(),
+              identity = document
+                .querySelector(".uno-own-info")
+                .getBoundingClientRect(),
+              own = document.querySelector(".uno-own").getBoundingClientRect();
+            return innerWidth >= 1000
+              ? Math.abs(h.x + h.width / 2 - t.x - t.width / 2) < 1
+              : h.left >= identity.right && h.right <= own.right + 1;
           }),
-          "human hand viewport is centered on the table axis",
+          "hand centers on wide tables and clears the identity on narrow tables",
         );
         const seatIds = await page
           .locator(".uno-seat")
@@ -978,7 +1237,7 @@ async function browser() {
     assert.equal(await page.locator('[data-uno-action="continue"]').count(), 0);
     assert.deepEqual(
       await page
-        .locator(".uno-setup select")
+        .locator("#uno-players")
         .first()
         .locator("option")
         .evaluateAll((els) => els.map((e) => e.value)),

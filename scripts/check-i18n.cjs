@@ -37,6 +37,7 @@ function checkI18n() {
     "jungle",
     "ultimate-ttt",
     "uno",
+    "aeroplane",
     "link",
     "garden",
     "tank",
