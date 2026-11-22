@@ -19,7 +19,9 @@ async function verify() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.clock.setFixedTime(new Date("2026-10-21T04:00:00Z"));
-    const url = pathToFileURL(path.resolve("index.html")).href;
+    const url = pathToFileURL(
+      path.resolve(process.argv[2] || ".", "index.html"),
+    ).href;
     const ready = () =>
       page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
@@ -94,8 +96,60 @@ async function verify() {
       assert.equal(await card(date).locator(".pill.overtime").count(), 0);
     assert.equal(await card("2026-10-24").locator(".overtime-plan").count(), 1);
     assert.equal(
+      await card("2026-10-24").locator(".day-planned-label").textContent(),
+      "申报加班时长",
+    );
+    assert.equal(
+      await card("2026-10-24").locator(".day-planned-hours").textContent(),
+      "—",
+      "A missing reference average is not guessed",
+    );
+    assert.equal(
+      await card("2026-10-24").locator(".worktime-corner").count(),
+      0,
+    );
+    assert.equal(
+      await card("2026-10-25").locator(".day-planned-hours").count(),
+      0,
+    );
+    assert.equal(
       await card("2026-10-11").locator(".record-source-dot.oa").count(),
       1,
+    );
+    const plannedHeight = await card("2026-10-24").evaluate((node) => {
+      const summary = node.querySelector(".day-planned-summary"),
+        parent = summary.parentElement,
+        height = node.getBoundingClientRect().height;
+      summary.remove();
+      const without = node.getBoundingClientRect().height;
+      parent.append(summary);
+      const label = summary.querySelector(".day-planned-label"),
+        value = summary.querySelector(".day-planned-hours");
+      return {
+        height,
+        without,
+        position: getComputedStyle(summary).position,
+        labelSize: parseFloat(getComputedStyle(label).fontSize),
+        labelHeight: label.getBoundingClientRect().height,
+        labelLineHeight: parseFloat(getComputedStyle(label).lineHeight),
+        labelShrink: getComputedStyle(label).flexShrink,
+        numberSize: parseFloat(getComputedStyle(value).fontSize),
+        labelDisplay: getComputedStyle(label).display,
+      };
+    });
+    assert.equal(plannedHeight.position, "absolute");
+    assert.ok(plannedHeight.labelSize >= 9);
+    assert.equal(plannedHeight.labelShrink, "0");
+    assert.ok(
+      plannedHeight.labelHeight >= plannedHeight.labelLineHeight - 1,
+      "The declaration title must retain its complete line box",
+    );
+    assert.ok(plannedHeight.numberSize >= 12);
+    assert.notEqual(plannedHeight.labelDisplay, "none");
+    assert.equal(
+      plannedHeight.height,
+      plannedHeight.without,
+      "The declaration text must not increase card height",
     );
     const button = view.locator("#plannedOvertimeToggle");
     const preview = view.locator("#dayPreview .preview-day");
@@ -134,45 +188,146 @@ async function verify() {
       assert.equal(await button.getAttribute("aria-label"), "加班");
       assert.equal(await button.getAttribute("aria-pressed"), "false");
     }
-    for (const date of ["2026-10-17", "2026-10-18", "2026-10-25"]) {
+    for (const date of ["2026-10-17", "2026-10-18"]) {
       await card(date).click();
-      assert.equal(await button.isEnabled(), true);
+      assert.equal(await button.isDisabled(), true);
+      assert.equal(
+        await view
+          .locator("#plannedOvertimeArea")
+          .evaluate((node) => node.inert),
+        true,
+      );
       assert.equal(await button.textContent(), "计划加班");
     }
+    await card("2026-10-25").click();
+    assert.equal(await button.isEnabled(), true);
     await card("2026-10-24").click();
     assert.equal(await button.isEnabled(), true);
     assert.equal(await button.getAttribute("aria-pressed"), "true");
-    await card("2026-10-18").click();
+    await view.emulateMedia({ reducedMotion: "no-preference" });
+    await view.waitForFunction(
+      () => document.documentElement.dataset.reducedMotion === "false",
+    );
+    // Both workdays and past rest days must retain the outgoing action until
+    // its fade completes, without moving the reset/source buttons.
+    for (const date of ["2026-10-26", "2026-10-18"]) {
+      await card("2026-10-24").click();
+      await view.waitForFunction(
+        () =>
+          getComputedStyle(document.getElementById("plannedOvertimeArea"))
+            .opacity === "1",
+      );
+      const fade = await view.evaluate(async (date) => {
+        const area = document.getElementById("plannedOvertimeArea"),
+          reset = document.getElementById("clearManual"),
+          before = reset.getBoundingClientRect();
+        document.querySelector(`.day[data-date="${date}"]`).click();
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        );
+        const animation = area
+          .getAnimations()
+          .find((animation) => animation.transitionProperty === "opacity");
+        if (!animation) return null;
+        animation.pause();
+        animation.currentTime = 90;
+        const middle = getComputedStyle(area),
+          opacity = Number(middle.opacity),
+          visibility = middle.visibility;
+        for (const transition of area.getAnimations()) transition.finish();
+        const after = reset.getBoundingClientRect();
+        return {
+          opacity,
+          visibility,
+          hidden: getComputedStyle(area).visibility,
+          inert: area.inert,
+          stationary: before.x === after.x && before.y === after.y,
+        };
+      }, date);
+      assert.ok(fade, date + " starts an exit fade");
+      assert.ok(fade.opacity > 0 && fade.opacity < 1);
+      assert.equal(fade.visibility, "visible");
+      assert.equal(fade.hidden, "hidden");
+      assert.equal(fade.inert, true);
+      assert.equal(fade.stationary, true);
+    }
+    await card("2026-10-31").click();
     await view.emulateMedia({ reducedMotion: "no-preference" });
     await view.waitForFunction(
       () => document.documentElement.dataset.reducedMotion === "false",
     );
     await button.click();
-    const artwork = await card("2026-10-18").evaluate((node) => ({
-      outgoing: node.querySelectorAll(".calendar-artwork-outgoing").length,
-      incoming: node
-        .getAnimations({ subtree: true })
-        .some(
-          (animation) =>
-            animation.effect.pseudoElement === "::before" &&
-            animation.effect.getKeyframes()[0].opacity === "0",
-        ),
-    }));
-    assert.equal(artwork.outgoing, 1, "Retain old artwork while fading it out");
-    assert.equal(
-      artwork.incoming,
-      true,
-      "Fade in the new background illustration",
+    await view.waitForFunction(() =>
+      document
+        .querySelector('.day[data-date="2026-10-31"]')
+        .classList.contains("planned-overtime-day"),
     );
     await view.waitForFunction(
       () => !document.querySelector(".calendar-artwork-outgoing"),
     );
     assert.equal(
-      await card("2026-10-18").evaluate(
+      await card("2026-10-31").evaluate(
         (node) => getComputedStyle(node, "::before").opacity,
       ),
       "0.24",
       "Release the reveal at the illustration's resting opacity",
+    );
+    // A selected date becomes unavailable when the business day advances.
+    await view.clock.setFixedTime(new Date("2026-10-24T04:00:00Z"));
+    await view.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await card("2026-10-24").click();
+    assert.equal(await button.isEnabled(), true, "Today supports planning");
+    assert.match(await view.locator("#targetCounts").textContent(), /5 d/);
+    assert.equal(await card("2026-10-24").locator(".overtime-plan").count(), 1);
+    await button.focus();
+    await view.clock.setFixedTime(new Date("2026-10-25T04:00:00Z"));
+    await view.evaluate(() => window.dispatchEvent(new Event("focus")));
+    assert.equal(await button.isDisabled(), true);
+    assert.equal(
+      await card("2026-10-24").locator(".overtime-plan").count(),
+      0,
+      "The planned tag expires after its date",
+    );
+    assert.equal(
+      await card("2026-10-24").evaluate((node) =>
+        node.classList.contains("planned-overtime-day"),
+      ),
+      false,
+    );
+    assert.equal(
+      await card("2026-10-25").locator(".pill.overtime").count(),
+      1,
+      "Actual overtime remains visible",
+    );
+    await view.waitForFunction(() => {
+      const style = getComputedStyle(
+        document.getElementById("plannedOvertimeArea"),
+      );
+      return style.visibility === "hidden" && style.opacity === "0";
+    });
+    assert.deepEqual(
+      await view.locator("#plannedOvertimeArea").evaluate((node) => ({
+        inert: node.inert,
+        hidden: node.getAttribute("aria-hidden"),
+        opacity: getComputedStyle(node).opacity,
+        focused: node.contains(document.activeElement),
+      })),
+      { inert: true, hidden: "true", opacity: "0", focused: false },
+    );
+    await view.evaluate(() =>
+      document.getElementById("plannedOvertimeToggle").onclick(),
+    );
+    assert.equal(
+      await button.getAttribute("aria-pressed"),
+      "false",
+      "The expired plan is deleted and cannot be reactivated",
+    );
+    assert.match(await view.locator("#targetCounts").textContent(), /4 d/);
+    await card("2026-10-25").click();
+    assert.equal(
+      await button.isEnabled(),
+      true,
+      "Today is restored immediately",
     );
     assert.deepEqual(errors, []);
     await seeded.close();

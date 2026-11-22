@@ -69,9 +69,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
     const settle = () => {
       lunarLoading = null;
       const view = getView();
-      // Populate the shared year cards while the heatmap is still showing, so a
-      // later mode switch only animates the already-present text layers.
-      if (view.yearMode) renderCalendar();
+      // Populate whichever calendar is now visible without closing an open editor.
+      if (!view.analysisMode) renderCalendar(true);
     };
     lunarLoading = WorkTimeApp.services.dateInfo
       .loadLunar()
@@ -400,6 +399,48 @@ WorkTimeApp.ui.createCalendar = function (options) {
       ? WorkTimeApp.i18n.t("calendar.kind." + key)
       : WorkTimeApp.i18n.message(label);
   }
+  function dayLunar(date) {
+    const lunar = WorkYear.lunarLabel(
+      date,
+      window.Solar ? WorkTimeApp.services.dateInfo.lunar : null,
+    );
+    return '<span class="day-lunar">' + esc(lunar) + "</span>";
+  }
+  function worktimeCorner(calc, standardMinutes) {
+    if (!calc.work || calc.minutes === null) return "";
+    const status =
+      calc.minutes < standardMinutes
+        ? "short"
+        : calc.minutes > standardMinutes
+          ? "extra"
+          : "normal";
+    return (
+      '<span class="worktime-corner is-' +
+      status +
+      '" aria-hidden="true"></span>'
+    );
+  }
+  function plannedOvertimeAverage(state, date, cache) {
+    const cursor = C.localDate(date);
+    let remaining = 2;
+    while (remaining) {
+      cursor.setDate(cursor.getDate() - 1);
+      const reference = C.dateKey(cursor);
+      if (!C.validDate(reference)) return { date: null, minutes: null };
+      if (!C.calendarInfo(reference, state.days[reference] || {}).work)
+        continue;
+      if (--remaining) continue;
+      if (!cache.has(reference)) {
+        const average = C.cumulativeAverageOvertime(
+          state,
+          reference.slice(0, 7) + "-01",
+          reference,
+        )[reference]?.averageMinutes;
+        cache.set(reference, average ?? null);
+      }
+      return { date: reference, minutes: cache.get(reference) };
+    }
+  }
   function adjacentDayCard(k) {
     const state = getState();
     const view = getView();
@@ -440,7 +481,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
       esc(WorkTimeApp.i18n.monthName(k)) +
       '</small></span><span class="daykind">' +
       esc(kind) +
-      "</span></div>" +
+      '</span></div><div class="daytime">' +
+      dayLunar(k) +
+      "</div>" +
       (scheduleChanged
         ? '<div class="day-footer"><div class="daystatus">' +
           scheduleChangeTag() +
@@ -591,6 +634,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
         renderedSelection !== null && renderedSelection !== calendarSelected;
     const monthViewYear = month.slice(0, 4),
       yearNotice = $("yearNotice");
+    if (Number(monthViewYear) >= 1900 && Number(monthViewYear) <= 2100)
+      ensureLunar();
     updateMonthTitle(Number(monthViewYear), Number(month.slice(5)), false);
     updateText(
       yearNotice.querySelector(".notification-body"),
@@ -631,6 +676,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
       preview.setDate(preview.getDate() - i);
       html += adjacentDayCard(C.dateKey(preview));
     }
+    const plannedAverages = new Map();
     for (let i = 1; i <= total; i++) {
       const k = month + "-" + C.pad(i),
         day = state.days[k] || {},
@@ -640,6 +686,32 @@ WorkTimeApp.ui.createCalendar = function (options) {
         schedule = C.scheduleForDate(state, k),
         scheduleChanged = hasScheduleChange(state, k, schedule),
         calc = C.calculate(k, day, schedule, true),
+        planned = !!day.plannedOvertime && k >= today,
+        showPlannedHours =
+          planned &&
+          !info.work &&
+          !r?.start &&
+          !r?.end &&
+          calc.minutes === null,
+        plannedAverage = showPlannedHours
+          ? plannedOvertimeAverage(state, k, plannedAverages)
+          : null,
+        plannedHours = plannedAverage
+          ? WorkTimeApp.i18n.duration(plannedAverage.minutes)
+          : "",
+        plannedTarget = showPlannedHours
+          ? C.selectOvertimeRequirement(state, first, k).targetMinutes
+          : null,
+        plannedBelowTarget =
+          plannedAverage?.minutes !== null &&
+          Number.isFinite(plannedAverage?.minutes) &&
+          Number.isFinite(plannedTarget) &&
+          plannedAverage.minutes < plannedTarget,
+        plannedReference = plannedAverage?.date
+          ? WorkTimeApp.i18n.t("calendar.plannedHoursReference", {
+              date: plannedAverage.date,
+            })
+          : "",
         restOvertime = !info.work && calc.minutes > 0,
         label = stateLabel(day, r, k),
         markers = dateMarkers(k, payday, paydayHint),
@@ -653,12 +725,8 @@ WorkTimeApp.ui.createCalendar = function (options) {
         batchMode && batchEligible ? "batch-eligible" : "",
         !info.work ? "restday" : "",
         info.weekend ? "weekend" : "",
-        restOvertime || (!info.work && day.plannedOvertime)
-          ? "rest-overtime"
-          : "",
-        !info.work && day.plannedOvertime && !restOvertime
-          ? "planned-overtime-day"
-          : "",
+        restOvertime || (!info.work && planned) ? "rest-overtime" : "",
+        !info.work && planned && !restOvertime ? "planned-overtime-day" : "",
         isFullLeave(day, k)
           ? "full-leave"
           : day.leaveMinutes
@@ -710,8 +778,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
                   ? WorkTimeApp.i18n.t("copy.c12b114307")
                   : WorkTimeApp.i18n.t("copy.c00f2c4258")
                 : "";
-      const time =
-          r && C.complete(r)
+      const time = showPlannedHours
+          ? ""
+          : r && C.complete(r)
             ? timePart(
                 r.start || WorkTimeApp.i18n.t("copy.e7909cfbfe"),
                 r.filledStart,
@@ -730,7 +799,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
                   r.filledEnd,
                 )
               : "",
-        sourceDot = sourceIndicator(day, r);
+        sourceDot = showPlannedHours ? "" : sourceIndicator(day, r);
       html +=
         '<div class="' +
         classes +
@@ -756,6 +825,14 @@ WorkTimeApp.ui.createCalendar = function (options) {
             : WorkTimeApp.i18n.t("copy.6d645904e4") +
               WorkTimeApp.i18n.duration(calc.minutes)
           : "") +
+        (showPlannedHours
+          ? " " +
+            esc(WorkTimeApp.i18n.t("calendar.plannedHours")) +
+            " " +
+            esc(plannedHours) +
+            " " +
+            esc(plannedReference)
+          : "") +
         (averageText
           ? WorkTimeApp.i18n.t("copy.dc516fa88c") +
             averageText +
@@ -775,22 +852,38 @@ WorkTimeApp.ui.createCalendar = function (options) {
         markers.html +
         '</span><span class="daykind">' +
         esc(kindLabel) +
-        '</span></div><div class="daytime">' +
+        '</span></div><div class="daytime"><span class="daytime-content">' +
         time +
         sourceDot +
+        "</span>" +
+        dayLunar(k) +
         '</div><div class="dayhours">' +
-        (calc.minutes !== null
-          ? '<span class="day-total-hours">' +
-            WorkTimeApp.i18n.duration(calc.minutes) +
-            "</span>" +
-            (info.work
-              ? '<span class="day-overtime' +
-                (calc.overtime < 0 ? " negative" : "") +
-                WorkTimeApp.i18n.t("copy.886690f618") +
-                WorkTimeApp.i18n.duration(calc.overtime) +
-                "</span>"
-              : "")
-          : "") +
+        (showPlannedHours
+          ? '<div class="day-planned-summary"><span class="day-planned-label" title="' +
+            esc(WorkTimeApp.i18n.t("calendar.plannedHours")) +
+            '">' +
+            esc(WorkTimeApp.i18n.t("calendar.plannedHours")) +
+            '</span><span class="day-total-hours day-planned-hours' +
+            (plannedBelowTarget ? " below-target" : "") +
+            '" title="' +
+            esc(plannedReference) +
+            '" data-reference-date="' +
+            (plannedAverage.date || "") +
+            '">' +
+            esc(plannedHours) +
+            "</span></div>"
+          : calc.minutes !== null
+            ? '<span class="day-total-hours">' +
+              WorkTimeApp.i18n.duration(calc.minutes) +
+              "</span>" +
+              (info.work
+                ? '<span class="day-overtime' +
+                  (calc.overtime < 0 ? " negative" : "") +
+                  WorkTimeApp.i18n.t("copy.886690f618") +
+                  WorkTimeApp.i18n.duration(calc.overtime) +
+                  "</span>"
+                : "")
+            : "") +
         '</div><div class="day-footer"><div class="day-average' +
         (averageAffected && averageText ? " batch-average-affected" : "") +
         '" title="' +
@@ -834,7 +927,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
           ? "<div>" +
             tag(WorkTimeApp.i18n.t("short.preview.ot"), "green overtime") +
             "</div>"
-          : !info.work && day.plannedOvertime
+          : !info.work && planned
             ? "<div>" +
               tag(WorkTimeApp.i18n.t("copy.3cf2307526"), "overtime-plan") +
               "</div>"
@@ -854,7 +947,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
               ) +
               "</div>"
           : "") +
-        "</div></div></div>";
+        "</div></div>" +
+        worktimeCorner(calc, schedule.standardMinutes) +
+        "</div>";
     }
     for (let i = 1; i <= weeks * 7 - offset - total; i++) {
       const preview = C.localDate(last);

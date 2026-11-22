@@ -9,6 +9,76 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
   let calendarMarkup = "";
   const calendarNodes = new Map(),
     markup = new WeakMap();
+  const plannedAnimations = new WeakMap();
+  function stopPlannedAnimation(card) {
+    const active = plannedAnimations.get(card);
+    if (!active) return;
+    active.handle.cancel();
+    if (active.outgoing) active.element.remove();
+    plannedAnimations.delete(card);
+  }
+  function plannedSnapshot(card, summary) {
+    const bounds = summary.getBoundingClientRect(),
+      parent = card.getBoundingClientRect(),
+      ghost = document.createElement("div"),
+      style = getComputedStyle(summary);
+    ghost.className = "calendar-planned-outgoing";
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.inert = true;
+    for (const property of [
+      "display",
+      "flex-direction",
+      "align-items",
+      "justify-content",
+      "gap",
+      "padding",
+      "box-sizing",
+      "font-family",
+      "color",
+      "text-align",
+    ])
+      ghost.style.setProperty(property, style.getPropertyValue(property));
+    Object.assign(ghost.style, {
+      position: "absolute",
+      left: bounds.left - parent.left - card.clientLeft + "px",
+      top: bounds.top - parent.top - card.clientTop + "px",
+      width: bounds.width + "px",
+      height: bounds.height + "px",
+    });
+    for (const child of summary.children) {
+      const field = child.cloneNode(true),
+        childBounds = child.getBoundingClientRect();
+      // Freeze the painted text and number wrappers before their container
+      // disappears. Re-running flex layout here can move a clipped title down.
+      const originals = [child, ...child.querySelectorAll("*")],
+        copies = [field, ...field.querySelectorAll("*")];
+      originals.forEach((original, index) => {
+        const computed = getComputedStyle(original),
+          copy = copies[index];
+        copy.removeAttribute("id");
+        for (const property of computed)
+          copy.style.setProperty(property, computed.getPropertyValue(property));
+        copy.style.animation = "none";
+        copy.style.transition = "none";
+      });
+      Object.assign(field.style, {
+        position: "absolute",
+        left: childBounds.left - bounds.left + "px",
+        top: childBounds.top - bounds.top + "px",
+        right: "auto",
+        bottom: "auto",
+        width: childBounds.width + "px",
+        height: childBounds.height + "px",
+        minWidth: "0",
+        maxWidth: "none",
+        margin: "0",
+        transform: "none",
+        boxSizing: "border-box",
+      });
+      ghost.append(field);
+    }
+    return ghost;
+  }
   const numberSelectors = [
     ".daynum-text",
     ".day-time-value",
@@ -168,7 +238,8 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
     }
     const headerAlignment = [],
       artworkMotions = [],
-      sourceMotions = [];
+      sourceMotions = [],
+      plannedMotions = [];
     candidates.forEach((candidate, index) => {
       const key = nodeKey(candidate, index),
         previous = calendarNodes.get(key),
@@ -192,6 +263,37 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
           : [];
       let element = candidate,
         sourceMotion;
+      const currentCard =
+          previous?.element.parentElement === container
+            ? previous.element
+            : null,
+        oldSummary = currentCard?.querySelector(".day-planned-summary"),
+        nextSummary = candidate.querySelector(".day-planned-summary"),
+        animatePlanned =
+          !WorkTimeApp.ui.animationCompat.preference().matches &&
+          !document.hidden &&
+          !container.closest(".agenda-mode");
+      if (Boolean(oldSummary) !== Boolean(nextSummary)) {
+        const active = currentCard && plannedAnimations.get(currentCard),
+          opacity = oldSummary
+            ? getComputedStyle(oldSummary).opacity
+            : active?.outgoing
+              ? getComputedStyle(active.element).opacity
+              : 0,
+          outgoing =
+            oldSummary && animatePlanned
+              ? plannedSnapshot(currentCard, oldSummary)
+              : null;
+        if (currentCard) stopPlannedAnimation(currentCard);
+        if (animatePlanned)
+          plannedMotions.push({
+            candidate,
+            outgoing,
+            entering: !!nextSummary,
+            opacity,
+          });
+      } else if (currentCard && !animatePlanned)
+        stopPlannedAnimation(currentCard);
       if (previous && previous.element.parentElement === container) {
         element = previous.element;
         if (previous.source !== source) {
@@ -267,10 +369,35 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
             const currentBodies = [...element.children].filter((child) =>
               child.matches(".daytime, .dayhours, .day-footer"),
             );
+            if (
+              oldSummary &&
+              nextSummary &&
+              previous.bodyMarkup[1] !== bodyMarkup[1]
+            ) {
+              const label = oldSummary.querySelector(".day-planned-label"),
+                nextLabel = nextSummary.querySelector(".day-planned-label"),
+                value = oldSummary.querySelector(".day-planned-hours"),
+                nextValue = nextSummary.querySelector(".day-planned-hours");
+              label.textContent = nextLabel.textContent;
+              label.title = nextLabel.title;
+              for (const attribute of nextValue.attributes)
+                value.setAttribute(attribute.name, attribute.value);
+              if (!numberFields.length)
+                value.textContent = nextValue.textContent;
+              nextSummary.replaceWith(oldSummary);
+            }
             bodies.forEach((body, index) => {
               if (previous.bodyMarkup[index] === bodyMarkup[index])
                 preserved.set(body, currentBodies[index]);
             });
+            // Batch mode fades this layer like weather; keep its node so the
+            // transition survives reconciliation of the attendance content.
+            const corner = element.querySelector(":scope > .worktime-corner"),
+              nextCorner = candidate.querySelector(":scope > .worktime-corner");
+            if (corner && nextCorner) {
+              corner.className = nextCorner.className;
+              preserved.set(nextCorner, corner);
+            }
             const children = [...candidate.childNodes].map(
               (child) => preserved.get(child) || child,
             );
@@ -281,7 +408,7 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
                 !children.includes(child) &&
                 (!(child instanceof Element) ||
                   !child.matches(
-                    ".calendar-weather-icon, .calendar-weather-outgoing, .agenda-card-items, .calendar-artwork-outgoing",
+                    ".calendar-weather-icon, .calendar-weather-outgoing, .agenda-card-items, .calendar-artwork-outgoing, .calendar-planned-outgoing",
                   ))
               )
                 child.remove();
@@ -298,6 +425,8 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
         const header = element.querySelector(".daytop");
         if (header) headerAlignment.push(header);
       }
+      for (const motion of plannedMotions)
+        if (motion.candidate === candidate) motion.card = element;
       next.set(key, {
         element,
         source,
@@ -372,6 +501,29 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
     if (headerAlignment.length && container.closest(".agenda-mode"))
       WorkTimeApp.ui.alignment?.refresh(headerAlignment);
     weatherLayer.refresh();
+    for (const { card, outgoing, entering, opacity } of plannedMotions) {
+      const field = entering
+        ? card.querySelector(".day-planned-summary")
+        : outgoing;
+      if (!field) continue;
+      if (outgoing) card.append(outgoing);
+      const handle = WorkTimeApp.ui.animationCompat.animate(
+        field,
+        [{ opacity }, { opacity: entering ? 1 : 0 }],
+        {
+          duration: entering ? 300 : 220,
+          easing: entering ? "cubic-bezier(0.22, 1, 0.36, 1)" : "ease-out",
+          fill: "backwards",
+        },
+      );
+      const active = { element: field, handle, outgoing: !entering };
+      plannedAnimations.set(card, active);
+      handle.finished.then(() => {
+        if (plannedAnimations.get(card) !== active) return;
+        if (active.outgoing) field.remove();
+        plannedAnimations.delete(card);
+      });
+    }
     const artworkPlans = artworkMotions.map(({ card, layers }) => ({
       card,
       layers,

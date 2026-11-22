@@ -129,22 +129,24 @@ WorkTimeApp.games.aeroplaneRulesFactory = function () {
       return { to: 2 * END - to, path, hits: [], special: "bounce" };
     if (to > 50)
       return { to, path, hits: [], special: to === END ? "finish" : "walk" };
-    // The express lane crosses the opposite color's home lane, not a remote
-    // outer-track square. Jump bonuses never recursively trigger another bonus.
+    // Capture at every landing, including the square before a bonus jump.
+    // A jump may enter the express lane; flight never triggers another jump.
     let special = "walk";
-    const hits = [];
+    const hits = [global(p, to)];
     let crossing = null;
+    if (to !== 18 && squareColor(global(p, to)) === p && to + 4 <= 50) {
+      to += 4;
+      path.push(to);
+      hits.push(global(p, to));
+      special = "jump";
+    }
     if (to === 18) {
       crossing = { player: (p + 2) % 4, step: 53 };
       to = 30;
       path.push(to);
       special = "fly";
-    } else if (squareColor(global(p, to)) === p && to + 4 <= 50) {
-      to += 4;
-      path.push(to);
-      special = "jump";
+      hits.push(global(p, to));
     }
-    hits.push(global(p, to));
     return { to, path, hits, special, crossing };
   }
   function advance(s) {

@@ -66,6 +66,7 @@ WorkTimeApp.services.bootstrap.run(
     let agenda = null;
     const stateOwner = WorkTimeApp.services.application.createState({
       state: model.state,
+      today: clock.today,
       persistence,
       core: {
         defaultState: D.state.defaultState,
@@ -295,6 +296,15 @@ WorkTimeApp.services.bootstrap.run(
       renderEditor,
       refreshSettings: () => actions.refreshSettings(),
       renderAgenda: () => agenda?.render(),
+      onDateChanged: () => {
+        void saveSession.commit(stateOwner.retry());
+        const day = model.state.days[model.selected] || {};
+        updatePlannedOvertime(
+          day,
+          D.calendar.calendarInfo(model.selected, day),
+        );
+        previewDay();
+      },
     });
     const { render, open, saveFeedback } = workspace;
     lifecycle.defer(() => workspace.dispose());
@@ -314,6 +324,7 @@ WorkTimeApp.services.bootstrap.run(
         for (const controller of controllers) controller.updateRecovery?.();
       },
       async onReload() {
+        if (stateOwner.dirty) await saveSession.commit(stateOwner.retry());
         await WorkTimeApp.services.preferences.page.synchronize();
         workspace.reload();
       },

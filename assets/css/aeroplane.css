@@ -247,7 +247,6 @@
 .game-aeroplane button.aero-dice.aero-dice-ready { cursor: pointer; }
 .game-aeroplane button.aero-dice:disabled { pointer-events: none; }
 .game-aeroplane button.aero-dice:focus-visible { outline: 2px solid var(--aero-color); outline-offset: 1px; border-radius: 12px; }
-.aero-dice-scene { position: absolute; inset: 0; perspective: 425cqw; pointer-events: none; }
 .aero-dice-enter .aero-dice-scene { animation: aero-dice-in 200ms var(--aero-ease); }
 .aero-choices-enter { animation: aero-choices-in 180ms var(--aero-ease); }
 @keyframes aero-dice-in {
@@ -274,40 +273,3 @@ html[data-reduced-motion="true"] .game-aeroplane *::after {
     transition: none !important;
   }
 }
-.aero-dice-lift {
-  position: absolute;
-  width: var(--die-size);
-  height: var(--die-size);
-  left: 23.5%;
-  top: 21%;
-  transform-style: preserve-3d;
-}
-.aero-dice-cube { position: absolute; inset: 0; transform-style: preserve-3d; }
-.aero-die-face {
-  position: absolute;
-  inset: 0;
-  border-radius: 16%;
-  background: linear-gradient(148deg, #fffdf7 12%, #f2efe7 62%, #e2ddd0);
-  box-shadow: inset 0 0 0 .75cqw #ffffff76, inset 0 -1.5cqw 2.5cqw #756b5326;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
-}
-/* Inner faces close the gaps between rounded corners as the die tumbles. */
-.aero-die-face::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 11%;
-  background: #d3cec0;
-  transform: translateZ(-3.5cqw) scale(.9);
-  backface-visibility: hidden;
-}
-.aero-die-face svg { display: block; width: 100%; height: 100%; }
-.aero-die-front { transform: translateZ(calc(var(--die-size) / 2)); }
-.aero-die-back { transform: rotateY(180deg) translateZ(calc(var(--die-size) / 2)); }
-.aero-die-right { transform: rotateY(90deg) translateZ(calc(var(--die-size) / 2)); }
-.aero-die-left { transform: rotateY(-90deg) translateZ(calc(var(--die-size) / 2)); }
-.aero-die-top { transform: rotateX(90deg) translateZ(calc(var(--die-size) / 2)); }
-.aero-die-bottom { transform: rotateX(-90deg) translateZ(calc(var(--die-size) / 2)); }
-.aero-die-pip { fill: var(--die-pips); stroke: #0b1c1938; stroke-width: 1.4; }
-.aero-die-face[data-face-value="1"] .aero-die-pip { fill: color-mix(in srgb, var(--aero-color) 80%, #192c2c); }

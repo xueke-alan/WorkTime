@@ -23,6 +23,8 @@ WorkTimeApp.games.register({
       .catch(() => {});
     let state = null,
       setup = true,
+      temporarilyAway = false,
+      countdownPending = false,
       localPause = false,
       shellPause = false;
     let disposed = false,
@@ -224,6 +226,7 @@ WorkTimeApp.games.register({
           state = restored.state;
           profile = restored.profile ?? profile;
           if (state) {
+            countdownPending = saved.countdownPending === true;
             match =
               restored.match ??
               (state.matchWinner === null
@@ -305,9 +308,9 @@ WorkTimeApp.games.register({
       b.onclick = callback;
       return b;
     }
-    function handAction(parent, key, callback) {
+    function handAction(parent, key, callback, labelKey = key) {
       const action = button(parent, key, callback);
-      const label = t(key);
+      const label = t(labelKey);
       action.classList.add("uno-hand-action");
       action.setAttribute("aria-label", label);
       action.title = label;
@@ -365,6 +368,7 @@ WorkTimeApp.games.register({
             version: 1,
             state: savedState,
             profile: savedProfile,
+            countdownPending: savedState ? countdownPending : false,
             ...(savedMatch ? { match: savedMatch } : {}),
           }),
         );
@@ -444,6 +448,10 @@ WorkTimeApp.games.register({
       else render();
     }
     function schedule() {
+      if (countdownPending && !paused() && !visualBusy && state) {
+        startRound(state);
+        return;
+      }
       if (
         paused() ||
         visualBusy ||
@@ -529,8 +537,11 @@ WorkTimeApp.games.register({
         !match.settled
       );
     }
+    function rankedExitPenalty() {
+      return unfinishedRanked() && !(countdownPending && state.round === 1);
+    }
     function nextRankedSettings() {
-      const rating = unfinishedRanked()
+      const rating = rankedExitPenalty()
         ? Math.max(0, profile.rating - 15)
         : profile.rating;
       return ranking.rankedSettings(rating);
@@ -546,7 +557,7 @@ WorkTimeApp.games.register({
         (round) => draws.push(round),
       );
       const nextMatch = ranking.newMatch(matchId(), newMode);
-      if (unfinishedRanked())
+      if (rankedExitPenalty())
         ranking.settle(profile, match, state, Date.now(), true);
       match = nextMatch;
       startRound(next, draws);
@@ -665,11 +676,13 @@ WorkTimeApp.games.register({
       busy();
       shownDeckCount = R.cards.length;
       root.dataset.handPhase = "countdown";
+      countdownPending = true;
       state.discardLimit = discardLimit;
       openingCards = reducedMotion() ? null : state.discard.slice();
       openingShown = 0;
       if (!reducedMotion()) handOrder = state.hands[0].slice();
       setup = false;
+      temporarilyAway = false;
       localPause = false;
       confirmation = null;
       if (["invalid", "tooManyPlayers"].includes(warning)) warning = "";
@@ -713,6 +726,8 @@ WorkTimeApp.games.register({
       }
       counter.remove();
       flights.delete(counter);
+      countdownPending = false;
+      save();
       if (!openingCards || reducedMotion()) {
         finishVisuals(token, []);
       } else if (dealerSelection) {
@@ -735,19 +750,27 @@ WorkTimeApp.games.register({
       } else begin(newMode);
     }
     function requestExit() {
-      if (!unfinishedRanked()) {
-        exitToSetup();
-        return;
-      }
       stop();
       confirmation = exitToSetup;
+      render();
+    }
+
+    function leaveTemporarily() {
+      stop();
+      confirmation = null;
+      localPause = false;
+      temporarilyAway = true;
+      setup = true;
+      mode = match?.mode ?? mode;
+      showRules = false;
       render();
     }
 
     function exitToSetup() {
       if (unfinishedRanked()) {
         const nextProfile = { ...profile };
-        ranking.settle(nextProfile, { ...match }, state, Date.now(), true);
+        if (rankedExitPenalty())
+          ranking.settle(nextProfile, { ...match }, state, Date.now(), true);
         // Persist the penalty and removal of the resume slot together.
         if (!save(null, nextProfile, null)) {
           confirmation = null;
@@ -760,6 +783,8 @@ WorkTimeApp.games.register({
       }
       stop();
       confirmation = null;
+      countdownPending = false;
+      temporarilyAway = false;
       localPause = false;
       setup = true;
       showRules = false;
@@ -2731,7 +2756,7 @@ WorkTimeApp.games.register({
             const select = node(host, "select");
             select.id = "uno-" + key;
             select.dataset.unoSetting = key;
-            select.disabled = fixed;
+            select.disabled = fixed || temporarilyAway;
             for (const [value, text] of choices) {
               const option = node(select, "option", "", text);
               option.value = String(value);
@@ -2740,7 +2765,11 @@ WorkTimeApp.games.register({
             select.onchange = (event) => change(event.currentTarget.value);
           };
           const ranked = mode === "ranked";
-          const rankedOptions = ranked ? nextRankedSettings() : null;
+          const rankedOptions = temporarilyAway
+            ? { players: state.hands.length, difficulty: state.difficulty }
+            : ranked
+              ? nextRankedSettings()
+              : null;
           field(
             "players",
             Array.from({ length: R.MAX_PLAYERS - 1 }, (_, i) => [
@@ -2764,6 +2793,7 @@ WorkTimeApp.games.register({
           );
           const modeSwitch = node(form, "button", "uno-mode-switch");
           modeSwitch.type = "button";
+          modeSwitch.disabled = temporarilyAway;
           modeSwitch.dataset.unoAction = "mode";
           modeSwitch.setAttribute("role", "switch");
           modeSwitch.setAttribute("aria-label", t("rankedMode"));
@@ -2783,10 +2813,11 @@ WorkTimeApp.games.register({
             }
             render();
           };
-          button(form, "start", requestStart);
+          button(form, "start", requestStart).disabled = temporarilyAway;
           if (state)
             button(form, "continue", () => {
               setup = false;
+              temporarilyAway = false;
               state.discardLimit = R.DISCARD_LIMIT;
               save();
               render();
@@ -2804,6 +2835,7 @@ WorkTimeApp.games.register({
             },
           );
           switchPanel.setAttribute("aria-controls", "uno-setup-panel");
+          switchPanel.disabled = temporarilyAway;
           const rules = node(
             layout,
             "aside",
@@ -3203,7 +3235,9 @@ WorkTimeApp.games.register({
           const confirm = overlay(
             "uno-confirm",
             exiting
-              ? "confirmExitRanked"
+              ? match?.mode === "ranked"
+                ? "confirmExitRanked"
+                : "confirmExit"
               : unfinishedRanked()
                 ? "confirmAbandonRanked"
                 : "confirm",
@@ -3216,20 +3250,18 @@ WorkTimeApp.games.register({
           if (exiting) {
             confirm.parentElement.classList.add("uno-ranked-exit-overlay");
             confirm.classList.add("uno-ranked-exit");
-            const penalty = node(confirm, "div", "uno-exit-penalty");
-            penalty.setAttribute("role", "img");
-            penalty.setAttribute(
-              "aria-label",
-              t("rankedExitPenalty", { n: 15 }),
-            );
-            const mark = node(penalty, "span", "uno-exit-mark");
-            mark.setAttribute("aria-hidden", "true");
-            node(mark, "span", "uno-exit-minus");
-            const digits = node(mark, "span", "uno-exit-digits");
-            setArt(digits, numberArt(15));
+            const emblem = node(confirm, "div", "uno-exit-emblem");
+            emblem.setAttribute("aria-hidden", "true");
+            setArt(emblem, unoWordArt);
             const actions = node(confirm, "div", "uno-exit-actions");
             handAction(actions, "cancel", cancel);
-            handAction(actions, "exit", () => confirmation());
+            handAction(actions, "leaveTemporarily", leaveTemporarily);
+            handAction(
+              actions,
+              "exit",
+              () => confirmation(),
+              rankedExitPenalty() ? "exitWithPenalty" : "exitWithoutPenalty",
+            );
           } else {
             button(confirm, "restart", () => confirmation());
             button(confirm, "cancel", cancel);

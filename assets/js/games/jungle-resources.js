@@ -11,7 +11,7 @@ WorkTimeApp.games.jungleResources = (() => {
   }
   async function directory(action) {
     try {
-      return await WorkTimeApp.services.runtimeFolder?.withDependencies(
+      return await WorkTimeApp.services.runtimeFolder?.withGameResources(
         async (root) =>
           action(
             await root.getDirectoryHandle("misty-jungle", { create: true }),

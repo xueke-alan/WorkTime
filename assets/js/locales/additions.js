@@ -1,4 +1,32 @@
 "use strict";
+(() => {
+  const catalogs = {
+    "zh-CN": ["申报加班时长", "参考 {date} 的日均加班工时"],
+    "zh-TW": ["申報加班時長", "參考 {date} 的日均加班工時"],
+    "zh-HK": ["申報加班時長", "參考 {date} 的日均加班工時"],
+    en: ["Declared overtime", "Average daily overtime as of {date}"],
+    ja: ["申告用の残業時間", "{date} 時点の平均残業時間"],
+    ko: ["신고용 초과 근무 시간", "{date} 기준 일평균 초과 근무 시간"],
+  };
+  for (const [locale, [label, reference]] of Object.entries(catalogs)) {
+    WorkTimeApp.data.locales[locale]["calendar.plannedHours"] = label;
+    WorkTimeApp.data.locales[locale]["calendar.plannedHoursReference"] =
+      reference;
+  }
+})();
+
+(() => {
+  const messages = {
+    "zh-CN": "补充请假",
+    "zh-TW": "補充請假",
+    "zh-HK": "補充請假",
+    en: "Add past leave",
+    ja: "過去の休暇を追加",
+    ko: "지난 휴가 추가",
+  };
+  for (const [locale, message] of Object.entries(messages))
+    WorkTimeApp.data.locales[locale]["editor.supplementLeave"] = message;
+})();
 
 (() => {
   const messages = {
@@ -1023,6 +1051,70 @@ for (const [language, values] of Object.entries({
   }
 })();
 // 2048 keeps its save and controls separate from the timesheet.
+(() => {
+  const messages = {
+    "zh-CN": [
+      "AI 演绎",
+      "算法演绎中 · 不计入个人记录",
+      "AI 演绎结束 · 不计入个人记录",
+      "算法最高分",
+      "开始算法演绎",
+      "将离开当前棋盘，从新棋局开始算法演绎。个人进度和最高分会保留。",
+    ],
+    en: [
+      "AI demo",
+      "Algorithm demo running · Personal record unchanged",
+      "AI demo complete · Personal record unchanged",
+      "Algorithm best",
+      "Start algorithm demo",
+      "Leave this board and start an algorithm demo from a new game. Your progress and personal best will be preserved.",
+    ],
+    "zh-TW": [
+      "AI 演繹",
+      "演算法演繹中 · 不計入個人紀錄",
+      "AI 演繹結束 · 不計入個人紀錄",
+      "演算法最高分",
+      "開始演算法演繹",
+      "將離開目前棋盤，從新棋局開始演算法演繹。個人進度與最高分會保留。",
+    ],
+    "zh-HK": [
+      "AI 演繹",
+      "演算法演繹中 · 不計入個人紀錄",
+      "AI 演繹結束 · 不計入個人紀錄",
+      "演算法最高分",
+      "開始演算法演繹",
+      "將離開目前棋盤，從新棋局開始演算法演繹。個人進度與最高分會保留。",
+    ],
+    ja: [
+      "AI デモ",
+      "アルゴリズムデモ実行中 · 個人記録には含まれません",
+      "AI デモ終了 · 個人記録には含まれません",
+      "アルゴリズム最高得点",
+      "アルゴリズムデモを開始",
+      "現在の盤面を離れ、新しいゲームでデモを開始します。進行状況と自己ベストは保持されます。",
+    ],
+    ko: [
+      "AI 시연",
+      "알고리즘 시연 중 · 개인 기록에 포함되지 않아요",
+      "AI 시연 종료 · 개인 기록에 포함되지 않아요",
+      "알고리즘 최고 점수",
+      "알고리즘 시연 시작",
+      "현재 보드를 나가 새 게임으로 알고리즘 시연을 시작해요. 개인 진행 상황과 최고 점수는 유지돼요.",
+    ],
+  };
+  for (const [locale, values] of Object.entries(messages)) {
+    [
+      "ai",
+      "aiRunning",
+      "aiFinished",
+      "aiBest",
+      "aiStart",
+      "aiConfirmHint",
+    ].forEach((key, index) => {
+      WorkTimeApp.data.locales[locale]["games.puzzle." + key] = values[index];
+    });
+  }
+})();
 (() => {
   const keys = [
     "score",

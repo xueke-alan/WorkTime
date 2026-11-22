@@ -843,8 +843,8 @@ async function browser() {
         )?.state;
         return s && (s.turn === 0 || s.actions > 2);
       },
-      undefined,
-      { timeout: 45000 },
+      null,
+      { timeout: 30000 },
     );
     await setDocumentHidden(page, true);
     const saved = await page.evaluate(() =>
@@ -1160,16 +1160,15 @@ async function browser() {
             const h = document
                 .querySelector(".uno-hand")
                 .getBoundingClientRect(),
-              t = document.querySelector(".uno-table").getBoundingClientRect(),
-              identity = document
-                .querySelector(".uno-own-info")
-                .getBoundingClientRect(),
-              own = document.querySelector(".uno-own").getBoundingClientRect();
-            return innerWidth >= 1000
-              ? Math.abs(h.x + h.width / 2 - t.x - t.width / 2) < 1
-              : h.left >= identity.right && h.right <= own.right + 1;
+              t = document.querySelector(".uno-table").getBoundingClientRect();
+            if (innerWidth >= 1000)
+              return Math.abs(h.x + h.width / 2 - t.x - t.width / 2) < 1;
+            const identity = document
+              .querySelector(".uno-own-info")
+              .getBoundingClientRect();
+            return h.left >= identity.right && h.right <= innerWidth + 1;
           }),
-          "hand centers on wide tables and clears the identity on narrow tables",
+          "human hand stays centered on desktop and clears the identity on narrow screens",
         );
         const seatIds = await page
           .locator(".uno-seat")

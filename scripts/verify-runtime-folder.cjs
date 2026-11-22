@@ -36,6 +36,16 @@ async function main() {
       viewport: { width: 1280, height: 900 },
     });
     await context.addInitScript(() => {
+      // Clipboard startup prompts are outside this folder integration fixture.
+      new MutationObserver(() => {
+        const prompt = document.getElementById("startupPermissionsDialog");
+        if (prompt?.open) prompt.close();
+      }).observe(document, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["open"],
+      });
       localStorage.setItem("worktime.installReminder.dismissed.v1", "true");
       window.runtimeTest = {
         folder: "test-workspace",
@@ -129,7 +139,60 @@ async function main() {
       for await (const child of directory.values()) names.push(child.name);
       return names.sort();
     });
-    assert.deepEqual(directories, ["backups", "ebooks", "music"]);
+    assert.deepEqual(directories, ["backups", "ebooks", "game", "music"]);
+    const resourceLayout = await page.evaluate(async () => {
+      const root = await window.showDirectoryPicker();
+      const put = async (dir, name, text) => {
+        const h = await dir.getFileHandle(name, { create: true });
+        const w = await h.createWritable();
+        await w.write(text);
+        await w.close();
+      };
+      const old = await root.getDirectoryHandle("dependencies", {
+        create: true,
+      });
+      const chess = await old.getDirectoryHandle("pikafish", { create: true });
+      await put(chess, "model-fixture.bin", "chess-model");
+      await put(old, "unknown-fixture.txt", "keep me");
+      const oldConflict = await old.getDirectoryHandle("rapfi", {
+        create: true,
+      });
+      await put(oldConflict, "conflict.bin", "old-content");
+      const newGame = await root.getDirectoryHandle("game");
+      const newConflict = await newGame.getDirectoryHandle("rapfi", {
+        create: true,
+      });
+      await put(newConflict, "conflict.bin", "new-content");
+      const S = WorkTimeApp.services.runtimeFolder;
+      const game = await S.withGameResources(
+        async (dir) =>
+          await (
+            await (
+              await (
+                await dir.getDirectoryHandle("pikafish")
+              ).getFileHandle("model-fixture.bin")
+            ).getFile()
+          ).text(),
+      );
+      return {
+        game,
+        unknown: await (
+          await (await old.getFileHandle("unknown-fixture.txt")).getFile()
+        ).text(),
+        oldConflict: await (
+          await (await oldConflict.getFileHandle("conflict.bin")).getFile()
+        ).text(),
+        newConflict: await (
+          await (await newConflict.getFileHandle("conflict.bin")).getFile()
+        ).text(),
+      };
+    });
+    assert.deepEqual(resourceLayout, {
+      game: "chess-model",
+      unknown: "keep me",
+      oldConflict: "old-content",
+      newConflict: "new-content",
+    });
     await page.locator("[data-onboarding-next]").click();
     await page.locator("#onboardingDialog").waitFor({ state: "detached" });
     await page.evaluate(async () => {
@@ -373,6 +436,9 @@ async function main() {
       play.onclick = () => player.toggle();
       document.body.append(play);
     });
+    await page.evaluate(() =>
+      document.getElementById("startupPermissionsDialog")?.close(),
+    );
     await page.locator("#runtimeTestPlay").click();
     await page.waitForFunction(
       () => !window.runtimeTestPlayer.snapshot().paused,

@@ -5,18 +5,6 @@ WorkTimeApp.games.register({
   descriptionKey: "games.aeroplane.description",
   icon: "game-aeroplane",
   create({ container, signal }) {
-    // Rotate a fixed face onto the top of the die before applying the camera tilt.
-    const dieAngles = [
-      null,
-      [0, 0],
-      [90, 0],
-      [0, 90],
-      [0, -90],
-      [-90, 0],
-      [180, 0],
-    ];
-    const diePose = (pitch, bank, spin = 0) =>
-      `rotateX(-57deg) rotateY(-18deg) rotateY(${spin}deg) rotateX(${pitch}deg) rotateZ(${bank}deg)`;
     const G = WorkTimeApp.games,
       R = G.aeroplaneRules,
       A = G.aeroplaneAi;
@@ -334,7 +322,7 @@ WorkTimeApp.games.register({
           '<span class="aero-dice-scene" aria-hidden="true"><span class="aero-dice-lift"><span class="aero-dice-cube"></span></span></span>';
         if (!busy && !restarting && previousPlayer !== String(player))
           dice.classList.add("aero-dice-enter");
-        drawDiceFaces(dice, value);
+        G.dice3d.draw(dice, value);
         dice.classList.toggle(
           "aero-dice-ready",
           allowed() && human() && state.phase === "roll",
@@ -519,14 +507,14 @@ WorkTimeApp.games.register({
       for (let i = 0; i < path.length; i++) {
         const n = path[i],
           last = i === path.length - 1;
-        if (last && effect.special === "jump") {
+        if (n - path[i - 1] === 4) {
           for (let step = path[i - 1] + 1; step <= n; step++)
             points.push({
               point: planePosition(
                 effect.player,
                 step,
                 effect.plane,
-                step === n,
+                last && step === n,
               ),
               duration: 130,
             });
@@ -615,74 +603,6 @@ WorkTimeApp.games.register({
     function lastDie(player) {
       return state.rolls.findLast(([seat]) => seat === player)?.[1] || 0;
     }
-    function drawDiceFaces(dice, value) {
-      const cube = dice.querySelector(".aero-dice-cube");
-      cube.style.transform = diePose(...dieAngles[value || 1]);
-      const patterns = [
-        [],
-        [[0.5, 0.5]],
-        [
-          [0.27, 0.27],
-          [0.73, 0.73],
-        ],
-        [
-          [0.27, 0.27],
-          [0.5, 0.5],
-          [0.73, 0.73],
-        ],
-        [
-          [0.27, 0.27],
-          [0.73, 0.27],
-          [0.27, 0.73],
-          [0.73, 0.73],
-        ],
-        [
-          [0.27, 0.27],
-          [0.73, 0.27],
-          [0.5, 0.5],
-          [0.27, 0.73],
-          [0.73, 0.73],
-        ],
-        [
-          [0.27, 0.23],
-          [0.73, 0.23],
-          [0.27, 0.5],
-          [0.73, 0.5],
-          [0.27, 0.77],
-          [0.73, 0.77],
-        ],
-      ];
-      const faces = {
-        top: 1,
-        bottom: 6,
-        front: 2,
-        back: 5,
-        right: 4,
-        left: 3,
-      };
-      for (const [name, n] of Object.entries(faces)) {
-        const face = el(
-          "span",
-          "aero-die-face aero-die-" + name,
-          undefined,
-          cube,
-        );
-        face.dataset.faceValue = String(n);
-        const drawing = svg("svg", { viewBox: "0 0 100 100" }, face);
-        for (const [x, y] of patterns[n]) {
-          svg(
-            "circle",
-            {
-              cx: x * 100,
-              cy: y * 100,
-              r: n === 1 ? 15 : 9.4,
-              class: "aero-die-pip",
-            },
-            drawing,
-          );
-        }
-      }
-    }
     async function move(plane) {
       if (!allowed() || state.phase !== "move") return;
       const token = ++generation,
@@ -734,64 +654,20 @@ WorkTimeApp.games.register({
       save();
       render();
       if (!reduced()) {
-        const dice = root.querySelector(".aero-dice"),
-          cube = dice.querySelector(".aero-dice-cube");
+        const dice = root.querySelector(".aero-dice");
         dice.classList.add("aero-dice-rolling");
-        const [pitch, bank] = dieAngles[result];
-        const direction = result % 2 ? 1 : -1;
-        const settled = diePose(pitch + 720, bank, 360 * direction);
-        const options = { duration: 1280 };
-        const atRest = "translate(0, 0)";
-        await Promise.all([
-          playAnimation(
-            cube,
-            [
-              { transform: diePose(...dieAngles[startingFace || 1]) },
-              {
-                transform: diePose(285, 125 * direction, 150 * direction),
-                offset: 0.28,
-              },
-              {
-                transform: diePose(
-                  pitch + 655,
-                  bank - 26 * direction,
-                  350 * direction,
-                ),
-                offset: 0.49,
-                easing: "ease-out",
-              },
-              { transform: settled, offset: 0.62 },
-              { transform: settled },
-            ],
-            options,
-            token,
-          ),
-          playAnimation(
-            dice.querySelector(".aero-dice-lift"),
-            [
-              { transform: atRest, easing: "ease-out" },
-              {
-                transform: `translate(${-direction * 20}%, -44%)`,
-                offset: 0.17,
-                easing: "ease-in",
-              },
-              {
-                transform: `translate(${direction * 14}%, 5%)`,
-                offset: 0.42,
-                easing: "ease-out",
-              },
-              {
-                transform: `translate(${direction * 8}%, -17%)`,
-                offset: 0.51,
-                easing: "ease-in",
-              },
-              { transform: atRest, offset: 0.62 },
-              { transform: atRest },
-            ],
-            options,
-            token,
-          ),
-        ]);
+        await Promise.all(
+          G.dice3d
+            .frames(startingFace, result)
+            .map(({ part, keyframes }) =>
+              playAnimation(
+                dice.querySelector(".aero-dice-" + part),
+                keyframes,
+                { duration: G.dice3d.duration },
+                token,
+              ),
+            ),
+        );
       }
       if (
         !disposed &&

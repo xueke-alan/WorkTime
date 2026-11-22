@@ -14,17 +14,32 @@ WorkTimeApp.games.register({
     let state,
       previous = null,
       best = 0,
+      aiBest = 0,
+      playerSave = null,
       saveFailed = false;
     let paused = false,
+      demonstrating = false,
+      aiTimer = null,
+      aiSteps = 0,
+      aiRevision = 0,
+      aiRunning = false,
       disposed = false,
       confirming = false,
+      confirmationAction = "restart",
       pointer = null,
       moving = false,
       revision = 0,
       animations = [];
     try {
       const saved = rules.restore(JSON.parse(gameStorage.getItem(key)));
-      if (saved) ({ state, previous, best } = saved);
+      if (saved) ({ state, previous, best, aiBest } = saved);
+      if (saved?.aiDemo) {
+        playerSave = { state, previous, best };
+        state = saved.aiDemo.state;
+        aiSteps = saved.aiDemo.steps;
+        demonstrating = true;
+        previous = null;
+      }
     } catch {
       saveFailed = true;
     }
@@ -42,6 +57,10 @@ WorkTimeApp.games.register({
     const scoreLabel = node("span", "", scoreBox);
     const score = node("strong", "", scoreBox);
     score.dataset.puzzleScore = "";
+    const aiBestBox = node("div", "game-stat", scores);
+    const aiBestLabel = node("span", "", aiBestBox);
+    const aiBestValue = node("strong", "", aiBestBox);
+    aiBestValue.dataset.puzzleAiBest = "";
     const bestBox = node("div", "game-stat", scores);
     const bestLabel = node("span", "", bestBox);
     const bestValue = node("strong", "", bestBox);
@@ -61,8 +80,19 @@ WorkTimeApp.games.register({
       return element;
     }
     const actions = node("div", "puzzle-actions game-controls", root);
+    const ai = button(actions, "ai", () => {
+      if (confirming) return;
+      stopAI();
+      stopMotion();
+      clearPointer();
+      confirmationAction = "ai";
+      confirming = true;
+      render();
+      cancel.focus();
+    });
+    ai.classList.add("game-icon-button");
     const undo = button(actions, "undo", () => {
-      if (confirming || !previous) return;
+      if (demonstrating || confirming || !previous) return;
       stopMotion();
       state = rules.snapshot(previous);
       previous = null;
@@ -71,7 +101,9 @@ WorkTimeApp.games.register({
       board.focus({ preventScroll: true });
     });
     const restart = button(actions, "restart", () => {
+      stopAI();
       stopMotion();
+      confirmationAction = "restart";
       confirming = true;
       render();
       cancel.focus();
@@ -88,7 +120,8 @@ WorkTimeApp.games.register({
       () => {
         confirming = false;
         render();
-        restart.focus();
+        (confirmationAction === "ai" ? ai : restart).focus();
+        scheduleAI();
       },
       "close",
     );
@@ -98,11 +131,19 @@ WorkTimeApp.games.register({
       "confirm",
       () => {
         confirming = false;
+        stopAI();
+        if (confirmationAction === "ai") {
+          if (!demonstrating)
+            playerSave = { state: rules.snapshot(state), previous, best };
+          demonstrating = true;
+          aiSteps = 0;
+        } else demonstrating = false;
         state = rules.create();
         previous = null;
         save();
         render();
         board.focus();
+        scheduleAI();
       },
       "restart-alt",
     );
@@ -145,6 +186,7 @@ WorkTimeApp.games.register({
     const keepGoingLabel = node("span", "button-label", keepGoing);
     const retry = button(endActions, "retry", () => {
       if (confirming) return;
+      confirmationAction = "restart";
       confirming = true;
       render();
       cancel.focus();
@@ -154,13 +196,20 @@ WorkTimeApp.games.register({
     const status = node("p", "puzzle-status game-sr-only", root);
     status.setAttribute("role", "status");
     const notice = node("div", "game-notice", root);
+    const aiNotice = node("p", "puzzle-status", notice);
+    aiNotice.setAttribute("role", "status");
     const warning = node("p", "puzzle-save-warning", notice);
     warning.setAttribute("role", "status");
     function save() {
       try {
         gameStorage.setItem(
           key,
-          JSON.stringify({ version: 1, state, best, previous }),
+          JSON.stringify({
+            version: 1,
+            ...(demonstrating ? playerSave : { state, best, previous }),
+            aiBest,
+            aiDemo: demonstrating ? { state, steps: aiSteps } : null,
+          }),
         );
         saveFailed = false;
       } catch {
@@ -176,8 +225,34 @@ WorkTimeApp.games.register({
     function render() {
       scoreLabel.textContent = t("score");
       bestLabel.textContent = t("best");
-      WorkTimeApp.games.paintCounter(score, state.score);
-      WorkTimeApp.games.paintCounter(bestValue, best);
+      aiBestBox.hidden = !demonstrating;
+      aiBestLabel.textContent = t("aiBest");
+      const counters = [
+        [score, state.score],
+        [bestValue, best],
+        [aiBestValue, aiBest],
+      ];
+      const digits = Math.max(
+        4,
+        String(state.score).length,
+        String(best).length,
+        demonstrating ? String(aiBest).length : 0,
+      );
+      const counterSize = Math.min(1.5, 6.5 / digits) + "rem";
+      for (const [element, value] of counters) {
+        WorkTimeApp.games.paintCounter(element, value);
+        element.style.fontSize = counterSize;
+      }
+      root.dataset.mode = demonstrating ? "ai" : "manual";
+      WorkTimeApp.games.setIcon(ai, "robot-2");
+      ai.title = t("ai");
+      ai.setAttribute("aria-label", t("ai"));
+      ai.setAttribute("aria-pressed", String(demonstrating));
+      ai.disabled = confirming || (demonstrating && !rules.lost(state.board));
+      aiNotice.hidden = !demonstrating;
+      aiNotice.textContent = t(
+        rules.lost(state.board) ? "aiFinished" : "aiRunning",
+      );
       WorkTimeApp.games.setIcon(undo, "undo");
       undo.title = t("undo");
       undo.setAttribute("aria-label", t("undo"));
@@ -185,12 +260,23 @@ WorkTimeApp.games.register({
       restart.title = t("restart");
       restart.setAttribute("aria-label", t("restart"));
       cancelLabel.textContent = t("cancel");
-      confirmLabel.textContent = t("confirm");
-      confirmTitle.textContent = t("confirmTitle");
-      confirmText.textContent = t("confirmHint");
+      confirmLabel.textContent = t(
+        confirmationAction === "ai" ? "aiStart" : "confirm",
+      );
+      confirmTitle.textContent = t(
+        confirmationAction === "ai" ? "ai" : "confirmTitle",
+      );
+      confirmText.textContent = t(
+        confirmationAction === "ai" ? "aiConfirmHint" : "confirmHint",
+      );
       confirmation.hidden = !confirming;
       paintRestartCover(confirming);
-      undo.disabled = !previous || confirming;
+      if (confirming && confirmationAction === "ai") {
+        confirmLabel.textContent = t("aiStart");
+        confirm.setAttribute("aria-label", t("aiStart"));
+        confirmation.setAttribute("aria-label", t("aiStart"));
+      }
+      undo.disabled = demonstrating || !previous || confirming;
       restart.disabled = confirming;
       board.setAttribute("aria-label", t("board"));
       grid.setAttribute("aria-label", t("board"));
@@ -204,10 +290,12 @@ WorkTimeApp.games.register({
       });
       const won = rules.won(state),
         lost = rules.lost(state.board);
-      overlay.hidden = moving || confirming || (!won && !lost);
+      overlay.hidden = demonstrating || moving || confirming || (!won && !lost);
       overlay.dataset.result = won ? "won" : "lost";
       endTitle.textContent = t(won ? "won" : "lost");
-      endHint.textContent = t(won ? "wonHint" : "lostHint");
+      endHint.textContent = t(
+        demonstrating ? "aiFinished" : won ? "wonHint" : "lostHint",
+      );
       keepGoingLabel.textContent = t("continue");
       keepGoing.hidden = !won;
       retryLabel.textContent = t("restart");
@@ -230,7 +318,7 @@ WorkTimeApp.games.register({
       cells.forEach((cell) => cell.classList.remove("puzzle-in-motion"));
       moving = false;
     }
-    async function animateTurn(result) {
+    async function animateTurn(result, duration = 230) {
       if (reduced.matches || paused || !board.clientWidth) {
         render();
         return;
@@ -258,7 +346,11 @@ WorkTimeApp.games.register({
                 transform: `translate(${boxes[to].left - boxes[from].left}px, ${boxes[to].top - boxes[from].top}px)`,
               },
             ],
-            { duration: 130, fill: "both", easing: "ease-out" },
+            {
+              duration: duration * (130 / 230),
+              fill: "both",
+              easing: "ease-out",
+            },
           ),
         );
       });
@@ -282,7 +374,7 @@ WorkTimeApp.games.register({
               },
               { transform: "scale(1)", opacity: 1 },
             ],
-            { duration: 100, easing: "ease-out" },
+            { duration: duration * (100 / 230), easing: "ease-out" },
           ),
         );
       }
@@ -292,16 +384,60 @@ WorkTimeApp.games.register({
       moving = false;
       render();
     }
-    function play(direction) {
+    function stopAI() {
+      aiRevision++;
+      clearTimeout(aiTimer);
+      aiTimer = null;
+      aiRunning = false;
+    }
+    function aiInterval() {
+      return 100 + 400 * (1 - Math.min(aiSteps / 100, 1)) ** 2;
+    }
+    function scheduleAI(delay = aiInterval()) {
+      if (
+        !demonstrating ||
+        paused ||
+        disposed ||
+        signal.aborted ||
+        confirming ||
+        aiTimer !== null ||
+        aiRunning ||
+        rules.lost(state.board)
+      )
+        return;
+      const token = aiRevision;
+      aiTimer = setTimeout(async () => {
+        aiTimer = null;
+        if (paused || disposed || signal.aborted || confirming) return;
+        aiRunning = true;
+        const started = performance.now();
+        const interval = aiInterval();
+        const direction = rules.chooseMove(state.board);
+        if (direction) await play(direction, true, interval * 0.75);
+        if (token !== aiRevision) return;
+        aiRunning = false;
+        scheduleAI(Math.max(0, interval - (performance.now() - started)));
+      }, delay);
+    }
+    function play(direction, automatic = false, duration = 230) {
       if (paused || disposed || signal.aborted || confirming) return;
+      if (demonstrating && !automatic) return;
       const result = rules.turn(state, direction);
       if (!result) return;
       stopMotion();
       state = result.state;
-      previous = result.previous;
-      best = Math.max(best, state.score);
+      if (demonstrating) {
+        aiSteps++;
+        if (state.board.some((value) => value >= 2048)) state.continued = true;
+        if (state.score > aiBest) {
+          aiBest = state.score;
+        }
+      } else {
+        previous = result.previous;
+        best = Math.max(best, state.score);
+      }
       save();
-      void animateTurn(result);
+      return animateTurn(result, duration);
     }
     const keys = {
       ArrowUp: "up",
@@ -343,6 +479,7 @@ WorkTimeApp.games.register({
           event.button !== 0 ||
           event.target.closest("button") ||
           paused ||
+          demonstrating ||
           confirming ||
           rules.won(state) ||
           rules.lost(state.board)
@@ -393,6 +530,7 @@ WorkTimeApp.games.register({
       "abort",
       () => {
         paused = true;
+        stopAI();
         clearPointer();
         stopMotion();
       },
@@ -412,6 +550,7 @@ WorkTimeApp.games.register({
       },
       pause() {
         paused = true;
+        stopAI();
         clearPointer();
         stopMotion();
         render();
@@ -419,9 +558,11 @@ WorkTimeApp.games.register({
       resume() {
         paused = false;
         render();
+        scheduleAI();
       },
       dispose() {
         disposed = true;
+        stopAI();
         clearPointer();
         stopMotion();
         unlisten();

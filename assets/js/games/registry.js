@@ -34,6 +34,7 @@ WorkTimeApp.games = (() => {
   // Minimal menu artwork: a shared 32px grid and uniform rounded outlines.
   // Inline SVG keeps the offline entry self-contained and crisp at any scale.
   const gameIcons = {
+    "game-klotski": `<rect x="4" y="3" width="24" height="26" rx="3"/><rect x="11" y="6" width="10" height="10" rx="1.5"/><path d="M8 6v10m16-10v10M8 20h16M12 24h8M12 29v-3m8 3v-3"/>`,
     "game-aeroplane": `<rect x="3" y="3" width="26" height="26" rx="5"/><path d="m16 6 2 8 8 5-1 2-7-3v6l3 2H11l3-2v-6l-7 3-1-2 8-5Z"/>`,
     "game-uno": `<rect x="5" y="5" width="16" height="23" rx="3"/><path d="m12 5 8-2a3 3 0 0 1 4 2l4 17a3 3 0 0 1-2 4l-5 1"/><ellipse cx="13" cy="16" rx="5" ry="7"/><path d="m11 19 4-6"/>`,
     "game-ultimate-ttt": `<rect x="3" y="3" width="26" height="26" rx="3"/><path d="M12 3v26M20 3v26M3 12h26M3 20h26M6 6l3 3m0-3L6 9"/><circle cx="24.5" cy="24.5" r="2"/>`,

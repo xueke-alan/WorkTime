@@ -386,6 +386,13 @@
       "sha256": "bab89df9412b9740d53fd809abc876f1533ca9ffea68c76cb540903604e4d0b7"
     },
     {
+      "id": "ms-robot-2",
+      "name": "robot_2",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/robot_2/materialsymbolsrounded/robot_2_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "de449e36a69e23e518ef09a13195578455690d65a2f5a6fbf3e02214fc7f49c7"
+    },
+    {
       "id": "ms-undo",
       "name": "undo",
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/undo/materialsymbolsrounded/undo_24px.svg",

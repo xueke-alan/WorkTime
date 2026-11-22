@@ -975,6 +975,7 @@ async function verifyMotion(site = root) {
       await page.locator('[data-uno-setting="discard-limit"]').count(),
       0,
     );
+    await page.locator('[data-uno-action="leaveTemporarily"]').click();
     await page.locator('[data-uno-action="continue"]').click();
     await setDocumentHidden(page, false);
     assert.deepEqual(await visibleDiscards(), stacked.discard.slice(-10));

@@ -109,20 +109,21 @@ html[data-reduced-motion="true"] .game-uno > :where(.uno-stage, .uno-corner-cont
   display: grid;
   justify-content: stretch;
   justify-items: center;
-  gap: 18px;
+  gap: 22px;
   box-sizing: border-box;
-  width: min(100%, 340px);
-  padding: 24px clamp(12px, 5vw, 26px);
+  width: min(100%, 440px);
+  max-width: 440px;
+  padding: 26px clamp(12px, 4vw, 28px) 24px;
   border: 3px solid var(--ink);
   border-radius: 19px 15px 20px 16px / 16px 20px 15px 19px;
   box-shadow: 0 0 0 4px var(--paper), 4px 9px 0 -2px var(--ink);
 }
 .uno-ranked-exit h3 { margin: 0; text-wrap: balance; }
-.uno-exit-penalty {
+.uno-exit-emblem {
   display: grid;
   place-items: center;
-  width: 112px;
-  height: 66px;
+  width: 108px;
+  height: 64px;
   border: 3px solid #fff;
   border-radius: 12px 10px 13px 9px;
   background: var(--uno-exit-red);
@@ -130,19 +131,10 @@ html[data-reduced-motion="true"] .game-uno > :where(.uno-stage, .uno-corner-cont
   color: #fff;
   transform: rotate(-7deg);
 }
-.uno-exit-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: 86px;
-  height: 51px;
-  border: 1px solid #ffffff80;
-  border-radius: 50%;
-}
-.uno-exit-minus { width: 13px; height: 5px; background: currentColor; border-radius: 1px 2px; }
-.uno-exit-digits svg { display: block; height: 36px; fill: currentColor; }
-.uno-exit-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.uno-exit-emblem svg { display: block; width: 82px; height: 40px; fill: currentColor; }
+.uno-exit-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; gap: clamp(7px, 2vw, 12px); width: 100%; }
+.game-uno .uno-exit-actions .uno-hand-action { min-height: 60px; padding: 8px 4px; font-size: clamp(12px, 2.6vw, 14px); transform: none; }
+.uno-exit-actions .uno-hand-action-label { white-space: pre-line; line-height: 1.4; }
 .game-uno .uno-exit-actions [data-uno-action="exit"] { color: var(--uno-exit-red); }
 .uno-color-choice .game-button { min-width: 80px; border: 2px solid currentColor; min-height: 44px; }
 .uno-auxiliary { display: flex; justify-content: center; gap: 20px; flex: none; font-size: 12px; }

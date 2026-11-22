@@ -25,12 +25,32 @@
 .puzzle-scores {
   display: flex;
   gap: 0.5rem;
+  max-width: 100%;
+}
+.puzzle-scores .game-stat {
+  flex-shrink: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding-block: 0.65rem 0.45rem;
+}
+.puzzle-scores .game-stat > span {
+  max-width: 100%;
+}
+.puzzle-scores .game-stat > strong {
+  line-height: 1.2;
 }
 .puzzle-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+.puzzle-actions > [data-puzzle-action="ai"] {
+  margin-inline-end: auto;
 }
 :is(.puzzle-confirm, .puzzle-overlay) {
   position: absolute;

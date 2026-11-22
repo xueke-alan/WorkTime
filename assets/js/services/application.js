@@ -31,7 +31,7 @@ const WorkTimeServiceApplication = (() => {
     };
   }
   /** Own business state. Views receive frozen snapshots, operations own all writes.
-   * @param {{state:WorkStateData,persistence:WorkStatePersistence,core:WorkApplicationCore,failed?:boolean,corrupt?:boolean,unsaved?:boolean}} options
+   * @param {{state:WorkStateData,persistence:WorkStatePersistence,core:WorkApplicationCore,failed?:boolean,corrupt?:boolean,unsaved?:boolean,today?:()=>string}} options
    */
   function createState({
     state: initial,
@@ -40,8 +40,26 @@ const WorkTimeServiceApplication = (() => {
     failed = false,
     corrupt = false,
     unsaved = false,
+    today = () => "",
   }) {
     const clone = (value) => JSON.parse(JSON.stringify(value));
+    function expirePlans(candidate) {
+      const cutoff = today(),
+        expired = cutoff
+          ? Object.keys(candidate.days).filter(
+              (date) => date < cutoff && candidate.days[date].plannedOvertime,
+            )
+          : [];
+      if (!expired.length) return { state: candidate, expired };
+      const days = { ...candidate.days };
+      for (const date of expired) {
+        const day = { ...days[date] };
+        delete day.plannedOvertime;
+        if (Object.keys(day).length) days[date] = day;
+        else delete days[date];
+      }
+      return { state: { ...candidate, days }, expired };
+    }
     function freeze(value) {
       if (value && typeof value === "object" && !Object.isFrozen(value)) {
         Object.values(value).forEach(freeze);
@@ -50,14 +68,17 @@ const WorkTimeServiceApplication = (() => {
       return value;
     }
     const A = WorkTimeApp.services.archive;
-    let state = freeze(initial),
+    const initialCleanup = expirePlans(initial);
+    let state = freeze(initialCleanup.state),
       revision = 0,
-      dirty = unsaved,
+      dirty = unsaved || initialCleanup.expired.length > 0,
       saveFailed = failed,
       loadCorrupt = corrupt,
       pending = 0,
       exclusive = false;
-    let dirtyChanges = {};
+    let dirtyChanges = initialCleanup.expired.length
+      ? { days: initialCleanup.expired }
+      : {};
     const listeners = new Set();
     function publish(changes, reset = false) {
       for (const listener of listeners) listener(changes, reset);
@@ -124,6 +145,10 @@ const WorkTimeServiceApplication = (() => {
           applied: false,
           error: A.error("正在恢复或应用作息，请完成后重试。", "BUSY"),
         });
+      const cleanup = expirePlans(candidate);
+      candidate = cleanup.state;
+      if (cleanup.expired.length)
+        changes = combine(changes, { days: cleanup.expired });
       const before = state,
         changed = candidate !== state;
       const patch = collect(before, candidate, changes);
@@ -244,6 +269,7 @@ const WorkTimeServiceApplication = (() => {
         );
       },
       togglePlanned(date) {
+        if (today() && date < today()) return commit(state);
         const day = { ...state.days[date] };
         if (C.calendarInfo(date, day).work) return commit(state);
         if (day.plannedOvertime) delete day.plannedOvertime;
@@ -518,10 +544,11 @@ const WorkTimeServiceApplication = (() => {
       },
       /** @param {WorkStateData} candidate */
       reload(candidate) {
-        state = freeze(candidate);
+        const cleanup = expirePlans(candidate);
+        state = freeze(cleanup.state);
         revision++;
-        dirty = false;
-        dirtyChanges = {};
+        dirty = cleanup.expired.length > 0;
+        dirtyChanges = dirty ? { days: cleanup.expired } : {};
         publish({}, true);
         saveFailed = false;
         loadCorrupt = false;

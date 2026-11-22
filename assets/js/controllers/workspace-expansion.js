@@ -8,6 +8,7 @@ WorkTimeApp.ui.createWorkspaceExpansion = function ({
   returnFocus,
   onChange = () => {},
 }) {
+  const disposeFooter = WorkTimeApp.ui.createSiteFooter(shell, true);
   const workspace = document.querySelector(".workspace"),
     origin = workspace.querySelector("section.panel");
   const panels = [...workspace.children].filter((panel) =>
@@ -314,6 +315,7 @@ WorkTimeApp.ui.createWorkspaceExpansion = function ({
     dispose() {
       if (disposed) return;
       disposed = true;
+      disposeFooter();
       ++revision;
       stopMotion();
       if (state !== "closed") restore(false);

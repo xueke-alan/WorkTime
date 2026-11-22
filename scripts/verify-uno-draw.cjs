@@ -123,6 +123,12 @@ async function run() {
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("worktime.games.uno.v1")),
       );
+    // A ranked exit is penalized only after the opening countdown completes.
+    await page.waitForFunction(
+      () =>
+        JSON.parse(localStorage.getItem("worktime.games.uno.v1"))
+          ?.countdownPending === false,
+    );
     const ranked = await readSave();
     assert.equal(ranked.state.targetScore, 500);
     assert.equal(ranked.match.mode, "ranked");
@@ -140,9 +146,7 @@ async function run() {
     assert.equal(await settingsButton.locator("svg").count(), 1);
     await settingsButton.click();
     const quitDialog = page.getByRole("dialog", { name: "确定退出排位吗？" });
-    assert.ok(
-      await quitDialog.getByRole("img", { name: "扣除 15 段位分" }).isVisible(),
-    );
+    assert.ok(await quitDialog.getByRole("button", { name: /15/ }).isVisible());
     assert.ok(
       await quitDialog
         .getByRole("button", { name: "取消" })
@@ -191,7 +195,14 @@ async function run() {
             "worktime.games.uno.v1",
             JSON.stringify(payload),
           ),
-        JSON.parse(JSON.stringify({ version: 1, state: save, ...extra })),
+        JSON.parse(
+          JSON.stringify({
+            version: 1,
+            countdownPending: false,
+            state: save,
+            ...extra,
+          }),
+        ),
       );
       await launchGame(page, "game-uno");
       await page.waitForFunction(
@@ -268,6 +279,7 @@ async function run() {
     });
     assert.deepEqual(await readSave(), finished);
     await settingsButton.click();
+    await page.locator('.uno-confirm [data-uno-action="exit"]').click();
     assert.equal(await page.locator(".uno-history-card").count(), 2);
     assert.match(await page.locator(".uno-rank-summary").innerText(), /222/);
     const openingBadge = page
@@ -363,7 +375,8 @@ async function run() {
     legacy.targetScore = 200;
     await reopen(legacy);
     await settingsButton.click();
-    assert.equal(await modeSwitch.getAttribute("aria-checked"), "true");
+    await page.locator('[data-uno-action="leaveTemporarily"]').click();
+    assert.equal(await modeSwitch.getAttribute("aria-checked"), "false");
     await page.locator('[data-uno-action="continue"]').click();
     assert.equal((await readSave()).state.targetScore, 200);
     assert.equal((await readSave()).match.mode, "normal");

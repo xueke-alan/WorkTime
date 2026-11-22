@@ -224,6 +224,7 @@ WorkTimeApp.ui.onboarding = (() => {
     document.dispatchEvent(new Event("worktime:clipboarddenied"));
   async function checkClipboard() {
     if (
+      location.protocol === "file:" ||
       closed ||
       clipboardChecking ||
       clipboardChecked ||

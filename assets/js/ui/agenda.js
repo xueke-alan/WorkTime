@@ -655,7 +655,7 @@ WorkTimeApp.ui.createAgenda = function ({
       const day = model.state.days[date] || {};
       if (
         WorkTimeApp.domain.calendar.calendarInfo(date, day).work ||
-        day.plannedOvertime
+        (day.plannedOvertime && date >= model.today)
       )
         return true;
       const schedule = WorkTimeApp.domain.schedule.scheduleForDate(
@@ -915,6 +915,7 @@ WorkTimeApp.ui.createAgenda = function ({
         const planned =
           active &&
           day.plannedOvertime &&
+          cardDate(card) >= model.today &&
           !WorkTimeApp.domain.calendar.calendarInfo(cardDate(card), day).work;
         kind.classList.toggle("is-planned-overtime", Boolean(planned));
         const label = planned

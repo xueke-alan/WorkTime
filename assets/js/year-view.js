@@ -78,7 +78,7 @@ WorkTimeApp.ui.year = (() => {
         parts = {
           month: lunar.getMonth(),
           day: lunar.getDay(),
-          monthName: lunar.getMonthInChinese(),
+          monthName: lunar.getMonthInChinese().replace(/^[闰閏]/, ""),
           dayName: lunar.getDayInChinese(),
         };
       } catch {
@@ -165,7 +165,8 @@ WorkTimeApp.ui.year = (() => {
             day = state.days[date] || {},
             info = calendarInfo(date, day),
             schedule = scheduleForDate(state, date),
-            calc = calculate(date, day, schedule, true);
+            calc = calculate(date, day, schedule, true),
+            planned = !!day.plannedOvertime && date >= today;
           const leave = Math.min(
             schedule.standardMinutes,
             Math.max(0, day.leaveMinutes || 0),
@@ -174,7 +175,7 @@ WorkTimeApp.ui.year = (() => {
             !info.work &&
             (day.kind === "rest" || date <= today) &&
             !(calc.minutes > 0) &&
-            !day.plannedOvertime;
+            !planned;
           const description = [
             date,
             WorkTimeApp.i18n.message(info.label),
@@ -191,7 +192,7 @@ WorkTimeApp.ui.year = (() => {
                 WorkTimeApp.i18n.t("copy.8d383e56ac")
               : "",
             rest ? WorkTimeApp.i18n.t("copy.da11d57634") : "",
-            day.plannedOvertime ? WorkTimeApp.i18n.t("copy.3cf2307526") : "",
+            planned ? WorkTimeApp.i18n.t("copy.3cf2307526") : "",
             calc.record?.type === "estimate"
               ? WorkTimeApp.i18n.t("copy.85f1f8dfaf")
               : "",
@@ -234,5 +235,12 @@ WorkTimeApp.ui.year = (() => {
       }
     return result;
   }
-  return { heatColor, scaleMaximum, scaleMinimum, months, calendarMonths };
+  return {
+    heatColor,
+    scaleMaximum,
+    scaleMinimum,
+    months,
+    calendarMonths,
+    lunarLabel,
+  };
 })();

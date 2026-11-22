@@ -452,7 +452,7 @@ WorkTimeApp.services.runtimeFolder = (() => {
     status = "initializing";
     detail = "";
     notify();
-    for (const name of ["backups", "ebooks", "music"]) {
+    for (const name of ["backups", "ebooks", "music", "game"]) {
       progress = name;
       notify();
       try {
@@ -515,8 +515,97 @@ WorkTimeApp.services.runtimeFolder = (() => {
       );
     }
   }
-  // Optional, disposable dependencies never request permission or alter media status.
-  async function withDependencies(action) {
+  async function optionalDirectory(parent, name) {
+    try {
+      return await parent.getDirectoryHandle(name);
+    } catch (error) {
+      if (error.name === "NotFoundError") return null;
+      throw error;
+    }
+  }
+  async function equalResourceFiles(left, right) {
+    if (left.size !== right.size) return false;
+    for (let at = 0; at < left.size; at += 1024 ** 2) {
+      const a = new Uint8Array(
+        await left.slice(at, at + 1024 ** 2).arrayBuffer(),
+      );
+      const b = new Uint8Array(
+        await right.slice(at, at + 1024 ** 2).arrayBuffer(),
+      );
+      if (a.some((value, index) => value !== b[index])) return false;
+    }
+    return true;
+  }
+  // Move only recognised resource trees. Conflicts and unknown entries stay intact.
+  async function moveResourceTree(source, target) {
+    for await (const [name, entry] of source.entries()) {
+      if (entry.kind === "directory") {
+        const next = await target.getDirectoryHandle(name, { create: true });
+        await moveResourceTree(entry, next);
+        try {
+          await source.removeEntry(name);
+        } catch (error) {
+          if (
+            !["InvalidModificationError", "NotFoundError"].includes(error.name)
+          )
+            throw error;
+        }
+      } else {
+        const original = await entry.getFile();
+        let destination;
+        try {
+          destination = await target.getFileHandle(name);
+        } catch (error) {
+          if (error.name !== "NotFoundError") throw error;
+        }
+        if (!destination) {
+          destination = await target.getFileHandle(name, { create: true });
+          const stream = await destination.createWritable();
+          try {
+            await stream.write(original);
+            await stream.close();
+          } catch (error) {
+            await stream.abort().catch(() => {});
+            await target.removeEntry(name).catch(() => {});
+            throw error;
+          }
+        }
+        const fresh = await entry.getFile();
+        if (
+          fresh.size === original.size &&
+          fresh.lastModified === original.lastModified &&
+          (await equalResourceFiles(original, await destination.getFile()))
+        )
+          await source.removeEntry(name);
+      }
+    }
+  }
+  async function migrateResourceLayout(selected, kind, directory) {
+    const legacy = await optionalDirectory(selected, "dependencies");
+    if (!legacy) return;
+    const names =
+      kind === "game" ? ["pikafish", "rapfi", "misty-jungle", "utttai"] : [];
+    for (const name of names) {
+      const old = await optionalDirectory(legacy, name);
+      if (!old) continue;
+      const target = await directory.getDirectoryHandle(name, { create: true });
+      await moveResourceTree(old, target);
+      try {
+        await legacy.removeEntry(name);
+      } catch (error) {
+        if (!["InvalidModificationError", "NotFoundError"].includes(error.name))
+          throw error;
+      }
+    }
+    try {
+      await selected.removeEntry("dependencies");
+    } catch (error) {
+      if (!["InvalidModificationError", "NotFoundError"].includes(error.name))
+        throw error;
+    }
+  }
+  // Disposable resources never request permission or alter media status.
+  async function withResourceDirectory(kind, action) {
     await initialize();
     if (
       closed ||
@@ -532,9 +621,11 @@ WorkTimeApp.services.runtimeFolder = (() => {
       if (busy || imports || candidate || handle !== selected) return null;
       if ((await selected.queryPermission({ mode: "readwrite" })) !== "granted")
         return null;
-      const directory = await selected.getDirectoryHandle("dependencies", {
+      const directory = await selected.getDirectoryHandle(kind, {
         create: true,
       });
+      if (kind === "game")
+        await migrateResourceLayout(selected, kind, directory);
       return action(directory);
     });
   }
@@ -594,7 +685,8 @@ WorkTimeApp.services.runtimeFolder = (() => {
     authorize,
     write,
     getDirectory,
-    withDependencies,
+    withDependencies: (action) => withResourceDirectory("dependencies", action),
+    withGameResources: (action) => withResourceDirectory("game", action),
     importFiles,
     get state() {
       return {

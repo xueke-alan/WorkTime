@@ -110,9 +110,57 @@ async function unit() {
     assert.equal(R.landing(p, 11, 1).to, 12, "no color mismatch jump");
     assert.equal(
       R.landing(p, 13, 1).to,
-      18,
-      "a jump does not chain into flight",
+      30,
+      "a jump into the express entry continues into flight",
     );
+    assert.deepEqual(clone(R.landing(p, 13, 1).path), [14, 18, 30]);
+    const relative = (g, seat) => (g - seat * 13 - 1 + 52) % 52;
+    for (const [from, landings] of [
+      [1, [2, 6]],
+      [17, [18, 30]],
+      [13, [14, 18, 30]],
+    ]) {
+      const state = fixture(from, 1, p),
+        enemy = (p + 1) % 4,
+        opposite = (p + 2) % 4;
+      landings.forEach((step, i) => {
+        state.pieces[enemy * 4 + i] = relative(R.global(p, step), enemy);
+      });
+      state.pieces[enemy * 4 + 3] = relative(R.global(p, from), enemy);
+      state.pieces[opposite * 4 + 3] = relative(
+        R.global(p, from + 2),
+        opposite,
+      );
+      state.pieces[p * 4 + 1] = landings[0];
+      if (from !== 1) {
+        state.pieces[opposite * 4] = 53;
+        state.pieces[opposite * 4 + 1] = 53;
+        state.pieces[opposite * 4 + 2] = 52;
+      }
+      const moved = R.move(state, 0);
+      assert.equal(
+        moved.effect.captured.length,
+        landings.length + (from !== 1 ? 2 : 0),
+      );
+      landings.forEach((_, i) =>
+        assert.equal(moved.state.pieces[enemy * 4 + i], -2),
+      );
+      assert.equal(
+        moved.state.pieces[enemy * 4 + 3],
+        state.pieces[enemy * 4 + 3],
+      );
+      assert.equal(moved.state.pieces[p * 4 + 1], landings[0]);
+      assert.equal(
+        moved.state.pieces[opposite * 4 + 3],
+        state.pieces[opposite * 4 + 3],
+        "passing a square between landings does not capture",
+      );
+      if (from !== 1) {
+        assert.equal(moved.state.pieces[opposite * 4], -2);
+        assert.equal(moved.state.pieces[opposite * 4 + 1], -2);
+        assert.equal(moved.state.pieces[opposite * 4 + 2], 52);
+      }
+    }
     assert.equal(R.landing(p, 55, 2).to, 55, "bounce");
     assert.equal(R.landing(p, 55, 1).to, 56, "exact finish");
     assert.deepEqual(
@@ -623,6 +671,7 @@ async function browser(model) {
       [3, 4, [4, 5, 6, 7]],
       [1, 1, [2, 3, 4, 5, 6]],
       [17, 1, [18, "crossing", 30]],
+      [13, 1, [14, 15, 16, 17, 18, "crossing", 30]],
     ]) {
       const motion = fixture(before, die);
       motion.seats.fill("human");

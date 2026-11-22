@@ -78,6 +78,8 @@ WorkTimeApp.ui.createDayController = function (options) {
     if (bound) return;
     bound = true;
     events.handler($("plannedOvertimeToggle"), "onclick", async () => {
+      if (model.selected < model.today || $("plannedOvertimeToggle").disabled)
+        return;
       const day = model.state.days[model.selected] || {};
       if (C.calendarInfo(model.selected, day).work) return;
       if (day.plannedOvertime) {

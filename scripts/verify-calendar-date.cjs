@@ -79,7 +79,7 @@ async function verify() {
       await page.locator("#dayLeave").fill("0.5");
       await page.locator("#dayLeaveDone").click();
       await page
-        .locator('.day[data-date="2026-10-17"] .day-select')
+        .locator('.day[data-date="2026-10-24"] .day-select')
         .click({ force: true });
       await page.locator("#plannedOvertimeToggle").click();
       await page.locator("#todayButton").click();

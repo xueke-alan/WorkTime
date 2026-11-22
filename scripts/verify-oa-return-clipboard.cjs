@@ -4,7 +4,7 @@ const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 process.env.WORKTIME_TEST_CLIPBOARD = "1";
 require("./lib/browser-test-setup.cjs");
-let browser;
+let browser, server;
 const entry = pathToFileURL(
   path.resolve(process.env.WORKTIME_TEST_ROOT || ".", "index.html"),
 ).href;
@@ -13,84 +13,108 @@ const entry = pathToFileURL(
     channel: process.env.WORKTIME_BROWSER_CHANNEL || "msedge",
     headless: true,
   });
-  for (const state of [
-    "granted",
-    "prompt",
-    "denied",
-    "unsupported",
-    "background",
-    "rejected",
-    "skipped",
-  ]) {
-    const page = await browser.newPage();
-    await page.addInitScript((state) => {
-      window.permissionQueries = 0;
-      window.permissionReads = 0;
-      window.permissionFocused = state !== "background";
-      document.hasFocus = () => window.permissionFocused;
-      navigator.permissions.query = async () => {
-        window.permissionQueries++;
-        if (state === "unsupported")
-          throw new TypeError("Unsupported permission");
-        return {
-          state: ["background", "rejected", "skipped"].includes(state)
-            ? "prompt"
-            : state,
+  server = await require("./lib/startup-test-server.cjs").startupServer(
+    process.env.WORKTIME_TEST_ROOT || ".",
+  );
+  for (const startupEntry of [entry, server.url]) {
+    for (const state of [
+      "granted",
+      "prompt",
+      "denied",
+      "unsupported",
+      "background",
+      "rejected",
+      "skipped",
+    ]) {
+      const page = await browser.newPage();
+      await page.addInitScript((state) => {
+        window.permissionQueries = 0;
+        window.permissionReads = 0;
+        window.permissionFocused = state !== "background";
+        document.hasFocus = () => window.permissionFocused;
+        navigator.permissions.query = async () => {
+          window.permissionQueries++;
+          if (state === "unsupported")
+            throw new TypeError("Unsupported permission");
+          return {
+            state: ["background", "rejected", "skipped"].includes(state)
+              ? "prompt"
+              : state,
+          };
         };
-      };
-      Object.defineProperty(navigator, "clipboard", {
-        value: {
-          async readText() {
-            window.permissionReads++;
-            if (state === "rejected")
-              throw new DOMException("Denied", "NotAllowedError");
-            return "10/09\n08:00\n18:00";
+        Object.defineProperty(navigator, "clipboard", {
+          value: {
+            async readText() {
+              window.permissionReads++;
+              if (state === "rejected")
+                throw new DOMException("Denied", "NotAllowedError");
+              return "10/09\n08:00\n18:00";
+            },
           },
-        },
-        configurable: true,
-      });
-    }, state);
-    await page.goto(entry);
-    await page.waitForFunction(
-      () => document.documentElement.dataset.appState === "ready",
-    );
-    if (state === "background") {
-      assert.equal(await page.evaluate(() => window.permissionQueries), 0);
-      await page.evaluate(() => {
-        window.permissionFocused = true;
-        window.dispatchEvent(new Event("focus"));
-      });
-    }
-    await page.waitForFunction(() => window.permissionQueries === 1);
-    if (["prompt", "background", "rejected", "skipped"].includes(state)) {
-      await page.locator("#startupPermissionsDialog").waitFor();
-      assert.equal(await page.evaluate(() => window.permissionReads), 0);
-      if (state === "skipped")
-        await page.locator("#clipboardPermissionSkip").click();
-      else {
-        await page.locator("#clipboardPermissionAllow").click();
-        await page.waitForFunction(() => window.permissionReads === 1);
+          configurable: true,
+        });
+      }, state);
+      await page.goto(startupEntry);
+      await page.waitForFunction(
+        () => document.documentElement.dataset.appState === "ready",
+      );
+      if (startupEntry === entry) {
+        await page.evaluate(() => {
+          window.permissionFocused = true;
+          window.dispatchEvent(new Event("focus"));
+          document.dispatchEvent(new Event("visibilitychange"));
+        });
+        await page.waitForTimeout(250);
+        assert.equal(await page.evaluate(() => window.permissionQueries), 0);
+        assert.equal(await page.evaluate(() => window.permissionReads), 0);
+        assert.equal(
+          await page.locator("#startupPermissionsDialog").count(),
+          0,
+        );
+        await page.close();
+        continue;
       }
-      await page
-        .locator("#startupPermissionsDialog")
-        .waitFor({ state: "hidden" });
-    } else
-      assert.equal(await page.locator("#startupPermissionsDialog").count(), 0);
-    assert.equal(
-      await page.evaluate(() => window.permissionReads),
-      ["prompt", "background", "rejected"].includes(state) ? 1 : 0,
-    );
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event("focus"));
-      document.dispatchEvent(new Event("visibilitychange"));
-    });
-    assert.equal(await page.evaluate(() => window.permissionQueries), 1);
-    assert.equal(await page.locator("#pasteText").inputValue(), "");
-    assert.equal(
-      await page.locator("#importDialog").evaluate((el) => el.open),
-      false,
-    );
-    await page.close();
+      if (state === "background") {
+        assert.equal(await page.evaluate(() => window.permissionQueries), 0);
+        await page.evaluate(() => {
+          window.permissionFocused = true;
+          window.dispatchEvent(new Event("focus"));
+        });
+      }
+      await page.waitForFunction(() => window.permissionQueries === 1);
+      if (["prompt", "background", "rejected", "skipped"].includes(state)) {
+        await page.locator("#startupPermissionsDialog").waitFor();
+        assert.equal(await page.evaluate(() => window.permissionReads), 0);
+        if (state === "skipped")
+          await page.locator("#clipboardPermissionSkip").click();
+        else {
+          await page.locator("#clipboardPermissionAllow").click();
+          await page.waitForFunction(() => window.permissionReads === 1);
+        }
+        await page
+          .locator("#startupPermissionsDialog")
+          .waitFor({ state: "hidden" });
+      } else
+        assert.equal(
+          await page.locator("#startupPermissionsDialog").count(),
+          0,
+        );
+      assert.equal(
+        await page.evaluate(() => window.permissionReads),
+        ["prompt", "background", "rejected"].includes(state) ? 1 : 0,
+      );
+      await page.evaluate(() => {
+        window.dispatchEvent(new Event("focus"));
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+      assert.equal(await page.evaluate(() => window.permissionQueries), 1);
+      assert.equal(await page.locator("#pasteText").inputValue(), "");
+      assert.equal(
+        await page.locator("#importDialog").evaluate((el) => el.open),
+        false,
+      );
+      await page.close();
+    }
   }
   for (const width of [1920, 390]) {
     const page = await browser.newPage({ viewport: { width, height: 1080 } });
@@ -293,4 +317,5 @@ const entry = pathToFileURL(
   })
   .finally(async () => {
     await browser?.close();
+    await server?.close();
   });

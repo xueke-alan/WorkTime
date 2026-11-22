@@ -24,6 +24,7 @@ WorkTimeApp.services.runtimeMigration = (() => {
         "backups/manual",
         "ebooks",
         "music",
+        "game",
       ];
     let lastReport = 0;
     const check = () => {
@@ -107,7 +108,13 @@ WorkTimeApp.services.runtimeMigration = (() => {
     try {
       await report(true);
       if (migrate)
-        for (const name of ["backups", "ebooks", "music"]) {
+        for (const name of [
+          "backups",
+          "ebooks",
+          "music",
+          "game",
+          "dependencies",
+        ]) {
           result.current = name;
           const entry = await child(source, name);
           if (entry && entry.kind !== "directory")

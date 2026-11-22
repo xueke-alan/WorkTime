@@ -56,11 +56,11 @@ async function verify(site = path.resolve(__dirname, "../..")) {
     await page.goto(address);
     await page.evaluate(async () => {
       const root = await navigator.storage.getDirectory();
-      const folder = await root.getDirectoryHandle("dependencies", {
+      const folder = await root.getDirectoryHandle("game", {
         create: true,
       });
       WorkTimeApp.services.runtimeFolder = {
-        withDependencies: (action) => action(folder),
+        withGameResources: (action) => action(folder),
       };
     });
     const sizes = await page.evaluate(async () => {
@@ -79,7 +79,7 @@ async function verify(site = path.resolve(__dirname, "../..")) {
       await page.evaluate(async () => {
         const root = await navigator.storage.getDirectory();
         const folder = await (
-          await root.getDirectoryHandle("dependencies")
+          await root.getDirectoryHandle("game")
         ).getDirectoryHandle("misty-jungle");
         return (
           await (await folder.getFileHandle("misty-jungle.wasm")).getFile()
@@ -110,7 +110,7 @@ async function verify(site = path.resolve(__dirname, "../..")) {
     await page.evaluate(async () => {
       const root = await navigator.storage.getDirectory();
       const folder = await (
-        await root.getDirectoryHandle("dependencies")
+        await root.getDirectoryHandle("game")
       ).getDirectoryHandle("misty-jungle");
       const writer = await (
         await folder.getFileHandle("misty-jungle.wasm")
@@ -121,7 +121,7 @@ async function verify(site = path.resolve(__dirname, "../..")) {
     });
     assert.equal(downloads, 2, "same-size corrupt folder binary is repaired");
     await page.evaluate(async () => {
-      WorkTimeApp.services.runtimeFolder.withDependencies = async () => null;
+      WorkTimeApp.services.runtimeFolder.withGameResources = async () => null;
       await WorkTimeApp.games.jungleResources.load();
     });
     assert.equal(
@@ -146,11 +146,11 @@ async function verify(site = path.resolve(__dirname, "../..")) {
     await page.context().setOffline(false);
     await page.evaluate(async () => {
       const root = await navigator.storage.getDirectory();
-      const dependencies = await root.getDirectoryHandle("dependencies");
+      const dependencies = await root.getDirectoryHandle("game");
       const folder = await dependencies.getDirectoryHandle("misty-jungle");
       await folder.removeEntry("misty-jungle.wasm");
       WorkTimeApp.services.runtimeFolder = {
-        withDependencies: (action) => action(dependencies),
+        withGameResources: (action) => action(dependencies),
       };
       await WorkTimeApp.games.jungleResources.prefetch();
     });
@@ -170,7 +170,7 @@ async function verify(site = path.resolve(__dirname, "../..")) {
     await page.evaluate(async () => {
       const root = await navigator.storage.getDirectory();
       const folder = await (
-        await root.getDirectoryHandle("dependencies")
+        await root.getDirectoryHandle("game")
       ).getDirectoryHandle("misty-jungle");
       await folder.removeEntry("misty-jungle.wasm");
     });
@@ -196,7 +196,7 @@ async function verify(site = path.resolve(__dirname, "../..")) {
       "failed download can retry",
     );
     await page.evaluate(async () => {
-      WorkTimeApp.services.runtimeFolder.withDependencies = async () => {
+      WorkTimeApp.services.runtimeFolder.withGameResources = async () => {
         throw Error("Permission lost");
       };
       window.caches.open = async () => {

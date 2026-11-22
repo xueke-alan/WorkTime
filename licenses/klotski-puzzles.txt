@@ -1,0 +1,72 @@
+Classic layouts from https://github.com/jeantimex/klotski
+Source: src/hrd-games.json
+Upstream commit: 6e54380cd881e72da74e61df1dda07ebc0e695b0
+Coordinates converted to WorkTime notation; distances independently recomputed.
+Generated levels are selected from the reachable state graphs of these layouts.
+
+MIT License
+
+Copyright (c) 2017 Su
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+Additional historical layout references (classic IDs 40-46)
+
+Seven board arrangements and their established titles were transcribed from
+Simon Hung's explicitly listed classic collection, originally attributed to Fayaa.
+No JavaScript implementation or solver from that repository is included.
+Reference: https://github.com/SimonHung/Klotski
+Pinned commit: 7dd8193ea28c96a427af0805437e70f9d533e23c
+Classic list: klotski.boardList.js (gClassicList)
+Board facts: klotski.board.fayaa.js (initBoardFayaa)
+Fayaa records: 57, 123, 43, 45, 56, 406, 407.
+Contributors recorded in the source: admin, 華英雄, 半瓶墨水, 影子.
+The classic list also cites 華容道遊戲秘決技巧 for 井底之蛙 and
+魏仲良、林順喜 (國立臺灣師範大學 資訊教育系) for 身先士卒 and 兵威將廣.
+The factual snapshot and individual source URLs are in scripts/klotski/classics-extra.json.
+All seven distances and solutions are independently recomputed by WorkTime.
+Alternative titles are not counted as separate puzzles. Existing ordinary
+layouts are replaced by difficulty while the total stays at 300 puzzles.
+
+Additional Fayaa community-named layout facts
+
+The same pinned SimonHung/Klotski board table contains community-authored
+arrangements beyond its explicitly designated classic list. These are labeled
+Fayaa collection in WorkTime, not reclassified as traditional classics.
+The factual snapshot scripts/klotski/fayaa-named.json records 299 additional
+unique standard 10-piece arrangements, with each title, original contributor,
+source record URL and board coordinates. Solver implementation is not copied.
+Nonstandard piece sets, mirrors and duplicate names for the same board are
+excluded. Every selected arrangement is independently solved under WorkTime's
+continuous-move metric. The six fixed difficulty quotas permit 206 named
+puzzles: 45 designated classics and 161 community-named puzzles. Remaining
+source layouts stay in the development snapshot; they do not change quotas.
+Existing retired records remain in the compatibility bank for save imports.
+
+WorkTime display-name editorial layer
+
+68 selected titles longer than five displayed characters have short names
+authored for WorkTime. scripts/klotski/display-names.json records each stable
+layout ID, the original display name, the short name and its design rationale.
+The names draw on the board configuration, verified movement patterns or the
+original title's imagery. These are presentation aliases, not changes to the
+upstream titles, puzzle positions, difficulty grading or saved-game identities.
+Source labels are omitted from the game interface; the original factual
+source snapshots and attribution above remain available in the project.

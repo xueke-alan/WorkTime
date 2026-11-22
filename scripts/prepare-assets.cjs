@@ -36,6 +36,7 @@ function prepareAssets({ check = false } = {}) {
     "xiangqi",
     "gomoku",
     "sliding-puzzle",
+    "klotski",
     "lights-out",
     "jungle",
     "ultimate-ttt",
@@ -61,8 +62,18 @@ function prepareAssets({ check = false } = {}) {
     const rules = [];
     if (id === "lights-out") rules.push("assets/data/lights-out-legacy.js");
     if (id === "gomoku") rules.push("assets/data/gomoku-legacy.js");
-    if (["sudoku", "sokoban", "xiangqi", "gomoku", "lights-out"].includes(id))
+    if (
+      [
+        "sudoku",
+        "sokoban",
+        "xiangqi",
+        "gomoku",
+        "lights-out",
+        "klotski",
+      ].includes(id)
+    )
       rules.push("assets/data/" + id + ".js");
+    if (id === "aeroplane") rules.push("assets/js/games/dice3d.js");
     if (id === "tank") rules.push("assets/js/games/tank-stages.js");
     if (id === "gomoku")
       rules.push(
@@ -86,8 +97,20 @@ function prepareAssets({ check = false } = {}) {
         "assets/js/games/uno-ranking.js",
       );
     if (id === "aeroplane") rules.push("assets/js/games/aeroplane-ai.js");
+    let archiveMetadata = {};
+    if (id === "klotski") {
+      const bank = { WorkTimeApp: { data: {} } };
+      vm.runInNewContext(
+        fs.readFileSync(path.join(root, "assets/data/klotski.js"), "utf8"),
+        bank,
+      );
+      archiveMetadata = {
+        retiredIds: bank.WorkTimeApp.data.klotskiRetired.map((l) => l.id),
+      };
+    }
     return {
       ...metadata,
+      ...archiveMetadata,
       rules,
       source: "assets/js/games/" + id + ".js",
       style: "assets/css/" + id + ".css",
@@ -423,6 +446,10 @@ function prepareAssets({ check = false } = {}) {
   );
   const data = {};
   const context = vm.createContext({ WorkTimeApp: { data } });
+  vm.runInContext(
+    fs.readFileSync(path.join(root, "assets/data/klotski-names.js"), "utf8"),
+    context,
+  );
   const locales = ["zh-CN", "en", "zh-TW", "zh-HK", "ko", "ja"];
   for (const name of [
     ...locales,
@@ -438,6 +465,7 @@ function prepareAssets({ check = false } = {}) {
     "xiangqi",
     "gomoku",
     "sliding-puzzle",
+    "klotski",
     "lights-out",
     "jungle",
     "ultimate-ttt",

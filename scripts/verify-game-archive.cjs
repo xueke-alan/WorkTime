@@ -648,6 +648,36 @@ async function unit() {
     previous: saves["game-2048"].state,
   };
   const filled = S.merge("game-2048", cleanLocal, withUndo);
+  const demo = { state: G.rules2048.create(), steps: 12 };
+  const importedDemo = S.merge("game-2048", cleanLocal, {
+    ...cleanLocal,
+    aiDemo: demo,
+  });
+  assert.deepEqual(
+    copy(importedDemo.value.aiDemo),
+    copy(demo),
+    "demo display survives archive merging",
+  );
+  assert.deepEqual(
+    copy(importedDemo.value.state),
+    copy(cleanLocal.state),
+    "demo does not replace player progress",
+  );
+  const withAIBest = S.merge(
+    "game-2048",
+    { ...cleanLocal, aiBest: 12000 },
+    { ...withUndo, aiBest: 18000 },
+  );
+  assert.equal(
+    withAIBest.value.aiBest,
+    18000,
+    "AI best scores merge separately",
+  );
+  assert.equal(
+    withAIBest.value.best,
+    filled.value.best,
+    "AI scores do not affect player best",
+  );
   assert.equal(
     filled.conflict,
     false,

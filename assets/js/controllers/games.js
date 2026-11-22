@@ -155,6 +155,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
   const content = document.createElement("div");
   content.className = "game-content";
   shell.append(surface, toolbar, content);
+  const disposeFooter = WorkTimeApp.ui.createSiteFooter(shell, true);
   workspace.append(shell);
 
   let state = "closed",
@@ -667,6 +668,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     dispose() {
       if (disposed) return;
       disposed = true;
+      disposeFooter();
       hideIdleCover();
       idleObserver.disconnect();
       unlistenHover();

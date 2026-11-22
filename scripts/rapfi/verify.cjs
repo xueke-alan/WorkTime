@@ -46,11 +46,11 @@ async function verifyPrefetch(browser, origin, interceptBinaries) {
       (await (await caches.open("worktime-rapfi-binaries-v1")).keys()).length;
     window.rapfiDirectory = async () => {
       const root = await navigator.storage.getDirectory();
-      return root.getDirectoryHandle("dependencies", { create: true });
+      return root.getDirectoryHandle("game", { create: true });
     };
     document.addEventListener("worktime:ready", () => {
       const writable = new URL(location.href).searchParams.has("directory");
-      WorkTimeApp.services.runtimeFolder.withDependencies = async (action) =>
+      WorkTimeApp.services.runtimeFolder.withGameResources = async (action) =>
         writable ? action(await window.rapfiDirectory()) : null;
     });
     window.playRapfi = async () => {

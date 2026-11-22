@@ -1322,6 +1322,18 @@ body #dayPreview .preview-totals small {
   margin-top: 0;
   margin-right: auto;
   flex: 0 0 auto;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 180ms var(--motion-ease), visibility 0s;
+}
+.editor .day-action-row #plannedOvertimeArea.is-past-date {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 0s, 180ms;
+}
+:where(html[data-reduced-motion="true"]) .editor .day-action-row #plannedOvertimeArea {
+  transition: none;
 }
 .editor .day-action-row {
   align-items: center;
@@ -2140,7 +2152,23 @@ body .editor #dayForm .day-action-row :is(#clearManual, #sourceOpen) {
 }
 body .editor #dayForm .day-action-row :is(#dayLeaveArea, #plannedOvertimeArea) {
   grid-column: 1;
+  grid-row: 1;
   width: 100%;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 180ms var(--motion-ease), visibility 0s;
+}
+body .editor #dayForm .day-action-row :is(#dayLeaveArea, #plannedOvertimeArea):is(.is-unavailable, .is-past-date) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 0s, 180ms;
+}
+body .editor #dayForm .day-action-row #clearManual {
+  grid-area: 1 / 2;
+}
+body .editor #dayForm .day-action-row #sourceOpen {
+  grid-area: 1 / 3;
 }
 body .editor #dayForm .day-action-row :is(#dayLeaveToggle, #plannedOvertimeToggle, #clearManual, #sourceOpen) {
   width: 100%;
@@ -2157,7 +2185,7 @@ body .editor #dayForm .day-action-row #dayLeaveToggle[aria-expanded="true"] {
 body .editor #dayForm .day-action-row.is-leave-open > :not(#dayLeaveArea) {
   opacity: 0;
 }
-body .editor #dayForm .day-action-row > :not(#dayLeaveArea) {
+body .editor #dayForm .day-action-row > button {
   transition: opacity 180ms ease;
 }
 body .editor #dayForm #dayLeaveToggle {

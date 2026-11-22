@@ -14,6 +14,7 @@ function checkI18n() {
   const run = (file) =>
     vm.runInContext(read(file), context, { filename: file });
   run("assets/js/language-config.js");
+  run("assets/data/klotski-names.js");
   for (const locale of [
     "zh-CN",
     "en",
@@ -33,6 +34,7 @@ function checkI18n() {
     "xiangqi",
     "gomoku",
     "sliding-puzzle",
+    "klotski",
     "lights-out",
     "jungle",
     "ultimate-ttt",

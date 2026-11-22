@@ -1,0 +1,429 @@
+{
+  "repository": "https://github.com/SimonHung/Klotski",
+  "commit": "7dd8193ea28c96a427af0805437e70f9d533e23c",
+  "classicList": "klotski.boardList.js:gClassicList",
+  "boardTable": "klotski.board.fayaa.js:initBoardFayaa",
+  "originalCollection": "http://fayaa.com/youxi/hrd/",
+  "entries": [
+    {
+      "name": "插翅难飞二",
+      "sourceName": "插翅難飛2",
+      "sourceLevel": 57,
+      "sourceUrl": "http://fayaa.com/youxi/hrd/57/",
+      "contributor": "admin",
+      "board": "NBBOHAAIHAAIP@@QCCDD",
+      "pieces": [
+        [
+          2,
+          2,
+          5
+        ],
+        [
+          1,
+          2,
+          4
+        ],
+        [
+          1,
+          2,
+          7
+        ],
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          2,
+          1,
+          16
+        ],
+        [
+          2,
+          1,
+          18
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          1,
+          1,
+          3
+        ],
+        [
+          1,
+          1,
+          12
+        ],
+        [
+          1,
+          1,
+          15
+        ]
+      ]
+    },
+    {
+      "name": "四路进兵二",
+      "sourceName": "四路進兵2",
+      "sourceLevel": 123,
+      "sourceUrl": "http://fayaa.com/youxi/hrd/123/",
+      "contributor": "華英雄",
+      "board": "HAA@HAA@NOPQBBCCDDEE",
+      "pieces": [
+        [
+          2,
+          2,
+          1
+        ],
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          2,
+          1,
+          12
+        ],
+        [
+          2,
+          1,
+          14
+        ],
+        [
+          2,
+          1,
+          16
+        ],
+        [
+          2,
+          1,
+          18
+        ],
+        [
+          1,
+          1,
+          8
+        ],
+        [
+          1,
+          1,
+          9
+        ],
+        [
+          1,
+          1,
+          10
+        ],
+        [
+          1,
+          1,
+          11
+        ]
+      ]
+    },
+    {
+      "name": "云遮雾障",
+      "sourceName": "雲遮霧障",
+      "sourceLevel": 43,
+      "sourceUrl": "http://fayaa.com/youxi/hrd/43/",
+      "contributor": "admin",
+      "board": "HAAIHAAIJBBNJCCOP@@Q",
+      "pieces": [
+        [
+          2,
+          2,
+          1
+        ],
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          1,
+          2,
+          8
+        ],
+        [
+          2,
+          1,
+          9
+        ],
+        [
+          2,
+          1,
+          13
+        ],
+        [
+          1,
+          1,
+          11
+        ],
+        [
+          1,
+          1,
+          15
+        ],
+        [
+          1,
+          1,
+          16
+        ],
+        [
+          1,
+          1,
+          19
+        ]
+      ]
+    },
+    {
+      "name": "三军联防",
+      "sourceName": "三軍聯防",
+      "sourceLevel": 45,
+      "sourceUrl": "http://fayaa.com/youxi/hrd/45/",
+      "contributor": "admin",
+      "board": "AAHIAAHIBBCCNDDOP@@Q",
+      "pieces": [
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          1,
+          2,
+          2
+        ],
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          2,
+          1,
+          8
+        ],
+        [
+          2,
+          1,
+          10
+        ],
+        [
+          2,
+          1,
+          13
+        ],
+        [
+          1,
+          1,
+          12
+        ],
+        [
+          1,
+          1,
+          15
+        ],
+        [
+          1,
+          1,
+          16
+        ],
+        [
+          1,
+          1,
+          19
+        ]
+      ]
+    },
+    {
+      "name": "井底之蛙",
+      "sourceName": "井底之蛙",
+      "sourceLevel": 56,
+      "sourceUrl": "http://fayaa.com/youxi/hrd/56/",
+      "contributor": "半瓶墨水",
+      "board": "NBBOHAAIHAAIPCCQ@DD@",
+      "pieces": [
+        [
+          2,
+          2,
+          5
+        ],
+        [
+          1,
+          2,
+          4
+        ],
+        [
+          1,
+          2,
+          7
+        ],
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          2,
+          1,
+          13
+        ],
+        [
+          2,
+          1,
+          17
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          1,
+          1,
+          3
+        ],
+        [
+          1,
+          1,
+          12
+        ],
+        [
+          1,
+          1,
+          15
+        ]
+      ]
+    },
+    {
+      "name": "身先士卒",
+      "sourceName": "身先士卒",
+      "sourceLevel": 406,
+      "sourceUrl": "http://fayaa.com/youxi/hrd/406/",
+      "contributor": "影子",
+      "board": "BBAACCAADDEEFFNOPQ@@",
+      "pieces": [
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          1,
+          0
+        ],
+        [
+          2,
+          1,
+          4
+        ],
+        [
+          2,
+          1,
+          8
+        ],
+        [
+          2,
+          1,
+          10
+        ],
+        [
+          2,
+          1,
+          12
+        ],
+        [
+          1,
+          1,
+          14
+        ],
+        [
+          1,
+          1,
+          15
+        ],
+        [
+          1,
+          1,
+          16
+        ],
+        [
+          1,
+          1,
+          17
+        ]
+      ]
+    },
+    {
+      "name": "兵威将广",
+      "sourceName": "兵威將廣",
+      "sourceLevel": 407,
+      "sourceUrl": "http://fayaa.com/youxi/hrd/407/",
+      "contributor": "影子",
+      "board": "AANOAAPQBBCCDDEE@FF@",
+      "pieces": [
+        [
+          2,
+          2,
+          0
+        ],
+        [
+          2,
+          1,
+          8
+        ],
+        [
+          2,
+          1,
+          10
+        ],
+        [
+          2,
+          1,
+          12
+        ],
+        [
+          2,
+          1,
+          14
+        ],
+        [
+          2,
+          1,
+          17
+        ],
+        [
+          1,
+          1,
+          2
+        ],
+        [
+          1,
+          1,
+          3
+        ],
+        [
+          1,
+          1,
+          6
+        ],
+        [
+          1,
+          1,
+          7
+        ]
+      ]
+    }
+  ]
+}

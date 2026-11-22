@@ -145,7 +145,7 @@ async function main() {
         },
       };
       WorkTimeApp.services.runtimeFolder = {
-        withDependencies: async (action) =>
+        withGameResources: async (action) =>
           action({ getDirectoryHandle: async () => folder }),
       };
       window.utttFiles = files;

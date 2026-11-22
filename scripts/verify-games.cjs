@@ -240,6 +240,7 @@ async function verifyPuzzle(browser) {
     beforeVictory,
     "victory does not move the board",
   );
+  await action("continue").waitFor({ state: "visible" });
   assert.equal(await action("continue").isVisible(), true);
   await page.locator(".puzzle-overlay").screenshot({
     path: path.join(root, "test-results/games/won.png"),

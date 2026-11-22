@@ -16,6 +16,7 @@ WorkTimeApp.services.gameArchive = (() => {
       [
         "2048",
         "sliding-puzzle",
+        "klotski",
         "lights-out",
         "minesweeper",
         "snake",
@@ -38,6 +39,7 @@ WorkTimeApp.services.gameArchive = (() => {
     ),
   );
   const levelGames = [
+    "game-klotski",
     "game-sudoku",
     "game-sokoban",
     "game-xiangqi",
@@ -76,6 +78,7 @@ WorkTimeApp.services.gameArchive = (() => {
     );
   }
   const historyGames = [
+    "game-klotski",
     "game-xiangqi",
     "game-gomoku",
     "game-sokoban",
@@ -197,7 +200,7 @@ WorkTimeApp.services.gameArchive = (() => {
     const record = {
       id: window.crypto.randomUUID(),
       finishedAt: Date.now(),
-      path: typeof path === "string" ? path : [...path],
+      path: typeof path === "string" ? path : clone(path),
     };
     save.completionHistory = mergeHistory(
       { [level]: [record] },
@@ -207,22 +210,27 @@ WorkTimeApp.services.gameArchive = (() => {
   function normalizeHistory(id, input = {}) {
     requireValue(plain(input), id);
     const bank =
-      id === "game-sokoban"
-        ? WorkTimeApp.data.sokoban.levels
-        : id === "game-lights-out"
-          ? [
-              ...WorkTimeApp.data.lightsOut,
-              ...(WorkTimeApp.data.lightsOutRetired || []),
-            ]
-          : id === "game-gomoku"
+      id === "game-klotski"
+        ? [
+            ...WorkTimeApp.data.klotski,
+            ...(WorkTimeApp.data.klotskiRetired || []),
+          ]
+        : id === "game-sokoban"
+          ? WorkTimeApp.data.sokoban.levels
+          : id === "game-lights-out"
             ? [
-                ...WorkTimeApp.data.gomoku,
-                ...(WorkTimeApp.data.gomokuRetired || []),
+                ...WorkTimeApp.data.lightsOut,
+                ...(WorkTimeApp.data.lightsOutRetired || []),
               ]
-            : [
-                ...WorkTimeApp.data.xiangqi,
-                ...(WorkTimeApp.data.xiangqiRetired || []),
-              ];
+            : id === "game-gomoku"
+              ? [
+                  ...WorkTimeApp.data.gomoku,
+                  ...(WorkTimeApp.data.gomokuRetired || []),
+                ]
+              : [
+                  ...WorkTimeApp.data.xiangqi,
+                  ...(WorkTimeApp.data.xiangqiRetired || []),
+                ];
     const G = WorkTimeApp.games;
     const result = {};
     for (const [levelId, records] of Object.entries(input)) {
@@ -238,7 +246,10 @@ WorkTimeApp.services.gameArchive = (() => {
           id,
         );
         let won = false;
-        if (id === "game-sokoban") {
+        if (id === "game-klotski") {
+          const state = G.klotskiRules.replay(level, record.path);
+          won = state && G.klotskiRules.won(state);
+        } else if (id === "game-sokoban") {
           const map = G.sokobanRules.parse(level);
           const state = G.sokobanRules.restore(map, record);
           won = state && G.sokobanRules.won(map, state);
@@ -302,12 +313,26 @@ WorkTimeApp.services.gameArchive = (() => {
       fail("version", id);
     const G = WorkTimeApp.games;
     let result;
+    if (id === "game-klotski") {
+      result = G.klotskiRules.restore(input);
+      requireValue(result, id);
+      return result;
+    }
     if (id === "game-aeroplane") {
       result = G.aeroplaneRules.restore(input.state);
       requireValue(result, id);
       return { version: 1, state: result };
     }
     if (id === "game-uno") {
+      requireValue(
+        input.countdownPending === undefined ||
+          typeof input.countdownPending === "boolean",
+        id,
+      );
+      const countdown =
+        input.countdownPending === undefined
+          ? {}
+          : { countdownPending: input.countdownPending };
       if (input.state === null) {
         requireValue(
           input.match === undefined && input.profile !== undefined,
@@ -315,13 +340,13 @@ WorkTimeApp.services.gameArchive = (() => {
         );
         const profile = G.unoRanking.restoreProfile(input.profile);
         requireValue(profile, id);
-        return { version: 1, state: null, profile };
+        return { version: 1, state: null, profile, ...countdown };
       }
       result = G.unoRules.restore(input.state);
       requireValue(result, id);
       // Preserve the legacy shape until a profile or match is actually written.
       if (input.profile === undefined && input.match === undefined)
-        return { version: 1, state: result };
+        return { version: 1, state: result, ...countdown };
       const profile = G.unoRanking.restoreProfile(input.profile);
       requireValue(profile, id);
       const match =
@@ -334,8 +359,10 @@ WorkTimeApp.services.gameArchive = (() => {
         state: result,
         profile,
         ...(match ? { match } : {}),
+        ...countdown,
       };
     }
+
     if (id === "game-lights-out") {
       result = G.lightsOutRules.restore(input);
       requireValue(result, id);
@@ -668,7 +695,7 @@ WorkTimeApp.services.gameArchive = (() => {
       return true;
     if (["game-xiangqi", "game-gomoku"].includes(id) && v.match) return true;
     if (id === "game-gomoku" && v.forbidden) return true;
-    if (id === "game-lights-out")
+    if (id === "game-lights-out" || id === "game-klotski")
       return Object.keys(v.completed).length > 0 || hasProgress(id, v);
     if (id === "game-sliding-puzzle")
       return Object.keys(v.best).length > 0 || hasProgress(id, v);
@@ -678,7 +705,13 @@ WorkTimeApp.services.gameArchive = (() => {
     if (id === "game-tank")
       return v.best > 0 || v.custom !== null || v.muted === true;
     if (id === "game-2048")
-      return v.best > 0 || v.state.score > 0 || v.previous !== null;
+      return (
+        v.best > 0 ||
+        v.aiBest > 0 ||
+        v.aiDemo != null ||
+        v.state.score > 0 ||
+        v.previous !== null
+      );
     if (id === "game-minesweeper")
       return (
         v.state.status !== "ready" ||
@@ -712,6 +745,8 @@ WorkTimeApp.services.gameArchive = (() => {
   function hasProgress(id, v) {
     if (id === "game-aeroplane") return v.state.phase !== "won";
     if (id === "game-uno") return !!v.state && v.state.matchWinner === null;
+    if (id === "game-klotski")
+      return !!v.current || Object.values(v.drafts).some((s) => s.started);
     if (["game-xiangqi", "game-gomoku"].includes(id) && v.match) return true;
     if (id === "game-sliding-puzzle")
       return Object.values(v.sessions).some((s) => s.started);
@@ -719,7 +754,8 @@ WorkTimeApp.services.gameArchive = (() => {
       return v.state.path.length > 0;
     if (id === "game-jump") return false;
     if (id === "game-tank") return v.custom !== null || v.muted !== undefined;
-    if (id === "game-2048") return v.state.score > 0 || v.previous !== null;
+    if (id === "game-2048")
+      return v.aiDemo != null || v.state.score > 0 || v.previous !== null;
     if (id === "game-minesweeper") return v.state.status !== "ready";
     if (id === "game-snake") return v.state.ticks > 0;
     if (id === "game-link")
@@ -807,8 +843,17 @@ WorkTimeApp.services.gameArchive = (() => {
     }
   }
   function progress(id, v) {
+    if (id === "game-klotski")
+      return fields(v, [
+        "current",
+        "chapter",
+        "grouping",
+        "classics",
+        "drafts",
+      ]);
     if (id === "game-sliding-puzzle") return fields(v, ["size", "sessions"]);
     if (id === "game-jump") return null;
+    if (id === "game-2048") return fields(v, ["state", "previous", "aiDemo"]);
     if (id === "game-tank") return fields(v, ["custom", "muted"]);
     if (levelGames.includes(id))
       return fields(v, [
@@ -884,12 +929,15 @@ WorkTimeApp.services.gameArchive = (() => {
             ? incoming
             : local;
     let out = clone(preferred);
-    if (id === "game-lights-out") {
+    if (id === "game-lights-out" || id === "game-klotski") {
       out.drafts = { ...local.drafts, ...incoming.drafts, ...preferred.drafts };
       out.completed = clone(local.completed);
       for (const [level, record] of Object.entries(incoming.completed))
         if (
-          WorkTimeApp.games.lightsOutRules.better(record, out.completed[level])
+          (id === "game-klotski"
+            ? WorkTimeApp.games.klotskiRules
+            : WorkTimeApp.games.lightsOutRules
+          ).better(record, out.completed[level])
         )
           out.completed[level] = clone(record);
     } else if (id === "game-sliding-puzzle") {
@@ -912,6 +960,8 @@ WorkTimeApp.services.gameArchive = (() => {
     } else if (id === "game-jump") out = Math.max(local, incoming);
     else if (["game-2048", "game-tank"].includes(id)) {
       out.best = Math.max(local.best, incoming.best);
+      if (id === "game-2048")
+        out.aiBest = Math.max(local.aiBest || 0, incoming.aiBest || 0);
       if (id === "game-tank") {
         out.custom = clone(preferred.custom ?? local.custom ?? incoming.custom);
         out.muted = preferred.muted ?? local.muted ?? incoming.muted ?? false;
@@ -1057,6 +1107,23 @@ WorkTimeApp.services.gameArchive = (() => {
       if (!plain(save) || (save.version !== undefined && save.version !== 1))
         return { kind: "empty" };
       switch (id) {
+        case "game-klotski": {
+          // The generated lazy catalog supplies these IDs before the bank loads.
+          const retiredKlotskiIds = new Set(
+            WorkTimeApp.data.klotskiRetired?.map((l) => l.id) ||
+              WorkTimeApp.games.get?.(id)?.retiredIds ||
+              [],
+          );
+          const active = (record) =>
+            Object.entries(plain(record) ? record : {})
+              .filter(([id]) => !retiredKlotskiIds.has(id))
+              .map(([, value]) => value);
+          return summary(
+            "completed",
+            active(save.completed).filter(plain).length,
+            active(save.drafts).some((s) => s?.started),
+          );
+        }
         case "game-aeroplane":
           return summary("best", 0, Array.isArray(save.state?.pieces));
         case "game-uno":
@@ -1211,6 +1278,7 @@ WorkTimeApp.services.gameArchive = (() => {
             "game-aeroplane",
             "game-sliding-puzzle",
             "game-lights-out",
+            "game-klotski",
           ].includes(id) || Object.hasOwn(raw ?? {}, id),
       );
       requireValue(

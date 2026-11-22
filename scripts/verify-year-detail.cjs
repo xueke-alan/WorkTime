@@ -16,6 +16,10 @@ const { chromium } = require("playwright");
       page.on("pageerror", (error) => errors.push(error.message));
       await page.route(/^https?:/, (route) => route.abort());
       await page.addInitScript(() => {
+        Object.defineProperty(document, "hidden", {
+          configurable: true,
+          value: false,
+        });
         const start = window.setInterval,
           stop = window.clearInterval;
         window.noteTimers = new Set();
@@ -34,6 +38,10 @@ const { chromium } = require("playwright");
       );
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
+      );
+      // Follow the emulated system preference while testing motion changes.
+      await page.evaluate(() =>
+        WorkTimeApp.services.preferences.page.saveMotionMode("system"),
       );
       await page.locator("#monthTitle").click();
       await page.locator("#yearViewToggle").waitFor();
@@ -63,7 +71,10 @@ const { chromium } = require("playwright");
       });
       assert.equal(await page.evaluate(() => window.noteTimers.size), 0);
       await page.evaluate(() => {
-        delete document.hidden;
+        Object.defineProperty(document, "hidden", {
+          configurable: true,
+          value: false,
+        });
         document.dispatchEvent(new Event("visibilitychange"));
       });
       await page.waitForFunction(() => window.noteTimers.size === 1);

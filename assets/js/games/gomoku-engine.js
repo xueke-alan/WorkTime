@@ -50,7 +50,7 @@ WorkTimeApp.games.rapfiResources = (() => {
   }
   async function directory(action) {
     try {
-      return await WorkTimeApp.services.runtimeFolder?.withDependencies(
+      return await WorkTimeApp.services.runtimeFolder?.withGameResources(
         async (root) =>
           action(await root.getDirectoryHandle("rapfi", { create: true })),
       );

@@ -25,6 +25,10 @@ async function verify() {
           document.documentElement.dataset.appState === "ready" &&
           !document.documentElement.classList.contains("app-loading"),
       );
+      // Follow the emulated system preference while testing motion changes.
+      await page.evaluate(() =>
+        WorkTimeApp.services.preferences.page.saveMotionMode("system"),
+      );
       await page.waitForTimeout(800);
       const settle = async () => {
         await page.evaluate(async () => {
@@ -384,7 +388,16 @@ async function verify() {
             assert.ok(
               Math.abs(shared.previous - shared.resting - Number(firstOffset)) <
                 1,
-              "Shared dates align with their previous row positions",
+              "Shared dates align with their previous row positions: " +
+                JSON.stringify({
+                  width,
+                  id,
+                  sign,
+                  shared,
+                  firstOffset,
+                  rows: sample.rows,
+                  weekView: sample.weekView,
+                }),
             );
           }
         } else assert.ok(Math.abs(seam) < 1, `Pages stay joined: ${seam}`);

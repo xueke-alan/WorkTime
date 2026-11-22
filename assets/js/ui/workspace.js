@@ -1,4 +1,17 @@
 "use strict";
+/** Share site identity with expanded workspaces. */
+WorkTimeApp.ui.createSiteFooter = function (host, expanded = false) {
+  if (!expanded) return () => {};
+  const meta = document
+    .querySelector(".calendar-footer .site-meta")
+    .cloneNode(true);
+  meta.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
+  const footer = document.createElement("footer");
+  footer.className = "workspace-footer";
+  footer.append(meta);
+  host.append(footer);
+  return () => footer.remove();
+};
 /** Coordinate owned views and the shared footer boundary; no persistence access. */
 WorkTimeApp.ui.createWorkspace = function ({
   model,
@@ -12,9 +25,11 @@ WorkTimeApp.ui.createWorkspace = function ({
   renderEditor,
   refreshSettings,
   renderAgenda = () => {},
+  onDateChanged = () => {},
 }) {
   let disposed = false,
-    observer = null;
+    observer = null,
+    disposeFooter = null;
   const footer = document.querySelector(".calendar-footer"),
     tabs = document.querySelector(".editor>.notification-tabs");
   function syncFooter(entries) {
@@ -53,6 +68,7 @@ WorkTimeApp.ui.createWorkspace = function ({
     mount() {
       if (observer) return;
       disposed = false;
+      disposeFooter = WorkTimeApp.ui.createSiteFooter(footer);
       observer = new window.ResizeObserver(syncFooter);
       observer.observe(footer);
       render();
@@ -61,6 +77,8 @@ WorkTimeApp.ui.createWorkspace = function ({
       disposed = true;
       observer?.disconnect();
       observer = null;
+      disposeFooter?.();
+      disposeFooter = null;
     },
     leaveBatch,
     open(id, options) {
@@ -107,6 +125,7 @@ WorkTimeApp.ui.createWorkspace = function ({
     dateChanged(today) {
       if (disposed) return;
       model.today = today;
+      onDateChanged();
       notifications.renderOAStaleNotice();
       renderStats();
       renderCalendar(true);

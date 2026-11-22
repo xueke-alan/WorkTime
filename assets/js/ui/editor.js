@@ -77,6 +77,9 @@ WorkTimeApp.ui.createEditor = function (options) {
       !day.sourcePriority;
   }
   function updatePlannedOvertime(day, info) {
+    const { selected, today } = getView(),
+      past = selected < today,
+      area = $("plannedOvertimeArea");
     const recorded =
         !info.work &&
         C.complete(day.oa) &&
@@ -89,9 +92,15 @@ WorkTimeApp.ui.createEditor = function (options) {
           ? WorkTimeApp.i18n.t("copy.cd4a0376cd")
           : WorkTimeApp.i18n.t("copy.3cf2307526"),
       button = $("plannedOvertimeToggle");
-    $("plannedOvertimeArea").classList.toggle("hidden", info.work);
+    area.classList.remove("hidden");
+    area.classList.toggle("is-unavailable", info.work);
+    area.classList.toggle("is-past-date", past);
+    if ((past || info.work) && area.contains(document.activeElement))
+      button.blur();
+    area.inert = past || info.work;
+    area.setAttribute("aria-hidden", String(past || info.work));
     $("clearManual").classList.toggle("is-planned-reset", planned);
-    button.disabled = recorded;
+    button.disabled = past || recorded;
     button.setAttribute("aria-pressed", String(planned && !recorded));
     button.setAttribute("aria-label", label);
     button.querySelector(".button-label").textContent = label;
@@ -172,7 +181,7 @@ WorkTimeApp.ui.createEditor = function (options) {
   }
   function previewDay() {
     const state = getState();
-    const { selected } = getView();
+    const { selected, today } = getView();
     updateLeaveButton();
     $("dayNextToggle").setAttribute(
       "aria-pressed",
@@ -210,7 +219,8 @@ WorkTimeApp.ui.createEditor = function (options) {
           (c.work && !isFullLeave(day)
             ? WorkTimeApp.i18n.t("copy.bed1305fb6")
             : "")
-        : !c.work && (day.plannedOvertime || c.overtime > 0)
+        : !c.work &&
+            ((day.plannedOvertime && selected >= today) || c.overtime > 0)
           ? WorkTimeApp.i18n.t("short.preview.ot")
           : !c.work && c.minutes === null
             ? WorkTimeApp.i18n.t("copy.743a4ad0dd")
@@ -348,7 +358,9 @@ WorkTimeApp.ui.createEditor = function (options) {
     toggle.setAttribute("aria-expanded", String(open));
     toggle.inert = open;
     for (const child of row.children)
-      child.inert = open && child !== $("dayLeaveArea");
+      child.inert =
+        (open && child !== $("dayLeaveArea")) ||
+        child.matches(".is-unavailable, .is-past-date");
     if (!open && focus) toggle.focus({ preventScroll: true });
   }
   function openLeavePanel() {
@@ -371,11 +383,18 @@ WorkTimeApp.ui.createEditor = function (options) {
   }
   function updateLeaveButton() {
     const state = getState();
-    const { selected } = getView();
+    const { selected, today } = getView();
+    const emptyLabel = WorkTimeApp.i18n.t(
+      selected < today ? "editor.supplementLeave" : "copy.7697b2ac1b",
+    );
     const hours = Number($("dayLeave").value || 0),
       hasLeave = Number.isFinite(hours) && hours > 0,
       canLeave = C.calendarInfo(selected, state.days[selected] || {}).work;
-    $("dayLeaveArea").classList.toggle("hidden", !canLeave);
+    const area = $("dayLeaveArea");
+    area.classList.remove("hidden");
+    area.classList.toggle("is-unavailable", !canLeave);
+    area.inert = !canLeave;
+    area.setAttribute("aria-hidden", String(!canLeave));
     const fullDay =
       hasLeave &&
       Math.round(hours * 60) ===
@@ -386,7 +405,7 @@ WorkTimeApp.ui.createEditor = function (options) {
         ? fullDay
           ? WorkTimeApp.i18n.t("copy.8912376175")
           : WorkTimeApp.i18n.t("copy.326f400f75") + hours + " h"
-        : WorkTimeApp.i18n.t("copy.7697b2ac1b"),
+        : emptyLabel,
     );
     $("dayLeaveToggle").disabled = !canLeave;
     $("dayLeave").disabled = !canLeave;
@@ -404,7 +423,7 @@ WorkTimeApp.ui.createEditor = function (options) {
           ? WorkTimeApp.i18n.t("copy.326f400f75") +
             hours +
             WorkTimeApp.i18n.t("copy.8ba84f76ec")
-          : WorkTimeApp.i18n.t("copy.c8dda684c7")
+          : emptyLabel
         : WorkTimeApp.i18n.t("copy.54d81347ae"),
     );
   }

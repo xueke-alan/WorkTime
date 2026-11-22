@@ -105,7 +105,7 @@ async function main() {
         ).getDirectoryHandle(window.folderName);
         try {
           const folder = await (
-            await runtime.getDirectoryHandle("dependencies")
+            await runtime.getDirectoryHandle("game")
           ).getDirectoryHandle("pikafish");
           const files = [];
           for await (const [name, file] of folder.entries())
@@ -146,7 +146,7 @@ async function main() {
       const cache = await caches.open("worktime-pikafish-binaries-v1");
       const assets = WorkTimeApp.games.pikafishAssets;
       for (const info of Object.values(assets)) {
-        const file = await WorkTimeApp.services.runtimeFolder.withDependencies(
+        const file = await WorkTimeApp.services.runtimeFolder.withGameResources(
           async (root) =>
             (await root.getDirectoryHandle("pikafish")).getFileHandle(
               info.name,
@@ -178,7 +178,7 @@ async function main() {
       "new runtime folder is populated from browser cache",
     );
     await page.evaluate(async () => {
-      await WorkTimeApp.services.runtimeFolder.withDependencies(
+      await WorkTimeApp.services.runtimeFolder.withGameResources(
         async (root) => {
           const folder = await root.getDirectoryHandle("pikafish");
           const info = WorkTimeApp.games.pikafishAssets.net;

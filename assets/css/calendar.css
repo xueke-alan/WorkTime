@@ -189,6 +189,17 @@ body .editor .analysis-sidebar-header {
 .dayhours > span {
   white-space: nowrap;
 }
+/* Propagate the digit baseline through the rolling-number wrappers. */
+.dayhours .summary-number,
+.dayhours .summary-number-visual {
+  display: inline-flex;
+  align-items: baseline;
+  vertical-align: baseline;
+}
+.dayhours .summary-number-column {
+  display: inline-flex;
+  flex-direction: column;
+}
 .dayhours .day-overtime {
   font-size: 0.9em;
   font-weight: 400;
@@ -2075,6 +2086,166 @@ body .calendar .day-date {
   align-items: center;
   gap: 0.571429rem;
   flex: none;
+}
+body .calendar .day > .daytime {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 3px 8px;
+}
+body .calendar .daytime-content {
+  min-width: 0;
+  max-width: 100%;
+}
+body .calendar .day-planned-label {
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--theme-text-muted, #8a9c91);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body .calendar .dayhours:has(.day-planned-summary) {
+  flex: 1;
+  min-height: 0;
+  container-type: size;
+  container-name: planned-hours;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+body .calendar .day:has(.day-planned-summary) > .day-footer {
+  flex: 0;
+}
+body .calendar .day:has(.day-planned-summary) > .daytime {
+  height: 6px;
+  min-height: 0;
+  flex: none;
+}
+body .calendar .day-planned-summary {
+  position: absolute;
+  inset: 0;
+  transform: translateY(4px);
+  box-sizing: border-box;
+  padding-bottom: clamp(0px, calc(100cqh - 45px), 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+}
+body .calendar .calendar-planned-outgoing {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+body .calendar .day-planned-hours {
+  flex: none;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+body .calendar .day-planned-hours.below-target {
+  color: var(--red, #bc554c);
+}
+@container calendar-panel (max-width: 699px) {
+  body .calendar .day-planned-label {
+    font-size: 12px;
+  }
+  body .calendar .day-planned-hours {
+    font-size: 20px;
+  }
+  body .calendar .day-planned-summary {
+    padding-bottom: clamp(0px, calc(100cqh - 39px), 16px);
+  }
+}
+@media (max-width: 699px) {
+  body .calendar .day-planned-label {
+    font-size: 11px;
+  }
+  body .calendar .day-planned-hours {
+    font-size: 13px;
+  }
+  body .calendar .day-planned-summary {
+    padding-bottom: clamp(0px, calc(100cqh - 31px), 16px);
+  }
+}
+@media (min-width: 700px) and (max-height: 720px) {
+  body .calendar .day-planned-label {
+    font-size: 11px;
+  }
+  body .calendar .day-planned-hours {
+    font-size: 20px;
+  }
+  body .calendar .day-planned-summary {
+    padding-bottom: clamp(0px, calc(100cqh - 38px), 16px);
+  }
+}
+body .calendar .daytop .daykind {
+  margin-left: auto;
+  text-align: right;
+}
+body .calendar .day-lunar {
+  position: relative;
+  top: -6px;
+  flex: none;
+  margin-left: auto;
+  padding-top: 5px;
+  color: color-mix(in srgb, var(--theme-text-muted, #8a9c91) 68%, transparent);
+  font-size: 0.714286rem;
+  font-weight: 400;
+  line-height: 1.3;
+  text-align: right;
+  white-space: nowrap;
+}
+body .calendar .day-lunar::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  right: 0;
+  width: calc(100% + 4px);
+  height: 1px;
+  background: currentColor;
+  opacity: 0.45;
+}
+body .calendar .day-lunar:empty {
+  display: none;
+}
+body .calendar .worktime-corner {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 12px;
+  height: 12px;
+  /* Include the card's 1px border when keeping the two arcs concentric. */
+  border-bottom-right-radius: max(0px, calc(var(--day-radius) - 5px));
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  background: currentColor;
+  opacity: 0.65;
+  filter: opacity(1);
+  transition: filter 180ms var(--motion-ease);
+  z-index: 0;
+  pointer-events: none;
+}
+body .calendar.is-batch-editing .worktime-corner {
+  filter: opacity(0);
+}
+:where(html[data-reduced-motion="true"]) body .calendar .worktime-corner {
+  transition: none;
+}
+body .calendar .worktime-corner.is-short {
+  color: #75bd98;
+}
+body .calendar .worktime-corner.is-extra {
+  color: #9b263e;
+}
+body .calendar .worktime-corner.is-normal {
+  color: #7eace5;
 }
 body .calendar .payday-icon {
   --date-marker-background: #efd5ce;

@@ -5,7 +5,7 @@
     9301999
   ],
   "sources": {
-    "rules": "d80aa89263c233f52fd7300744c9e9e5e200d08e4eee5f2db44d633b53091b13",
+    "rules": "488c12850d85fa27b324b96f27d1f85a7dd1aabbc09fa55c04e4d6168aa514b9",
     "ai": "80a2ec2d96543eff93b6baf40d8be09bc2e5955b7128f22356e96359d48b3a6c"
   },
   "protocol": "Four-seat rotation, identical seeded dice streams within each paired comparison; fixed node limits, no wall-clock cutoff during evaluation",
@@ -26,50 +26,50 @@
   },
   "cases": {
     "random": {
-      "wins": 1341,
+      "wins": 1320,
       "games": 2000,
-      "rate": 0.6705,
-      "low": 0.6495906360160492,
-      "high": 0.6907556508610436
+      "rate": 0.66,
+      "low": 0.638950093032789,
+      "high": 0.68043645183721
     },
     "baseline": {
-      "wins": 691,
+      "wins": 673,
       "games": 2000,
-      "rate": 0.3455,
-      "low": 0.3249733802642623,
-      "high": 0.36661898734564474
+      "rate": 0.3365,
+      "low": 0.316122543677368,
+      "high": 0.3575043307836017
     },
     "hard": {
-      "wins": 792,
+      "wins": 805,
       "games": 2000,
-      "rate": 0.396,
-      "low": 0.3747852003560857,
-      "high": 0.41761354547841484
+      "rate": 0.4025,
+      "low": 0.38121430570705017,
+      "high": 0.4241595185127941
     },
     "ablation": {
-      "wins": 178,
+      "wins": 171,
       "games": 2000,
-      "rate": 0.089,
-      "low": 0.07729578599356494,
-      "high": 0.10228002687162495
+      "rate": 0.0855,
+      "low": 0.07402575867765614,
+      "high": 0.09856347351850255
     },
     "normal": {
-      "wins": 691,
+      "wins": 673,
       "games": 2000,
-      "rate": 0.3455,
-      "low": 0.3249733802642623,
-      "high": 0.36661898734564474
+      "rate": 0.3365,
+      "low": 0.316122543677368,
+      "high": 0.3575043307836017
     }
   },
   "hardVsNormal": {
-    "difference": 0.0505,
-    "low": 0.024902658502377772,
-    "high": 0.07609734149762223
+    "difference": 0.066,
+    "low": 0.039930492816272915,
+    "high": 0.09206950718372708
   },
   "modelVsAblation": {
-    "difference": 0.2565,
-    "low": 0.23352343351360455,
-    "high": 0.27947656648639546
+    "difference": 0.251,
+    "low": 0.22839056673783686,
+    "high": 0.27360943326216314
   },
   "passed": true
 }

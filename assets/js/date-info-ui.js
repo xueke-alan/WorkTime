@@ -40,7 +40,7 @@
     if (cls) e.className = cls;
     return e;
   }
-  const dateViews = ["history", "festivals", "almanac"];
+  const dateViews = ["festivals", "history", "almanac"];
   const gamesPanel = node("section", undefined, "games-panel");
   gamesPanel.id = "gamesPanel";
   gamesPanel.hidden = true;
@@ -66,8 +66,8 @@
   dateSwitch.setAttribute("role", "tablist");
   dateSwitch.setAttribute("aria-label", WorkTimeApp.i18n.t("copy.15245b56da"));
   for (const [id, label] of [
-    ["history", WorkTimeApp.i18n.t("copy.be78b20585")],
     ["festivals", WorkTimeApp.i18n.t("copy.860caf9fd7")],
+    ["history", WorkTimeApp.i18n.t("copy.be78b20585")],
     ["almanac", WorkTimeApp.i18n.t("copy.e393811f90")],
   ]) {
     const button = node("button", undefined, "ui-text-action");
