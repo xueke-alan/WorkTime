@@ -308,12 +308,34 @@ WorkTimeApp.ui.popover = (() => {
     originalTitle = null,
     description = null,
     timer = null,
-    motion = null;
+    motion = null,
+    wordMotion = null,
+    scrollMotion = null;
+  const detailObserver = new MutationObserver(() => {
+    if (!target || !target.isConnected) return close();
+    if (target.hidden) {
+      // Loading can briefly become ready before the queued synthesis starts.
+      const hiddenTarget = target;
+      requestAnimationFrame(() => {
+        if (target === hiddenTarget && hiddenTarget.hidden) close();
+      });
+      return;
+    }
+    const label = target.dataset.dateMarkerHint;
+    if (!label || label === text) return;
+    text = label;
+    if (!hint.hidden) show(false);
+  });
   function close() {
+    detailObserver.disconnect();
     clearTimeout(timer);
     timer = null;
     motion?.cancel();
     motion = null;
+    wordMotion?.cancel();
+    wordMotion = null;
+    scrollMotion?.cancel();
+    scrollMotion = null;
     if (native && !hint.hidden) hint.hidePopover();
     hint.hidden = true;
     if (target) {
@@ -325,13 +347,67 @@ WorkTimeApp.ui.popover = (() => {
     }
     target = null;
   }
-  function show() {
+  function show(animate = true) {
     timer = null;
     if (!target?.isConnected || document.hidden) return close();
-    hint.textContent = text;
+    const audioHint = target.matches(".site-audio-activity");
+    let wordChanged = false;
+    if (audioHint) {
+      if (!hint.classList.contains("site-audio-hint")) {
+        hint.replaceChildren(
+          ...Array.from({ length: 3 }, () => document.createElement("span")),
+        );
+        hint.children[0].append(document.createElement("span"));
+      }
+      const lines = text.split("\n"),
+        word = hint.children[0],
+        changed = word.textContent !== lines[0];
+      wordChanged = changed;
+      if (changed) word.firstElementChild.textContent = lines[0] || "";
+      for (const index of [1, 2])
+        if (hint.children[index].textContent !== lines[index])
+          hint.children[index].textContent = lines[index] || "";
+      if (changed) {
+        wordMotion?.cancel();
+        wordMotion = null;
+        if (!animate && !WorkTimeApp.ui.animationCompat.preference().matches)
+          wordMotion = WorkTimeApp.ui.animationCompat.animate(
+            word,
+            [
+              { opacity: 0.8, transform: "translateY(1px)" },
+              { opacity: 1, transform: "none" },
+            ],
+            { duration: 180, easing: "ease-out" },
+          );
+      }
+    } else hint.textContent = text;
+    hint.classList.toggle("site-audio-hint", audioHint);
     if (!native) (target.closest("dialog[open]") || document.body).append(hint);
     hint.hidden = false;
     if (native) hint.showPopover();
+    if (audioHint && (wordChanged || animate)) {
+      scrollMotion?.cancel();
+      scrollMotion = null;
+      const row = hint.children[0],
+        content = row.firstElementChild,
+        overflow = content.scrollWidth - row.clientWidth;
+      if (overflow > 1 && !WorkTimeApp.ui.animationCompat.preference().matches)
+        scrollMotion = WorkTimeApp.ui.animationCompat.animate(
+          content,
+          [
+            { transform: "translateX(0)", offset: 0 },
+            { transform: "translateX(0)", offset: 0.15 },
+            { transform: `translateX(${-overflow}px)`, offset: 0.5 },
+            { transform: `translateX(${-overflow}px)`, offset: 0.65 },
+            { transform: "translateX(0)", offset: 1 },
+          ],
+          {
+            duration: Math.max(6000, (overflow / 30 / 0.35) * 1000),
+            iterations: Infinity,
+            easing: "linear",
+          },
+        );
+    }
     const rect = target.getBoundingClientRect(),
       box = hint.getBoundingClientRect();
     const inset = 10,
@@ -357,7 +433,7 @@ WorkTimeApp.ui.popover = (() => {
             ),
       ) + "px";
     WorkTimeApp.ui.popover.point(hint, target);
-    if (!WorkTimeApp.ui.animationCompat.preference().matches)
+    if (animate && !WorkTimeApp.ui.animationCompat.preference().matches)
       motion = WorkTimeApp.ui.animationCompat.animate(
         hint,
         [
@@ -384,6 +460,11 @@ WorkTimeApp.ui.popover = (() => {
         : (element.dataset.dateMarkerHint || title)?.trim();
     if (!label) return;
     target = element;
+    if (element.matches(".site-audio-activity"))
+      detailObserver.observe(element, {
+        attributes: true,
+        attributeFilter: ["data-date-marker-hint", "hidden"],
+      });
     text = label;
     originalTitle = title;
     description = target.getAttribute("aria-describedby");
@@ -441,10 +522,10 @@ WorkTimeApp.ui.popover = (() => {
   );
   document.addEventListener("pointerup", (event) => {
     if (
-      event.pointerType === "touch" &&
-      event.target.closest?.(".date-markers")
+      event.target.closest?.(".site-audio-activity") ||
+      (event.pointerType === "touch" && event.target.closest?.(".date-markers"))
     )
-      open(event.target.closest(".date-markers"), true);
+      open(event.target.closest(".date-markers,.site-audio-activity"), true);
   });
   document.addEventListener(
     "keydown",
@@ -458,3 +539,171 @@ WorkTimeApp.ui.popover = (() => {
   document.addEventListener("visibilitychange", close);
   document.addEventListener("worktime:languagechange", close);
 })();
+
+/** Shared select adapter for settings and game controls. */
+WorkTimeApp.ui.createSelect = function ({
+  host,
+  select,
+  label,
+  signal,
+  buttonClass = "ui-button",
+  prefix = "shared-select",
+  bounds = host.closest(".vocabulary-page, .game-content"),
+}) {
+  function icon(name) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "ui-icon");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    svg.innerHTML = `<use href="#ms-${name}"/>`;
+    return svg;
+  }
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.id = select.id + "Trigger";
+  trigger.className =
+    buttonClass + " shared-select-trigger " + prefix + "-trigger";
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-expanded", "false");
+  label.htmlFor = trigger.id;
+  const valueLabel = document.createElement("span");
+  valueLabel.id = select.id + "Value";
+  valueLabel.className = "button-label";
+  const chevron = icon("chevron-right");
+  chevron.classList.add("language-chevron");
+  trigger.append(valueLabel, chevron);
+  const list = document.createElement("div");
+  list.id = select.id + "Options";
+  list.className =
+    "settings-select-options shared-select-options " + prefix + "-options";
+  list.hidden = true;
+  list.setAttribute("role", "listbox");
+  list.setAttribute("aria-labelledby", label.id);
+  trigger.setAttribute("aria-controls", list.id);
+  trigger.setAttribute("aria-labelledby", label.id + " " + valueLabel.id);
+  select.tabIndex = -1;
+  select.setAttribute("aria-hidden", "true");
+  select.classList.add("shared-native-select");
+  const listen = (element, name, callback, options = {}) =>
+    element.addEventListener(name, callback, { ...options, signal });
+  const items = [...select.options].map((option) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className =
+      "shared-select-option" +
+      (buttonClass === "ui-button" ? "" : " " + buttonClass);
+    item.tabIndex = -1;
+    item.dataset.gameOption = option.value;
+    item.setAttribute("role", "option");
+    const text = document.createElement("span");
+    text.className = "button-label";
+    const check = icon("check");
+    check.classList.add("language-selected-icon");
+    item.append(text, check);
+    listen(item, "click", () => {
+      select.value = option.value;
+      close(true);
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      sync();
+    });
+    list.append(item);
+    return item;
+  });
+  host.append(trigger, list);
+  function close(returnFocus = false) {
+    list.hidden = true;
+    trigger.setAttribute("aria-expanded", "false");
+    if (returnFocus) trigger.focus({ preventScroll: true });
+  }
+  function position() {
+    if (list.hidden) return;
+    const rect = trigger.getBoundingClientRect();
+    const rectBounds = bounds.getBoundingClientRect();
+    const top = Math.max(8, rectBounds.top),
+      bottom = Math.min(window.innerHeight - 8, rectBounds.bottom);
+    if (rect.top < top || rect.bottom > bottom) {
+      close();
+      return;
+    }
+    const gap = 8,
+      below = bottom - rect.bottom - gap,
+      above = rect.top - top - gap;
+    list.style.width = rect.width + "px";
+    list.style.maxHeight = Math.max(0, Math.max(below, above)) + "px";
+    list.style.left =
+      Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)) +
+      "px";
+    const height = list.getBoundingClientRect().height;
+    list.style.top =
+      (below >= height ? rect.bottom + gap : rect.top - height - gap) + "px";
+    WorkTimeApp.ui.popover.point(list, trigger);
+  }
+  function sync() {
+    trigger.disabled = select.disabled;
+    valueLabel.textContent = select.selectedOptions[0]?.textContent || "";
+    trigger.title = valueLabel.textContent;
+    items.forEach((item, index) => {
+      item.querySelector(".button-label").textContent =
+        select.options[index].textContent;
+      item.setAttribute(
+        "aria-selected",
+        String(select.value === select.options[index].value),
+      );
+    });
+    if (trigger.disabled) close();
+    else position();
+  }
+  function open() {
+    if (trigger.disabled || signal.aborted) return;
+    sync();
+    list.hidden = false;
+    trigger.setAttribute("aria-expanded", "true");
+    position();
+    if (!list.hidden)
+      list
+        .querySelector('[aria-selected="true"]')
+        ?.focus({ preventScroll: true });
+  }
+  listen(trigger, "click", () => (list.hidden ? open() : close()));
+  listen(host, "keydown", (event) => {
+    if (event.key === "Escape" && !list.hidden) {
+      event.preventDefault();
+      event.stopPropagation();
+      close(true);
+    } else if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (list.hidden) {
+        open();
+        return;
+      }
+      const index = items.indexOf(document.activeElement);
+      const next =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? items.length - 1
+            : (index + (event.key === "ArrowDown" ? 1 : -1) + items.length) %
+              items.length;
+      items[next].focus({ preventScroll: true });
+    } else if (event.key === "Tab" && !list.hidden) close(true);
+  });
+  listen(host, "focusout", (event) => {
+    if (!host.contains(event.relatedTarget)) close();
+  });
+  listen(document, "pointerdown", (event) => {
+    if (!host.contains(event.target)) close();
+  });
+  listen(
+    document,
+    "scroll",
+    (event) => {
+      if (!list.contains(event.target)) position();
+    },
+    { capture: true, passive: true },
+  );
+  listen(window, "resize", () => close());
+  signal.addEventListener("abort", () => close(), { once: true });
+  sync();
+  return { trigger, sync, close };
+};

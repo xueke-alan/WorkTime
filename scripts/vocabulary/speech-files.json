@@ -1,0 +1,14 @@
+{
+  "en/en_GB/jenny_dioco/medium/en_GB-jenny_dioco-medium.onnx": {
+    "bytes": 63221984,
+    "sha256": "62ba183a504cfcd8816ec1b50ee856ed318ccc9dd22fd0bedd7d839c95dfa20e"
+  },
+  "en/en_GB/jenny_dioco/medium/en_GB-jenny_dioco-medium.onnx.json": {
+    "bytes": 6375,
+    "sha256": "2d28804145e37cf6b277d17417769a2c84f6e4157273678dfe495240cc6e00e9"
+  },
+  "en/en_GB/jenny_dioco/medium/MODEL_CARD": {
+    "bytes": 475,
+    "sha256": "851f5b7ffe4b50ff3235192baef96a1943cda6b4bfa1c9badcf6cf78b6ffc292"
+  }
+}

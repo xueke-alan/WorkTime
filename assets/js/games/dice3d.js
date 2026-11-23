@@ -1,5 +1,5 @@
 "use strict";
-// Shared aeroplane/Monopoly die geometry. A result is supplied by each game's referee.
+// Shared aeroplane die geometry. A result is supplied by each game's referee.
 WorkTimeApp.games.dice3d = (() => {
   // Rotate a fixed face onto the top of the die before applying the camera tilt.
   const dieAngles = [

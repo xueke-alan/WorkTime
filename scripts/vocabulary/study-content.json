@@ -1,0 +1,25 @@
+{
+  "state": {
+    "examples": [
+      {"en":"Please state your name clearly.","zh":"请清楚地说出你的姓名。"},
+      {"en":"The old house is in a good state.","zh":"这座老房子的状况良好。"}
+    ],
+    "mnemonic":"把 state 的两种用法放在一起记：state the state of something，陈述某事物的状态。"
+  },
+  "might": {
+    "examples":[{"en":"It might rain this afternoon.","zh":"今天下午可能会下雨。"}],
+    "mnemonic":"might 表示不确定的可能性；作名词时也可以表示力量。"
+  },
+  "part": {
+    "examples":[{"en":"This is my favorite part of the story.","zh":"这是故事中我最喜欢的部分。"}],
+    "mnemonic":"part 是整体中的一部分；take part in 表示参加。"
+  },
+  "grand": {
+    "examples":[{"en":"A grand staircase leads to the upper floor.","zh":"一座宏伟的楼梯通向楼上。"},{"en":"They have a grand plan for the new library.","zh":"他们为新图书馆制定了宏大的计划。"}],
+    "mnemonic":"从 grand 的“宏大”联想到规模和气势：grand plan，宏大的计划。"
+  },
+  "apple": {"examples":[{"en":"She put an apple in her bag.","zh":"她往包里放了一个苹果。"}]},
+  "time": {"examples":[{"en":"We have enough time to walk home.","zh":"我们有足够的时间走回家。"}]},
+  "work": {"examples":[{"en":"I usually finish work at six.","zh":"我通常六点结束工作。"}]},
+  "learn": {"examples":[{"en":"We learn a few new words every day.","zh":"我们每天学习几个新单词。"}]}
+}

@@ -1,0 +1,1459 @@
+{
+  "state": [
+    [
+      "Please state your name.",
+      "请说出你的姓名。",
+      "陈述"
+    ],
+    [
+      "The house is in a bad state.",
+      "这座房子状况很差。",
+      "状态"
+    ],
+    [
+      "Texas is a large state.",
+      "得克萨斯州是一个大州。",
+      "州"
+    ],
+    [
+      "The state provides free education.",
+      "国家提供免费教育。",
+      "国家"
+    ]
+  ],
+  "run": [
+    [
+      "I run every morning.",
+      "我每天早晨跑步。",
+      "跑步"
+    ],
+    [
+      "She runs a small shop.",
+      "她经营一家小店。",
+      "经营"
+    ],
+    [
+      "The engine is running smoothly.",
+      "发动机运转顺畅。",
+      "运转"
+    ],
+    [
+      "We have run out of milk.",
+      "我们的牛奶喝完了。",
+      "用完"
+    ],
+    [
+      "The river runs through the town.",
+      "这条河流经小镇。",
+      "流经"
+    ]
+  ],
+  "set": [
+    [
+      "Please set the alarm for six.",
+      "请把闹钟设到六点。",
+      "设置"
+    ],
+    [
+      "She set the cup down.",
+      "她放下了杯子。",
+      "放置"
+    ],
+    [
+      "The sun sets early in winter.",
+      "冬天太阳落得早。",
+      "日落"
+    ],
+    [
+      "He bought a chess set.",
+      "他买了一副国际象棋。",
+      "一套"
+    ],
+    [
+      "The team set a new record.",
+      "这支队伍创造了新纪录。",
+      "创立"
+    ]
+  ],
+  "bank": [
+    [
+      "The bank closes at five.",
+      "银行五点关门。",
+      "银行"
+    ],
+    [
+      "We sat on the river bank.",
+      "我们坐在河岸上。",
+      "河岸"
+    ],
+    [
+      "She banks her savings every month.",
+      "她每月把积蓄存入银行。",
+      "存钱"
+    ],
+    [
+      "You can bank on my help.",
+      "你可以指望我帮忙。",
+      "依靠"
+    ]
+  ],
+  "record:noun": [
+    [
+      "She broke the world record.",
+      "她打破了世界纪录。",
+      "纪录"
+    ],
+    [
+      "Keep a record of your expenses.",
+      "记下你的开支。",
+      "记录"
+    ],
+    [
+      "Dad played an old record.",
+      "爸爸放了一张老唱片。",
+      "唱片"
+    ]
+  ],
+  "record:verb": [
+    [
+      "Please record your name here.",
+      "请在这里登记姓名。",
+      "记录"
+    ],
+    [
+      "We will record the concert.",
+      "我们会录下这场音乐会。",
+      "录制"
+    ],
+    [
+      "The sensor records temperature changes.",
+      "传感器记录温度变化。",
+      "记录变化"
+    ]
+  ],
+  "present:noun-adjective": [
+    [
+      "This present is for you.",
+      "这份礼物是给你的。",
+      "礼物"
+    ],
+    [
+      "Everyone present agreed with her.",
+      "在场的每个人都同意她的看法。",
+      "在场"
+    ],
+    [
+      "We must consider the present situation.",
+      "我们必须考虑当前的形势。",
+      "目前"
+    ],
+    [
+      "Try to live in the present.",
+      "试着活在当下。",
+      "现在"
+    ]
+  ],
+  "present:verb": [
+    [
+      "She will present the results tomorrow.",
+      "她明天将展示结果。",
+      "展示"
+    ],
+    [
+      "They presented him with a medal.",
+      "他们授予他一枚奖章。",
+      "赠予"
+    ],
+    [
+      "Please present your ticket at reception.",
+      "请在接待处出示票。",
+      "出示"
+    ]
+  ],
+  "object:noun": [
+    [
+      "A bright object crossed the sky.",
+      "一个明亮的物体划过天空。",
+      "物体"
+    ],
+    [
+      "The object of this game is survival.",
+      "这个游戏的目标是生存。",
+      "目标"
+    ],
+    [
+      "Find the object in this sentence.",
+      "找出这个句子中的宾语。",
+      "宾语"
+    ]
+  ],
+  "object:verb": [
+    [
+      "I object to this decision.",
+      "我反对这个决定。",
+      "反对决定"
+    ],
+    [
+      "Would anyone object if we left early?",
+      "如果我们早走，有人反对吗？",
+      "提出反对"
+    ],
+    [
+      "Residents object to the noise.",
+      "居民反对这种噪声。",
+      "表示不满"
+    ]
+  ],
+  "produce:noun": [
+    [
+      "This market sells fresh produce.",
+      "这个市场出售新鲜农产品。",
+      "农产品"
+    ],
+    [
+      "Local produce is often cheaper.",
+      "本地农产品通常更便宜。",
+      "本地农产品"
+    ],
+    [
+      "Wash the produce before cooking.",
+      "烹饪前清洗农产品。",
+      "清洗农产品"
+    ]
+  ],
+  "produce:verb": [
+    [
+      "These farms produce organic milk.",
+      "这些农场生产有机牛奶。",
+      "生产"
+    ],
+    [
+      "The changes produced good results.",
+      "这些改变带来了好结果。",
+      "产生"
+    ],
+    [
+      "Please produce proof of your identity.",
+      "请出示身份证明。",
+      "出示"
+    ]
+  ],
+  "lead:metal": [
+    [
+      "Lead is a heavy metal.",
+      "铅是一种重金属。",
+      "金属"
+    ],
+    [
+      "These old pipes contain lead.",
+      "这些旧管道含铅。",
+      "含铅"
+    ],
+    [
+      "Lead exposure can harm children.",
+      "铅暴露会危害儿童。",
+      "铅暴露"
+    ]
+  ],
+  "lead:guide": [
+    [
+      "Please lead the way.",
+      "请带路。",
+      "引导"
+    ],
+    [
+      "She will lead our team.",
+      "她将领导我们的团队。",
+      "领导"
+    ],
+    [
+      "Our team took the lead.",
+      "我们的队伍取得了领先。",
+      "领先"
+    ],
+    [
+      "This path leads to the beach.",
+      "这条小路通向海滩。",
+      "通向"
+    ]
+  ],
+  "read:present": [
+    [
+      "I read before bed every night.",
+      "我每天晚上睡前读书。",
+      "习惯"
+    ],
+    [
+      "Please read the instructions carefully.",
+      "请仔细阅读说明。",
+      "祈使"
+    ],
+    [
+      "Can you read this sign?",
+      "你能看懂这个标志吗？",
+      "辨读"
+    ]
+  ],
+  "read:past": [
+    [
+      "I read that book yesterday.",
+      "我昨天读了那本书。",
+      "过去式"
+    ],
+    [
+      "She has read all his novels.",
+      "她读过他所有的小说。",
+      "过去分词"
+    ],
+    [
+      "We read the letter last night.",
+      "我们昨晚读了那封信。",
+      "过去式语境"
+    ]
+  ],
+  "content:noun": [
+    [
+      "The course content is useful.",
+      "这门课的内容很实用。",
+      "内容"
+    ],
+    [
+      "Check the sugar content before buying.",
+      "购买前查看含糖量。",
+      "含量"
+    ],
+    [
+      "The website offers free educational content.",
+      "这个网站提供免费的教育内容。",
+      "内容材料"
+    ]
+  ],
+  "content:adjective": [
+    [
+      "She felt content with her life.",
+      "她对自己的生活感到满足。",
+      "满足"
+    ],
+    [
+      "He seemed content to stay home.",
+      "他似乎乐于待在家里。",
+      "乐于"
+    ],
+    [
+      "We must content ourselves with less.",
+      "我们必须知足，接受少一些。",
+      "使满足"
+    ]
+  ],
+  "desert:noun": [
+    [
+      "The desert gets cold at night.",
+      "沙漠夜间会变冷。",
+      "沙漠气候"
+    ],
+    [
+      "Camels can survive in the desert.",
+      "骆驼可以在沙漠中生存。",
+      "沙漠生物"
+    ],
+    [
+      "They crossed the desert on foot.",
+      "他们徒步穿越了沙漠。",
+      "穿越沙漠"
+    ]
+  ],
+  "desert:verb": [
+    [
+      "Don't desert your friends.",
+      "不要抛弃朋友。",
+      "抛弃"
+    ],
+    [
+      "The soldiers deserted their posts.",
+      "士兵们擅自离开了岗位。",
+      "擅离职守"
+    ],
+    [
+      "Her courage deserted her.",
+      "她失去了勇气。",
+      "失去勇气"
+    ]
+  ],
+  "n't": [
+    [
+      "I don't understand.",
+      "我不明白。",
+      "do not"
+    ],
+    [
+      "She isn't ready yet.",
+      "她还没准备好。",
+      "is not"
+    ],
+    [
+      "We can't stay long.",
+      "我们不能久留。",
+      "cannot"
+    ]
+  ],
+  "thereby": [
+    [
+      "He apologized, thereby ending the argument.",
+      "他道了歉，从而结束了争论。",
+      "因而"
+    ],
+    [
+      "We shared costs, thereby saving money.",
+      "我们分摊费用，从而省了钱。",
+      "由此"
+    ],
+    [
+      "She exercised daily, thereby improving her health.",
+      "她每天锻炼，从而改善了健康。",
+      "通过这种方式"
+    ]
+  ],
+  "namely": [
+    [
+      "One person was missing, namely Tom.",
+      "有一个人没来，就是汤姆。",
+      "具体说明"
+    ],
+    [
+      "We need one thing, namely time.",
+      "我们需要一样东西，就是时间。",
+      "具体说明"
+    ],
+    [
+      "Two colors remain, namely red and blue.",
+      "还剩两种颜色，即红色和蓝色。",
+      "列举"
+    ]
+  ],
+  "conceptual": [
+    [
+      "The project faces a conceptual problem.",
+      "这个项目面临一个概念层面的问题。",
+      "概念"
+    ],
+    [
+      "She studies conceptual art.",
+      "她研究观念艺术。",
+      "艺术"
+    ],
+    [
+      "We need a clear conceptual framework.",
+      "我们需要清晰的概念框架。",
+      "框架"
+    ]
+  ],
+  "variance": [
+    [
+      "The data show considerable variance.",
+      "这些数据差异相当大。",
+      "差异"
+    ],
+    [
+      "Calculate the variance of these numbers.",
+      "计算这些数的方差。",
+      "方差"
+    ],
+    [
+      "His account is at variance with mine.",
+      "他的说法与我的不一致。",
+      "不一致"
+    ]
+  ],
+  "incidence": [
+    [
+      "The incidence of flu has fallen.",
+      "流感发病率下降了。",
+      "发生率"
+    ],
+    [
+      "We measured the angle of incidence.",
+      "我们测量了入射角。",
+      "入射角"
+    ],
+    [
+      "Age affects the incidence of this disease.",
+      "年龄影响这种疾病的发病率。",
+      "发病率"
+    ]
+  ],
+  "vs": [
+    [
+      "Tonight's match is France vs Brazil.",
+      "今晚的比赛是法国对巴西。",
+      "对阵"
+    ],
+    [
+      "The debate covers quality vs quantity.",
+      "这场辩论讨论质量与数量的取舍。",
+      "比较"
+    ],
+    [
+      "Our report compares renting vs buying.",
+      "我们的报告比较租房和买房。",
+      "比较方案"
+    ]
+  ],
+  "versus": [
+    [
+      "It's experience versus youth in this match.",
+      "这场比赛是经验与青春的较量。",
+      "对抗"
+    ],
+    [
+      "The case is Smith versus Jones.",
+      "这是史密斯诉琼斯案。",
+      "诉讼"
+    ],
+    [
+      "We discussed cost versus quality.",
+      "我们讨论了成本与质量的取舍。",
+      "比较"
+    ]
+  ],
+  "congressional": [
+    [
+      "The bill needs congressional approval.",
+      "这项法案需要国会批准。",
+      "国会"
+    ],
+    [
+      "She testified at a congressional hearing.",
+      "她在国会听证会上作证。",
+      "听证会"
+    ],
+    [
+      "Congressional elections take place in November.",
+      "国会选举在十一月举行。",
+      "选举"
+    ]
+  ],
+  "time": [
+    [
+      "What time does the train leave?",
+      "火车几点出发？",
+      "时刻"
+    ],
+    [
+      "We still have enough time.",
+      "我们还有足够的时间。",
+      "时间"
+    ],
+    [
+      "I called her three times.",
+      "我给她打了三次电话。",
+      "次数"
+    ],
+    [
+      "Keep time with the music.",
+      "跟着音乐打拍子。",
+      "节拍"
+    ],
+    [
+      "Time your speech before the meeting.",
+      "会前测一下你发言的时长。",
+      "计时"
+    ]
+  ],
+  "work": [
+    [
+      "I work in a small shop.",
+      "我在一家小店工作。",
+      "工作"
+    ],
+    [
+      "This old phone still works.",
+      "这部旧手机仍然能用。",
+      "运作"
+    ],
+    [
+      "Your plan might work.",
+      "你的计划可能行得通。",
+      "奏效"
+    ],
+    [
+      "She finished her work early.",
+      "她早早完成了工作。",
+      "工作任务"
+    ],
+    [
+      "His latest work is a novel.",
+      "他最新的作品是一部小说。",
+      "作品"
+    ]
+  ],
+  "right": [
+    [
+      "Your answer is right.",
+      "你的答案是对的。",
+      "正确"
+    ],
+    [
+      "Turn right at the next street.",
+      "在下一条街右转。",
+      "右边"
+    ],
+    [
+      "Everyone has a right to education.",
+      "每个人都有受教育的权利。",
+      "权利"
+    ],
+    [
+      "I'll be right back.",
+      "我马上回来。",
+      "立即"
+    ],
+    [
+      "That's the right size for me.",
+      "这个尺寸正适合我。",
+      "合适"
+    ]
+  ],
+  "light": [
+    [
+      "Please turn on the light.",
+      "请打开灯。",
+      "灯"
+    ],
+    [
+      "This bag is surprisingly light.",
+      "这个包出奇地轻。",
+      "轻的"
+    ],
+    [
+      "We had a light lunch.",
+      "我们吃了一顿简单的午饭。",
+      "少量的"
+    ],
+    [
+      "She lit a candle.",
+      "她点燃了一支蜡烛。",
+      "点燃"
+    ],
+    [
+      "I prefer to travel light.",
+      "我喜欢轻装旅行。",
+      "轻装"
+    ]
+  ],
+  "make": [
+    [
+      "She makes beautiful wooden toys.",
+      "她制作漂亮的木制玩具。",
+      "制作"
+    ],
+    [
+      "The news made him happy.",
+      "这个消息使他高兴。",
+      "使"
+    ],
+    [
+      "Two and four make six.",
+      "二加四等于六。",
+      "合计"
+    ],
+    [
+      "We must make a decision.",
+      "我们必须作出决定。",
+      "作出"
+    ],
+    [
+      "I can't make the meeting tomorrow.",
+      "我明天没法参加会议。",
+      "能够出席"
+    ]
+  ],
+  "get": [
+    [
+      "I got your message.",
+      "我收到了你的消息。",
+      "收到"
+    ],
+    [
+      "It's getting cold outside.",
+      "外面越来越冷了。",
+      "变得"
+    ],
+    [
+      "What time did you get home?",
+      "你几点到家的？",
+      "到达"
+    ],
+    [
+      "I don't get the joke.",
+      "我没听懂这个笑话。",
+      "理解"
+    ],
+    [
+      "Could you get me some water?",
+      "你能给我拿点水吗？",
+      "拿来"
+    ]
+  ],
+  "take": [
+    [
+      "Please take an umbrella.",
+      "请带把伞。",
+      "携带"
+    ],
+    [
+      "The trip takes two hours.",
+      "这趟路程需要两个小时。",
+      "花费时间"
+    ],
+    [
+      "Let's take the bus.",
+      "我们坐公交车吧。",
+      "乘坐"
+    ],
+    [
+      "She took a photo of us.",
+      "她给我们拍了一张照片。",
+      "拍摄"
+    ],
+    [
+      "This shop doesn't take cards.",
+      "这家店不接受银行卡付款。",
+      "接受"
+    ]
+  ],
+  "turn": [
+    [
+      "Turn left after the bridge.",
+      "过桥后左转。",
+      "转向"
+    ],
+    [
+      "The leaves turn yellow in autumn.",
+      "树叶在秋天变黄。",
+      "变成"
+    ],
+    [
+      "It's your turn to answer.",
+      "轮到你回答了。",
+      "轮次"
+    ],
+    [
+      "Please turn off the light.",
+      "请关灯。",
+      "操作开关"
+    ],
+    [
+      "She turned the page slowly.",
+      "她慢慢翻过一页。",
+      "翻转"
+    ]
+  ],
+  "play": [
+    [
+      "The children play outside after school.",
+      "孩子们放学后在外面玩。",
+      "玩耍"
+    ],
+    [
+      "Can you play the piano?",
+      "你会弹钢琴吗？",
+      "演奏"
+    ],
+    [
+      "They play football every Saturday.",
+      "他们每周六踢足球。",
+      "运动"
+    ],
+    [
+      "She plays the queen in this film.",
+      "她在这部电影里饰演女王。",
+      "扮演"
+    ],
+    [
+      "We watched a play last night.",
+      "我们昨晚看了一出话剧。",
+      "戏剧"
+    ]
+  ],
+  "mean": [
+    [
+      "What does this word mean?",
+      "这个词是什么意思？",
+      "表示"
+    ],
+    [
+      "I didn't mean to interrupt.",
+      "我不是有意打断。",
+      "意图"
+    ],
+    [
+      "He was mean to his sister.",
+      "他对妹妹很刻薄。",
+      "刻薄"
+    ],
+    [
+      "Calculate the mean of these numbers.",
+      "计算这些数的平均值。",
+      "平均值"
+    ],
+    [
+      "Don't worry; she means well.",
+      "别担心，她是好意。",
+      "用意"
+    ]
+  ],
+  "charge": [
+    [
+      "They charge ten dollars for delivery.",
+      "他们收取十美元配送费。",
+      "收费"
+    ],
+    [
+      "I need to charge my phone.",
+      "我需要给手机充电。",
+      "充电"
+    ],
+    [
+      "She is in charge of sales.",
+      "她负责销售。",
+      "负责"
+    ],
+    [
+      "Police charged him with theft.",
+      "警方指控他盗窃。",
+      "指控"
+    ],
+    [
+      "The battery holds an electrical charge.",
+      "电池储存电荷。",
+      "电荷"
+    ]
+  ],
+  "case": [
+    [
+      "We discussed the case in court.",
+      "我们在法庭上讨论了这起案件。",
+      "案件"
+    ],
+    [
+      "Keep your glasses in their case.",
+      "把眼镜放在眼镜盒里。",
+      "盒子"
+    ],
+    [
+      "In this case, we should wait.",
+      "在这种情况下，我们应该等待。",
+      "情况"
+    ],
+    [
+      "Three new cases were reported today.",
+      "今天报告了三例新病例。",
+      "病例"
+    ],
+    [
+      "Latin nouns change form to show case.",
+      "拉丁语名词变化词形以表示格。",
+      "语法格"
+    ]
+  ],
+  "point": [
+    [
+      "She pointed to the open door.",
+      "她指向了敞开的门。",
+      "指向"
+    ],
+    [
+      "I understand your point.",
+      "我明白你的观点。",
+      "观点"
+    ],
+    [
+      "Our team scored another point.",
+      "我们的队伍又得了一分。",
+      "分数"
+    ],
+    [
+      "The pencil has a sharp point.",
+      "这支铅笔的笔尖很尖。",
+      "尖端"
+    ],
+    [
+      "There is no point in waiting.",
+      "继续等下去没有意义。",
+      "意义"
+    ]
+  ],
+  "interest": [
+    [
+      "She has an interest in music.",
+      "她对音乐感兴趣。",
+      "兴趣"
+    ],
+    [
+      "The bank pays interest on savings.",
+      "银行为储蓄支付利息。",
+      "利息"
+    ],
+    [
+      "This book might interest you.",
+      "这本书可能会让你感兴趣。",
+      "吸引"
+    ],
+    [
+      "They acted in the public interest.",
+      "他们为了公众利益而行动。",
+      "利益"
+    ],
+    [
+      "He owns an interest in the company.",
+      "他持有这家公司的股份。",
+      "股份"
+    ]
+  ],
+  "match": [
+    [
+      "We watched a football match.",
+      "我们看了一场足球比赛。",
+      "比赛"
+    ],
+    [
+      "She lit the candle with a match.",
+      "她用火柴点燃了蜡烛。",
+      "火柴"
+    ],
+    [
+      "These shoes match your coat.",
+      "这双鞋与你的外套很搭。",
+      "搭配"
+    ],
+    [
+      "The two samples are a perfect match.",
+      "这两个样本完全匹配。",
+      "匹配"
+    ],
+    [
+      "He finally met his match.",
+      "他终于遇到了对手。",
+      "对手"
+    ]
+  ],
+  "equity": [
+    [
+      "The policy promotes equity in education.",
+      "这项政策促进教育公平。",
+      "公平"
+    ],
+    [
+      "She owns equity in the company.",
+      "她持有这家公司的股权。",
+      "股权"
+    ],
+    [
+      "Our home's equity has increased.",
+      "我们房屋的净值增加了。",
+      "净值"
+    ]
+  ],
+  "driver": [
+    [
+      "The driver stopped at the crossing.",
+      "司机在路口停了车。"
+    ],
+    [
+      "She works as a bus driver.",
+      "她是一名公交车司机。"
+    ],
+    [
+      "Update the printer driver before printing.",
+      "打印前更新打印机驱动程序。"
+    ]
+  ],
+  "ad": [
+    [
+      "I saw your ad in the newspaper.",
+      "我在报纸上看到了你的广告。"
+    ],
+    [
+      "The shop placed an ad online.",
+      "商店在网上登了一则广告。"
+    ],
+    [
+      "This ad offers free delivery.",
+      "这则广告提供免费配送。"
+    ]
+  ],
+  "chemist": [
+    [
+      "The chemist tested the water sample.",
+      "化学家检测了水样。"
+    ],
+    [
+      "Ask the chemist about this medicine.",
+      "向药剂师咨询这种药。"
+    ],
+    [
+      "She works as a research chemist.",
+      "她是一名研究化学家。"
+    ]
+  ],
+  "boots": [
+    [
+      "These boots keep my feet dry.",
+      "这双靴子能让我的双脚保持干燥。"
+    ],
+    [
+      "Take off your muddy boots.",
+      "脱掉你沾泥的靴子。"
+    ],
+    [
+      "She bought warm winter boots.",
+      "她买了一双保暖冬靴。"
+    ]
+  ],
+  "net": [
+    [
+      "The fish escaped from the net.",
+      "鱼从网里逃走了。"
+    ],
+    [
+      "The company reported a net profit.",
+      "公司报告了净利润。"
+    ],
+    [
+      "He kicked the ball into the net.",
+      "他把球踢进了球网。"
+    ],
+    [
+      "The police netted several suspects.",
+      "警方抓获了几名嫌疑人。"
+    ]
+  ],
+  "starter": [
+    [
+      "We ordered soup as a starter.",
+      "我们点了汤作为开胃菜。"
+    ],
+    [
+      "The engine needs a new starter.",
+      "发动机需要一个新启动器。"
+    ],
+    [
+      "She is a slow starter at work.",
+      "她在工作中进入状态较慢。"
+    ]
+  ],
+  "deduct": [
+    [
+      "They deduct tax from my salary.",
+      "他们从我的工资里扣税。"
+    ],
+    [
+      "We will deduct the delivery fee.",
+      "我们会扣除配送费。"
+    ],
+    [
+      "Deduct ten points for each error.",
+      "每出现一个错误扣十分。"
+    ]
+  ],
+  "optional": [
+    [
+      "The final exercise is optional.",
+      "最后一道练习是选做的。"
+    ],
+    [
+      "Breakfast is optional at this hotel.",
+      "这家酒店的早餐是自选的。"
+    ],
+    [
+      "You may choose an optional course.",
+      "你可以选修一门课程。"
+    ]
+  ],
+  "violent": [
+    [
+      "A violent storm damaged the roof.",
+      "猛烈的暴风雨损坏了屋顶。"
+    ],
+    [
+      "The film contains violent scenes.",
+      "这部电影含有暴力场景。"
+    ],
+    [
+      "He has never been violent toward anyone.",
+      "他从未对任何人使用暴力。"
+    ]
+  ],
+  "convenient": [
+    [
+      "Is this time convenient for you?",
+      "这个时间你方便吗？"
+    ],
+    [
+      "The shop is convenient for commuters.",
+      "这家商店对通勤者来说很方便。"
+    ],
+    [
+      "Online booking is quick and convenient.",
+      "网上预订快捷方便。"
+    ]
+  ],
+  "intention": [
+    [
+      "I have no intention of leaving.",
+      "我无意离开。"
+    ],
+    [
+      "She explained the intention behind her decision.",
+      "她解释了决定背后的意图。"
+    ],
+    [
+      "His intention was to help us.",
+      "他的本意是帮助我们。"
+    ]
+  ],
+  "hectic": [
+    [
+      "We had a hectic day at work.",
+      "我们工作了一整天，非常忙碌。"
+    ],
+    [
+      "The hectic schedule left little time to rest.",
+      "紧张的日程几乎没留下休息时间。"
+    ],
+    [
+      "Life became hectic after the move.",
+      "搬家后，生活变得忙碌。"
+    ]
+  ],
+  "hungry": [
+    [
+      "I'm hungry after that long walk.",
+      "走了那么久，我饿了。"
+    ],
+    [
+      "The children looked tired and hungry.",
+      "孩子们看起来又累又饿。"
+    ],
+    [
+      "She is hungry for new experiences.",
+      "她渴望新的体验。"
+    ]
+  ],
+  "obsession": [
+    [
+      "His obsession with detail delayed the project.",
+      "他对细节的执着拖延了项目。"
+    ],
+    [
+      "She developed an obsession with winning.",
+      "她变得一心想着赢。"
+    ],
+    [
+      "The novel explores his unhealthy obsession.",
+      "这部小说探讨了他不健康的执念。"
+    ]
+  ],
+  "reptile": [
+    [
+      "A snake is a reptile.",
+      "蛇是一种爬行动物。"
+    ],
+    [
+      "This reptile lays eggs on land.",
+      "这种爬行动物在陆地上产卵。"
+    ],
+    [
+      "The reptile basked on a warm rock.",
+      "这只爬行动物在温暖的岩石上晒太阳。"
+    ]
+  ],
+  "competent": [
+    [
+      "She is a competent and reliable teacher.",
+      "她是一位能干可靠的老师。"
+    ],
+    [
+      "We need someone competent to lead.",
+      "我们需要有能力的人来带领。"
+    ],
+    [
+      "He is competent in several programming languages.",
+      "他熟练掌握几种编程语言。"
+    ]
+  ],
+  "dialog": [
+    [
+      "The film has very little dialog.",
+      "这部电影的对白很少。"
+    ],
+    [
+      "Read the dialog aloud with a partner.",
+      "和搭档一起大声读这段对话。"
+    ],
+    [
+      "This dialog introduces the two main characters.",
+      "这段对话介绍了两个主要人物。"
+    ]
+  ],
+  "stimulate": [
+    [
+      "The grant will stimulate local business.",
+      "这笔资助将促进当地商业发展。"
+    ],
+    [
+      "Questions stimulate discussion in the classroom.",
+      "提问促进课堂讨论。"
+    ],
+    [
+      "Exercise can stimulate your appetite.",
+      "锻炼可以增进食欲。"
+    ]
+  ],
+  "consideration": [
+    [
+      "Please give the proposal careful consideration.",
+      "请认真考虑这个提议。"
+    ],
+    [
+      "Cost is an important consideration.",
+      "成本是一个重要的考虑因素。"
+    ],
+    [
+      "Show consideration for your neighbors.",
+      "请体谅邻居。"
+    ]
+  ],
+  "armed": [
+    [
+      "Armed guards stood near the entrance.",
+      "武装守卫站在入口附近。"
+    ],
+    [
+      "The police warned that he was armed.",
+      "警方警告他携带武器。"
+    ],
+    [
+      "They were armed with the latest information.",
+      "他们掌握了最新信息。"
+    ]
+  ],
+  "parody": [
+    [
+      "The show is a parody of detective films.",
+      "这部节目戏仿了侦探电影。"
+    ],
+    [
+      "Her parody made the audience laugh.",
+      "她的戏仿使观众发笑。"
+    ],
+    [
+      "The comedian parodied a famous advertisement.",
+      "喜剧演员戏仿了一则著名广告。"
+    ]
+  ],
+  "sum": [
+    [
+      "The sum of three and four is seven.",
+      "三加四的和是七。"
+    ],
+    [
+      "We spent a large sum on repairs.",
+      "我们花了一大笔钱修理。"
+    ],
+    [
+      "Please sum up your main points.",
+      "请概括一下你的主要观点。"
+    ]
+  ],
+  "jazz": [
+    [
+      "She enjoys listening to jazz.",
+      "她喜欢听爵士乐。"
+    ],
+    [
+      "The cafe hosts a weekly jazz concert.",
+      "这家咖啡馆每周举办爵士音乐会。"
+    ],
+    [
+      "He plays jazz on the piano.",
+      "他用钢琴演奏爵士乐。"
+    ]
+  ],
+  "promising": [
+    [
+      "She is a promising young scientist.",
+      "她是一位很有前途的年轻科学家。"
+    ],
+    [
+      "The early results look promising.",
+      "早期结果看起来很有希望。"
+    ],
+    [
+      "A promising opportunity appeared last week.",
+      "上周出现了一个很有希望的机会。"
+    ]
+  ],
+  "conscious": [
+    [
+      "The patient remained conscious after the accident.",
+      "事故发生后，患者仍保持清醒。"
+    ],
+    [
+      "She was conscious of her mistake.",
+      "她意识到了自己的错误。"
+    ],
+    [
+      "We made a conscious decision to wait.",
+      "我们经过考虑，决定等待。"
+    ]
+  ],
+  "determination": [
+    [
+      "Her determination helped her finish the course.",
+      "她的决心帮助她完成了课程。"
+    ],
+    [
+      "He spoke with quiet determination.",
+      "他说话时沉静而坚定。"
+    ],
+    [
+      "Determination matters when progress is slow.",
+      "进展缓慢时，决心很重要。"
+    ]
+  ],
+  "donor": [
+    [
+      "The donor supported our new library.",
+      "这位捐赠者资助了我们的新图书馆。"
+    ],
+    [
+      "A blood donor visited the hospital.",
+      "一位献血者去了医院。"
+    ],
+    [
+      "The charity thanked every donor personally.",
+      "这家慈善机构逐一向每位捐赠者致谢。"
+    ]
+  ],
+  "opera": [
+    [
+      "We went to the opera last night.",
+      "我们昨晚去看了歌剧。"
+    ],
+    [
+      "This opera has three acts.",
+      "这部歌剧有三幕。"
+    ],
+    [
+      "She trained as an opera singer.",
+      "她接受了歌剧演唱训练。"
+    ]
+  ],
+  "acquisition": [
+    [
+      "The acquisition expanded the company's operations.",
+      "这次收购扩大了公司的业务。"
+    ],
+    [
+      "Language acquisition begins early in life.",
+      "语言习得从人生早期开始。"
+    ],
+    [
+      "The museum displayed its latest acquisition.",
+      "博物馆展出了最新藏品。"
+    ]
+  ],
+  "pit": [
+    [
+      "They dug a deep pit.",
+      "他们挖了一个深坑。"
+    ],
+    [
+      "Remove the pit before eating the peach.",
+      "吃桃子前去掉果核。"
+    ],
+    [
+      "The rain pitted the stone surface.",
+      "雨水使石头表面出现了小坑。"
+    ],
+    [
+      "Their team stopped in the pit.",
+      "他们的车队在维修站停了下来。"
+    ]
+  ],
+  "hug": [
+    [
+      "She gave her brother a hug.",
+      "她拥抱了一下弟弟。"
+    ],
+    [
+      "The children hugged their grandmother.",
+      "孩子们拥抱了祖母。"
+    ],
+    [
+      "The path hugs the coastline.",
+      "这条小路紧贴着海岸线。"
+    ]
+  ],
+  "skeptic": [
+    [
+      "The skeptic asked for stronger evidence.",
+      "这位怀疑者要求更有力的证据。"
+    ],
+    [
+      "She remained a skeptic about the plan.",
+      "她对这个计划仍持怀疑态度。"
+    ],
+    [
+      "Even the skeptic accepted the clear results.",
+      "连这位怀疑者也接受了明确的结果。"
+    ]
+  ],
+  "tuna": [
+    [
+      "We made sandwiches with canned tuna.",
+      "我们用金枪鱼罐头做了三明治。"
+    ],
+    [
+      "Tuna swim in the open ocean.",
+      "金枪鱼在外海游动。"
+    ],
+    [
+      "She ordered a tuna salad.",
+      "她点了一份金枪鱼沙拉。"
+    ]
+  ],
+  "harassment": [
+    [
+      "The company takes harassment complaints seriously.",
+      "公司认真对待骚扰投诉。"
+    ],
+    [
+      "The policy aims to prevent workplace harassment.",
+      "这项政策旨在防止职场骚扰。"
+    ],
+    [
+      "She reported the harassment to her supervisor.",
+      "她向主管举报了骚扰。"
+    ]
+  ],
+  "stick": [
+    [
+      "The dog fetched a wooden stick.",
+      "狗衔回了一根木棍。"
+    ],
+    [
+      "Stick the label on the box.",
+      "把标签贴在盒子上。"
+    ],
+    [
+      "We should stick to the plan.",
+      "我们应该坚持计划。"
+    ],
+    [
+      "The drawer sticks in damp weather.",
+      "潮湿天气时，抽屉会卡住。"
+    ]
+  ]
+}

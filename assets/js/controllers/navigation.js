@@ -15,6 +15,31 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     monthTransition = null,
     unlistenMotion,
     resettingBatch = false;
+  let batchSweep = null,
+    suppressBatchClick = false;
+
+  function stopBatchSweep() {
+    batchSweep = null;
+    $("calendar").classList.remove("is-batch-sweeping");
+  }
+
+  function sweepBatchDate(card) {
+    const date = card?.dataset.date;
+    if (
+      !batchSweep ||
+      !date ||
+      date.slice(0, 7) !== model.month ||
+      !C.canBatchEditDate(model.state, date) ||
+      batchSweep.visited.has(date)
+    )
+      return;
+    batchSweep.visited.add(date);
+    const selected = model.batchDays.has(date);
+    if (selected === batchSweep.select) return;
+    if (batchSweep.select) model.batchDays.add(date);
+    else model.batchDays.delete(date);
+    refreshBatchPreview();
+  }
 
   function stopTodayAttention() {
     todayAttention?.cancel();
@@ -878,6 +903,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     );
   }
   async function persistBatch(draft, message, keepEditing = false) {
+    stopBatchSweep();
     model.batchSaving = resettingBatch = true;
     $("batchForm").setAttribute("aria-busy", "true");
     $("batchForm").inert = true;
@@ -984,11 +1010,100 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
     events.listen(document, "visibilitychange", () => {
       if (document.hidden) {
+        stopBatchSweep();
         stopTodayAttention();
         stopPageTransition();
       }
     });
     events.listen(window, "resize", () => stopPageTransition());
+    events.listen(
+      document,
+      "pointerdown",
+      () => {
+        stopBatchSweep();
+        suppressBatchClick = false;
+      },
+      true,
+    );
+    events.listen($("calendar"), "pointerdown", (event) => {
+      if (
+        event.pointerType !== "mouse" ||
+        event.button !== 0 ||
+        event.shiftKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.metaKey ||
+        !model.batchMode ||
+        model.batchSaving ||
+        resettingBatch
+      )
+        return;
+      const card = event.target.closest(".day[data-date]");
+      const date = card?.dataset.date;
+      if (
+        !date ||
+        date.slice(0, 7) !== model.month ||
+        !C.canBatchEditDate(model.state, date)
+      )
+        return;
+      event.preventDefault();
+      stopTodayAttention();
+      batchSweep = {
+        pointerId: event.pointerId,
+        select: !model.batchDays.has(date),
+        visited: new Set(),
+      };
+      suppressBatchClick = true;
+      model.batchAnchor = date;
+      $("calendar").classList.add("is-batch-sweeping");
+      sweepBatchDate(card);
+    });
+    events.listen(document, "pointermove", (event) => {
+      if (!batchSweep || batchSweep.pointerId !== event.pointerId) return;
+      if (
+        !(event.buttons & 1) ||
+        !model.batchMode ||
+        model.batchSaving ||
+        resettingBatch
+      ) {
+        stopBatchSweep();
+        return;
+      }
+      const card = document
+        .elementFromPoint(event.clientX, event.clientY)
+        ?.closest(".day[data-date]");
+      if (card?.parentElement === $("calendar")) sweepBatchDate(card);
+    });
+    for (const type of ["pointerup", "pointercancel"])
+      events.listen(
+        document,
+        type,
+        (event) => {
+          if (batchSweep?.pointerId === event.pointerId) stopBatchSweep();
+        },
+        true,
+      );
+    events.listen(window, "blur", stopBatchSweep);
+    events.listen(
+      document,
+      "click",
+      (event) => {
+        const suppress = suppressBatchClick;
+        suppressBatchClick = false;
+        if (
+          suppress &&
+          event.detail > 0 &&
+          $("calendar").contains(event.target)
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      },
+      true,
+    );
+    events.listen($("calendar"), "dragstart", (event) => {
+      if (batchSweep) event.preventDefault();
+    });
     events.listen($("calendar"), "click", stopTodayAttention, true);
     events.handler($("calendar"), "onclick", async (e) => {
       if (resettingBatch) return;
@@ -1200,6 +1315,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
     });
     events.handler($("analysisToggle"), "onclick", toggleAnalysis);
     events.handler($("batchToggle"), "onclick", () => {
+      stopBatchSweep();
       stopPageTransition();
       if (resettingBatch || model.analysisMode) return;
       stopTodayAttention();
@@ -1234,6 +1350,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
       refreshBatchPreview();
     });
     events.handler($("batchCancel"), "onclick", () => {
+      stopBatchSweep();
       if (resettingBatch) return;
       stopTodayAttention();
       actions.leaveBatch();
@@ -1278,6 +1395,7 @@ WorkTimeApp.ui.createNavigationController = function (options) {
   }
 
   function dispose() {
+    stopBatchSweep();
     analysisStyleRequest++;
     stopPageTransition(false);
     stopTodayAttention();

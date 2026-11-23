@@ -40,6 +40,8 @@ function checkI18n() {
     "ultimate-ttt",
     "uno",
     "aeroplane",
+    "typing",
+    "vocabulary",
     "link",
     "garden",
     "tank",

@@ -3,6 +3,13 @@
   "use strict";
   const reduced = WorkTimeApp.ui.animationCompat.preference();
   const running = new Map();
+  const title = Object.freeze({
+    duration: 240,
+    easing: "cubic-bezier(0.2, 0.65, 0.3, 1)",
+    enterFrom: Object.freeze({ opacity: 0.4, translate: "6px 0" }),
+    enterTo: Object.freeze({ opacity: 1, translate: "0px 0px" }),
+    leaveTo: Object.freeze({ opacity: 0, translate: "-6px 0" }),
+  });
   // Date surfaces share one rhythm across navigation, layout and content changes.
   const calendar = Object.freeze({
     duration: 520,
@@ -96,10 +103,7 @@
       // restores a different vertical baseline.
       const frames =
         name === "motion-title"
-          ? [
-              start || { opacity: 0.4, translate: "6px 0" },
-              { opacity: 1, translate: "0px 0px" },
-            ]
+          ? [start || title.enterFrom, title.enterTo]
           : [
               start || { opacity: 0.4, transform },
               { opacity: 1, transform: "none" },
@@ -112,11 +116,15 @@
             ? calendar.navigationDuration
             : name === "motion-card-content"
               ? calendar.contentDuration
-              : 240,
+              : name === "motion-title"
+                ? title.duration
+                : 240,
           easing:
             name.startsWith("motion-calendar") || name === "motion-card-content"
               ? calendar.easing
-              : "cubic-bezier(0.2, 0.65, 0.3, 1)",
+              : name === "motion-title"
+                ? title.easing
+                : "cubic-bezier(0.2, 0.65, 0.3, 1)",
           fill: "backwards",
         },
       );
@@ -169,6 +177,7 @@
     document.addEventListener("visibilitychange", onVisibility);
   }
   WorkTimeApp.ui.motion = {
+    title,
     calendar,
     animateCalendar,
     play,

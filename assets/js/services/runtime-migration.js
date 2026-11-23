@@ -24,6 +24,7 @@ WorkTimeApp.services.runtimeMigration = (() => {
         "backups/manual",
         "ebooks",
         "music",
+        "english",
         "game",
       ];
     let lastReport = 0;
@@ -112,6 +113,7 @@ WorkTimeApp.services.runtimeMigration = (() => {
           "backups",
           "ebooks",
           "music",
+          "english",
           "game",
           "dependencies",
         ]) {

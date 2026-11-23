@@ -1,0 +1,1813 @@
+{
+  "seed": "example-audit-v1",
+  "sampleSize": 200,
+  "auditedAt": "2026-11-23",
+  "method": "Retain the preceding deterministic 200-entry sample and review the first English/Chinese pair of each entry for complete grammatical usage, relevant meaning, accurate translation and retained source metadata. All examples additionally pass length, count, uniqueness and phrase-limit checks. Reviewed by the coding assistant, not an independent human study. Dedicated split-pronunciation examples were separately reviewed.",
+  "counts": {
+    "original": 110,
+    "corpus": 19,
+    "dictionary": 71
+  },
+  "results": [
+    {
+      "id": "driver",
+      "en": "The driver stopped at the crossing.",
+      "zh": "司机在路口停了车。",
+      "sha256": "48f5925e053785f1b877e78f852591060a2002511faed1636751482ef2df42bd",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "ad",
+      "en": "I saw your ad in the newspaper.",
+      "zh": "我在报纸上看到了你的广告。",
+      "sha256": "ee5e04c2498563fbcde2988ecb1dbde1c14f4dc29e0cabde92dd1d46c1e6b999",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "computation",
+      "en": "This computation requires substantial processing power.",
+      "zh": "这项计算需要强大的处理能力。",
+      "sha256": "77ddbbdcf75d02d305bd8a33becabdd62e51d180c399e5c232e2d76b11415dfe",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "reconstruction",
+      "en": "Postwar reconstruction boosted the local fishery.",
+      "zh": "战后重建促进了当地渔业发展。",
+      "sha256": "e546f7ad0c9ed3a24199ea4e56e4c5dcc21d3260749fbb8666df247963753bd1",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "chemist",
+      "en": "The chemist tested the water sample.",
+      "zh": "化学家检测了水样。",
+      "sha256": "6278350f14b9aceb4b70c10b2aee73be0499852caaef34af1deb4b832f2033c8",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "industry",
+      "en": "The closure sounded the industry's death knell.",
+      "zh": "这次关闭敲响了这个行业的丧钟。",
+      "sha256": "7791bd2a214113a42b64da35f5474dc8da02af0fcd071931bb5ef694e5acf621",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "badge",
+      "en": "I don't have a badge.",
+      "zh": "我没有徽章。",
+      "sha256": "535452efe5ef06a1ed5791079610b0d8d9f68c744c01f5649bba6eaea5a4fe27",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "authority",
+      "en": "The authorities banned the subversive publication.",
+      "zh": "当局查禁了这份颠覆性出版物。",
+      "sha256": "d2567c3d9b2295d2b182d8422b2f07fd5431c0e8da09caf80a96337a45e32bbc",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "painful",
+      "en": "The injury made walking painful for several days.",
+      "zh": "这次受伤让他一连几天走路都感到疼痛。",
+      "sha256": "7191b6a9a7b683eb46a7e057bf3bbabc760082c97268f19789b308f0cbb3171b",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "enthral",
+      "en": "The performance will enthral the audience.",
+      "zh": "这场表演会令观众着迷。",
+      "sha256": "69de352da2d967d194bd3914ffe1e0a76fb4deb0bfb65106a8fadb15fd079e8f",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "warmth",
+      "en": "The sun imparts warmth.",
+      "zh": "阳光给人温暖。",
+      "sha256": "b34a76003e195bcc04cffcb9dabc0ecffd345f19a962a577aba427bf040b3f4e",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "hormone",
+      "en": "Oversecretion of hormones can disrupt metabolic balance.",
+      "zh": "激素分泌过多会扰乱代谢平衡。",
+      "sha256": "df53b169afc8c256dcdaf6815ab1c7eed66aaa501dfefaf7c677dfcdeafae22d",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "redeem",
+      "en": "It would cost $120,000 to redeem the mortgage.",
+      "zh": "赎回抵押贷款需要花费 120,000 美元。",
+      "sha256": "a83193a6256f99d349850b6e53be022882f6ca745bd457ddc052b963f607bee1",
+      "source": "Simple English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "deserve",
+      "en": "Every educable child deserves suitable support.",
+      "zh": "每位能够受教育的儿童都应获得适当支持。",
+      "sha256": "29081e14509e8be954692266be7424367cb44b93540749bbfaf1e126a0af9653",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "holiday",
+      "en": "We spent our summer holiday exploring the coast.",
+      "zh": "我们利用暑假游览了海岸。",
+      "sha256": "60c1a0ac54c8786b67c3b5c389b89fb1ec2c1a83edaa4681883c22e0b5443b6d",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "erupt",
+      "en": "The excitable crowd erupted into cheers.",
+      "zh": "兴奋的人群爆发出了欢呼声。",
+      "sha256": "ef7c8deee4305efe441e390f2a8585dcde86eb8f60b83f7124a7ca4919622818",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "breakthrough",
+      "en": "This is a real breakthrough.",
+      "zh": "这是一个真正的突破。",
+      "sha256": "96dc8c2a3b0a84ca9d23fac2d07e871304e29a20da63a9f2913956c6eab7a4ad",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "nonsense",
+      "en": "This poem is sheer nonsense.",
+      "zh": "这首诗纯属无稽之谈。",
+      "sha256": "8b89d1031e11268b788649591297eec98c849f0d36df6c89caf6240636537e6e",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "sack",
+      "en": "Help me sack the groceries.",
+      "zh": "帮我把杂货装进袋子里。",
+      "sha256": "4a8adc031d6bd7a047d578a6f4a6bf7cf4185813405cb41ab796580215050d63",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "airborne",
+      "en": "Airborne pollen can aggravate allergies.",
+      "zh": "空气中的花粉会加重过敏。",
+      "sha256": "af37201cfdeb6265e3ca6f5385d81be17120a3bb0c5d55b9f00ee967ae6b8c07",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "childish",
+      "en": "This game is very childish.",
+      "zh": "这个游戏非常幼稚。",
+      "sha256": "9d406224c32d2f12f6d0a8cd1c5ce3eed9d6b28d8ac27c88d0c06c439251983d",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "neither",
+      "en": "Neither definition seems correct.",
+      "zh": "这两种定义似乎都不正确。",
+      "sha256": "e8f878b1d1262099d86b640e8ca2a887a708fd6b33e09f1f4f9ed044dd3dd01c",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "roam",
+      "en": "Gangs of thugs roamed the streets.",
+      "zh": "一群暴徒在街上游荡。",
+      "sha256": "3bb8b51917f940fa16f00d25a187aef7de9a898841673e6353a47d42eba1c823",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "pint",
+      "en": "Please leave three pints tomorrow, milkman.",
+      "zh": "送奶员，明天请留下三品脱牛奶。",
+      "sha256": "fef95ae228a8f9b6653a0bf794ea123801ac556bf3c6bb834d1039f3aa28af21",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "jogging",
+      "en": "She goes jogging in the park before work.",
+      "zh": "她上班前去公园慢跑。",
+      "sha256": "f329f34bf0578f26be8925ec464bb9d9ced77c71d7f7c4b6a93b13672bc7bced",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "harassment",
+      "en": "The company takes harassment complaints seriously.",
+      "zh": "公司认真对待骚扰投诉。",
+      "sha256": "b9271c781b4e3f895a6a57f8e0195e6b7a082a3b1ebb7293974e62c83b62e580",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "evacuate",
+      "en": "The soldiers evacuated the fortress.",
+      "zh": "士兵们撤离了堡垒。",
+      "sha256": "332bafcc633444e3027c74f9b209d5e1beef7cb97d0f468bd62317661c40c3ff",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "tune",
+      "en": "The trumpeter played a lively ragtime tune.",
+      "zh": "小号手演奏了一支欢快的拉格泰姆曲子。",
+      "sha256": "65b6a66eba73bf805c85a06c132dbd53fd338e43a826b7ac82494e59376b4286",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "nebula",
+      "en": "The naturalist observed a nebula through a telescope.",
+      "zh": "那位博物学家通过望远镜观测到一个星云。",
+      "sha256": "2302ab75467f89cd735bc65f638651b611f11a8756a57a1c4327bb4ac25cfb56",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "calculation",
+      "en": "I made a goof in that last calculation.",
+      "zh": "我在刚才那次计算中犯了个错。",
+      "sha256": "9b9683646fa32e40962bc82ae42b1cfabaed9d43ad7794cb7980e2720b5c8955",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "boots",
+      "en": "These boots keep my feet dry.",
+      "zh": "这双靴子能让我的双脚保持干燥。",
+      "sha256": "aee11f204ccf5715dda6fb0a5ee8a80c97c3ad6f213dded3b6939cf4ad3ac4ba",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "cot",
+      "en": "The baby was sleeping in the cot.",
+      "zh": "婴儿当时正在婴儿床里睡觉。",
+      "sha256": "fe98a228b25d874c4d4e2978a2c9df7a75387e4a7f9ec3e44d4873fd41ea4fe2",
+      "source": "Simple English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "clock",
+      "en": "The clock's mainspring needed careful replacement.",
+      "zh": "钟表的主发条需要小心更换。",
+      "sha256": "c3acc306a48ccc6d5141921a1ab862967f405a9a73bcd6a5b421fc7f84c3af43",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "shrinkage",
+      "en": "The fabric showed appreciable shrinkage after washing.",
+      "zh": "这块布洗后出现了明显缩水。",
+      "sha256": "b5fba060b41f1c1954452d2d84a63e58d269df89825f7b7104ffb516a4b9bcbe",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "note",
+      "en": "We must systematize the scattered research notes.",
+      "zh": "我们必须把零散的研究笔记系统化。",
+      "sha256": "dfb570f5e028304ab3604ebd8f73b1d20bf4a4d8dd391c8d587b5554fa95d328",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "sizes",
+      "en": "Demography examines population size and composition.",
+      "zh": "人口学研究人口规模和构成。",
+      "sha256": "a82a8db7dda3485472b39ec5708cd65cedd141d5aac6c557dfc1b14facfa19a4",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "immigrant",
+      "en": "Immigrants streamed into the land.",
+      "zh": "移民涌入这片土地。",
+      "sha256": "50e287771c4696574e5876207ae93d6b9c4e881ce48dcb841364a6d1d9edc150",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "dismiss",
+      "en": "The court dismissed the case.",
+      "zh": "法院驳回了此案。",
+      "sha256": "725107111a89e667e9e82069b9a135bfb31e1fd806b431cca3dea42215564b28",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "pounds",
+      "en": "I’ve lost five pounds this week.",
+      "zh": "这周我减了五磅。",
+      "sha256": "63a699af4da0fcc6ae0bfeefd2ba483a68888b64643d5e974aafea7c99d090b1",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "pollen",
+      "en": "Airborne pollen can aggravate allergies.",
+      "zh": "空气中的花粉会加重过敏。",
+      "sha256": "af37201cfdeb6265e3ca6f5385d81be17120a3bb0c5d55b9f00ee967ae6b8c07",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "robber",
+      "en": "The robber roped the victims.",
+      "zh": "强盗用绳子捆住了受害人。",
+      "sha256": "9b8fcdd54fd23e97347e25b1a6b57abc7e2dd5ec555196eb01fc81fadae18d9c",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "oddly",
+      "en": "For December, it was oddly warm.",
+      "zh": "十二月，天气出奇地温暖。",
+      "sha256": "a91c0d7a71102f5d5dd89b07464a22b0f774e50f6b890223d0e6a038e013022e",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "miraculous",
+      "en": "The miraculous recovery surprised the doctor.",
+      "zh": "奇迹般的康复令医生吃惊。",
+      "sha256": "e5b6682797b41c7d70598c96d029488b7bfcf4a69f1988177986f7de5907c2b1",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "hostile",
+      "en": "She is hostile to me.",
+      "zh": "她对我有敌意。",
+      "sha256": "ca0ac9ce5014f98a5845773ec559063ce89b36a5cafabe32986032a4118dea05",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "net",
+      "en": "The fish escaped from the net.",
+      "zh": "鱼从网里逃走了。",
+      "sha256": "ae244de092f56972b094c27f5e3c171fc633133a5595a89459b11d3a3e1c019d",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "memento",
+      "en": "I want a memento.",
+      "zh": "我想要一个纪念品。",
+      "sha256": "c46f5a2032582a6da6157710d12a361218b390eba1923abbd91b2ee5e7adf64b",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "session",
+      "en": "Concurrent sessions cover different research topics.",
+      "zh": "同时进行的会议讨论不同研究主题。",
+      "sha256": "1d8946f96b1528f0afba20e4364b9c3ea53961af9d856a3e29b218d81da16dc6",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "sophisticated",
+      "en": "She was a tall, sophisticated, raven-haired beauty.",
+      "zh": "她是一位身材高挑、优雅练达的黑发美人。",
+      "sha256": "b4ef3a8811357f944f8f6c713174914bf1a964ee2ed0a431a1dc6f406a13edc0",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "stray",
+      "en": "He's always taking in some lop-eared stray dog.",
+      "zh": "他总是收养耷耳朵的流浪狗。",
+      "sha256": "3babacfeafec5e094f1a605ca63df8d387507ec71b42ef03db20eb5045519de5",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "words",
+      "en": "The word carries a negative connotation.",
+      "zh": "这个词带有贬义。",
+      "sha256": "0f72cc04a235729489e51aef1ca71aae0e79af525f5401c1e10e166cc9072596",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "magnate",
+      "en": "Miroslav is a business magnate.",
+      "zh": "米罗斯拉夫是一位商业巨头。",
+      "sha256": "b171d43e7b3fff1c528b34dcb90266d14058a9e37ed0c287bf59b00ee9cbc934",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "favourable",
+      "en": "The proposal has received many favourable comments.",
+      "zh": "该提案得到了许多好评。",
+      "sha256": "9543d26f055004cbe967d7bc91df878a79c78c3f437e73f116a2a55564d6f215",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "disc",
+      "en": "A coin is a disc of metal.",
+      "zh": "硬币是一片圆形的金属。",
+      "sha256": "93aecbcbeb61abc27b1bd780b48df727400bbd3ea3a21ae7468c05e6807a6580",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "archaeology",
+      "en": "She studied archaeology at Edinburgh University.",
+      "zh": "她在爱丁堡大学学习考古学。",
+      "sha256": "e725db11692a8fa13156809b72d912de84bb7c13267f0c127bf2f1b462e1edf3",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "dream",
+      "en": "This car handles like a dream.",
+      "zh": "这辆车操控起来好极了。",
+      "sha256": "836282f4581df90fe4b6759c823fbb7d09ceed04d168f2b4757d15bbe37dff4e",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "sentence",
+      "en": "The judge imposed concurrent prison sentences.",
+      "zh": "法官判处数项刑期同时执行。",
+      "sha256": "5bff5c2c7e0254c8105eb87ca2fc9f70cd3652c0078c7250a54e23d16060ab6a",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "glossy",
+      "en": "Its glossy skin tempted me.",
+      "zh": "它光滑的皮肤吸引了我。",
+      "sha256": "cc08c74bccd8df14cd5bbe370565ad4d66e74e6388d2eb477ca4070841b59c9c",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "abdomen",
+      "en": "The old description mentions a tumid abdomen.",
+      "zh": "旧记述提到了肿胀的腹部。",
+      "sha256": "a5a8f7b79aae4ba0e74570a54bad5037ed5835ecc2e0bb6b86d381ed1d416b44",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "shampoo",
+      "en": "Wash your hair with clarifying shampoo.",
+      "zh": "用深层清洁洗发水洗头。",
+      "sha256": "dcb373aaf02dcca329dfa0b54005430947fbcb8fb17ead20ebb1b6907cab0d74",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "starter",
+      "en": "We ordered soup as a starter.",
+      "zh": "我们点了汤作为开胃菜。",
+      "sha256": "667f0cc958e04ffd75cf780989c9ffb320ba182d36659e9fdb7e90519dee9586",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "butter",
+      "en": "Spread a little butter on the warm bread.",
+      "zh": "在热面包上涂一点黄油。",
+      "sha256": "86edb01dffde7611fd275f38513d3c75b2e8759f2eb844b23c6372d04525ea1f",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "tuna",
+      "en": "We made sandwiches with canned tuna.",
+      "zh": "我们用金枪鱼罐头做了三明治。",
+      "sha256": "82af9d5726fa2369193babb5dbd590eee79a18523d32667b794bab694d37327e",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "satellite",
+      "en": "Geomagnetic changes affected the satellite's instruments.",
+      "zh": "地磁变化影响了卫星的仪器。",
+      "sha256": "48d4b01f7e8a3928037f7365212d5acfa24e5af3df3ea16f5f5a22f5994bdb61",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "deduct",
+      "en": "They deduct tax from my salary.",
+      "zh": "他们从我的工资里扣税。",
+      "sha256": "294c1cef604b11f8186815fd5104a5fa59b9df282286052b6b1fa0a85b131680",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "merciless",
+      "en": "The revenge will be merciless.",
+      "zh": "报复将是无情的。",
+      "sha256": "99aa537edc05c8f813aa7080eedde6ade3f9f0be1b8865c7f9afa6d64d2a4158",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "ownership",
+      "en": "These documents purport to prove ownership.",
+      "zh": "这些文件声称能证明所有权。",
+      "sha256": "81466e032f4260f16775980392304c2b563380ca023c48563596bf73a830f758",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "exponent",
+      "en": "The exponent indicates repeated multiplication.",
+      "zh": "指数表示重复相乘。",
+      "sha256": "18a24c1dd6f8a3ef0ba0e8b8e0153834c00f12bd7cef7f3d1afdafe2da175d26",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "grate",
+      "en": "The chalk grated against the board.",
+      "zh": "粉笔在木板上发出摩擦声。",
+      "sha256": "10df2cc13529aa038efdfaf93c33e7181cace3ca23738ad96465d9eefb37f0ef",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "rattle",
+      "en": "She rattled on for an hour.",
+      "zh": "她喋喋不休地说了一个小时。",
+      "sha256": "26366a6ebb2aa885da1bb81fab9c0ec5a1ffc5072dc5375d0dff0f3ea14d8ea4",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "sallow",
+      "en": "Her sallow complexion suggested prolonged illness.",
+      "zh": "她蜡黄的脸色让人觉得病了很久。",
+      "sha256": "f25af3bda559d95eeed9dc674b5c78dc044ff4531ed302a42aab58a1577683af",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "wool",
+      "en": "His frowzy coat smelled of damp wool.",
+      "zh": "他的邋遢外套散发着湿羊毛的气味。",
+      "sha256": "fabaad5b4d92cc6115dc178531898e04acaacf0b5065c1d0ab6d28d4aa9c58c2",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "irritate",
+      "en": "The soap irritated my eyes.",
+      "zh": "肥皂刺激了我的眼睛。",
+      "sha256": "e29a7e8b45ffc9aa19bedece99234997c5aff4841fefc80164501b33b5144883",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "standardized",
+      "en": "The respondents answered a standardized questionnaire.",
+      "zh": "受访者填写了一份标准化问卷。",
+      "sha256": "de1b41251b3fe44b7a7a3c355291b6a47b3315aea9f5d9c1ca7d18fc3b02a063",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "identify",
+      "en": "The naturalist identified a rare lichen.",
+      "zh": "这位博物学家辨认出了一种稀有地衣。",
+      "sha256": "9f8f4d640365e6cffb1beeb50d3c7284d511d7571cc75268ca1b33283dd98509",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "burden",
+      "en": "Responsibility is a heavy burden.",
+      "zh": "责任是沉重的负担。",
+      "sha256": "d2bf08d0abcb324097b4172ad0fd8307f5cde0c24982811e246cecf88c322494",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "flour",
+      "en": "Add 8 oz of flour.",
+      "zh": "加入八盎司面粉。",
+      "sha256": "ee889c23c2d1ae11caa5d799a1341c5a6f80bc0dfce7dad96f08a3b59db51592",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "amnesia",
+      "en": "Amnesia means \"loss of memory\".",
+      "zh": "失忆症的意思是“失去记忆”。",
+      "sha256": "d9580f2e868e8aadebe777882999c5a1a14ad52d0a65e0d8e896da69409b300e",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "link",
+      "en": "Scientists hypothesize a causal link.",
+      "zh": "科学家推测两者存在因果联系。",
+      "sha256": "f8fabbcb99272f3d0026e9af04b9e3ebbc4df4d5876a7106a19d2edbe059f3c1",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "optional",
+      "en": "The final exercise is optional.",
+      "zh": "最后一道练习是选做的。",
+      "sha256": "5f2d93c2a39946d1db94eda9fbed6993e28c9ff5fc10bc266fc6951af7866aeb",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "whim",
+      "en": "The decision seemed based on a whim.",
+      "zh": "这一决定似乎是随心所欲的。",
+      "sha256": "c30d4c84831d9807bbb57ce90b7133b10a74b368656bf54feb85e8f6b6efd5f6",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "aversion",
+      "en": "Pushy salespeople are a major aversion of mine.",
+      "zh": "我非常讨厌强行推销的销售人员。",
+      "sha256": "52460077d02e9e8d6651aa7dde272c458b7fb002894c723dd90fd6993e5eb46c",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "convict",
+      "en": "He was a convicted felon.",
+      "zh": "他是一名被定罪的重罪犯。",
+      "sha256": "1163826a232e8b9937874a89e25a4b2b88918fd547f188042a6d16f7482ec356",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "vigour",
+      "en": "Regular exercise restored his vigour.",
+      "zh": "经常锻炼使他恢复了活力。",
+      "sha256": "ee6da0f109b86a4fc1cb18a722ee3308fe5b37c61f148aaea2114c70b1792888",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "nonconformist",
+      "en": "Their rabidly nonconformist deportment has made them legendary.",
+      "zh": "他们的极端不墨守成规的举止使他们成为传奇。",
+      "sha256": "bfed4ca410f923989762b60ab0673a662f0112f5bc4f0adf3df1b7e1cd386ada",
+      "source": "Open English WordNet 2025",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "vital",
+      "en": "The brain is a vital organ.",
+      "zh": "大脑是一个维持生命所必需的器官。",
+      "sha256": "9ebded501d43ea925952b2b802ae24ee450bfa28c8a495673aa37b14dffa0f03",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "board",
+      "en": "Who heads the board of trustees?",
+      "zh": "谁领导董事会？",
+      "sha256": "e01824601228df1f58b87186835f2e1ed7dcfabe152ab8761a630f408724bb62",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "weekday",
+      "en": "I can't sleep late on a weekday.",
+      "zh": "工作日我不能睡懒觉。",
+      "sha256": "548e26f4a5248d1829e20a59ee06454d8f644ee102fb2df5f3343588664d2677",
+      "source": "Simple English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "usually",
+      "en": "The symptoms are usually transitory.",
+      "zh": "这些症状通常是暂时的。",
+      "sha256": "2d23f5a78fa9d7b8b698114fe7a1a2e96b2fc87b58d967f3588999a8e7daa43b",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "valley",
+      "en": "This vantage point overlooks the entire valley.",
+      "zh": "这个有利位置可以俯瞰整个山谷。",
+      "sha256": "b44e746210f9ac10b68f031363dda7c551c823d86a76cf4ae8b4f2f31eff51d1",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "reckon",
+      "en": "I didn't reckon with his stubbornness.",
+      "zh": "我没有料到他这么固执。",
+      "sha256": "28aca273d94acbfc959183cedccd0e0edd4ee2b167ec113c03c3d144caf14662",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "syllabus",
+      "en": "The syllabus listed objectives and assignments.",
+      "zh": "教学大纲列出了目标和任务。",
+      "sha256": "4a99ffb7c9fd040a5e2ae8660d9c8d670e68c201bf05b979ae5fcca695c44caf",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "statue",
+      "en": "The statue broke into chunks.",
+      "zh": "雕像碎成碎片。",
+      "sha256": "c84be3e5b7649acd7d4962ec01c60ed7e32ec5aadae13a75df83e1ae098f75ae",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "lesson",
+      "en": "Supplementary exercises reinforce the main lesson.",
+      "zh": "补充练习巩固了主要课程内容。",
+      "sha256": "ffa9b7863f7ea5cb4dd5f09c1e43c18ada67133153919621e585de981fc2e39b",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "oblivion",
+      "en": "He regularly drank himself into oblivion.",
+      "zh": "他经常喝得不省人事。",
+      "sha256": "24c15731650f762a0c93b8ec8f2674539508e45998a91c0e3b7b7c8464d4acba",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "forbes",
+      "en": "The article quotes Professor Forbes.",
+      "zh": "这篇文章引用了福布斯教授的话。",
+      "sha256": "38cc4d3d273832a690f2f76751567e8838cd62b536d6843d5c6e868b755a9273",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "idiom",
+      "en": "That idiom doesn’t really translate.",
+      "zh": "那个习语确实很难译出来。",
+      "sha256": "a4c02bc3191dcb79592dd436e1420f00f58aaabcdf32253d21ca98a1dabf07f8",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "operating",
+      "en": "The interdependent systems must operate together.",
+      "zh": "相互依赖的系统必须协同运行。",
+      "sha256": "3365c0308a26690d78cbaf4951be0d3264a7d4fe9ee0fc49fffefefd5d6452c9",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "testify",
+      "en": "Her behavior testified to her incompetence.",
+      "zh": "她的行为表明她无法胜任。",
+      "sha256": "a2a3460da74a8016f12a47aef4d64f57da4041e78ef5f678b3c0be7a7d36d1ad",
+      "source": "Open English WordNet 2025",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "yourself",
+      "en": "Do not overtire yourself during recovery.",
+      "zh": "恢复期间不要过度劳累。",
+      "sha256": "203cd27afccf372d70a43ff1db6d629d94254a770c3bb2bf860cc2d2c3555fa2",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "device",
+      "en": "The device is responsive to light.",
+      "zh": "这种设备对光很敏感。",
+      "sha256": "f9641c2faa0701f590efedcec313065066173a08c4c1d6147d16e9f7547684d7",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "laborer",
+      "en": "The laborer is very young.",
+      "zh": "工人很年轻。",
+      "sha256": "3310d56f2b68ff8086c1e1b157d5f587bedf079e5c5740ad8d229a4e6bc793ed",
+      "source": "Simple English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "violent",
+      "en": "A violent storm damaged the roof.",
+      "zh": "猛烈的暴风雨损坏了屋顶。",
+      "sha256": "34aeeb6565cd3f7ff50d6be5644544a09593ebf56d10a76a85e43ea30148e3a6",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "convenient",
+      "en": "Is this time convenient for you?",
+      "zh": "这个时间你方便吗？",
+      "sha256": "02850f26bb2f14168f2d847adee6a6875936c24d68951edd51771de1ed680550",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "sight",
+      "en": "Sight is a precious gift.",
+      "zh": "视力是珍贵的礼物",
+      "sha256": "35997de52d2f164f888e6af7b664b09debd0667f696ef10b1b0390b4bc4a48af",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "enable",
+      "en": "Their connivance enabled the financial impropriety.",
+      "zh": "他们的纵容使财务违规得以发生。",
+      "sha256": "be6e40bcc8b25eab0a1c526c924997eecb19b183cbeea14f83ce11043c579918",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "organically",
+      "en": "The farm grows its produce organically.",
+      "zh": "这家农场以有机方式种植农产品。",
+      "sha256": "05a97fd7f7ec4c7fc7cf72b5e9ab56450068cc35202eb68a4a6badbe689f93fc",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "breeding",
+      "en": "Your dog has good breeding.",
+      "zh": "你的狗血统很好。",
+      "sha256": "69b910ff0cdee052f7573fd70596e18b19d1492850cbf50d4e32c43b96fb8c55",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "fragrant",
+      "en": "This heather is very fragrant.",
+      "zh": "这丛石南花很香。",
+      "sha256": "7659c8c079485ab8ab2acb42e7e9c47cabdeab5e00620cd5326a994e1755e664",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "happy",
+      "en": "Music makes me feel happy.",
+      "zh": "音乐让我感到快乐",
+      "sha256": "0228abbb7cd5554e3eb790fa6f9744efaca32505e3adcdd0fb8ad856398d4f41",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "appointment",
+      "en": "The gazette published the official appointments.",
+      "zh": "公报刊登了官方任命。",
+      "sha256": "4206e54a5669bbd990bca87f74e1c1872b4cfbcbcfd650735ef6461b81e1a4e7",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "accommodating",
+      "en": "Sorry, I can't accommodate you.",
+      "zh": "抱歉，我无法为你安排住宿。",
+      "sha256": "6b3b57143e3ea6f700cffd5d8ea58f2e6891052324561e4207e18886cdc0524d",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "limp",
+      "en": "She walks with a limp.",
+      "zh": "她走路一瘸一拐。",
+      "sha256": "accf6c0d1ae84abf40fcd1203fb83e59a58e794738f0c5c8bf49419c24b218b1",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "porpoise",
+      "en": "A porpoise surfaced beside the fishing boat.",
+      "zh": "一只鼠海豚在渔船旁浮出水面。",
+      "sha256": "b86953321712c6a5ea1616d405f7f6a1562a18c9bda093d5f8830e13e6971512",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "cohesion",
+      "en": "Unit cohesion is important in the military.",
+      "zh": "部队凝聚力在军队中很重要。",
+      "sha256": "94d9c4b615b6d1500b55c44f601ea08b267a99c03e21026db408e6aae3247479",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "newspaper",
+      "en": "The syndicate purchased several regional newspapers.",
+      "zh": "这个企业联合组织收购了几家地区报纸。",
+      "sha256": "b1a7daf4bb6b4dcc62c4caedb747b966559bbd9f87822b27cbd5c8e1d63d8415",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "perimeter",
+      "en": "The patroller checked the perimeter.",
+      "zh": "巡逻员检查了周界。",
+      "sha256": "f90c25abbd70fe2da2ce069d5da5204ef4dad28a9de606bab8f2b3c4995ca987",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "overdue",
+      "en": "His promotion was long overdue.",
+      "zh": "他早就该得到晋升了。",
+      "sha256": "73e6e4b37936050ae8b3056be4f08efda12e099e79842454de34f236a57befa9",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "cycling",
+      "en": "The equipe prepared for the cycling race.",
+      "zh": "运动队为自行车赛做了准备。",
+      "sha256": "68f93b58471fc6d958772114876dfc4def90d21fabec34fe61703633c1b07f05",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "eventful",
+      "en": "The eventful journey furnished many entertaining anecdotes.",
+      "zh": "这趟多事的旅程提供了许多有趣的轶事。",
+      "sha256": "80df8c90bf7bda0f140e375816e47fd9a5128f96343fd22a6d3892458f7e075d",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "uniformity",
+      "en": "The engineer checked coating uniformity.",
+      "zh": "工程师检查了涂层的均匀性。",
+      "sha256": "540bd5daa4638634f5426a11ee072ff799065e4d8d24ffdbb173e449094c1561",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "add",
+      "en": "Add compost to improve the topsoil.",
+      "zh": "添加堆肥以改良表土。",
+      "sha256": "97eea74f2b6f7b24d3768d052c2c0963e2e7d71dc71ce9243971695c9faa56a0",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "intention",
+      "en": "I have no intention of leaving.",
+      "zh": "我无意离开。",
+      "sha256": "965b9b6fd89c4eed18e0698e4b09b11465934f4009fe6fb6ce764e2d91d5886e",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "lawyer",
+      "en": "The lawyer prepared the property's conveyance documents.",
+      "zh": "律师准备了地产转让文件。",
+      "sha256": "167f62482501c66c0c0d2be5f8505b14f2004f30fa6f1135b0e028b3c648c9c9",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "hectic",
+      "en": "We had a hectic day at work.",
+      "zh": "我们工作了一整天，非常忙碌。",
+      "sha256": "b563ed57defd56217296f0261d5f9c5134f189c55a7109c0cdaa5d1e0236d843",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "close-up",
+      "en": "The close-up reveals the painting's intricate texture.",
+      "zh": "这张特写显示了画作精细的质地。",
+      "sha256": "3d30b6b33b797e23067faed14f76a7bb5ff6a332cf78ef6c9b9dcea219005d0f",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "gloomy",
+      "en": "The cavern was gloomy.",
+      "zh": "山洞里阴森森的。",
+      "sha256": "15f5cc48aa2ef31b2f754fcb17bbf0cb5bdfe5a685a279696117f2b4f3dfab73",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "administrate",
+      "en": "They administrate several regional research grants.",
+      "zh": "他们管理着几项地区研究资助。",
+      "sha256": "970f3fba52f88a6a6c73bd5174f5acd2b454a192e0bc495e173d6cf2701356d8",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "interpret",
+      "en": "Please interpret my strange dreams.",
+      "zh": "请解释一下我奇怪的梦。",
+      "sha256": "1ad295feb57ca2bc66f55da3ae1627b0dbfa24f895af56079ffa39398b3d864d",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "governments",
+      "en": "The government will promulgate new safety regulations.",
+      "zh": "政府将颁布新的安全法规。",
+      "sha256": "59fb83c5a8bb27136f76038a762da1d7d3bea209d9c70a0f7abbb6a29fde6643",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "separate",
+      "en": "Each subcommittee submitted a separate report.",
+      "zh": "各小组委员会分别提交了一份报告。",
+      "sha256": "ca54383cb0ec2d3a12ddebdda0c9183c44ab3a79b7a45ee40e4067b4e597898a",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "candles",
+      "en": "These candles are made from soy.",
+      "zh": "这些蜡烛是用大豆制成的。",
+      "sha256": "328def8035cd0f256deb6cc06f75ef2f87f8b0ace9a104fc0ea988e1969ef21d",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "scorch",
+      "en": "The exposed tree scorched in the hot sun.",
+      "zh": "暴晒在烈日下的那棵树被晒焦了。",
+      "sha256": "844513edc8116e9d7be08139f97fd44ac43dabacb69e450a9bd00811a7706569",
+      "source": "Open English WordNet 2025",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "announcement",
+      "en": "The announcement caused widespread consternation.",
+      "zh": "这项公告引起了广泛的惊愕。",
+      "sha256": "8c7cc9d652c58772840ec72d0f6253ed7eec0fd35141e09e57919fc9f039691c",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "could you help me?",
+      "en": "Could you help me carry this?",
+      "zh": "你能帮我拿这个吗？",
+      "sha256": "bca849b60fb7fc714bf165383a29e85b4f46904ac7787a29f490bd8b6fe22e97",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "nineteen",
+      "en": "Nine and ten makes nineteen.",
+      "zh": "九加十等于十九。",
+      "sha256": "c6fdf8a53de4dc11d6f1195ac54ab4f17b6d796178e9d7c009712b91e60b0657",
+      "source": "Simple English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "receipt",
+      "en": "We need a signed receipt.",
+      "zh": "我们需要一张签字的收据。",
+      "sha256": "9aeb023502194cd86375096833762917f83df8b204d2804d9a31af39edba99b9",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "tense",
+      "en": "A little levity eased the tense discussion.",
+      "zh": "一点轻松诙谐缓和了紧张的讨论。",
+      "sha256": "12a911504f1d4c7ce265ceb0bfe65e1c3028a7cd93233a1c42b611b7befb57b3",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "lofty",
+      "en": "The road's gradient increased near the lofty summit.",
+      "zh": "道路接近高耸的山顶时，坡度变陡了。",
+      "sha256": "d09a064cc30760c0a48ff9bfcbdbfac8f930958d4c60a62589d0b75b01156c68",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "twelve",
+      "en": "This bike has twelve speeds.",
+      "zh": "这辆自行车有十二挡变速。",
+      "sha256": "b906c416d06af2c49f2d08129a6ade96ffb361d4d13b4776d13170dfe8e53905",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "thick",
+      "en": "The cactus has thick, spined stems.",
+      "zh": "这株仙人掌有粗壮带刺的茎。",
+      "sha256": "ccf43ff253a5ef7f4e7c39e1e19bb0db5af25155d327e46995178aa9e3b600c2",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "hungry",
+      "en": "I'm hungry after that long walk.",
+      "zh": "走了那么久，我饿了。",
+      "sha256": "36f0923025bd0f2cf8b2efb8d71638c7bce78852da610bb20f4f8f475884ad4a",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "pensive",
+      "en": "James seemed pensive and lost.",
+      "zh": "詹姆斯似乎陷入沉思，有些茫然。",
+      "sha256": "385cf8ce362c533e2b3da50b32cd2ebbcd52bb085874e0b5a29c6485bc924944",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "interior",
+      "en": "She set herself up as an interior designer.",
+      "zh": "她开始从事室内设计工作。",
+      "sha256": "9ffa209a0fc15732cc26a6a261d9928fd6af75bdb6e498246089b5103c3a9fd9",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "starting",
+      "en": "The unpromising start discouraged the inexperienced team.",
+      "zh": "这个不乐观的开端使缺乏经验的队伍气馁。",
+      "sha256": "9a84d3ad1cf2599b703b9867c04502ab2c350a32f17e28b00bdb62e5a124d7cb",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "kindle",
+      "en": "I kindled a fire using twigs.",
+      "zh": "我用树枝生火。",
+      "sha256": "d32c78b2d196d3da48b88bb8f08914f30c2d4a12ee790b74c655eb0926978a68",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "harm",
+      "en": "No apology could efface the harm.",
+      "zh": "任何道歉都无法抹去伤害。",
+      "sha256": "0541ec59152f723475bce244ad7d471d6f374f059f14768546fb3be0a7aba702",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "hateful",
+      "en": "The humanist rejected hateful rhetoric.",
+      "zh": "那位人文主义者拒绝仇恨言辞。",
+      "sha256": "ada0c5c3b33f003ddb1c0f57989454f9975d73f6c5c98a9498d31e49caa6e44b",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "underlie",
+      "en": "This postulate underlies the entire mathematical proof.",
+      "zh": "这个公设是整个数学证明的基础。",
+      "sha256": "da36111c2141ad16a9296b088e8905915a4ca0b53ba56fd69d88f1f1f32fa52d",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "foreign",
+      "en": "He liked visiting foreign cities.",
+      "zh": "他喜欢游览外国城市。",
+      "sha256": "80be3790887385a97708eb4b8afda3cde4a9904e5b870ae52277b711484581be",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "commiserate",
+      "en": "Her friends commiserated after the rejection.",
+      "zh": "遭到拒绝后，她的朋友们向她表示慰问。",
+      "sha256": "2bbef5cace3bdc74a66e2786698daca377730f6794709464ae9a9e56996a7716",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "surround",
+      "en": "Concentric circles surrounded the central emblem.",
+      "zh": "同心圆环绕着中央徽记。",
+      "sha256": "4141463ca5d58b1b4afc104a521007c07333c9eb409341e7cea9e76383534e4e",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "sixty",
+      "en": "He's already all of sixty.",
+      "zh": "他已经六十岁了。",
+      "sha256": "247d69a6c3e640d0651371377398c88bdee3cc32f5c8e521e61690ea498ee224",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "obsession",
+      "en": "His obsession with detail delayed the project.",
+      "zh": "他对细节的执着拖延了项目。",
+      "sha256": "1da0dffd0384f2be6517e9e3e851ee9d526f68f05d7cff3b75c4a1a0a868ace3",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "intonation",
+      "en": "Her intonation was false.",
+      "zh": "她的语调不对。",
+      "sha256": "55c0313f2bd7b9743663bfdeb1e08b0dee8c5f9f2fb45de47c3d3306e68c8eee",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "guess",
+      "en": "You guessed the right answer!",
+      "zh": "你猜对了正确答案！",
+      "sha256": "0a2e8a1278eccd5cfacf40843e1f8ac2a4243e6b0fc8b87ae9e74fcdcc81ab16",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "reptile",
+      "en": "A snake is a reptile.",
+      "zh": "蛇是一种爬行动物。",
+      "sha256": "4790891f5255fa409d027d75d2f6577eca5285d11fad97987678c8a5b521ebe2",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "raincoat",
+      "en": "The rain penetrated my raincoat.",
+      "zh": "雨水渗进了我的雨衣。",
+      "sha256": "c096a2886fb2c6ca034d8a3c59dafe0fbcb22b11acb709071ac77e2c2bba1244",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "misgiving",
+      "en": "The investor's misgiving grew into mistrust.",
+      "zh": "投资者的疑虑逐渐变成不信任。",
+      "sha256": "eefec456cff15d9083e02bc350b29043a3b7f1f554381bacc59f8939200431d8",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "revolutionize",
+      "en": "E-mail revolutionized communication in academe.",
+      "zh": "电子邮件彻底改变了学术界的沟通方式。",
+      "sha256": "375cc70feb668612cf34de68ccf89d7eb0052ef0f5fe8f10b1e61ce941774b6c",
+      "source": "Open English WordNet 2025",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "indoors",
+      "en": "He looked sallow after weeks indoors.",
+      "zh": "在室内待了几周后，他脸色蜡黄。",
+      "sha256": "705f2a5d709f28bfd613c6ced88314131b1942c4367b76cbd7f2be078439941a",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "competent",
+      "en": "She is a competent and reliable teacher.",
+      "zh": "她是一位能干可靠的老师。",
+      "sha256": "80369a94d6a2bdad796a35d629b4c50a10bc2e9cd4628b7c4ff6b01736463974",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "civilization",
+      "en": "A hermit doesn't much care for civilization.",
+      "zh": "隐士不太关心文明。",
+      "sha256": "86b66eb1a2e69311a905b996c4614ef74ce2c0943c6753c5f11f946fee8a4384",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "malevolent",
+      "en": "He's not malevolent, just stupid.",
+      "zh": "他没有恶意，只是愚蠢。",
+      "sha256": "0bc3e348f0ba0a5759ef4c3d277030d1e11cacb7b461ca3e6b63c3ff73ef507f",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "garner",
+      "en": "He garnered a reputation as a language expert.",
+      "zh": "他赢得了语言专家的声誉。",
+      "sha256": "924ca8be64135e12142fc76b2ed2ed574a96d565e3a59bf04235bda089733420",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "irrespective",
+      "en": "Everyone may apply, irrespective of age.",
+      "zh": "无论年龄大小，所有人都可以申请。",
+      "sha256": "ea853f268e542a9f90dd65ca6cb5c28e995bfa49b5bfa24ee3758709068d722c",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "or",
+      "en": "She spoke without bitterness or acrimony.",
+      "zh": "她说话没有痛苦或怨愤。",
+      "sha256": "d073b0099e89d2e8050a9b65c9a4a555425423a1fcc6a846c17e53dda3c5fa87",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "stick",
+      "en": "The dog fetched a wooden stick.",
+      "zh": "狗衔回了一根木棍。",
+      "sha256": "d2ac514b1ce1d81bc6703d31b0b2411844a4406f7211b22cb3ccbf021068d2d8",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "skeptic",
+      "en": "The skeptic asked for stronger evidence.",
+      "zh": "这位怀疑者要求更有力的证据。",
+      "sha256": "96d92c60ff0bcf38c3a42e12b4f0ef73d9ad702ce847912ea4a89f19b9f831ee",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "dialog",
+      "en": "The film has very little dialog.",
+      "zh": "这部电影的对白很少。",
+      "sha256": "6f07dadc13a09bb822fe14b7c75abc2fda946b421219c06355da24763e23ed2e",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "infuse",
+      "en": "Infuse the leaves in hot water.",
+      "zh": "把这些叶子泡在热水里。",
+      "sha256": "0e94de22025c993b726c2e94774cf34e47238e254524b3aebc1441c3cbfac5e7",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "administration",
+      "en": "The company went into voluntary administration last week.",
+      "zh": "该公司上周进入自愿托管。",
+      "sha256": "3623eb54787ebf1490b31970a3c77d3a9d58e75686ac5bc34efdca096375d9d5",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "mask",
+      "en": "Don't take your mask off.",
+      "zh": "别摘下你的面具。",
+      "sha256": "682b8e883aba12aec09794d35af5bae9e07148558c8aba18ce75a489a718c4ee",
+      "source": "Tatoeba",
+      "type": "corpus",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "sports",
+      "en": "Many children join a sports club.",
+      "zh": "许多孩子加入体育俱乐部。",
+      "sha256": "c5ba6ca202fcb5eada4da373712e3f03931218ae896d4380531d9f53aa9c1ffc",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "huge",
+      "en": "I'm suffocating under this huge workload.",
+      "zh": "这么巨大的工作量我快要窒息了。",
+      "sha256": "5f59e10fda332b410fc39051f9aa91907ce5de1ded5ce0c6dd4ce20ed1eecc0a",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "consideration",
+      "en": "Please give the proposal careful consideration.",
+      "zh": "请认真考虑这个提议。",
+      "sha256": "82d0968ddce830dae4cb6e9c7826c758e127e39ba3f4dd162fe4b95a9e72042c",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "stimulate",
+      "en": "The grant will stimulate local business.",
+      "zh": "这笔资助将促进当地商业发展。",
+      "sha256": "ddf97dc6a61c25e771b712cc4b7f9c65630a3deaef4410572a6369b32aa2f04b",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "procedure",
+      "en": "They scrupulously followed the prescribed procedure.",
+      "zh": "他们一丝不苟地遵循了规定流程。",
+      "sha256": "44c8480117da977d748f82540b4f8a949d8149a9299f8788f0601a8e12e3d5ea",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "fetch",
+      "en": "You wait here while I fetch my coat.",
+      "zh": "你在这里等我，我去取外套。",
+      "sha256": "b0867b6e1df1343f44bf035263d76b7dc0f22bdd70328fe586fed9359be397d1",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "fellow",
+      "en": "They solicit feedback from each new fellow.",
+      "zh": "他们向每位新成员征求反馈。",
+      "sha256": "e2bc3edff17caaf4dede261a298255dec05c7c17adbcaddb1e34bda2d48de573",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "corrode",
+      "en": "My morale is being corroded day by day.",
+      "zh": "我的士气一天天被侵蚀。",
+      "sha256": "bcba2ac5ff8ce66af3d552e2dad8721d8753f15d589567003f5e3714ace692cf",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "actual",
+      "en": "The actual government expenses dramatically exceed the budget.",
+      "zh": "政府的实际支出大大超出了预算。",
+      "sha256": "58f9cc1962e0ca9219de02ea83fc1775a892e772e6c96d42a7fe5c6b740a2f37",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "confess",
+      "en": "People confess to anything under torture.",
+      "zh": "在酷刑下，人们什么都会招认。",
+      "sha256": "5aae247e110027156551e5da071726cb4ffad3a6eaa53182bacde6d8390b3664",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "clockwise",
+      "en": "Turn the knob clockwise.",
+      "zh": "顺时针转动旋钮。",
+      "sha256": "447f015daddf5a3a6243f569ccdaad9019f56a3db0645b2715ed0a7a35c35d25",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "agitation",
+      "en": "She causes great agitation within me.",
+      "zh": "她让我内心极度不安。",
+      "sha256": "537429049ca5c645b892f7a7a058541ff530eb536ecab85358f026d73acf7c67",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "produce:verb",
+      "en": "These farms produce organic milk.",
+      "zh": "这些农场生产有机牛奶。",
+      "sha256": "8ca4038945e326f5d43b986d265978446aa57a9fd23a95fdcd42d0319fa300e6",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "could you say that again?",
+      "en": "Could you say that again, please?",
+      "zh": "请你再说一遍，好吗？",
+      "sha256": "b0810090ff6d8834e90b249c87dd651bf21b6bb68d5510e7ba91a71ab3a3bf41",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "fully",
+      "en": "The chair allows him to recline fully.",
+      "zh": "这把椅子让他可以完全躺下。",
+      "sha256": "966f6269f47bd45f1f6051014ecfea41cab52bde81fbc1a82890ece1512b5f68",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "grocer",
+      "en": "The grocer delivered his goods by cart.",
+      "zh": "杂货商用手推车送货。",
+      "sha256": "300572b200355692df1de7f87f6a2d3b137f9614405a5bb1ee3a1e1c6cd26570",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "hoarse",
+      "en": "He replied with a hoarse whisper.",
+      "zh": "他用沙哑的低语回答道。",
+      "sha256": "8cbf301942bfb55415904c5768b0078af6b1d8dce54c4e432542f0dcc526cba5",
+      "source": "Simple English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "emperor",
+      "en": "The mosaic forms a likeness of the emperor.",
+      "zh": "这幅马赛克拼出了一位皇帝的肖像。",
+      "sha256": "5e01e0b29900a9f23aa089c406bb205ec92429cf629df868aded2646d9cf2808",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "postgraduate",
+      "en": "The student opted for postgraduate psycholinguistics.",
+      "zh": "那名学生选择攻读心理语言学研究生课程。",
+      "sha256": "a3948ec1155c9c6f033cdeaf88d2df8b1f664312935bf23fbcdfbf96b03d5e57",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "marks",
+      "en": "The mark was only a pinhead across.",
+      "zh": "这个印记只有一个针头那么宽。",
+      "sha256": "377073962d6903c7766b4a05cdbc7615f8d0b4cb07c2ed1a1790a239dc4163a1",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "arrest",
+      "en": "We are here to arrest you.",
+      "zh": "我们是来逮捕你的。",
+      "sha256": "e10b30795fd5d94560698abbfc375c4c571907085a572379548d341833cde794",
+      "source": "English Wiktionary / Kaikki",
+      "type": "dictionary",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "armed",
+      "en": "Armed guards stood near the entrance.",
+      "zh": "武装守卫站在入口附近。",
+      "sha256": "e2301bc8131c1122c48f6340c247e70062d0eb1b05d512cc0ee1dcbacece1702",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "thanks for your patience.",
+      "en": "Thanks for your patience during the delay.",
+      "zh": "谢谢你在延误期间耐心等待。",
+      "sha256": "6d91109b4674e70d48161fed3f5b7841ddc7435392c949f2547a7a6174dead62",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "lover",
+      "en": "The performance will enrapture music lovers.",
+      "zh": "这场演出会使音乐爱好者陶醉。",
+      "sha256": "05290c21382b2b74d23ad5fe9cb16bc1b8f6e3ec9668adc1b1ee3771c13f21cf",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "parody",
+      "en": "The show is a parody of detective films.",
+      "zh": "这部节目戏仿了侦探电影。",
+      "sha256": "64d710eb0b72196152a8c696d70f297a0742bd61706bdb06af8169a96d0cc033",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "arrangement",
+      "en": "The haphazard arrangement confused the visitors.",
+      "zh": "杂乱的布置使参观者感到困惑。",
+      "sha256": "6c4040d91d5423338fcc6843f5f202164c711e51f5c105d9a40cf2bd625480ca",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "depositor",
+      "en": "Each depositor receives an annual statement.",
+      "zh": "每位储户每年都会收到账户结单。",
+      "sha256": "e75aefa53596a75f536bc123fe95dee2fcd962ef0fcacf257432e6abb163b6b4",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    },
+    {
+      "id": "only",
+      "en": "This bulb consumes only one watt.",
+      "zh": "这个灯泡只消耗一瓦功率。",
+      "sha256": "81ac9a9d989e3dadeb3dce7eb2a6706da4296beb52dc17b3a30ef52ea4d1b2eb",
+      "source": "WorkTime",
+      "type": "original",
+      "status": "assistant-reviewed"
+    }
+  ]
+}

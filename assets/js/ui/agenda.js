@@ -2150,7 +2150,10 @@ WorkTimeApp.ui.createAgenda = function ({
   function setAuxiliary(open) {
     auxiliaryOpen = open;
     const next = active && open;
-    const docked = active && !$("settingsPane").hidden;
+    const docked =
+      active &&
+      (!$("settingsPane").hidden ||
+        editor.classList.contains("is-vocabulary-open"));
     for (const tab of editor.querySelectorAll(".notification-tab")) {
       if (active)
         tab.setAttribute(

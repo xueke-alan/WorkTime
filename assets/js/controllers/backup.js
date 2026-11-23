@@ -261,6 +261,20 @@ WorkTimeApp.ui.createBackupController = function (options) {
       WorkTimeApp.i18n.t("agenda.memoRestore", {
         count: (data.memo || "").length,
       });
+    const typing = WorkTimeApp.services.typingStorage;
+    const vocabulary = WorkTimeApp.services.vocabularyStorage;
+    $("restoreSummary").textContent +=
+      " " +
+      WorkTimeApp.i18n.t(
+        vocabulary?.find(data)
+          ? "vocabulary.backupIncluded"
+          : "vocabulary.backupPreserved",
+      );
+    $("restoreSummary").textContent +=
+      " " +
+      WorkTimeApp.i18n.t(
+        typing?.find(data) ? "typing.backupIncluded" : "typing.backupPreserved",
+      );
     actions.open("restoreDialog");
   }
   async function restoreFile(file, lifetime, request) {

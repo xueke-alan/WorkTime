@@ -374,12 +374,8 @@ WorkTimeApp.ui.createCalendarRenderer = function ({
               nextSummary &&
               previous.bodyMarkup[1] !== bodyMarkup[1]
             ) {
-              const label = oldSummary.querySelector(".day-planned-label"),
-                nextLabel = nextSummary.querySelector(".day-planned-label"),
-                value = oldSummary.querySelector(".day-planned-hours"),
+              const value = oldSummary.querySelector(".day-planned-hours"),
                 nextValue = nextSummary.querySelector(".day-planned-hours");
-              label.textContent = nextLabel.textContent;
-              label.title = nextLabel.title;
               for (const attribute of nextValue.attributes)
                 value.setAttribute(attribute.name, attribute.value);
               if (!numberFields.length)

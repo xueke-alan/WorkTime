@@ -249,7 +249,7 @@ async function main() {
       };
     });
     assert.deepEqual(basic, {
-      names: ["backups", "ebooks", "game", "music"],
+      names: ["backups", "ebooks", "english", "game", "music"],
       book: "story",
       aliases: 2,
     });

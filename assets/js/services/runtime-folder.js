@@ -452,7 +452,7 @@ WorkTimeApp.services.runtimeFolder = (() => {
     status = "initializing";
     detail = "";
     notify();
-    for (const name of ["backups", "ebooks", "music", "game"]) {
+    for (const name of ["backups", "ebooks", "music", "english", "game"]) {
       progress = name;
       notify();
       try {
@@ -584,11 +584,16 @@ WorkTimeApp.services.runtimeFolder = (() => {
     const legacy = await optionalDirectory(selected, "dependencies");
     if (!legacy) return;
     const names =
-      kind === "game" ? ["pikafish", "rapfi", "misty-jungle", "utttai"] : [];
+      kind === "english"
+        ? ["vocabulary"]
+        : ["pikafish", "rapfi", "misty-jungle", "utttai"];
     for (const name of names) {
       const old = await optionalDirectory(legacy, name);
       if (!old) continue;
-      const target = await directory.getDirectoryHandle(name, { create: true });
+      const target =
+        kind === "english"
+          ? directory
+          : await directory.getDirectoryHandle(name, { create: true });
       await moveResourceTree(old, target);
       try {
         await legacy.removeEntry(name);
@@ -605,7 +610,7 @@ WorkTimeApp.services.runtimeFolder = (() => {
     }
   }
   // Disposable resources never request permission or alter media status.
-  async function withResourceDirectory(kind, action) {
+  async function withResourceDirectory(kind, action, options = {}) {
     await initialize();
     if (
       closed ||
@@ -624,9 +629,15 @@ WorkTimeApp.services.runtimeFolder = (() => {
       const directory = await selected.getDirectoryHandle(kind, {
         create: true,
       });
-      if (kind === "game")
+      if (options.migrateLegacy !== false)
         await migrateResourceLayout(selected, kind, directory);
-      return action(directory);
+      let legacy = null;
+      if (kind === "english" && options.includeLegacy) {
+        const dependencies = await optionalDirectory(selected, "dependencies");
+        if (dependencies)
+          legacy = await optionalDirectory(dependencies, "vocabulary");
+      }
+      return action(directory, { legacy });
     });
   }
   function importFiles(kind, files, options = {}) {
@@ -685,8 +696,9 @@ WorkTimeApp.services.runtimeFolder = (() => {
     authorize,
     write,
     getDirectory,
-    withDependencies: (action) => withResourceDirectory("dependencies", action),
     withGameResources: (action) => withResourceDirectory("game", action),
+    withEnglish: (action, options) =>
+      withResourceDirectory("english", action, options),
     importFiles,
     get state() {
       return {

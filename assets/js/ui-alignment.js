@@ -39,6 +39,10 @@
     "#gameTitle",
     "#musicTitle",
     "#readerTitle",
+    ".vocabulary-pronunciation-play > span",
+    ".vocabulary-phonetic",
+    ".vocabulary-accent-switch > span",
+    ".shared-select-options .button-label",
     ".onboarding-node-text",
     ".onboarding-install-dismiss span",
   ];
@@ -338,7 +342,7 @@
         metrics: cachedMetrics(style, text),
         // Mixed Latin/CJK legends also need hinted pixel bounds, not outline metrics.
         ink: element.matches(
-          ".day-date .daynum-text,.calendar .daykind,.agenda-chip-title-text,.agenda-chip-time,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span,.sidebar-year-month-number,.onboarding-node-text,.onboarding-install-dismiss span",
+          ".day-date .daynum-text,.calendar .daykind,.agenda-chip-title-text,.agenda-chip-time,.calendar-footer .legend-label,.day-average-value,.button-label,#importOpen .import-main > span,.sidebar-year-month-number,.onboarding-node-text,.onboarding-install-dismiss span,.vocabulary-pronunciation-play > span,.vocabulary-phonetic",
         )
           ? inkRequest(style, text)
           : null,

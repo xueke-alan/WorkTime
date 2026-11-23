@@ -1044,3 +1044,54 @@ body #dateInfoPanel.festivals-panel .holiday-calendar-note {
   align-self: flex-end;
   text-align: right;
 }
+
+/* Grouped tools share one information-area tab. */
+.tools-panel {
+  flex: 1;
+  container-type: inline-size;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px;
+  color: var(--ink);
+}
+.tools-panel[hidden], .tools-cards[hidden], .tool-card[hidden], .tools-panel > section[hidden] { display: none !important; }
+.tools-back { margin-bottom: 12px; }
+.tools-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px 6px;
+  padding: 8px 0;
+}
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 8px 2px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  text-align: center;
+  font: inherit;
+  cursor: pointer;
+}
+.tool-card .tool-logo {
+  display: block;
+  flex: none;
+  width: 54px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 24%;
+}
+.tool-card strong { max-width: 100%; font-size: var(--text-small); font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
+.tool-card span { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.tool-card span:empty { display: none; }
+.tool-card:hover { background: var(--theme-surface-soft, #eef5f1); }
+.tool-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.tool-card:active { transform: translateY(1px); }
+@container (max-width: 259px) {
+  .tools-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

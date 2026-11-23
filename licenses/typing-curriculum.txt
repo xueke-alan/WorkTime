@@ -1,0 +1,13 @@
+WorkTime typing curriculum
+
+The English exercise corpus, generated practice sequences, and instructional
+text were created for this project. They do not reproduce
+TypingClub lesson texts, illustrations, branding, videos, or other assets.
+
+Copyright (c) 2026 WorkTime contributors.
+Permission is granted to use, copy, modify, and distribute these curriculum
+texts and generated exercises, with or without modification, for any purpose,
+provided this notice is retained. THE CONTENT IS PROVIDED "AS IS", WITHOUT
+WARRANTY OF ANY KIND.
+
+Rebuild with: node scripts/generate-typing.cjs

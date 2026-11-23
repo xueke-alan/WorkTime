@@ -1,0 +1,130 @@
+{
+  "record": [
+    {
+      "sense": "noun",
+      "zh": "n. 记录；唱片；纪录",
+      "uk": "ˈrekɔːd",
+      "us": "ˈrekərd",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/record_1"
+    },
+    {
+      "sense": "verb",
+      "zh": "v. 记录；录制",
+      "uk": "rɪˈkɔːd",
+      "us": "rɪˈkɔːrd",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/record_2"
+    }
+  ],
+  "present": [
+    {
+      "sense": "noun-adjective",
+      "zh": "n. 礼物；现在\nadj. 在场的；现在的",
+      "uk": "ˈpreznt",
+      "us": "ˈpreznt",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/present_1"
+    },
+    {
+      "sense": "verb",
+      "zh": "v. 展示；赠送；提出",
+      "uk": "prɪˈzent",
+      "us": "prɪˈzent",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/present_3"
+    }
+  ],
+  "object": [
+    {
+      "sense": "noun",
+      "zh": "n. 物体；对象；目标",
+      "uk": "ˈɒbdʒɪkt",
+      "us": "ˈɑːbdʒɪkt",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/object_1"
+    },
+    {
+      "sense": "verb",
+      "zh": "v. 反对",
+      "uk": "əbˈdʒekt",
+      "us": "əbˈdʒekt",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/object_2"
+    }
+  ],
+  "produce": [
+    {
+      "sense": "noun",
+      "zh": "n. 农产品",
+      "uk": "ˈprɒdjuːs",
+      "us": "ˈproʊduːs",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/produce_2"
+    },
+    {
+      "sense": "verb",
+      "zh": "v. 生产；产生",
+      "uk": "prəˈdjuːs",
+      "us": "prəˈduːs",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/produce_1"
+    }
+  ],
+  "lead": [
+    {
+      "sense": "metal",
+      "zh": "n. 铅（金属）",
+      "uk": "led",
+      "us": "led",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/lead_3"
+    },
+    {
+      "sense": "guide",
+      "zh": "v. 引导；领导\nn. 领先；带头",
+      "uk": "liːd",
+      "us": "liːd",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/lead_1"
+    }
+  ],
+  "read": [
+    {
+      "sense": "present",
+      "zh": "v. 阅读（原形、现在时）",
+      "uk": "riːd",
+      "us": "riːd",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/read_1"
+    },
+    {
+      "sense": "past",
+      "zh": "v. 阅读（过去式、过去分词）",
+      "uk": "red",
+      "us": "red",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/read_1"
+    }
+  ],
+  "content": [
+    {
+      "sense": "noun",
+      "zh": "n. 内容；含量",
+      "uk": "ˈkɒntent",
+      "us": "ˈkɑːntent",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/content_1"
+    },
+    {
+      "sense": "adjective",
+      "zh": "adj. 满足的\nv. 使满足",
+      "uk": "kənˈtent",
+      "us": "kənˈtent",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/content_2"
+    }
+  ],
+  "desert": [
+    {
+      "sense": "noun",
+      "zh": "n. 沙漠",
+      "uk": "ˈdezət",
+      "us": "ˈdezərt",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/desert_1"
+    },
+    {
+      "sense": "verb",
+      "zh": "v. 抛弃；离弃",
+      "uk": "dɪˈzɜːt",
+      "us": "dɪˈzɜːrt",
+      "reference": "https://www.oxfordlearnersdictionaries.com/definition/english/desert_2"
+    }
+  ]
+}

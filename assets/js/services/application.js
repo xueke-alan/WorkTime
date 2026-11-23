@@ -485,6 +485,19 @@ const WorkTimeServiceApplication = (() => {
           personal: { ...state.personal, ...clone(personal) },
         });
       },
+      saveTyping(data) {
+        return commit(WorkTimeApp.services.typingStorage.attach(state, data), {
+          changes: { typing: true },
+        });
+      },
+      saveVocabulary(data) {
+        return commit(
+          WorkTimeApp.services.vocabularyStorage.attach(state, data),
+          {
+            changes: { vocabulary: true },
+          },
+        );
+      },
       restore(candidate) {
         if (saveFailed && Object.keys(dirtyChanges).length)
           return Promise.resolve({
@@ -494,7 +507,20 @@ const WorkTimeServiceApplication = (() => {
               "UNSAVED",
             ),
           });
-        return commit(A.migrate(candidate), {
+        let restored = A.migrate(candidate);
+        const typing = WorkTimeApp.services.typingStorage;
+        const vocabulary = WorkTimeApp.services.vocabularyStorage;
+        if (vocabulary && !vocabulary.find(restored) && vocabulary.find(state))
+          restored = vocabulary.attach(
+            restored,
+            vocabulary.validateModule(vocabulary.find(state)),
+          );
+        if (typing && !typing.find(restored) && typing.find(state))
+          restored = typing.attach(
+            restored,
+            typing.validateModule(typing.find(state)),
+          );
+        return commit(restored, {
           restore: true,
           atomic: true,
         });

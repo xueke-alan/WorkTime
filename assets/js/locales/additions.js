@@ -1,5 +1,292 @@
 "use strict";
 (() => {
+  const labels = {
+    "zh-CN": "自动朗读",
+    en: "Automatic reading",
+    "zh-TW": "自動朗讀",
+    "zh-HK": "自動朗讀",
+    ja: "自動読み上げ",
+    ko: "자동 읽기",
+  };
+  for (const [language, label] of Object.entries(labels))
+    WorkTimeApp.data.locales[language]["vocabulary.autoRead"] = label;
+})();
+(() => {
+  const labels = {
+    "zh-CN": "发音预生成中",
+    en: "Pre-generating pronunciations",
+    "zh-TW": "發音預先產生中",
+    "zh-HK": "發音預先產生中",
+    ja: "発音を事前生成中",
+    ko: "발음 사전 생성 중",
+  };
+  for (const [language, label] of Object.entries(labels))
+    WorkTimeApp.data.locales[language]["footer.audioGenerating"] = label;
+  const loading = {
+    "zh-CN": "正在加载语音模型",
+    en: "Loading speech model",
+    "zh-TW": "正在載入語音模型",
+    "zh-HK": "正在載入語音模型",
+    ja: "音声モデルを読み込み中",
+    ko: "음성 모델 로딩 중",
+  };
+  for (const [language, label] of Object.entries(loading))
+    WorkTimeApp.data.locales[language]["footer.audioLoading"] = label;
+  const preparing = {
+    "zh-CN": "正在准备音频",
+    en: "Preparing audio",
+    "zh-TW": "正在準備音訊",
+    "zh-HK": "正在準備音訊",
+    ja: "音声を準備中",
+    ko: "오디오 준비 중",
+  };
+  for (const [language, label] of Object.entries(preparing))
+    WorkTimeApp.data.locales[language]["footer.audioPreparing"] = label;
+  const phases = {
+    ready: [
+      "语音模型已就绪",
+      "Speech model ready",
+      "語音模型已就緒",
+      "語音模型已就緒",
+      "音声モデルの準備完了",
+      "음성 모델 준비 완료",
+    ],
+    checkingFolder: [
+      "正在检查运行文件夹",
+      "Checking runtime folder",
+      "正在檢查執行資料夾",
+      "正在檢查執行資料夾",
+      "実行フォルダーを確認中",
+      "실행 폴더 확인 중",
+    ],
+    loadingAssets: [
+      "正在加载词库和语音组件",
+      "Loading vocabulary and speech components",
+      "正在載入詞庫與語音元件",
+      "正在載入詞庫與語音元件",
+      "単語帳と音声機能を読み込み中",
+      "단어장 및 음성 구성 요소 로딩 중",
+    ],
+    scanningCache: [
+      "正在扫描已有发音缓存",
+      "Scanning cached pronunciations",
+      "正在掃描現有發音快取",
+      "正在掃描現有發音快取",
+      "発音キャッシュを走査中",
+      "발음 캐시 검색 중",
+    ],
+    buildingQueue: [
+      "正在整理待生成单词",
+      "Building pronunciation queue",
+      "正在整理待產生單字",
+      "正在整理待產生單字",
+      "生成する単語を整理中",
+      "생성할 단어 정리 중",
+    ],
+    checkingFiles: [
+      "正在检查文件缓存",
+      "Checking file cache",
+      "正在檢查檔案快取",
+      "正在檢查檔案快取",
+      "ファイルキャッシュを確認中",
+      "파일 캐시 확인 중",
+    ],
+    checkingBrowser: [
+      "正在检查浏览器缓存",
+      "Checking browser cache",
+      "正在檢查瀏覽器快取",
+      "正在檢查瀏覽器快取",
+      "ブラウザーキャッシュを確認中",
+      "브라우저 캐시 확인 중",
+    ],
+    loadingResources: [
+      "正在加载语音组件",
+      "Loading speech components",
+      "正在載入語音元件",
+      "正在載入語音元件",
+      "音声機能を読み込み中",
+      "음성 구성 요소 로딩 중",
+    ],
+    loadingModel: [
+      "正在加载语音模型",
+      "Loading speech model",
+      "正在載入語音模型",
+      "正在載入語音模型",
+      "音声モデルを読み込み中",
+      "음성 모델 로딩 중",
+    ],
+    initializingModel: [
+      "正在初始化语音模型",
+      "Initializing speech model",
+      "正在初始化語音模型",
+      "正在初始化語音模型",
+      "音声モデルを初期化中",
+      "음성 모델 초기화 중",
+    ],
+    loading: [
+      "正在加载语音模型",
+      "Loading speech model",
+      "正在載入語音模型",
+      "正在載入語音模型",
+      "音声モデルを読み込み中",
+      "음성 모델 로딩 중",
+    ],
+    generating: [
+      "正在合成：{word}",
+      "Synthesizing: {word}",
+      "正在合成：{word}",
+      "正在合成：{word}",
+      "合成中：{word}",
+      "합성 중: {word}",
+    ],
+    savingFiles: [
+      "正在保存发音文件",
+      "Saving pronunciation file",
+      "正在儲存發音檔案",
+      "正在儲存發音檔案",
+      "発音ファイルを保存中",
+      "발음 파일 저장 중",
+    ],
+    savingBrowser: [
+      "正在保存到浏览器缓存",
+      "Saving to browser cache",
+      "正在儲存至瀏覽器快取",
+      "正在儲存至瀏覽器快取",
+      "ブラウザーキャッシュに保存中",
+      "브라우저 캐시에 저장 중",
+    ],
+    betweenWords: [
+      "等待处理下一条音频",
+      "Waiting for the next audio item",
+      "等待處理下一條音訊",
+      "等待處理下一條音訊",
+      "次の音声の処理を待機中",
+      "다음 오디오 처리 대기 중",
+    ],
+    waitingIdle: [
+      "等待空闲后继续",
+      "Waiting for idle time",
+      "等待閒置後繼續",
+      "等待閒置後繼續",
+      "操作終了後の再開を待機中",
+      "유휴 시간 대기 중",
+    ],
+    waitingInput: [
+      "等待输入结束后继续",
+      "Waiting for typing to finish",
+      "等待輸入結束後繼續",
+      "等待輸入結束後繼續",
+      "入力終了を待機中",
+      "입력 종료 대기 중",
+    ],
+    waitingDrag: [
+      "等待拖拽结束后继续",
+      "Waiting for dragging to finish",
+      "等待拖曳結束後繼續",
+      "等待拖曳結束後繼續",
+      "ドラッグ終了を待機中",
+      "드래그 종료 대기 중",
+    ],
+    waitingGame: [
+      "等待游戏结束后继续",
+      "Waiting for the game to close",
+      "等待遊戲結束後繼續",
+      "等待遊戲結束後繼續",
+      "ゲーム終了を待機中",
+      "게임 종료 대기 중",
+    ],
+    waitingPlayback: [
+      "等待前台发音结束",
+      "Waiting for foreground pronunciation",
+      "等待前景發音結束",
+      "等待前景發音結束",
+      "再生中の発音の終了を待機中",
+      "전경 발음 종료 대기 중",
+    ],
+    complete: [
+      "当前词库发音已全部生成",
+      "All pronunciations in this book are cached",
+      "目前詞庫發音已全部產生",
+      "目前詞庫發音已全部產生",
+      "現在の単語帳の発音生成が完了",
+      "현재 단어장 발음 생성 완료",
+    ],
+    paused: [
+      "发音预生成已暂停",
+      "Pronunciation pre-generation paused",
+      "發音預先產生已暫停",
+      "發音預先產生已暫停",
+      "発音の事前生成を一時停止中",
+      "발음 사전 생성 일시 중지됨",
+    ],
+    disabled: [
+      "自动预生成已关闭",
+      "Automatic pre-generation disabled",
+      "自動預先產生已關閉",
+      "自動預先產生已關閉",
+      "自動事前生成は無効",
+      "자동 사전 생성 꺼짐",
+    ],
+    folder: [
+      "等待运行文件夹写入授权",
+      "Waiting for runtime folder write access",
+      "等待執行資料夾寫入授權",
+      "等待執行資料夾寫入授權",
+      "実行フォルダーへの書き込み許可を待機中",
+      "실행 폴더 쓰기 권한 대기 중",
+    ],
+    capacity: [
+      "缓存已满，请调整容量",
+      "Cache full; increase the limit",
+      "快取已滿，請調整容量",
+      "快取已滿，請調整容量",
+      "キャッシュが満杯です。容量を変更してください",
+      "캐시가 가득 참; 용량을 늘려 주세요",
+    ],
+    error: [
+      "预生成失败，等待自动重试",
+      "Pre-generation failed; waiting to retry",
+      "預先產生失敗，等待自動重試",
+      "預先產生失敗，等待自動重試",
+      "事前生成に失敗。自動再試行を待機中",
+      "사전 생성 실패; 자동 재시도 대기 중",
+    ],
+    otherTab: [
+      "其他页面正在预生成发音",
+      "Another tab is pre-generating pronunciations",
+      "其他頁面正在預先產生發音",
+      "其他頁面正在預先產生發音",
+      "別のタブで発音を事前生成中",
+      "다른 탭에서 발음 사전 생성 중",
+    ],
+    unsupported: [
+      "当前环境不支持后台预生成",
+      "Background pre-generation is unsupported",
+      "目前環境不支援背景預先產生",
+      "目前環境不支援背景預先產生",
+      "この環境はバックグラウンド事前生成に非対応",
+      "현재 환경은 백그라운드 사전 생성 미지원",
+    ],
+  };
+  const languages = ["zh-CN", "en", "zh-TW", "zh-HK", "ja", "ko"];
+  for (const [phase, values] of Object.entries(phases))
+    languages.forEach((language, index) => {
+      WorkTimeApp.data.locales[language]["footer.audioPhase_" + phase] =
+        values[index];
+    });
+  const progress = {
+    "zh-CN": "{completed} / {total}",
+    en: "{completed} / {total}",
+    "zh-TW": "{completed} / {total}",
+    "zh-HK": "{completed} / {total}",
+    ja: "{completed} / {total}",
+    ko: "{completed} / {total}",
+  };
+  for (const [language, label] of Object.entries(progress))
+    WorkTimeApp.data.locales[language]["footer.audioProgress"] = label;
+})();
+
+(() => {
   const catalogs = {
     "zh-CN": ["申报加班时长", "参考 {date} 的日均加班工时"],
     "zh-TW": ["申報加班時長", "參考 {date} 的日均加班工時"],
@@ -4378,3 +4665,94 @@ for (const [language, values] of Object.entries({
     "시작 권한",
   ][index];
 });
+
+// Tool chooser copy is available before optional feature runtimes load.
+(() => {
+  const rows = [
+    ["title", "工具", "Tools", "工具", "ツール", "도구"],
+    [
+      "back",
+      "返回工具",
+      "Back to tools",
+      "返回工具",
+      "ツールに戻る",
+      "도구로 돌아가기",
+    ],
+    ["reader", "电子书", "E-books", "電子書", "電子書籍", "전자책"],
+    [
+      "typing",
+      "打字练习",
+      "Typing practice",
+      "打字練習",
+      "タイピング練習",
+      "타자 연습",
+    ],
+    [
+      "vocabulary",
+      "摸摸背单词",
+      "Vocabulary review",
+      "摸摸背單詞",
+      "単語復習",
+      "단어 복습",
+    ],
+    [
+      "readerDescription",
+      "阅读空间",
+      "Read books",
+      "閱讀空間",
+      "読書",
+      "독서 공간",
+    ],
+    [
+      "typingDescription",
+      "键位练习",
+      "Build typing skills",
+      "鍵位練習",
+      "キー練習",
+      "키 입력 연습",
+    ],
+    [
+      "vocabularyDescription",
+      "巩固记忆",
+      "Remember words",
+      "鞏固記憶",
+      "記憶の定着",
+      "단어 암기",
+    ],
+  ];
+  for (const [key, zh, en, tw, ja, ko] of rows)
+    for (const [language, text] of Object.entries({
+      "zh-CN": zh,
+      en,
+      "zh-TW": tw,
+      "zh-HK": tw,
+      ja,
+      ko,
+    }))
+      WorkTimeApp.data.locales[language]["tools." + key] = text;
+})();
+(() => {
+  const rows = {
+    "footer.audioPhase_indexingCache": [
+      "正在重建缓存索引",
+      "Rebuilding cache index",
+      "正在重建快取索引",
+      "正在重建快取索引",
+      "キャッシュ索引を再構築中",
+      "캐시 색인 재구축 중",
+    ],
+    "footer.audioProgressIndexing": [
+      "统计中，已确认 {completed} 条",
+      "Counting: {completed} confirmed",
+      "統計中，已確認 {completed} 條",
+      "統計中，已確認 {completed} 條",
+      "集計中：{completed} 件確認済み",
+      "집계 중: {completed}개 확인됨",
+    ],
+  };
+  const languages = ["zh-CN", "en", "zh-TW", "zh-HK", "ja", "ko"];
+  for (const [key, values] of Object.entries(rows))
+    languages.forEach((language, i) => {
+      WorkTimeApp.data.locales[language][key] = values[i];
+    });
+})();

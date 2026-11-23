@@ -8,6 +8,52 @@
   "revision": "737e3324305806514d7909874fa1818ae1808232",
   "icons": [
     {
+      "id": "ms-pause-light",
+      "name": "pause",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/pause/materialsymbolsrounded/pause_wght200_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "5a568c6fdb2042ff17aa915b56fb910e0cb433bbdb79e1b291664aa2b3448009",
+      "weight": 200
+    },
+    {
+      "id": "ms-play-arrow-light",
+      "name": "play_arrow",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/play_arrow/materialsymbolsrounded/play_arrow_wght200_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "fe4a2a8ac0ccf1b42f10db0f7aecaba08bc93e7e07dc8b1957b79b9873894fff",
+      "weight": 200
+    },
+    {
+      "id": "ms-skip-next-light",
+      "name": "skip_next",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/skip_next/materialsymbolsrounded/skip_next_wght200_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "c4b3cdeb37832dbf8a0571e8bc4a74745d1031a760103f6aa889d9d025f64c3f",
+      "weight": 200
+    },
+    {
+      "id": "ms-skip-previous-light",
+      "name": "skip_previous",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/skip_previous/materialsymbolsrounded/skip_previous_wght200_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "ecf0703f7394175444ad1be433a4318530249c8f4906664023730638e0e97cdd",
+      "weight": 200
+    },
+    {
+      "id": "ms-skip-next",
+      "name": "skip_next",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/skip_next/materialsymbolsrounded/skip_next_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "49c3d1143ce363282ebfc747b2f0c0dce1fbe88f38989f40beb235a67d0947d7"
+    },
+    {
+      "id": "ms-skip-previous",
+      "name": "skip_previous",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/skip_previous/materialsymbolsrounded/skip_previous_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "4f4e563891e01c62886c994be14f55c0fca1e7acb0778ef7248c94ab3320eb11"
+    },
+    {
       "id": "ms-right-panel-close",
       "name": "right_panel_close",
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/right_panel_close/materialsymbolsrounded/right_panel_close_24px.svg",
@@ -503,6 +549,62 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/logout/materialsymbolsrounded/logout_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "d91c1c549d521b9644fbba4b663a94a010a4c699db123bcbfdbc2d21d63d68f4"
+    },
+    {
+      "id": "ms-apps",
+      "name": "apps",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/apps/materialsymbolsrounded/apps_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "88e310133bb5d8533ac0c7af2b033b80ed1c06e5d2817cb3827d8716efd98113"
+    },
+    {
+      "id": "ms-star",
+      "name": "star",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/star/materialsymbolsrounded/star_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "c0bfa8bb656fa17290b2292100b07e1d9ff12fe7a6dbee8bac4b8e84ed08384c"
+    },
+    {
+      "id": "ms-text-to-speech",
+      "name": "text_to_speech",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/text_to_speech/materialsymbolsrounded/text_to_speech_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "2cdc20c80a1da64eafd5bc8c7e6a06ddf5db4a946d2c86036198b3705071091e"
+    },
+    {
+      "id": "ms-progress-activity",
+      "name": "progress_activity",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/progress_activity/materialsymbolsrounded/progress_activity_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "d1f14e2e4001181fa6671d99b0720282901d6eb029b1cf04a4d137d7a43c197e"
+    },
+    {
+      "id": "ms-menu-book",
+      "name": "menu_book",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/menu_book/materialsymbolsrounded/menu_book_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "f9cf10f50459c632884b7578a21e1803ff39e34e61c1230ecfc15662387e848e"
+    },
+    {
+      "id": "ms-library-books",
+      "name": "library_books",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/library_books/materialsymbolsrounded/library_books_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "3102b9d8c6bbd89f801b6a3c2f85f79634ac9961388a8d88196ee511e4600ec6"
+    },
+    {
+      "id": "ms-bar-chart",
+      "name": "bar_chart",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/bar_chart/materialsymbolsrounded/bar_chart_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "933bf9212e89449b1277af6e166839cfc6cfc13bf73a9da13365ff3d82c354d5"
+    },
+    {
+      "id": "ms-insert-chart",
+      "name": "insert_chart",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/insert_chart/materialsymbolsrounded/insert_chart_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "b530d6bfb908f68c70fb15ba0617933c180876e738e0db8e28ee6ff1c8fe426c"
     }
   ]
 }

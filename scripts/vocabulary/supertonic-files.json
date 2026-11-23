@@ -1,0 +1,34 @@
+{
+  "onnx/duration_predictor.onnx": {
+    "bytes": 3700147,
+    "sha256": "c3eb91414d5ff8a7a239b7fe9e34e7e2bf8a8140d8375ffb14718b1c639325db"
+  },
+  "onnx/text_encoder.onnx": {
+    "bytes": 36416150,
+    "sha256": "c7befd5ea8c3119769e8a6c1486c4edc6a3bc8365c67621c881bbb774b9902ff"
+  },
+  "onnx/vector_estimator.onnx": {
+    "bytes": 256534781,
+    "sha256": "883ac868ea0275ef0e991524dc64f16b3c0376efd7c320af6b53f5b780d7c61c"
+  },
+  "onnx/vocoder.onnx": {
+    "bytes": 101424195,
+    "sha256": "085de76dd8e8d5836d6ca66826601f615939218f90e519f70ee8a36ed2a4c4ba"
+  },
+  "onnx/tts.json": {
+    "bytes": 8253,
+    "sha256": "42078d3aef1cd43ab43021f3c54f47d2d75ceb4e75f627f118890128b06a0d09"
+  },
+  "onnx/unicode_indexer.json": {
+    "bytes": 277676,
+    "sha256": "9bf7346e43883a81f8645c81224f786d43c5b57f3641f6e7671a7d6c493cb24f"
+  },
+  "voice_styles/F1.json": {
+    "bytes": 292046,
+    "sha256": "bbdec6ee00231c2c742ad05483df5334cab3b52fda3ba38e6a07059c4563dbc2"
+  },
+  "LICENSE": {
+    "bytes": 15007,
+    "sha256": "0d944a9110fed9a9602d60e0423a272903e7bd21ab060490774efc77c2275e9f"
+  }
+}

@@ -16,9 +16,17 @@
   try {
     active = localStorage.getItem(tabStorageKey) || active;
   } catch {}
+  const toolIds = ["reader", "typing", "vocabulary"];
+  const developmentIds = ["reader", "typing"];
+  const isDevelopmentEnabled = () => g.location.hash === "#dev";
+  const appIds = [...toolIds, "games", "music"];
+  if (toolIds.includes(active)) active = "tools";
   function rememberTab() {
     try {
-      localStorage.setItem(tabStorageKey, active);
+      localStorage.setItem(
+        tabStorageKey,
+        toolIds.includes(active) ? "tools" : active,
+      );
     } catch {}
   }
   const notices = document.getElementById("editorInfo"),
@@ -59,6 +67,96 @@
   readerPanel.setAttribute("role", "tabpanel");
   readerPanel.setAttribute("aria-labelledby", "readerOpen");
   musicPanel.after(readerPanel);
+  const typingPanel = node("section", undefined, "typing-panel");
+  typingPanel.id = "typingPanel";
+  typingPanel.hidden = true;
+  typingPanel.setAttribute("role", "tabpanel");
+  typingPanel.setAttribute("aria-labelledby", "typingOpen");
+  readerPanel.after(typingPanel);
+  const vocabularyPanel = node("section", undefined, "vocabulary-panel");
+  vocabularyPanel.id = "vocabularyPanel";
+  vocabularyPanel.hidden = true;
+  vocabularyPanel.setAttribute("role", "tabpanel");
+  vocabularyPanel.setAttribute("aria-labelledby", "vocabularyOpen");
+  typingPanel.after(vocabularyPanel);
+  const toolsPanel = node("section", undefined, "tools-panel");
+  toolsPanel.id = "toolsPanel";
+  toolsPanel.hidden = true;
+  toolsPanel.setAttribute("role", "tabpanel");
+  toolsPanel.setAttribute("aria-labelledby", "date-tab-tools");
+  musicPanel.after(toolsPanel);
+  const toolsBack = node("button", undefined, "ui-text-action tools-back");
+  toolsBack.type = "button";
+  toolsBack.onclick = () => showToolsPanel(active);
+  const toolsCards = node("div", undefined, "tools-cards");
+  const toolIcons = {
+    reader:
+      '<svg class="tool-logo" viewBox="0 0 80 80" aria-hidden="true" focusable="false"><rect width="80" height="80" rx="18" fill="#f1e8da"/><path d="M18 21h19c4 0 7 2 7 5v34c-2-3-5-4-9-4H18z" fill="#ac754d"/><path d="M62 21H47c-4 0-7 2-7 5v34c2-3 5-4 9-4h13z" fill="#c38c61"/><path d="M24 29h8m-8 7h8m17-7h7m-7 7h7" stroke="#f8f2e8" stroke-width="2.5" stroke-linecap="round"/><path d="M50 21v23l4-3 4 3V21" fill="#697f70"/></svg>',
+    typing:
+      '<svg class="tool-logo" viewBox="0 0 80 80" aria-hidden="true" focusable="false"><rect width="80" height="80" rx="18" fill="#e5edf5"/><path d="M15 24h50v35H15z" fill="#21568f"/><rect x="12" y="21" width="56" height="36" rx="7" fill="#f2f7fc"/><g fill="#527da9"><rect x="19" y="28" width="8" height="7" rx="2"/><rect x="31" y="28" width="8" height="7" rx="2"/><rect x="43" y="28" width="8" height="7" rx="2"/><rect x="55" y="28" width="6" height="7" rx="2"/><rect x="19" y="39" width="8" height="7" rx="2"/><rect x="31" y="39" width="8" height="7" rx="2"/><rect x="43" y="39" width="8" height="7" rx="2"/></g><path d="M55 39h6v12H45v-5h10z" fill="#efa855"/><rect x="27" y="49" width="14" height="3" rx="1.5" fill="#a3bed7"/><path d="m26 65 5 4 7-7" fill="none" stroke="#c7e5f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    vocabulary:
+      '<svg class="tool-logo" viewBox="0 0 80 80" aria-hidden="true" focusable="false"><rect width="80" height="80" rx="18" fill="#e8eeeb"/><ellipse cx="40" cy="66" rx="27" ry="5" fill="#16856f"/><path d="M17 23c16 1 31-1 43-12 8 12 9 27 6 39-3 12-11 17-26 17-13 0-23-3-25-14-2-10 2-20-1-30z" fill="#303b39"/><ellipse cx="29" cy="37" rx="15" ry="15" fill="#fff"/><ellipse cx="53" cy="34" rx="15" ry="15" fill="#fff"/><circle cx="30" cy="37" r="4.6" fill="#303b39"/><circle cx="28.6" cy="35.3" r="1.5" fill="#fff"/><path d="m47 34 10-2" fill="none" stroke="#303b39" stroke-width="3" stroke-linecap="round"/><path d="m39 44 7 1-3 6z" fill="#dfb66b"/><path d="M44 62c4-6 10-6 14-1l5-3v8l-5-3c-4 4-10 4-14-1z" fill="#c7e1d2"/><circle cx="49" cy="61" r="1" fill="#303b39"/></svg>',
+    games:
+      '<svg class="tool-logo" viewBox="0 0 80 80" aria-hidden="true" focusable="false"><rect width="80" height="80" rx="18" fill="#ece8f2"/><path d="m16 48 24-9 24 9v10l-24 9-24-9z" fill="#81739e"/><path d="m16 48 24-9 24 9-24 9z" fill="#a99abe"/><path d="M34 44V27" stroke="#706184" stroke-width="5" stroke-linecap="round"/><ellipse cx="34" cy="44" rx="7" ry="3" fill="#706184"/><circle cx="34" cy="24" r="9" fill="#81739e"/><path d="M29 23a5 5 0 0 1 4-4" fill="none" stroke="#bfb2d0" stroke-width="2" stroke-linecap="round"/><ellipse cx="51" cy="46" rx="5" ry="3" fill="#e6c095"/></svg>',
+    music:
+      '<svg class="tool-logo" viewBox="0 0 80 80" aria-hidden="true" focusable="false"><rect width="80" height="80" rx="18" fill="#f2e6e9"/><path d="M43 23c0-2 2-3 4-2l13 7c1 1 2 2 1 4l-1 6-13-7v22c0 6-6 11-13 12-7 1-12-2-12-7s6-10 13-11c3 0 5 0 8 1z" fill="#a97887"/></svg>',
+  };
+  for (const id of appIds) {
+    const card = node("button", undefined, "tool-card");
+    card.type = "button";
+    card.id = id + (toolIds.includes(id) ? "Open" : "ToolOpen");
+    card.hidden = developmentIds.includes(id) && !isDevelopmentEnabled();
+    card.innerHTML = toolIcons[id];
+    card.append(node("strong"), node("span"));
+    card.querySelector("span").setAttribute("role", "status");
+    card.onclick = () => {
+      if (developmentIds.includes(id) && !isDevelopmentEnabled()) return;
+      if (toolIds.includes(id)) WorkTimeApp.ui[id].open();
+      else WorkTimeApp.ui.dateInfo.selectTab(id);
+    };
+    toolsCards.append(card);
+  }
+  toolsPanel.append(
+    toolsBack,
+    toolsCards,
+    readerPanel,
+    typingPanel,
+    vocabularyPanel,
+  );
+  for (const child of [readerPanel, typingPanel, vocabularyPanel]) {
+    child.removeAttribute("role");
+    child.setAttribute("aria-labelledby", "date-tab-tools");
+  }
+  function showToolsPanel(focusId) {
+    if (disposed) return;
+    active = "tools";
+    rememberTab();
+    render();
+    if (toolIds.includes(focusId))
+      document.getElementById(focusId + "Open")?.focus({ preventScroll: true });
+  }
+  function refreshTools() {
+    const t = WorkTimeApp.i18n.t;
+    toolsBack.textContent = t("tools.back");
+    toolsCards.hidden = active !== "tools";
+    toolsBack.hidden = active === "tools" || active === "vocabulary";
+    for (const id of appIds) {
+      const card = document.getElementById(
+        id + (toolIds.includes(id) ? "Open" : "ToolOpen"),
+      );
+      const label = toolIds.includes(id)
+        ? t("tools." + id)
+        : id === "games"
+          ? t("games.tab")
+          : WorkTimeApp.ui.musicText("title");
+      card.hidden = developmentIds.includes(id) && !isDevelopmentEnabled();
+      card.querySelector("strong").textContent = label;
+      card.title = toolIds.includes(id)
+        ? t("tools." + id + "Description")
+        : label;
+      card.querySelector("span").textContent = "";
+    }
+  }
   let selectedDateView = dateViews.includes(active) ? active : "history";
   const dateHeader = node("div", undefined, "date-context-header");
   const dateHeading = node("time", "", "date-context-date");
@@ -495,6 +593,12 @@
     // Restored weather/countdown tabs can notify before the editor supplies its
     // first selected date. Wait for setDate rather than formatting an empty date.
     if (disposed || !date) return;
+    bar
+      .closest(".editor")
+      .classList.toggle(
+        "is-vocabulary-open",
+        active === "vocabulary" && !WorkTimeApp.ui.vocabulary.isMini,
+      );
     if (active === "almanac" && !WorkTimeApp.i18n.config.almanac)
       active = selectedDateView = "history";
     if (active !== "countdown") exitCountdownFocus(false);
@@ -502,28 +606,27 @@
     const view = active;
     if (renderedView !== null && renderedView !== view) {
       const surface = (id) =>
-        id === "notifications"
-          ? notices
-          : id === "games"
-            ? gamesPanel
-            : id === "music"
-              ? musicPanel
-              : id === "reader"
-                ? readerPanel
-                : panel;
+        id === "tools" || toolIds.includes(id)
+          ? toolsPanel
+          : id === "notifications"
+            ? notices
+            : id === "games"
+              ? gamesPanel
+              : id === "music"
+                ? musicPanel
+                : id === "reader"
+                  ? readerPanel
+                  : id === "typing"
+                    ? typingPanel
+                    : id === "vocabulary"
+                      ? vocabularyPanel
+                      : panel;
       if (surface(renderedView) !== surface(view))
         WorkTimeApp.ui.motion?.stop(surface(renderedView));
       WorkTimeApp.ui.motion?.play(surface(view));
     }
     renderedView = view;
     for (const b of bar.children) {
-      if (b.id === "readerOpen") {
-        if (WorkTimeApp.ui.reader.isMini) {
-          b.setAttribute("aria-selected", String(active === "reader"));
-          b.tabIndex = active === "reader" ? 0 : -1;
-        }
-        continue;
-      }
       if (b.id === "musicOpen") {
         if (WorkTimeApp.ui.music.isMini) {
           b.setAttribute("aria-selected", String(active === "music"));
@@ -533,6 +636,7 @@
       }
       const on =
         b.dataset.tab === active ||
+        (b.dataset.tab === "tools" && toolIds.includes(active)) ||
         (b.dataset.tab === "history" && dateViews.includes(active));
       b.setAttribute("aria-selected", String(on));
       b.tabIndex = on ? 0 : -1;
@@ -540,12 +644,21 @@
     notices.hidden = active !== "notifications";
     panel.hidden =
       active === "notifications" ||
+      active === "tools" ||
       active === "games" ||
       active === "music" ||
-      active === "reader";
+      active === "reader" ||
+      active === "typing" ||
+      active === "vocabulary";
+    toolsPanel.hidden =
+      (active !== "tools" && !toolIds.includes(active)) ||
+      (active === "vocabulary" && !!WorkTimeApp.ui.vocabulary.isMini);
+    refreshTools();
     gamesPanel.hidden = active !== "games";
     musicPanel.hidden = active !== "music";
     readerPanel.hidden = active !== "reader";
+    typingPanel.hidden = active !== "typing";
+    vocabularyPanel.hidden = active !== "vocabulary";
     const grouped = dateViews.includes(active);
     dateHeader.hidden = !grouped;
     area.classList.toggle("has-date-context", grouped);
@@ -563,11 +676,16 @@
     WorkTimeApp.services.weather?.setDemand("details", active === "weather");
     WorkTimeApp.ui.music.refresh();
     WorkTimeApp.ui.reader.refresh();
+    WorkTimeApp.ui.typing.refresh();
+    WorkTimeApp.ui.vocabulary.refresh();
     if (
       active === "notifications" ||
+      active === "tools" ||
       active === "games" ||
       active === "music" ||
-      active === "reader"
+      active === "reader" ||
+      active === "typing" ||
+      active === "vocabulary"
     )
       return;
     panel.setAttribute(
@@ -851,7 +969,14 @@
     ];
     // Games is a UI page, not a date-information provider.
     providers.push({ id: "games", label: WorkTimeApp.i18n.t("games.tab") });
-    const independentTabs = ["notifications", "countdown", "weather", "games"];
+    providers.push({ id: "tools", label: WorkTimeApp.i18n.t("tools.title") });
+    const independentTabs = [
+      "notifications",
+      "countdown",
+      "weather",
+      "games",
+      "tools",
+    ];
     const tabOrder = (provider) => {
       const index = independentTabs.indexOf(provider.id);
       return index < 0 ? independentTabs.length : index;
@@ -878,9 +1003,11 @@
         "aria-controls",
         p.id === "notifications"
           ? "editorInfo"
-          : p.id === "games"
-            ? "gamesPanel"
-            : "dateInfoPanel",
+          : p.id === "tools"
+            ? "toolsPanel"
+            : p.id === "games"
+              ? "gamesPanel"
+              : "dateInfoPanel",
       );
       b.innerHTML =
         '<svg class="ui-icon" aria-hidden="true"><use href="#ms-' +
@@ -888,6 +1015,9 @@
         '"></use></svg>';
       if (p.id === "games")
         b.replaceChildren(WorkTimeApp.games.createIcon("joystick"));
+      if (p.id === "tools")
+        b.innerHTML =
+          '<svg class="ui-icon" aria-hidden="true"><use href="#ms-apps"/></svg>';
       tabEvents.handler(b, "onclick", () => {
         active = p.id === "history" ? selectedDateView : p.id;
         rememberTab();
@@ -940,46 +1070,18 @@
           buttons[next].focus();
         });
         bar.append(music);
-        const reader = node("button", undefined, "notification-tab");
-        reader.type = "button";
-        reader.id = "readerOpen";
-        reader.dataset.tab = "reader";
-        reader.title = WorkTimeApp.ui.readerText("title");
-        reader.setAttribute("aria-label", reader.title);
-        reader.setAttribute("aria-haspopup", "dialog");
-        reader.setAttribute("aria-controls", "readerDialog");
-        reader.setAttribute("aria-expanded", "false");
-        reader.innerHTML =
-          '<svg class="ui-icon" aria-hidden="true"><use href="#ms-book-5"/></svg>';
-        tabEvents.handler(reader, "onclick", () =>
-          WorkTimeApp.ui.reader.open(),
-        );
-        tabEvents.handler(reader, "onkeydown", (event) => {
-          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
-            return;
-          event.preventDefault();
-          const buttons = [...bar.children],
-            position = buttons.indexOf(reader);
-          const next =
-            event.key === "Home"
-              ? 0
-              : event.key === "End"
-                ? buttons.length - 1
-                : (position +
-                    (event.key === "ArrowRight" ? 1 : -1) +
-                    buttons.length) %
-                  buttons.length;
-          buttons[next].focus();
-        });
-        bar.append(reader);
       }
     }
     WorkTimeApp.ui.music.refresh();
     WorkTimeApp.ui.reader.refresh();
+    WorkTimeApp.ui.typing.refresh();
+    WorkTimeApp.ui.vocabulary.refresh();
     active =
       providers.some((p) => p.id === current) ||
       current === "music" ||
-      current === "reader"
+      current === "reader" ||
+      current === "typing" ||
+      current === "vocabulary"
         ? current
         : "notifications";
     if (date) render();
@@ -990,6 +1092,16 @@
     if (!document.hidden) updateWeatherTabIcon();
     if (active === "countdown" && !document.hidden) render();
     else synchronizeTimer();
+  }
+  function synchronizeDevelopment() {
+    if (disposed) return;
+    if (!isDevelopmentEnabled()) {
+      const typingOpen =
+        document.getElementById("typingDialog")?.hidden === false;
+      if (typingOpen) WorkTimeApp.ui.typing?.close();
+      if (typingOpen || developmentIds.includes(active)) showToolsPanel();
+    }
+    refreshTools();
   }
   function dispose() {
     if (disposed) return;
@@ -1066,8 +1178,10 @@
     events.listen(document, "keydown", onFocusKeydown, true);
     events.listen(document, "worktime:failed", dispose);
     events.listen(g, "pagehide", dispose);
+    events.listen(g, "hashchange", synchronizeDevelopment);
     unsubscribeWeather = WorkTimeApp.services.weather.subscribe(onWeather);
     refreshTabs();
+    synchronizeDevelopment();
   }
   function refreshLanguage() {
     // Refresh the alert baseline after every synchronous language listener has
@@ -1102,20 +1216,31 @@
     rememberTab();
   }
   WorkTimeApp.ui.dateInfo = {
+    isDevelopmentEnabled,
+    showToolsPanel,
     rememberMedia(id) {
       if (!["music", "reader"].includes(id)) return;
       try {
-        localStorage.setItem(tabStorageKey, id);
+        localStorage.setItem(tabStorageKey, id === "reader" ? "tools" : id);
       } catch {}
     },
     isActive: (id) => !disposed && active === id,
-    hideReaderPanel() {
-      if (disposed || active !== "reader") return;
-      active = "notifications";
+    showTypingPanel() {
+      // Legacy callers use the Apps chooser; typing has only an expanded workspace.
+      showToolsPanel();
+    },
+    showVocabularyPanel() {
+      if (disposed) return;
+      active = "vocabulary";
+      rememberTab();
       render();
     },
+    hideReaderPanel() {
+      if (disposed || active !== "reader") return;
+      showToolsPanel("reader");
+    },
     showReaderPanel() {
-      if (disposed) return;
+      if (disposed || !isDevelopmentEnabled()) return;
       active = "reader";
       rememberTab();
       render();
@@ -1151,8 +1276,11 @@
           "countdown",
           "notifications",
           "games",
+          "tools",
           "music",
           "reader",
+          "typing",
+          "vocabulary",
         ].includes(active)
       )
         return;

@@ -1,0 +1,502 @@
+{
+  "good morning.": [
+    ["Good morning, everyone.", "大家早上好。", "", "phrase"],
+    ["She smiled and said, 'Good morning.'", "她微笑着说：早上好。"],
+    ["We wished our teacher a good morning.", "我们向老师问了早安。"]
+  ],
+  "good afternoon.": [
+    ["Good afternoon, Mr. Lee.", "李先生，下午好。", "", "phrase"],
+    ["The receptionist said, 'Good afternoon.'", "接待员说：下午好。"],
+    ["I wished the visitors a good afternoon.", "我向来访者问了下午好。"]
+  ],
+  "good evening.": [
+    ["Good evening, ladies and gentlemen.", "女士们、先生们，晚上好。", "", "phrase"],
+    ["Our host greeted us: 'Good evening.'", "主人向我们打招呼：晚上好。"],
+    ["She wished the audience a good evening.", "她向观众问了晚上好。"]
+  ],
+  "good night.": [
+    ["Good night, Mum.", "妈妈，晚安。", "", "phrase"],
+    ["We said good night before leaving.", "我们离开前互道晚安。"],
+    ["She whispered, 'Good night,' and smiled.", "她轻声说了晚安，然后笑了。"]
+  ],
+  "how are you?": [
+    ["How are you feeling today?", "你今天感觉怎么样？"],
+    ["How are you after the trip?", "旅行后你怎么样？"],
+    ["How are you getting on at school?", "你在学校过得怎么样？"]
+  ],
+  "i'm fine, thank you.": [
+    ["I'm fine, thank you for asking.", "我很好，谢谢关心。"],
+    ["She replied, 'I'm fine, thank you.'", "她回答：我很好，谢谢。"],
+    ["'I'm fine, thank you,' I assured him.", "我向他保证：我很好，谢谢。"]
+  ],
+  "nice to meet you.": [
+    ["It's nice to meet you, Anna.", "安娜，很高兴认识你。"],
+    ["It was nice to meet you yesterday.", "昨天认识你很高兴。"],
+    ["He smiled: 'Nice to meet you.'", "他笑着说：很高兴认识你。"]
+  ],
+  "see you tomorrow.": [
+    ["I'll see you tomorrow at school.", "明天在学校见。"],
+    ["Can I see you tomorrow morning?", "我明天上午能见你吗？"],
+    ["She waved and said, 'See you tomorrow.'", "她挥手说：明天见。"]
+  ],
+  "see you later.": [
+    ["I'll see you later at the cafe.", "稍后在咖啡馆见。"],
+    ["Can we see you later today?", "我们今天晚些时候能见你吗？"],
+    ["He called, 'See you later!'", "他喊道：回头见！"]
+  ],
+  "have a nice day.": [
+    ["Have a nice day at the beach.", "祝你在海滩度过愉快的一天。"],
+    ["I hope you have a nice day.", "希望你今天过得愉快。"],
+    ["The cashier said, 'Have a nice day.'", "收银员说：祝你今天愉快。"]
+  ],
+  "what's your name?": [
+    ["What's your name, please?", "请问你叫什么名字？"],
+    ["The teacher asked, 'What's your name?'", "老师问：你叫什么名字？"],
+    ["'What's your name?' the receptionist inquired.", "接待员问道：你叫什么名字？"]
+  ],
+  "my name is alex.": [
+    ["My name is Alex, and I'm new here.", "我叫亚历克斯，是新来的。"],
+    ["Hello, my name is Alex.", "你好，我叫亚历克斯。"],
+    ["My name is Alex, not Alan.", "我叫亚历克斯，不叫艾伦。"]
+  ],
+  "where are you from?": [
+    ["Where are you from originally?", "你最初来自哪里？"],
+    ["'Where are you from?' she asked.", "她问：你来自哪里？"],
+    ["The interviewer began, 'Where are you from?'", "采访者开口问：你来自哪里？"]
+  ],
+  "i'm from china.": [
+    ["I'm from China, near Shanghai.", "我来自中国，上海附近。"],
+    ["I'm from China, but I live here.", "我来自中国，但住在这里。"],
+    ["Yes, I'm from China originally.", "是的，我最初来自中国。"]
+  ],
+  "how do you spell that?": [
+    ["How do you spell that surname?", "那个姓怎么拼写？"],
+    ["Sorry, how do you spell that?", "不好意思，那个怎么拼写？"],
+    ["'How do you spell that?' Anna asked.", "安娜问：那个怎么拼写？"]
+  ],
+  "could you say that again?": [
+    ["Could you say that again, please?", "请你再说一遍，好吗？"],
+    ["Sorry, could you say that again?", "不好意思，你能再说一遍吗？"],
+    ["'Could you say that again?' he asked.", "他问：你能再说一遍吗？"]
+  ],
+  "please speak slowly.": [
+    ["Please speak slowly; I'm still learning.", "请说慢一点，我还在学习。"],
+    ["Please speak slowly and clearly.", "请慢一些，说清楚。"],
+    ["I asked the guide, 'Please speak slowly.'", "我请求导游：请说慢一点。"]
+  ],
+  "i don't understand.": [
+    ["I don't understand this word.", "我不懂这个词。"],
+    ["I don't understand why she left.", "我不明白她为什么离开。"],
+    ["Sorry, I don't understand your instructions.", "不好意思，我不明白你的说明。"]
+  ],
+  "what does this mean?": [
+    ["What does this sign mean?", "这个标志是什么意思？"],
+    ["'What does this mean?' the student asked.", "学生问：这是什么意思？"],
+    ["Sorry, what does this mean in English?", "请问，这个用英语是什么意思？"]
+  ],
+  "i'm learning english.": [
+    ["I'm learning English at night school.", "我在夜校学英语。"],
+    ["I'm learning English for my new job.", "我为了新工作在学英语。"],
+    ["I'm learning English with a friend.", "我和一位朋友一起学英语。"]
+  ],
+  "thank you very much.": [
+    ["Thank you very much for your help.", "非常感谢你的帮助。", "", "phrase"],
+    ["I said, 'Thank you very much.'", "我说：非常感谢。"],
+    ["She smiled and whispered, 'Thank you very much.'", "她微笑着轻声说：非常感谢。"]
+  ],
+  "you're welcome.": [
+    ["You're welcome to join us.", "欢迎你加入我们。"],
+    ["'You're welcome,' the shopkeeper replied.", "店主回答：不客气。"],
+    ["He smiled and said, 'You're welcome.'", "他微笑着说：不客气。"]
+  ],
+  "excuse me.": [
+    ["Excuse me, is this seat taken?", "打扰一下，这个座位有人吗？"],
+    ["Excuse me, where is the exit?", "打扰一下，出口在哪里？"],
+    ["Please excuse me for arriving late.", "请原谅我来晚了。"]
+  ],
+  "i'm sorry.": [
+    ["I'm sorry I missed your call.", "对不起，我没接到你的电话。"],
+    ["I'm sorry about the noise.", "很抱歉造成了噪声。"],
+    ["I'm sorry to hear that.", "听到这个消息，我很难过。"]
+  ],
+  "that's all right.": [
+    ["That's all right; mistakes happen.", "没关系，犯错在所难免。"],
+    ["'That's all right,' she reassured me.", "她安慰我说：没关系。"],
+    ["He replied, 'That's all right with me.'", "他回答：我觉得可以。"]
+  ],
+  "no problem.": [
+    ["No problem, I'll help you.", "没问题，我会帮你。"],
+    ["We had no problem finding the station.", "我们顺利找到了车站。"],
+    ["'No problem,' the waiter replied.", "服务员回答：没问题。"]
+  ],
+  "could you help me?": [
+    ["Could you help me carry this?", "你能帮我拿这个吗？"],
+    ["Could you help me find the office?", "你能帮我找到办公室吗？"],
+    ["Could you help me with this form?", "你能帮我填这张表吗？"]
+  ],
+  "let me help you.": [
+    ["Let me help you with those bags.", "让我帮你拿那些包。"],
+    ["Let me help you cross the road.", "让我帮你过马路。"],
+    ["Please let me help you today.", "今天请让我来帮你。"]
+  ],
+  "take your time.": [
+    ["Take your time; there's no rush.", "慢慢来，不用着急。"],
+    ["Take your time choosing a book.", "慢慢挑一本书吧。"],
+    ["You can take your time answering.", "你可以慢慢回答。"]
+  ],
+  "be careful.": [
+    ["Be careful on the wet steps.", "在湿台阶上要小心。"],
+    ["Be careful not to drop it.", "小心别把它掉了。"],
+    ["Please be careful with that glass.", "请小心拿那个玻璃杯。"]
+  ],
+  "how much is this?": [
+    ["How much is this blue shirt?", "这件蓝衬衫多少钱？"],
+    ["Excuse me, how much is this?", "请问，这个多少钱？"],
+    ["'How much is this?' the customer asked.", "顾客问：这个多少钱？"]
+  ],
+  "can i pay by card?": [
+    ["Can I pay by card here?", "这里可以刷卡吗？"],
+    ["Can I pay by card instead?", "我可以改用卡付款吗？"],
+    ["'Can I pay by card?' she asked.", "她问：可以刷卡吗？"]
+  ],
+  "do you accept cash?": [
+    ["Do you accept cash at this counter?", "这个柜台收现金吗？"],
+    ["'Do you accept cash?' the tourist asked.", "游客问：你们收现金吗？"],
+    ["Do you accept cash or cards?", "你们收现金还是银行卡？"]
+  ],
+  "could i have a receipt?": [
+    ["Could I have a receipt, please?", "请给我一张收据，好吗？"],
+    ["Could I have a receipt for this?", "这个可以给我开收据吗？"],
+    ["'Could I have a receipt?' I asked.", "我问：可以给我一张收据吗？"]
+  ],
+  "i'm just looking.": [
+    ["I'm just looking for now, thanks.", "谢谢，我现在只是看看。"],
+    ["'I'm just looking,' she told the assistant.", "她告诉店员：我只是看看。"],
+    ["I'm just looking around before deciding.", "我先随便看看再决定。"]
+  ],
+  "can i try this on?": [
+    ["Can I try this on, please?", "我能试穿一下这个吗？"],
+    ["Can I try this on before buying?", "购买前我能试穿这个吗？"],
+    ["'Can I try this on?' Anna asked.", "安娜问：我能试穿这个吗？"]
+  ],
+  "do you have a smaller size?": [
+    ["Do you have a smaller size, please?", "请问有小一号的吗？"],
+    ["Do you have a smaller size available?", "你们有现货的小一号吗？"],
+    ["'Do you have a smaller size?' she asked.", "她问：有小一号的吗？"]
+  ],
+  "do you have a larger size?": [
+    ["Do you have a larger size, please?", "请问有大一号的吗？"],
+    ["Do you have a larger size available?", "你们有现货的大一号吗？"],
+    ["'Do you have a larger size?' he asked.", "他问：有大一号的吗？"]
+  ],
+  "i'll take it.": [
+    ["This one fits; I'll take it.", "这件合身，我要了。"],
+    ["I'll take it if delivery is included.", "如果包配送，我就买。"],
+    ["I'll take it in blue, please.", "请给我蓝色的。"]
+  ],
+  "where is the checkout?": [
+    ["Excuse me, where is the checkout?", "请问收银台在哪里？"],
+    ["Where is the checkout in this shop?", "这家店的收银台在哪里？"],
+    ["'Where is the checkout?' the customer asked.", "顾客问：收银台在哪里？"]
+  ],
+  "a table for two, please.": [
+    ["I'd like a table for two, please.", "我想要一张两人桌。"],
+    ["We need a table for two, please.", "请给我们安排一张两人桌。"],
+    ["'A table for two, please,' she requested.", "她请求道：请安排一张两人桌。"]
+  ],
+  "could i see the menu?": [
+    ["Could I see the menu, please?", "请给我看看菜单，好吗？"],
+    ["Could I see the menu before ordering?", "点餐前我能看看菜单吗？"],
+    ["'Could I see the menu?' he asked.", "他问：我能看看菜单吗？"]
+  ],
+  "i'd like some water.": [
+    ["I'd like some water with my meal.", "我想吃饭时配点水。"],
+    ["I'd like some water without ice.", "我想要一些不加冰的水。"],
+    ["I'd like some water, please.", "请给我一些水。"]
+  ],
+  "what do you recommend?": [
+    ["What do you recommend for lunch?", "午餐你推荐什么？"],
+    ["What do you recommend for a beginner?", "对初学者你有什么推荐？"],
+    ["'What do you recommend?' the guest asked.", "客人问：你推荐什么？"]
+  ],
+  "i'm ready to order.": [
+    ["I'm ready to order my lunch.", "我准备好点午餐了。"],
+    ["Yes, I'm ready to order now.", "是的，我现在可以点餐了。"],
+    ["I'm ready to order when you are.", "你方便时，我就可以点餐了。"]
+  ],
+  "no sugar, please.": [
+    ["I'd like tea with no sugar, please.", "请给我不加糖的茶。"],
+    ["She requested coffee with no sugar.", "她要了不加糖的咖啡。"],
+    ["'No sugar, please,' he reminded the waiter.", "他提醒服务员：请不要加糖。"]
+  ],
+  "i'm allergic to nuts.": [
+    ["I'm allergic to nuts, including peanuts.", "我对坚果过敏，包括花生。"],
+    ["Please remember I'm allergic to nuts.", "请记住，我对坚果过敏。"],
+    ["I'm allergic to nuts, so I'll pass.", "我对坚果过敏，所以不吃了。"]
+  ],
+  "could we have the bill?": [
+    ["Could we have the bill, please?", "请帮我们结账，好吗？"],
+    ["Could we have the bill now?", "现在可以给我们账单吗？"],
+    ["'Could we have the bill?' she asked.", "她问：可以给我们账单吗？"]
+  ],
+  "can i get this to go?": [
+    ["Can I get this to go, please?", "请把这个打包带走，好吗？"],
+    ["Can I get this to go instead?", "我可以把这个改成打包吗？"],
+    ["'Can I get this to go?' he asked.", "他问：这个可以打包带走吗？"]
+  ],
+  "the food is delicious.": [
+    ["The food is delicious, especially the soup.", "食物很好吃，尤其是汤。"],
+    ["The food is delicious and reasonably priced.", "食物美味，价格也合理。"],
+    ["The food is delicious at this restaurant.", "这家餐馆的食物很好吃。"]
+  ],
+  "where is the station?": [
+    ["Excuse me, where is the station?", "请问车站在哪里？"],
+    ["'Where is the station?' the traveller asked.", "旅行者问：车站在哪里？"],
+    ["Where is the station on this map?", "车站在这张地图上的哪里？"]
+  ],
+  "how can i get there?": [
+    ["How can I get there by bus?", "我怎么坐公交车到那里？"],
+    ["How can I get there from here?", "从这里我怎么去那里？"],
+    ["How can I get there on foot?", "我怎么步行到那里？"]
+  ],
+  "is it far from here?": [
+    ["Is it far from here by car?", "从这里开车过去远吗？"],
+    ["'Is it far from here?' she asked.", "她问：那里离这里远吗？"],
+    ["Is it far from here on foot?", "从这里走过去远吗？"]
+  ],
+  "turn left at the corner.": [
+    ["Turn left at the corner ahead.", "在前面的拐角处左转。"],
+    ["You should turn left at the corner.", "你应该在拐角处左转。"],
+    ["Turn left at the corner, then stop.", "在拐角处左转，然后停下。"]
+  ],
+  "go straight ahead.": [
+    ["Go straight ahead until the bridge.", "一直向前走，直到桥那里。"],
+    ["You can go straight ahead from here.", "你可以从这里一直向前走。"],
+    ["Go straight ahead; don't turn yet.", "一直往前走，先别拐弯。"]
+  ],
+  "which bus should i take?": [
+    ["Which bus should I take downtown?", "去市中心应该坐哪路公交车？"],
+    ["Which bus should I take from here?", "从这里应该坐哪路公交车？"],
+    ["'Which bus should I take?' he asked.", "他问：我应该坐哪路公交车？"]
+  ],
+  "does this train stop here?": [
+    ["Does this train stop here every day?", "这班火车每天都在这里停吗？"],
+    ["'Does this train stop here?' she asked.", "她问：这班火车在这里停吗？"],
+    ["Does this train stop here at night?", "这班火车晚上在这里停吗？"]
+  ],
+  "i'd like a return ticket.": [
+    ["I'd like a return ticket to London.", "我想买一张去伦敦的往返票。"],
+    ["I'd like a return ticket for tomorrow.", "我想买一张明天的往返票。"],
+    ["I'd like a return ticket, please.", "请给我一张往返票。"]
+  ],
+  "what time does it leave?": [
+    ["What time does it leave tomorrow?", "它明天几点出发？"],
+    ["'What time does it leave?' he asked.", "他问：它几点出发？"],
+    ["What time does it leave this station?", "它几点离开这个车站？"]
+  ],
+  "please take me to the airport.": [
+    ["Please take me to the airport now.", "现在请送我去机场。"],
+    ["Please take me to the airport first.", "请先送我去机场。"],
+    ["'Please take me to the airport,' she said.", "她说：请送我去机场。"]
+  ],
+  "i have a reservation.": [
+    ["I have a reservation under Smith.", "我以史密斯的名字预订了。"],
+    ["I have a reservation for two nights.", "我预订了两晚。"],
+    ["I have a reservation for seven o'clock.", "我预订了七点的位子。"]
+  ],
+  "i'd like to check in.": [
+    ["I'd like to check in, please.", "我想办理入住。"],
+    ["I'd like to check in early.", "我想提前办理入住。"],
+    ["I'd like to check in for my flight.", "我想办理航班值机。"]
+  ],
+  "what time is checkout?": [
+    ["What time is checkout tomorrow?", "明天几点退房？"],
+    ["'What time is checkout?' the guest asked.", "客人问：几点退房？"],
+    ["Sorry, what time is checkout here?", "请问这里几点退房？"]
+  ],
+  "is breakfast included?": [
+    ["Is breakfast included in the price?", "价格里包含早餐吗？"],
+    ["Is breakfast included with this room?", "这个房间包含早餐吗？"],
+    ["'Is breakfast included?' she asked.", "她问：包含早餐吗？"]
+  ],
+  "could i have another towel?": [
+    ["Could I have another towel, please?", "请再给我一条毛巾，好吗？"],
+    ["Could I have another towel for swimming?", "可以再给我一条游泳用毛巾吗？"],
+    ["'Could I have another towel?' he asked.", "他问：能再给我一条毛巾吗？"]
+  ],
+  "the room is too cold.": [
+    ["The room is too cold for me.", "这个房间对我来说太冷了。"],
+    ["The room is too cold at night.", "这个房间晚上太冷了。"],
+    ["The room is too cold; please adjust it.", "房间太冷了，请调整一下。"]
+  ],
+  "the key doesn't work.": [
+    ["The key doesn't work in this lock.", "这把钥匙开不了这把锁。"],
+    ["Sorry, the key doesn't work anymore.", "不好意思，这把钥匙失效了。"],
+    ["The key doesn't work; can you help?", "钥匙打不开门，你能帮忙吗？"]
+  ],
+  "could you call a taxi?": [
+    ["Could you call a taxi for me?", "你能帮我叫辆出租车吗？"],
+    ["Could you call a taxi to the airport?", "你能叫辆去机场的出租车吗？"],
+    ["Could you call a taxi now, please?", "请现在叫一辆出租车，好吗？"]
+  ],
+  "where can i find a pharmacy?": [
+    ["Where can I find a pharmacy nearby?", "我在哪里能找到附近的药店？"],
+    ["'Where can I find a pharmacy?' she asked.", "她问：哪里有药店？"],
+    ["Excuse me, where can I find a pharmacy?", "请问哪里有药店？"]
+  ],
+  "i need a doctor.": [
+    ["I need a doctor right away.", "我需要马上看医生。"],
+    ["I think I need a doctor.", "我想我需要看医生。"],
+    ["'I need a doctor,' he told reception.", "他告诉接待处：我需要看医生。"]
+  ],
+  "i don't feel well.": [
+    ["I don't feel well after lunch.", "午饭后我感觉不舒服。"],
+    ["I don't feel well enough to travel.", "我身体不适，不足以出门旅行。"],
+    ["Sorry, I don't feel well today.", "抱歉，我今天感觉不舒服。"]
+  ],
+  "i have a headache.": [
+    ["I have a headache this morning.", "我今天早上头痛。"],
+    ["I have a headache and need rest.", "我头痛，需要休息。"],
+    ["I have a headache after that noise.", "听了那阵噪声后，我头痛了。"]
+  ],
+  "please call an ambulance.": [
+    ["Please call an ambulance right away.", "请马上叫一辆救护车。"],
+    ["'Please call an ambulance,' the nurse said.", "护士说：请叫一辆救护车。"],
+    ["Please call an ambulance for the injured man.", "请为那位受伤男子叫辆救护车。"]
+  ],
+  "i've lost my passport.": [
+    ["I've lost my passport at the station.", "我在车站丢了护照。"],
+    ["I've lost my passport and need help.", "我的护照丢了，需要帮助。"],
+    ["'I've lost my passport,' she told police.", "她告诉警察：我的护照丢了。"]
+  ],
+  "can i use your phone?": [
+    ["Can I use your phone briefly?", "我能短暂用一下你的电话吗？"],
+    ["Can I use your phone to call home?", "我能用你的电话给家里打电话吗？"],
+    ["'Can I use your phone?' he asked.", "他问：我能用一下你的电话吗？"]
+  ],
+  "where is the nearest hospital?": [
+    ["Excuse me, where is the nearest hospital?", "请问最近的医院在哪里？"],
+    ["'Where is the nearest hospital?' she asked.", "她问：最近的医院在哪里？"],
+    ["Please tell me where the nearest hospital is.", "请告诉我最近的医院在哪里。"]
+  ],
+  "i need some rest.": [
+    ["I need some rest after the journey.", "旅途结束后我需要休息一下。"],
+    ["I need some rest before we continue.", "继续之前我需要休息一下。"],
+    ["I need some rest, not more coffee.", "我需要的是休息，不是更多咖啡。"]
+  ],
+  "i'm feeling better.": [
+    ["I'm feeling better after some rest.", "休息之后我感觉好些了。"],
+    ["I'm feeling better than yesterday.", "我感觉比昨天好些了。"],
+    ["Thanks for asking; I'm feeling better.", "谢谢关心，我感觉好些了。"]
+  ],
+  "what time is it?": [
+    ["What time is it in London?", "伦敦现在几点？"],
+    ["Excuse me, what time is it?", "请问现在几点？"],
+    ["'What time is it?' the child asked.", "孩子问：现在几点？"]
+  ],
+  "are you free tomorrow?": [
+    ["Are you free tomorrow afternoon?", "你明天下午有空吗？"],
+    ["Are you free tomorrow for a meeting?", "你明天有空开个会吗？"],
+    ["'Are you free tomorrow?' she asked.", "她问：你明天有空吗？"]
+  ],
+  "let's meet at three.": [
+    ["Let's meet at three outside the library.", "我们三点在图书馆外见面吧。"],
+    ["Let's meet at three tomorrow afternoon.", "我们明天下午三点见面吧。"],
+    ["Let's meet at three, if that works.", "如果方便的话，我们三点见吧。"]
+  ],
+  "i'm running late.": [
+    ["I'm running late for my appointment.", "我的约会要迟到了。"],
+    ["Sorry, I'm running late this morning.", "抱歉，我今天早上要迟到了。"],
+    ["I'm running late because of traffic.", "因为堵车，我要迟到了。"]
+  ],
+  "i'll be there soon.": [
+    ["Don't worry; I'll be there soon.", "别担心，我很快就到。"],
+    ["I'll be there soon after lunch.", "午饭后不久我就到。"],
+    ["I'll be there soon; please wait.", "我很快就到，请等一下。"]
+  ],
+  "could we reschedule?": [
+    ["Could we reschedule our meeting?", "我们能改一下会议时间吗？"],
+    ["Could we reschedule for next week?", "我们能改到下周吗？"],
+    ["'Could we reschedule?' the client asked.", "客户问：我们能改个时间吗？"]
+  ],
+  "that works for me.": [
+    ["Three o'clock? That works for me.", "三点？我可以。"],
+    ["That works for me if you're available.", "如果你有空，那个时间我可以。"],
+    ["Yes, that works for me tomorrow.", "可以，明天那个时间我可以。"]
+  ],
+  "see you on monday.": [
+    ["I'll see you on Monday morning.", "我周一早上见你。"],
+    ["Can we see you on Monday?", "我们周一能见你吗？"],
+    ["She waved: 'See you on Monday.'", "她挥手说：周一见。"]
+  ],
+  "what's the weather like?": [
+    ["What's the weather like today?", "今天天气怎么样？"],
+    ["What's the weather like in winter?", "冬天天气怎么样？"],
+    ["'What's the weather like?' the traveller asked.", "旅行者问：天气怎么样？"]
+  ],
+  "it might rain today.": [
+    ["It might rain today, so bring a coat.", "今天可能下雨，所以带件外套。"],
+    ["It might rain today after lunch.", "今天午饭后可能下雨。"],
+    ["Take an umbrella; it might rain today.", "带把伞，今天可能下雨。"]
+  ],
+  "could you send me the file?": [
+    ["Could you send me the file today?", "你今天能把文件发给我吗？"],
+    ["Could you send me the file again?", "你能再把文件发给我一次吗？"],
+    ["'Could you send me the file?' she asked.", "她问：你能把文件发给我吗？"]
+  ],
+  "i'll check my email.": [
+    ["I'll check my email after lunch.", "我午饭后会查邮件。"],
+    ["I'll check my email before replying.", "我会先查邮件再回复。"],
+    ["I'll check my email when I arrive.", "我到达后会查邮件。"]
+  ],
+  "when is the deadline?": [
+    ["When is the deadline for applications?", "申请截止日期是什么时候？"],
+    ["When is the deadline for this report?", "这份报告的截止日期是什么时候？"],
+    ["'When is the deadline?' the student asked.", "学生问：截止日期是什么时候？"]
+  ],
+  "let's take a break.": [
+    ["Let's take a break before continuing.", "我们先休息一下再继续吧。"],
+    ["Let's take a break for lunch.", "我们休息一下，吃个午饭吧。"],
+    ["Let's take a break outside.", "我们去外面休息一下吧。"]
+  ],
+  "i have a question.": [
+    ["I have a question about the schedule.", "我有一个关于日程的问题。"],
+    ["I have a question for the speaker.", "我有一个问题想问演讲者。"],
+    ["Excuse me, I have a question.", "打扰一下，我有一个问题。"]
+  ],
+  "could you explain that?": [
+    ["Could you explain that last point?", "你能解释一下最后一点吗？"],
+    ["Could you explain that in simple terms?", "你能用简单的话解释一下吗？"],
+    ["Could you explain that again, please?", "请你再解释一次，好吗？"]
+  ],
+  "i agree with you.": [
+    ["I agree with you about the timing.", "关于时间安排，我同意你的看法。"],
+    ["I agree with you on this point.", "这一点上我同意你。"],
+    ["I agree with you in principle.", "原则上我同意你的看法。"]
+  ],
+  "let me think about it.": [
+    ["Let me think about it overnight.", "让我考虑一晚上。"],
+    ["Please let me think about it first.", "请先让我考虑一下。"],
+    ["Let me think about it before deciding.", "作决定前让我考虑一下。"]
+  ],
+  "i'll get back to you.": [
+    ["I'll get back to you tomorrow.", "我明天回复你。"],
+    ["I'll get back to you after checking.", "我核实后回复你。"],
+    ["I'll get back to you by Friday.", "我最迟周五回复你。"]
+  ],
+  "thanks for your patience.": [
+    ["Thanks for your patience during the delay.", "谢谢你在延误期间耐心等待。", "", "phrase"],
+    ["She said, 'Thanks for your patience.'", "她说：谢谢你的耐心。"],
+    ["We offered our thanks for your patience.", "我们对你的耐心表示感谢。"]
+  ],
+  "have a good weekend.": [
+    ["Have a good weekend with your family.", "祝你和家人共度愉快的周末。"],
+    ["I hope you have a good weekend.", "希望你周末过得愉快。"],
+    ["She called, 'Have a good weekend!'", "她喊道：周末愉快！"]
+  ],
+  "keep in touch.": [
+    ["Let's keep in touch after graduation.", "我们毕业后保持联系吧。"],
+    ["Please keep in touch with your family.", "请和家人保持联系。"],
+    ["We keep in touch by email.", "我们通过电子邮件保持联系。"]
+  ]
+}

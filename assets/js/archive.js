@@ -231,6 +231,10 @@ WorkTimeApp.services.archive = (() => {
           Array.isArray(module.records),
         "模块版本或记录无效。",
       );
+      if (module.id === "worktime.typing")
+        WorkTimeApp.services.typingStorage?.validateModule(module);
+      if (module.id === "worktime.vocabulary")
+        WorkTimeApp.services.vocabularyStorage?.validateModule(module);
       const specification = registry.get(module.id);
       if (specification && module.version > specification.version)
         throw error(

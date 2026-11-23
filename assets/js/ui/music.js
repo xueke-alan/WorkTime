@@ -111,6 +111,7 @@ WorkTimeApp.ui.music = (() => {
     );
   }
   const controller = WorkTimeApp.ui.createMusicController();
+  const disconnectFooter = WorkTimeApp.ui.footerPlayback.connect(controller);
   const dialog = document.createElement("section");
   dialog.id = "musicDialog";
   dialog.className = "game-shell music-dialog";
@@ -1356,6 +1357,7 @@ WorkTimeApp.ui.music = (() => {
     document.removeEventListener("visibilitychange", musicVisibility);
     if (scrollFrame) cancelAnimationFrame(scrollFrame);
     unsubscribe();
+    disconnectFooter();
     importer.dispose();
     unlanguage();
     expansion.dispose();

@@ -82,6 +82,10 @@ WorkTimeApp.services.bootstrap.run(
       corrupt: loaded.corrupt,
       unsaved: loaded.corrupt,
     });
+    WorkTimeApp.services.typingStorage.bind(stateOwner);
+    WorkTimeApp.services.vocabularyStorage.bind(stateOwner);
+    lifecycle.defer(() => WorkTimeApp.ui.vocabulary?.dispose?.());
+    lifecycle.defer(() => WorkTimeApp.ui.typing?.dispose?.());
     Object.defineProperties(model, {
       state: { get: () => stateOwner.state },
       revision: { get: () => stateOwner.revision },
@@ -313,7 +317,10 @@ WorkTimeApp.services.bootstrap.run(
       owner: stateOwner,
       persistence,
       locks: navigator.locks,
-      hasDraft: () => controllers.some((controller) => controller.hasDraft?.()),
+      hasDraft: () =>
+        controllers.some((controller) => controller.hasDraft?.()) ||
+        WorkTimeApp.ui.typing?.hasDraft?.() ||
+        WorkTimeApp.ui.vocabulary?.hasDraft?.(),
       onCommit(result) {
         if (result.pending) return;
         if (result.applied)
@@ -335,6 +342,8 @@ WorkTimeApp.services.bootstrap.run(
       onAccessError: storageStatus.accessFailed,
       onRecoveryDone: workspace.recoveryDone,
     });
+    WorkTimeApp.services.typingStorage.bind(stateOwner, saveSession.commit);
+    WorkTimeApp.services.vocabularyStorage.bind(stateOwner, saveSession.commit);
     lifecycle.defer(() => saveSession.dispose());
     const application = Object.fromEntries(
       [
@@ -600,6 +609,8 @@ WorkTimeApp.services.bootstrap.run(
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     if (lifecycle.closed) return;
     workspace.mount();
+    WorkTimeApp.services.vocabularyIdle.start();
+    lifecycle.defer(() => WorkTimeApp.services.vocabularyIdle.dispose());
     const games = WorkTimeApp.ui.createGamesController({ document, window });
     lifecycle.defer(() => games.dispose());
     function refreshLanguage() {

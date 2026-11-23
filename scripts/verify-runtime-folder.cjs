@@ -36,16 +36,6 @@ async function main() {
       viewport: { width: 1280, height: 900 },
     });
     await context.addInitScript(() => {
-      // Clipboard startup prompts are outside this folder integration fixture.
-      new MutationObserver(() => {
-        const prompt = document.getElementById("startupPermissionsDialog");
-        if (prompt?.open) prompt.close();
-      }).observe(document, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["open"],
-      });
       localStorage.setItem("worktime.installReminder.dismissed.v1", "true");
       window.runtimeTest = {
         folder: "test-workspace",
@@ -139,7 +129,13 @@ async function main() {
       for await (const child of directory.values()) names.push(child.name);
       return names.sort();
     });
-    assert.deepEqual(directories, ["backups", "ebooks", "game", "music"]);
+    assert.deepEqual(directories, [
+      "backups",
+      "ebooks",
+      "english",
+      "game",
+      "music",
+    ]);
     const resourceLayout = await page.evaluate(async () => {
       const root = await window.showDirectoryPicker();
       const put = async (dir, name, text) => {
@@ -151,6 +147,10 @@ async function main() {
       const old = await root.getDirectoryHandle("dependencies", {
         create: true,
       });
+      const vocabulary = await old.getDirectoryHandle("vocabulary", {
+        create: true,
+      });
+      await put(vocabulary, "english-fixture.bin", "english-model");
       const chess = await old.getDirectoryHandle("pikafish", { create: true });
       await put(chess, "model-fixture.bin", "chess-model");
       await put(old, "unknown-fixture.txt", "keep me");
@@ -164,6 +164,12 @@ async function main() {
       });
       await put(newConflict, "conflict.bin", "new-content");
       const S = WorkTimeApp.services.runtimeFolder;
+      const english = await S.withEnglish(
+        async (dir) =>
+          await (
+            await (await dir.getFileHandle("english-fixture.bin")).getFile()
+          ).text(),
+      );
       const game = await S.withGameResources(
         async (dir) =>
           await (
@@ -175,6 +181,7 @@ async function main() {
           ).text(),
       );
       return {
+        english,
         game,
         unknown: await (
           await (await old.getFileHandle("unknown-fixture.txt")).getFile()
@@ -188,6 +195,7 @@ async function main() {
       };
     });
     assert.deepEqual(resourceLayout, {
+      english: "english-model",
       game: "chess-model",
       unknown: "keep me",
       oldConflict: "old-content",
@@ -335,6 +343,10 @@ async function main() {
     assert.equal(results.cleanedFailure, true);
     assert.equal(results.recovered.completed, 1);
     if (process.env.WORKTIME_REVIEW_SKIP_READER !== "1") {
+      await page.evaluate(() =>
+        document.getElementById("startupPermissionsDialog")?.close(),
+      );
+      await page.evaluate(() => WorkTimeApp.ui.dateInfo.showToolsPanel());
       await page.locator("#readerOpen").click();
       await page.waitForSelector(".reader-book-open");
       await page
@@ -362,6 +374,13 @@ async function main() {
       await page.waitForFunction(
         () => WorkTimeApp.services.runtimeFolder?.state.status === "available",
       );
+      await page.waitForFunction(
+        () => document.documentElement.dataset.appState === "ready",
+      );
+      await page.evaluate(() =>
+        document.getElementById("startupPermissionsDialog")?.close(),
+      );
+      await page.evaluate(() => WorkTimeApp.ui.dateInfo.showToolsPanel());
       await page.locator("#readerOpen").click();
       await page.waitForFunction(() =>
         [...document.querySelectorAll(".reader-book-open")].some((button) =>

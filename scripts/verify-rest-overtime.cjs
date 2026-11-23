@@ -117,17 +117,10 @@ async function verify() {
       1,
     );
     const plannedHeight = await card("2026-10-24").evaluate((node) => {
-      const summary = node.querySelector(".day-planned-summary"),
-        parent = summary.parentElement,
-        height = node.getBoundingClientRect().height;
-      summary.remove();
-      const without = node.getBoundingClientRect().height;
-      parent.append(summary);
-      const label = summary.querySelector(".day-planned-label"),
+      const summary = node.querySelector(".day-planned-summary");
+      const label = node.querySelector(".day-planned-label"),
         value = summary.querySelector(".day-planned-hours");
       return {
-        height,
-        without,
         position: getComputedStyle(summary).position,
         labelSize: parseFloat(getComputedStyle(label).fontSize),
         labelHeight: label.getBoundingClientRect().height,
@@ -135,10 +128,23 @@ async function verify() {
         labelShrink: getComputedStyle(label).flexShrink,
         numberSize: parseFloat(getComputedStyle(value).fontSize),
         labelDisplay: getComputedStyle(label).display,
+        labelInTimeRow: label.closest(".daytime") !== null,
+        leftAligned: getComputedStyle(summary).alignItems === "flex-start",
+        valueBelowLabel:
+          value.getBoundingClientRect().top >=
+          label.getBoundingClientRect().bottom,
+        hasTooltip: label.hasAttribute("title") || value.hasAttribute("title"),
+        valueInsideCard:
+          value.getBoundingClientRect().bottom <=
+          node.getBoundingClientRect().bottom,
       };
     });
-    assert.equal(plannedHeight.position, "absolute");
-    assert.ok(plannedHeight.labelSize >= 9);
+    assert.equal(plannedHeight.position, "static");
+    assert.ok(plannedHeight.labelInTimeRow);
+    assert.ok(plannedHeight.leftAligned);
+    assert.ok(plannedHeight.valueBelowLabel);
+    assert.equal(plannedHeight.hasTooltip, false);
+    assert.ok(plannedHeight.labelSize >= 12);
     assert.equal(plannedHeight.labelShrink, "0");
     assert.ok(
       plannedHeight.labelHeight >= plannedHeight.labelLineHeight - 1,
@@ -146,10 +152,9 @@ async function verify() {
     );
     assert.ok(plannedHeight.numberSize >= 12);
     assert.notEqual(plannedHeight.labelDisplay, "none");
-    assert.equal(
-      plannedHeight.height,
-      plannedHeight.without,
-      "The declaration text must not increase card height",
+    assert.ok(
+      plannedHeight.valueInsideCard,
+      "The declaration value fits inside its card",
     );
     const button = view.locator("#plannedOvertimeToggle");
     const preview = view.locator("#dayPreview .preview-day");

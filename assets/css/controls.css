@@ -353,3 +353,76 @@ body button.ui-button.nextday-toggle[aria-pressed="true"]:active:not(:disabled) 
   margin: 0;
   font-size: 18px;
 }
+
+/* Shared settings/game select geometry and menu states. */
+.shared-native-select {
+  display: none;
+}
+.shared-select-trigger {
+  width: 100%;
+  min-width: 0;
+  justify-content: space-between;
+  padding-inline: 0.857143rem;
+  text-align: start;
+}
+.shared-select-trigger > .button-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.shared-select-trigger > .ui-icon {
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
+  color: var(--muted);
+}
+.shared-select-trigger[aria-expanded="true"] {
+  --game-button-edge: var(--accent);
+  border-color: var(--accent);
+  background: var(--control-hover);
+}
+body .shared-select-options {
+  --language-menu-padding: 0.285714rem;
+}
+body .shared-select-options > .shared-select-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-small);
+  font-weight: 500;
+  border-radius: var(--control-radius);
+  box-shadow: none;
+  justify-content: space-between;
+  width: 100%;
+  height: auto;
+  min-height: var(--control-height);
+  padding: 0.5rem calc(0.857143rem - 0.285714rem);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  white-space: normal;
+  text-align: start;
+}
+.shared-select-options .button-label {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+.shared-select-options .ui-icon {
+  width: var(--icon-size-small);
+  height: var(--icon-size-small);
+}
+body
+  .shared-select-options
+  > .shared-select-option:is(:hover, :focus-visible) {
+  background: var(--control-hover);
+}
+body .shared-select-options > .shared-select-option:focus-visible {
+  outline: 0;
+}
+body .shared-select-options > .shared-select-option[aria-selected="true"] {
+  color: var(--accent);
+  background: var(--accent-light);
+}

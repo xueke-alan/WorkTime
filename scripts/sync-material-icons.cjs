@@ -18,6 +18,14 @@ const root = path.resolve(__dirname, ".."),
     "weather-thunder": "thunderstorm",
   },
   additions = [
+    "menu-book",
+    "library-books",
+    "bar-chart",
+    "insert-chart",
+    "text-to-speech",
+    "progress-activity",
+    "star",
+    "apps",
     "check",
     "calculate",
     "notifications",
@@ -36,10 +44,17 @@ const root = path.resolve(__dirname, ".."),
     "flag",
     "bomb",
     "undo",
+    "robot-2",
     "help",
     "pause",
     "hourglass-pause",
     "play-arrow",
+    "skip-previous",
+    "skip-next",
+    "play-arrow-light",
+    "pause-light",
+    "skip-previous-light",
+    "skip-next-light",
     "arrow-upward",
     "arrow-downward",
     "arrow-back",
@@ -58,8 +73,10 @@ async function build(html, fetchSvg = fetch) {
   ];
   const icons = await Promise.all(
     ids.map(async (id) => {
-      const name = mappings[id] || id.replaceAll("-", "_"),
-        source = `https://raw.githubusercontent.com/google/material-design-icons/${revision}/symbols/web/${name}/materialsymbolsrounded/${name}_24px.svg`;
+      const light = id.endsWith("-light"),
+        name =
+          mappings[id] || (light ? id.slice(0, -6) : id).replaceAll("-", "_"),
+        source = `https://raw.githubusercontent.com/google/material-design-icons/${revision}/symbols/web/${name}/materialsymbolsrounded/${name}${light ? "_wght200" : ""}_24px.svg`;
       const response = await fetchSvg(source, {
         signal: AbortSignal.timeout(30000),
       });
@@ -72,7 +89,15 @@ async function build(html, fetchSvg = fetch) {
         !/^<path d="[\w\s.,-]+"\s*\/>$/.test(content || "")
       )
         throw Error(`Unexpected SVG: ${name}`);
-      return { id, name, source, viewBox, content, svg };
+      return {
+        id,
+        name,
+        source,
+        viewBox,
+        content,
+        svg,
+        ...(light ? { weight: 200 } : {}),
+      };
     }),
   );
   const symbols = icons
@@ -99,12 +124,13 @@ async function build(html, fetchSvg = fetch) {
         license: "Apache-2.0",
         source: "https://fonts.google.com/icons",
         revision,
-        icons: icons.map(({ id, name, source, viewBox, content }) => ({
+        icons: icons.map(({ id, name, source, viewBox, content, weight }) => ({
           id: "ms-" + id,
           name,
           source,
           viewBox,
           sha256: crypto.createHash("sha256").update(content).digest("hex"),
+          ...(weight ? { weight } : {}),
         })),
       },
       null,

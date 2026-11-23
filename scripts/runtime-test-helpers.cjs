@@ -60,6 +60,7 @@ async function enableReaderRuntime(page) {
   // This also works with bundled releases and service-worker reloads.
   await page.addInitScript({
     content:
+      'location.hash = "dev";\n' +
       'document.addEventListener("worktime:ready", () => {\n' +
       loader +
       '\ndocument.querySelector(".reader-placeholder")?.remove();\n}, {once:true});',

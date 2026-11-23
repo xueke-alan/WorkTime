@@ -1,0 +1,21 @@
+Piper browser inference
+======================
+This application implements Piper ONNX inference with ONNX Runtime Web and
+phonemizer.js (eSpeak NG). It does not bundle the Piper Python/C++ engine.
+
+Voice snapshots: https://huggingface.co/rhasspy/piper-voices
+Pinned revision: e9c8a39444359388adaa94255becb37a5a2b8e51
+UK voice: en_GB-jenny_dioco-medium (single speaker)
+See piper-jenny_dioco-model.txt for the upstream model card, training provenance
+and dataset license references. Jenny Dioco's dataset:
+https://github.com/dioco-group/jenny-tts-dataset
+The repository's top-level MIT metadata does not replace individual voice terms.
+
+Phonemizer.js 1.2.1: Copyright Xenova, Apache-2.0.
+https://github.com/xenova/phonemizer.js
+Its embedded eSpeak NG is GPL-3.0; existing eSpeak NG notices and GPL text are
+included in vocabulary.txt. Source: https://github.com/espeak-ng/espeak-ng
+ONNX Runtime Web notices are also included in vocabulary.txt.
+
+Model audio is synthesized locally; British/American labels identify the
+selected voice and phonemizer settings, not independently certified accuracy.

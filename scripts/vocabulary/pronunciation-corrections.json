@@ -1,0 +1,122 @@
+{
+  "experience": {
+    "us": "ɪkˈspɪr.i.əns",
+    "uk": "ɪkˈspɪə.ri.əns",
+    "name": "Cambridge Dictionary",
+    "url": "https://dictionary.cambridge.org/pronunciation/english/experience"
+  },
+  "hydrocarbon": {
+    "us": "ˌhaɪdrəˈkɑːrbən",
+    "uk": "ˌhaɪdrəˈkɑːbən",
+    "reason": "Correct primary stress in generated IPA.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/hydrocarbon"
+  },
+  "exocrine": {
+    "us": "ˈeksəkrɪn",
+    "uk": "ˈeksəʊkraɪn",
+    "reason": "Correct generated stress and use checked standard pronunciation.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/exocrine"
+  },
+  "treatise": {
+    "us": "ˈtriːtɪs",
+    "uk": "ˈtriːtɪs",
+    "reason": "Correct final voiced z to unvoiced s.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/treatise"
+  },
+  "telecommuter": {
+    "us": "ˌtelikəˈmjuːtər",
+    "uk": "ˌtelikəˈmjuːtə",
+    "reason": "Correct compound stress and weak vowels.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/telecommuter"
+  },
+  "conserve": {
+    "us": "kənˈsɜːrv",
+    "reason": "Restore rhotic American pronunciation.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/conserve"
+  },
+  "neighbouring": {
+    "us": "ˈneɪbərɪŋ",
+    "reason": "Remove duplicated rhotic segment.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/neighbouring"
+  },
+  "naturalist": {
+    "us": "ˈnætʃrəlɪst",
+    "uk": "ˈnætʃrəlɪst",
+    "reason": "Remove duplicated rhotic segment and use standard reduction.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/naturalist"
+  },
+  "veteran": {
+    "us": "ˈvetərən",
+    "reason": "Remove duplicated rhotic segment.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/veteran"
+  },
+  "illustrate": {
+    "uk": "ˈɪləstreɪt",
+    "reason": "Use checked standard weak vowel.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/illustrate"
+  },
+  "reticent": {
+    "us": "ˈretɪsnt",
+    "reason": "Use checked standard weak vowel.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/reticent"
+  },
+  "sober": {
+    "uk": "ˈsəʊbə",
+    "reason": "Use standard broad British notation.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/sober"
+  },
+  "invisible": {
+    "us": "ɪnˈvɪzəbl",
+    "uk": "ɪnˈvɪzəbl",
+    "reason": "Use standard reduced unstressed vowel.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/invisible"
+  },
+  "viability": {
+    "uk": "ˌvaɪəˈbɪləti",
+    "reason": "Use checked weak vowels.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/viability"
+  },
+  "juicy": {
+    "uk": "ˈdʒuːsi",
+    "reason": "Use standard final happy vowel.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/juicy"
+  },
+  "suddenly": {
+    "uk": "ˈsʌdənli",
+    "reason": "Use standard final happy vowel.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/suddenly"
+  },
+  "highly": {
+    "uk": "ˈhaɪli",
+    "reason": "Use standard final happy vowel.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/highly"
+  },
+  "tiny": {
+    "uk": "ˈtaɪni",
+    "reason": "Use standard final happy vowel.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/tiny"
+  },
+  "weekly": {
+    "uk": "ˈwiːkli",
+    "reason": "Use standard final happy vowel.",
+    "name": "Oxford Learner's Dictionaries",
+    "url": "https://www.oxfordlearnersdictionaries.com/definition/english/weekly"
+  }
+}

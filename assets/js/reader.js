@@ -3,16 +3,6 @@
 WorkTimeApp.ui.reader = (() => {
   function refresh() {
     const panel = document.getElementById("readerPanel");
-    const entry = document.getElementById("readerOpen");
-    if (entry) {
-      entry.setAttribute("role", "tab");
-      entry.setAttribute("aria-controls", "readerPanel");
-      entry.removeAttribute("aria-haspopup");
-      entry.removeAttribute("aria-expanded");
-      const selected = WorkTimeApp.ui.dateInfo?.isActive("reader") || false;
-      entry.setAttribute("aria-selected", String(selected));
-      entry.tabIndex = selected ? 0 : -1;
-    }
     if (!panel) return;
     let placeholder = panel.querySelector(".reader-placeholder");
     if (!placeholder) {

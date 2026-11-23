@@ -1,0 +1,39 @@
+{
+  "total": 11231,
+  "covered": 11231,
+  "sources": {
+    "original": 10549,
+    "dictionary": 15855,
+    "corpus": 11111
+  },
+  "missing": [],
+  "byBook": {
+    "cet4": {
+      "total": 3820,
+      "covered": 3820
+    },
+    "cet6": {
+      "total": 5375,
+      "covered": 5375
+    },
+    "kaoyan": {
+      "total": 4793,
+      "covered": 4793
+    },
+    "toefl": {
+      "total": 6963,
+      "covered": 6963
+    },
+    "ielts": {
+      "total": 4979,
+      "covered": 4979
+    },
+    "daily": {
+      "total": 3108,
+      "covered": 3108
+    }
+  },
+  "minExamples": 3,
+  "maxWords": 8,
+  "phrases": 6
+}

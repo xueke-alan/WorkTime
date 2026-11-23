@@ -41,6 +41,7 @@ function bundleSite(root) {
       "assets/vendor/utttai",
       "assets/vendor/aeroplane",
       "assets/vendor/rapfi",
+      "assets/vendor/vocabulary",
     ]
       .flatMap(dynamicFiles)
       .concat([
@@ -57,6 +58,13 @@ function bundleSite(root) {
         "assets/js/controllers/workspace-expansion.js",
         "assets/js/ui/music.js",
         "assets/js/ui/music-runtime.min.js",
+        "assets/js/ui/typing-runtime.min.js",
+        "assets/js/ui/vocabulary-runtime.min.js",
+        "assets/js/vocabulary-engine.js",
+        "assets/js/services/vocabulary-file-index.js",
+        "assets/js/services/vocabulary-audio-cache.js",
+        "assets/js/services/vocabulary-speech.js",
+        "assets/js/services/vocabulary-models.js",
         "assets/js/services/reader-storage.js",
         "assets/js/services/reader-library.js",
         "assets/js/services/reader-adapters.js",

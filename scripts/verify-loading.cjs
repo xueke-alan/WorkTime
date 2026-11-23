@@ -74,7 +74,7 @@ async function verify() {
         );
         assert.equal(
           await page.evaluate(() => WorkTimeApp.games.list().length),
-          11,
+          18,
         );
         await page.evaluate(async () => {
           await WorkTimeApp.i18n.setLanguage("ja");
@@ -133,7 +133,10 @@ async function verify() {
           await launchGame(page, "game-snake");
           await started;
           await page.locator("#gameExitButton").click();
-          await page.waitForTimeout(300);
+          await page.waitForFunction(
+            () =>
+              document.getElementById("gameShell").dataset.state === "closed",
+          );
           assert.equal(
             await page.locator("#gameShell").getAttribute("data-state"),
             "closed",

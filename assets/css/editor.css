@@ -1834,6 +1834,17 @@ body .editor #settingsForm .requirements-unit {
 }
 
 /* Page settings share the editor area while the lower tabs remain available. */
+body .workspace > .editor.is-vocabulary-open { display: flex; flex-direction: column; overflow: hidden; }
+body .editor.is-vocabulary-open:not(.is-settings-open):not(.is-page-settings-open) > :is(.editor-content, #agendaEditor) { display: none !important; }
+body .editor.is-vocabulary-open:not(.is-settings-open):not(.is-page-settings-open) > .date-info-area { display: flex; position: static; inset: auto; z-index: auto; flex: 1 1 0; height: auto; min-height: 0; max-height: none; overflow: hidden; border: 0; border-radius: 0; box-shadow: none; pointer-events: auto; }
+body .editor.is-vocabulary-open .agenda-drawer-grip { display: none !important; }
+body .editor.is-vocabulary-open:is(.is-settings-open, .is-page-settings-open) > .date-info-area { display: none !important; }
+body .editor.is-vocabulary-open > .notification-tabs { flex: none; }
+body .editor.is-vocabulary-open #toolsPanel { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; padding: 0; }
+body .editor #vocabularyPanel { min-width: 0; min-height: 0; flex: 1; overflow-y: auto; }
+@media (max-width: 1150px) {
+  body .workspace > .editor.is-vocabulary-open { height: 80dvh; min-height: 32rem; }
+}
 body .editor.is-page-settings-open > .editor-content { display: none !important; }
 body .editor .page-settings-pane[hidden] { display: none !important; }
 body .editor .page-settings-pane { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }

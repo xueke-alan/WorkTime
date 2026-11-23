@@ -502,6 +502,8 @@ WorkTimeApp.services.indexedStorage = (() => {
           selected.add(A.ids[name]),
         );
       }
+      if (changes.typing) selected.add("worktime.typing");
+      if (changes.vocabulary) selected.add("worktime.vocabulary");
       if (changes.personal) selected.add(A.ids.profile);
       if (changes.settings || changes.overtimeRequirements || changes.oaUrl)
         selected.add(A.ids.rules);

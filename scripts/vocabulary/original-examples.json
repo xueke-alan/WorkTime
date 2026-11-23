@@ -1,0 +1,18 @@
+{
+  "record:noun": [{"en":"The team set a new national record in the final.","zh":"这支队伍在决赛中创造了新的全国纪录。"}],
+  "record:verb": [{"en":"Please record the temperature every thirty minutes.","zh":"请每隔三十分钟记录一次温度。"}],
+  "present:noun-adjective": [{"en":"Everyone present received a small gift.","zh":"每位在场的人都收到了一份小礼物。"}],
+  "present:verb": [{"en":"The researchers will present their findings on Friday.","zh":"研究人员将在星期五公布他们的研究结果。"}],
+  "object:noun": [{"en":"A small metal object was lying beside the door.","zh":"门旁边放着一个小金属物件。"}],
+  "object:verb": [{"en":"Residents object to the plan because it would increase traffic.","zh":"居民反对这项计划，因为它会增加交通流量。"}],
+  "produce:noun": [{"en":"The market sells fresh produce from local farms.","zh":"这个市场出售当地农场的新鲜农产品。"}],
+  "produce:verb": [{"en":"These solar panels produce enough electricity for the school.","zh":"这些太阳能板产生的电力足够学校使用。"}],
+  "lead:metal": [{"en":"The old water pipes contained lead and had to be replaced.","zh":"旧水管含铅，必须更换。"}],
+  "lead:guide": [{"en":"A local guide will lead us through the forest.","zh":"一位当地向导将带领我们穿过森林。"}],
+  "read:present": [{"en":"I read the newspaper on the train every morning.","zh":"我每天早上在火车上读报纸。"}],
+  "read:past": [{"en":"She read the entire report before yesterday's meeting.","zh":"她在昨天的会议之前读完了整份报告。"}],
+  "content:noun": [{"en":"The course content includes both theory and practical work.","zh":"课程内容包括理论和实践。"}],
+  "content:adjective": [{"en":"After a long walk, the dog seemed content to sleep by the fire.","zh":"长时间散步后，那只狗似乎很满足地睡在炉火旁。"}],
+  "desert:noun": [{"en":"Temperatures in the desert can fall sharply at night.","zh":"沙漠里的温度在夜间可能骤降。"}],
+  "desert:verb": [{"en":"They promised never to desert their friends in a crisis.","zh":"他们承诺绝不在危机中抛弃朋友。"}]
+}

@@ -407,18 +407,9 @@ WorkTimeApp.ui.createCalendar = function (options) {
     return '<span class="day-lunar">' + esc(lunar) + "</span>";
   }
   function worktimeCorner(calc, standardMinutes) {
-    if (!calc.work || calc.minutes === null) return "";
-    const status =
-      calc.minutes < standardMinutes
-        ? "short"
-        : calc.minutes > standardMinutes
-          ? "extra"
-          : "normal";
-    return (
-      '<span class="worktime-corner is-' +
-      status +
-      '" aria-hidden="true"></span>'
-    );
+    if (!calc.work || calc.minutes === null || calc.minutes >= standardMinutes)
+      return "";
+    return '<span class="worktime-corner is-short" aria-hidden="true"></span>';
   }
   function plannedOvertimeAverage(state, date, cache) {
     const cursor = C.localDate(date);
@@ -853,20 +844,17 @@ WorkTimeApp.ui.createCalendar = function (options) {
         '</span><span class="daykind">' +
         esc(kindLabel) +
         '</span></div><div class="daytime"><span class="daytime-content">' +
-        time +
-        sourceDot +
+        (showPlannedHours
+          ? '<span class="day-planned-label">' +
+            esc(WorkTimeApp.i18n.t("calendar.plannedHours")) +
+            "</span>"
+          : time + sourceDot) +
         "</span>" +
         dayLunar(k) +
         '</div><div class="dayhours">' +
         (showPlannedHours
-          ? '<div class="day-planned-summary"><span class="day-planned-label" title="' +
-            esc(WorkTimeApp.i18n.t("calendar.plannedHours")) +
-            '">' +
-            esc(WorkTimeApp.i18n.t("calendar.plannedHours")) +
-            '</span><span class="day-total-hours day-planned-hours' +
+          ? '<div class="day-planned-summary"><span class="day-total-hours day-planned-hours' +
             (plannedBelowTarget ? " below-target" : "") +
-            '" title="' +
-            esc(plannedReference) +
             '" data-reference-date="' +
             (plannedAverage.date || "") +
             '">' +

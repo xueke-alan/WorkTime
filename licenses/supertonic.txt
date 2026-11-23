@@ -1,0 +1,18 @@
+Supertonic 3 — offline English speech in WorkTime
+
+Model weights and preset styles: Supertone Inc., OpenRAIL-M.
+See supertonic-model.txt.
+https://huggingface.co/supertone-oss-archive/supertonic-3
+Revision: aafc6e32416a594460b32413efc49d7fe4ce6d46
+
+Browser helper code: Supertone Inc., MIT. See supertonic-browser.txt.
+https://github.com/supertone-oss-archive/supertonic (web/helper.js)
+
+Local adaptations: bundled offline resources, shared local ONNX Runtime WASM,
+resource loading from verified byte buffers, fixed voice routing, request IDs,
+generation parameter validation and PCM WAV output.
+Preset style F1 is included without modification as the fixed US-group voice.
+The upstream preset does not certify an American accent.
+
+ONNX Runtime and other vocabulary data retain their existing notices in
+vocabulary.txt, onnxruntime.txt and onnxruntime-third-party.txt.

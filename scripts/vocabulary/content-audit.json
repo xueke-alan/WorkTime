@@ -1,0 +1,4705 @@
+{
+  "seed": "worktime-ipa-audit-v1",
+  "sampleSize": 200,
+  "method": "Deterministic book-balanced sample; normalized IPA agreement against independent Oxford reference. Agreement is not a human-verified accuracy estimate. Variants and unavailable references require review.",
+  "counts": {
+    "us": {
+      "agreement": 154,
+      "review": 30,
+      "unavailable": 16
+    },
+    "uk": {
+      "agreement": 161,
+      "review": 23,
+      "unavailable": 16
+    }
+  },
+  "results": [
+    {
+      "id": "leading",
+      "word": "leading",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/leading_1",
+      "accents": {
+        "us": {
+          "actual": "ˈlidɪŋ",
+          "reference": [
+            "/ˈliːdɪŋ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈliːdɪŋ",
+          "reference": [
+            "/ˈliːdɪŋ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "extensive",
+      "word": "extensive",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/extensive",
+      "accents": {
+        "us": {
+          "actual": "ɪkˈstɛn.sɪv",
+          "reference": [
+            "/ɪkˈstensɪv/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪkˈstɛn.sɪv",
+          "reference": [
+            "/ɪkˈstensɪv/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "aid",
+      "word": "aid",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/aid",
+      "accents": {
+        "us": {
+          "actual": "ˈeɪd",
+          "reference": [
+            "/eɪd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "eɪd",
+          "reference": [
+            "/eɪd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "introduce",
+      "word": "introduce",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/introduce",
+      "accents": {
+        "us": {
+          "actual": "ˌɪntɹəˈdus",
+          "reference": [
+            "/ˌɪntrəˈduːs/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˌɪntɹəˈdʒuːs",
+          "reference": [
+            "/ˌɪntrəˈdjuːs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "gas",
+      "word": "gas",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/gas",
+      "accents": {
+        "us": {
+          "actual": "ɡæs",
+          "reference": [
+            "/ɡæs/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɡæs",
+          "reference": [
+            "/ɡæs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "invisible",
+      "word": "invisible",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/invisible",
+      "accents": {
+        "us": {
+          "actual": "ɪnˈvɪzəbl",
+          "reference": [
+            "/ɪnˈvɪzəbl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪnˈvɪzəbl",
+          "reference": [
+            "/ɪnˈvɪzəbl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "proposal",
+      "word": "proposal",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/proposal",
+      "accents": {
+        "us": {
+          "actual": "pɹəˈpoʊzəl",
+          "reference": [
+            "/prəˈpəʊzl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "pɹəˈpəʊzəl",
+          "reference": [
+            "/prəˈpəʊzl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "fry",
+      "word": "fry",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/fry",
+      "accents": {
+        "us": {
+          "actual": "fɹˈaɪ",
+          "reference": [
+            "/fraɪ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "fɹˈaɪ",
+          "reference": [
+            "/fraɪ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "enforce",
+      "word": "enforce",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/enforce",
+      "accents": {
+        "us": {
+          "actual": "ɪnˈfoɹs",
+          "reference": [
+            "/ɪnˈfɔːrs/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ɪnˈfɔːs",
+          "reference": [
+            "/ɪnˈfɔːs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "heading",
+      "word": "heading",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/heading",
+      "accents": {
+        "us": {
+          "actual": "hˈɛdɪŋ",
+          "reference": [
+            "/ˈhedɪŋ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "hˈɛdɪŋ",
+          "reference": [
+            "/ˈhedɪŋ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "agony",
+      "word": "agony",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/agony",
+      "accents": {
+        "us": {
+          "actual": "ˈæɡ.ə.ni",
+          "reference": [
+            "/ˈæɡəni/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈæɡ.ə.ni",
+          "reference": [
+            "/ˈæɡəni/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "mutter",
+      "word": "mutter",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/mutter",
+      "accents": {
+        "us": {
+          "actual": "ˈmʌtɚ",
+          "reference": [
+            "/ˈmʌtər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈmʌtə",
+          "reference": [
+            "/ˈmʌtə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "diverse",
+      "word": "diverse",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/diverse",
+      "accents": {
+        "us": {
+          "actual": "daɪˈvɝs",
+          "reference": [
+            "/daɪˈvɜːrs/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "daɪˈvɜːs",
+          "reference": [
+            "/daɪˈvɜːs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "intimidate",
+      "word": "intimidate",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/intimidate",
+      "accents": {
+        "us": {
+          "actual": "ɪnˈtɪmɪdeɪt",
+          "reference": [
+            "/ɪnˈtɪmɪdeɪt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪnˈtɪmɪdeɪt",
+          "reference": [
+            "/ɪnˈtɪmɪdeɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "fool",
+      "word": "fool",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/fool",
+      "accents": {
+        "us": {
+          "actual": "ful",
+          "reference": [
+            "/fuːl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "fuːl",
+          "reference": [
+            "/fuːl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "found",
+      "word": "found",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/found",
+      "accents": {
+        "us": {
+          "actual": "ˈfaʊ̯nd",
+          "reference": [
+            "/faʊnd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈfaʊ̯nd",
+          "reference": [
+            "/faʊnd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "laser",
+      "word": "laser",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/laser",
+      "accents": {
+        "us": {
+          "actual": "ˈleɪzɚ",
+          "reference": [
+            "/ˈleɪzər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈleɪz.ə(ɹ)",
+          "reference": [
+            "/ˈleɪzə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "police",
+      "word": "police",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/police",
+      "accents": {
+        "us": {
+          "actual": "pəˈlis",
+          "reference": [
+            "/pəˈliːs/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "pəˈliːs",
+          "reference": [
+            "/pəˈliːs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "pond",
+      "word": "pond",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/pond",
+      "accents": {
+        "us": {
+          "actual": "pɑnd",
+          "reference": [
+            "/pɑːnd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "pɒnd",
+          "reference": [
+            "/pɒnd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "stocking",
+      "word": "stocking",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/stocking",
+      "accents": {
+        "us": {
+          "actual": "ˈstɑkɪŋ",
+          "reference": [
+            "/ˈstɑːkɪŋ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈstɒkɪŋ",
+          "reference": [
+            "/ˈstɒkɪŋ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "eagle",
+      "word": "eagle",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/eagle",
+      "accents": {
+        "us": {
+          "actual": "ˈiːɡəl",
+          "reference": [
+            "/ˈiːɡl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈiːɡəl",
+          "reference": [
+            "/ˈiːɡl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "cheque",
+      "word": "cheque",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/cheque",
+      "accents": {
+        "us": {
+          "actual": "tʃˈɛk",
+          "reference": [
+            "/tʃek/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "tʃˈɛk",
+          "reference": [
+            "/tʃek/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "pride",
+      "word": "pride",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/pride",
+      "accents": {
+        "us": {
+          "actual": "pɹˈaɪd",
+          "reference": [
+            "/praɪd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "pɹˈaɪd",
+          "reference": [
+            "/praɪd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "generally",
+      "word": "generally",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/generally",
+      "accents": {
+        "us": {
+          "actual": "ˈd͡ʒɛn.ɚ.li",
+          "reference": [
+            "/ˈdʒenrəli/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈd͡ʒɛn.ɹə.li",
+          "reference": [
+            "/ˈdʒenrəli/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "stony",
+      "word": "stony",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/stony",
+      "accents": {
+        "us": {
+          "actual": "ˈstoʊni",
+          "reference": [
+            "/ˈstəʊni/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈstəʊni",
+          "reference": [
+            "/ˈstəʊni/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "cycle",
+      "word": "cycle",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/cycle",
+      "accents": {
+        "us": {
+          "actual": "ˈsaɪ.kəl",
+          "reference": [
+            "/ˈsaɪkl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈsaɪ.kəl",
+          "reference": [
+            "/ˈsaɪkl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "sober",
+      "word": "sober",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/sober",
+      "accents": {
+        "us": {
+          "actual": "ˈsoʊ.bɚ",
+          "reference": [
+            "/ˈsəʊbər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈsəʊbə",
+          "reference": [
+            "/ˈsəʊbə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "conserve",
+      "word": "conserve",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/conserve",
+      "accents": {
+        "us": {
+          "actual": "kənˈsɜːrv",
+          "reference": [
+            "/kənˈsɜːrv/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "kənsˈɜːv",
+          "reference": [
+            "/kənˈsɜːv/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "anxious",
+      "word": "anxious",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/anxious",
+      "accents": {
+        "us": {
+          "actual": "ˈæŋkʃəs",
+          "reference": [
+            "/ˈæŋkʃəs/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈæŋkʃəs",
+          "reference": [
+            "/ˈæŋkʃəs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "baggage",
+      "word": "baggage",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/baggage",
+      "accents": {
+        "us": {
+          "actual": "ˈbæɡɪd͡ʒ",
+          "reference": [
+            "/ˈbæɡɪdʒ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈbæɡɪd͡ʒ",
+          "reference": [
+            "/ˈbæɡɪdʒ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "elaborate",
+      "word": "elaborate",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/elaborate",
+      "accents": {
+        "us": {
+          "actual": "ɪˈlæb.ə.ɹeɪt",
+          "reference": [
+            "/ɪˈlæbərət/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ɪˈlæb.ə.ɹeɪt",
+          "reference": [
+            "/ɪˈlæbərət/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "poverty",
+      "word": "poverty",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/poverty",
+      "accents": {
+        "us": {
+          "actual": "ˈpɑːvɚti",
+          "reference": [
+            "/ˈpɑːvərti/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈpɒvəti",
+          "reference": [
+            "/ˈpɒvəti/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "volleyball",
+      "word": "volleyball",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/volleyball",
+      "accents": {
+        "us": {
+          "actual": "vˈɑːlɪbˌɔːl",
+          "reference": [
+            "/ˈvɑːlibɔːl/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "vˈɒlɪbˌɔːl",
+          "reference": [
+            "/ˈvɒlibɔːl/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "neighbouring",
+      "word": "neighbouring",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/neighbouring",
+      "accents": {
+        "us": {
+          "actual": "ˈneɪbərɪŋ",
+          "reference": [
+            "/ˈneɪbərɪŋ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "nˈeɪbəɹɪŋ",
+          "reference": [
+            "/ˈneɪbərɪŋ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "amends",
+      "word": "amends",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/amends",
+      "accents": {
+        "us": {
+          "actual": "əˈmɛndz",
+          "reference": [
+            "/əˈmendz/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɐmˈɛndz",
+          "reference": [
+            "/əˈmendz/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "verdict",
+      "word": "verdict",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/verdict",
+      "accents": {
+        "us": {
+          "actual": "ˈvɝ.dɪkt",
+          "reference": [
+            "/ˈvɜːrdɪkt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈvɜː.dɪkt",
+          "reference": [
+            "/ˈvɜːdɪkt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "hydrocarbon",
+      "word": "hydrocarbon",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/hydrocarbon",
+      "accents": {
+        "us": {
+          "actual": "ˌhaɪdrəˈkɑːrbən",
+          "reference": [
+            "/ˌhaɪdrəˈkɑːrbən/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˌhaɪdrəˈkɑːbən",
+          "reference": [
+            "/ˌhaɪdrəˈkɑːbən/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "distort",
+      "word": "distort",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/distort",
+      "accents": {
+        "us": {
+          "actual": "dɪsˈtoɹt",
+          "reference": [
+            "/dɪˈstɔːrt/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "dɪsˈtɔːt",
+          "reference": [
+            "/dɪˈstɔːt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "collaboration",
+      "word": "collaboration",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/collaboration",
+      "accents": {
+        "us": {
+          "actual": "kəˌlæbəˈɹeɪʃən",
+          "reference": [
+            "/kəˌlæbəˈreɪʃn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "kəˌlæbəˈɹeɪʃən",
+          "reference": [
+            "/kəˌlæbəˈreɪʃn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "commonwealth",
+      "word": "commonwealth",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/commonwealth",
+      "accents": {
+        "us": {
+          "actual": "ˈkɑmənˌwɛlθ",
+          "reference": [
+            "/ˈkɑːmənwelθ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈkɒmənˌwelθ",
+          "reference": [
+            "/ˈkɒmənwelθ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "forum",
+      "word": "forum",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/forum",
+      "accents": {
+        "us": {
+          "actual": "ˈfɔɹəm",
+          "reference": [
+            "/ˈfɔːrəm/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈfɔːɹəm",
+          "reference": [
+            "/ˈfɔːrəm/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "antisocial",
+      "word": "antisocial",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/antisocial",
+      "accents": {
+        "us": {
+          "actual": "ˌæntiˈsoʊʃəl",
+          "reference": [
+            "/ˌæntiˈsəʊʃl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˌæntiˈsəʊʃəl",
+          "reference": [
+            "/ˌæntiˈsəʊʃl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "intersect",
+      "word": "intersect",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/intersect",
+      "accents": {
+        "us": {
+          "actual": "ɪntɚˈsɛkt",
+          "reference": [
+            "/ˌɪntərˈsekt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪntəˈsɛkt",
+          "reference": [
+            "/ˌɪntəˈsekt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "kilometre",
+      "word": "kilometre",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/kilometre",
+      "accents": {
+        "us": {
+          "actual": "kɪˈlɑmɪtəɹ",
+          "reference": [
+            "/kɪˈlɑːmɪtər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "kɪˈlɒmɪtə",
+          "reference": [
+            "/kɪˈlɒmɪtə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "volcanic",
+      "word": "volcanic",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/volcanic",
+      "accents": {
+        "us": {
+          "actual": "vɔlˈkænɪk",
+          "reference": [
+            "/vɑːlˈkænɪk/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "vɒlˈkænɪk",
+          "reference": [
+            "/vɒlˈkænɪk/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "chronology",
+      "word": "chronology",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/chronology",
+      "accents": {
+        "us": {
+          "actual": "kɹəˈnɑl.ə.d͡ʒi",
+          "reference": [
+            "/krəˈnɑːlədʒi/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "kɹəˈnɒl.ə.d͡ʒi",
+          "reference": [
+            "/krəˈnɒlədʒi/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "roost",
+      "word": "roost",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/roost",
+      "accents": {
+        "us": {
+          "actual": "ɹust",
+          "reference": [
+            "/ruːst/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɹuːst",
+          "reference": [
+            "/ruːst/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "arid",
+      "word": "arid",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/arid",
+      "accents": {
+        "us": {
+          "actual": "ˈæɹɪd",
+          "reference": [
+            "/ˈærɪd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈæɹɪd",
+          "reference": [
+            "/ˈærɪd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "supple",
+      "word": "supple",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/supple",
+      "accents": {
+        "us": {
+          "actual": "ˈsʌpəl",
+          "reference": [
+            "/ˈsʌpl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈsʌpəl",
+          "reference": [
+            "/ˈsʌpl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "exocrine",
+      "word": "exocrine",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/exocrine",
+      "accents": {
+        "us": {
+          "actual": "ˈeksəkrɪn",
+          "reference": [
+            "/ˈeksəkrɪn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈeksəʊkraɪn",
+          "reference": [
+            "/ˈeksəʊkraɪn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "moat",
+      "word": "moat",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/moat",
+      "accents": {
+        "us": {
+          "actual": "moʊt",
+          "reference": [
+            "/məʊt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "məʊt",
+          "reference": [
+            "/məʊt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "negate",
+      "word": "negate",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/negate",
+      "accents": {
+        "us": {
+          "actual": "nᵻɡˈeɪt",
+          "reference": [
+            "/nɪˈɡeɪt/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "nɪɡˈeɪt",
+          "reference": [
+            "/nɪˈɡeɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "leash",
+      "word": "leash",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/leash",
+      "accents": {
+        "us": {
+          "actual": "liːʃ",
+          "reference": [
+            "/liːʃ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "liːʃ",
+          "reference": [
+            "/liːʃ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "sweeping",
+      "word": "sweeping",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/sweeping",
+      "accents": {
+        "us": {
+          "actual": "swˈiːpɪŋ",
+          "reference": [
+            "/ˈswiːpɪŋ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "swˈiːpɪŋ",
+          "reference": [
+            "/ˈswiːpɪŋ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "ken",
+      "word": "ken",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/ken",
+      "accents": {
+        "us": {
+          "actual": "kˈɛn",
+          "reference": [
+            "/ken/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "kˈɛn",
+          "reference": [
+            "/ken/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "devout",
+      "word": "devout",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/devout",
+      "accents": {
+        "us": {
+          "actual": "dɪvˈaʊt",
+          "reference": [
+            "/dɪˈvaʊt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "dɪvˈaʊt",
+          "reference": [
+            "/dɪˈvaʊt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "forte",
+      "word": "forte",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/forte",
+      "accents": {
+        "us": {
+          "actual": "ˈfoɹ.teɪ",
+          "reference": [
+            "/fɔːrt/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ˈfɔːteɪ",
+          "reference": [
+            "/ˈfɔːteɪ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "uncouth",
+      "word": "uncouth",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/uncouth",
+      "accents": {
+        "us": {
+          "actual": "ʌŋkˈuːθ",
+          "reference": [
+            "/ʌnˈkuːθ/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ʌŋkˈuːθ",
+          "reference": [
+            "/ʌnˈkuːθ/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "goad",
+      "word": "goad",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/goad",
+      "accents": {
+        "us": {
+          "actual": "ɡoʊd",
+          "reference": [
+            "/ɡəʊd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɡəʊd",
+          "reference": [
+            "/ɡəʊd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "foretell",
+      "word": "foretell",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/foretell",
+      "accents": {
+        "us": {
+          "actual": "foːɹtˈɛl",
+          "reference": [
+            "/fɔːrˈtel/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "fɔːtˈɛl",
+          "reference": [
+            "/fɔːˈtel/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "impute",
+      "word": "impute",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/impute",
+      "accents": {
+        "us": {
+          "actual": "ɪmˈpjut",
+          "reference": [
+            "/ɪmˈpjuːt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪmˈpjuːt",
+          "reference": [
+            "/ɪmˈpjuːt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "disband",
+      "word": "disband",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/disband",
+      "accents": {
+        "us": {
+          "actual": "dɪsbˈænd",
+          "reference": [
+            "/dɪsˈbænd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "dɪsˈbænd",
+          "reference": [
+            "/dɪsˈbænd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "languish",
+      "word": "languish",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/languish",
+      "accents": {
+        "us": {
+          "actual": "lˈæŋɡwɪʃ",
+          "reference": [
+            "/ˈlæŋɡwɪʃ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "lˈæŋɡwɪʃ",
+          "reference": [
+            "/ˈlæŋɡwɪʃ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "booklist",
+      "word": "booklist",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/booklist_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "bˈʊklɪst",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "bˈʊklɪst",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "treatise",
+      "word": "treatise",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/treatise",
+      "accents": {
+        "us": {
+          "actual": "ˈtriːtɪs",
+          "reference": [
+            "/ˈtriːtɪs/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈtriːtɪs",
+          "reference": [
+            "/ˈtriːtɪs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "once",
+      "word": "once",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/once",
+      "accents": {
+        "us": {
+          "actual": "wʌn(t)s",
+          "reference": [
+            "/wʌns/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "wʌn(t)s",
+          "reference": [
+            "/wʌns/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "reticent",
+      "word": "reticent",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/reticent",
+      "accents": {
+        "us": {
+          "actual": "ˈretɪsnt",
+          "reference": [
+            "/ˈretɪsnt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈɹɛtɪsənt",
+          "reference": [
+            "/ˈretɪsnt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "cages",
+      "word": "cages",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/cages_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "kˈeɪdʒᵻz",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "kˈeɪdʒɪz",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "shimmer",
+      "word": "shimmer",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/shimmer",
+      "accents": {
+        "us": {
+          "actual": "ˈʃɪm.ɚ",
+          "reference": [
+            "/ˈʃɪmər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈʃɪm.ə(ɹ)",
+          "reference": [
+            "/ˈʃɪmə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "water-skiing",
+      "word": "water-skiing",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/water-skiing_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "wˈɔːɾɚskˈiːɪŋ",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "wˈɔːtəskˈiːɪŋ",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "affiliate",
+      "word": "affiliate",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/affiliate",
+      "accents": {
+        "us": {
+          "actual": "əˈfɪl.i.ət",
+          "reference": [
+            "/əˈfɪlieɪt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "əˈfɪl.i.ət",
+          "reference": [
+            "/əˈfɪlieɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "necessary",
+      "word": "necessary",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/necessary",
+      "accents": {
+        "us": {
+          "actual": "ˈnɛs.əˌsɛ.ɹi",
+          "reference": [
+            "/ˈnesəseri/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈnɛs.ə.sɹi",
+          "reference": [
+            "/ˈnesəsəri/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "speak",
+      "word": "speak",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/speak",
+      "accents": {
+        "us": {
+          "actual": "spik",
+          "reference": [
+            "/spiːk/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "spiːk",
+          "reference": [
+            "/spiːk/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "boyfriend",
+      "word": "boyfriend",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/boyfriend",
+      "accents": {
+        "us": {
+          "actual": "ˈbɔɪˌfɹɛnd",
+          "reference": [
+            "/ˈbɔɪfrend/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "bˈɔɪfɹɛnd",
+          "reference": [
+            "/ˈbɔɪfrend/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "right",
+      "word": "right",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/right",
+      "accents": {
+        "us": {
+          "actual": "ɹaɪt",
+          "reference": [
+            "/raɪt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɹaɪt",
+          "reference": [
+            "/raɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "tired",
+      "word": "tired",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/tired",
+      "accents": {
+        "us": {
+          "actual": "tˈaɪɚd",
+          "reference": [
+            "/ˈtaɪərd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "taɪə(r)d",
+          "reference": [
+            "/ˈtaɪəd/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "fewer",
+      "word": "fewer",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/fewer_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "ˈfjuː.ɚ",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "fjˈuːɐ",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "partnership",
+      "word": "partnership",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/partnership",
+      "accents": {
+        "us": {
+          "actual": "ˈpɑɹtnɚʃɪp",
+          "reference": [
+            "/ˈpɑːrtnərʃɪp/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈpɑːtnəʃɪp",
+          "reference": [
+            "/ˈpɑːtnəʃɪp/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "lesson",
+      "word": "lesson",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/lesson",
+      "accents": {
+        "us": {
+          "actual": "lˈɛsən",
+          "reference": [
+            "/ˈlesn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "lˈɛsən",
+          "reference": [
+            "/ˈlesn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "given",
+      "word": "given",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/given",
+      "accents": {
+        "us": {
+          "actual": "ɡˈɪvən",
+          "reference": [
+            "/ˈɡɪvn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɡˈɪvən",
+          "reference": [
+            "/ˈɡɪvn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "lead:guide",
+      "word": "lead",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/lead_1",
+      "accents": {
+        "us": {
+          "actual": "liːd",
+          "reference": [
+            "/liːd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "liːd",
+          "reference": [
+            "/liːd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "letter",
+      "word": "letter",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/letter",
+      "accents": {
+        "us": {
+          "actual": "ˈlɛtɚ",
+          "reference": [
+            "/ˈletər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈlɛtə",
+          "reference": [
+            "/ˈletə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "ground",
+      "word": "ground",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/ground",
+      "accents": {
+        "us": {
+          "actual": "ɡɹaʊnd",
+          "reference": [
+            "/ɡraʊnd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɡɹaʊnd",
+          "reference": [
+            "/ɡraʊnd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "camera",
+      "word": "camera",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/camera",
+      "accents": {
+        "us": {
+          "actual": "ˈkæməɹə",
+          "reference": [
+            "/ˈkæmrə/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈkæməɹə",
+          "reference": [
+            "/ˈkæmrə/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "hunting",
+      "word": "hunting",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/hunting",
+      "accents": {
+        "us": {
+          "actual": "hˈʌntɪŋ",
+          "reference": [
+            "/ˈhʌntɪŋ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "hˈʌntɪŋ",
+          "reference": [
+            "/ˈhʌntɪŋ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "illustrate",
+      "word": "illustrate",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/illustrate",
+      "accents": {
+        "us": {
+          "actual": "ˈɪl.əˌstɹeɪt",
+          "reference": [
+            "/ˈɪləstreɪt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈɪləstreɪt",
+          "reference": [
+            "/ˈɪləstreɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "gate",
+      "word": "gate",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/gate",
+      "accents": {
+        "us": {
+          "actual": "ˈɡeɪ̯t",
+          "reference": [
+            "/ɡeɪt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈɡeɪ̯t",
+          "reference": [
+            "/ɡeɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "drug",
+      "word": "drug",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/drug",
+      "accents": {
+        "us": {
+          "actual": "ˈdɹʌɡ",
+          "reference": [
+            "/drʌɡ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈdɹʌɡ",
+          "reference": [
+            "/drʌɡ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "sophisticated",
+      "word": "sophisticated",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/sophisticated",
+      "accents": {
+        "us": {
+          "actual": "səfˈɪstᵻkˌeɪɾᵻd",
+          "reference": [
+            "/səˈfɪstɪkeɪtɪd/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "səfˈɪstɪkˌeɪtɪd",
+          "reference": [
+            "/səˈfɪstɪkeɪtɪd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "confirm",
+      "word": "confirm",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/confirm",
+      "accents": {
+        "us": {
+          "actual": "kənˈfɝm",
+          "reference": [
+            "/kənˈfɜːrm/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "kənˈfɜːm",
+          "reference": [
+            "/kənˈfɜːm/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "unprecedented",
+      "word": "unprecedented",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/unprecedented",
+      "accents": {
+        "us": {
+          "actual": "ʌnpɹˈɛsᵻdəntᵻd",
+          "reference": [
+            "/ʌnˈpresɪdentɪd/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ʌnpɹˈɛsɪdəntɪd",
+          "reference": [
+            "/ʌnˈpresɪdentɪd/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "harbor",
+      "word": "harbor",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/harbor_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "ˈhɑɹbɚ",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "ˈhɑːbə",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "computation",
+      "word": "computation",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/computation",
+      "accents": {
+        "us": {
+          "actual": "kˌɑːmpjuːtˈeɪʃən",
+          "reference": [
+            "/ˌkɑːmpjuˈteɪʃn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˌkɒmpjʊˈteɪʃn̩",
+          "reference": [
+            "/ˌkɒmpjuˈteɪʃn/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "debris",
+      "word": "debris",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/debris",
+      "accents": {
+        "us": {
+          "actual": "dəˈbɹiː",
+          "reference": [
+            "/dəˈbriː/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈdɛbɹi",
+          "reference": [
+            "/ˈdebriː/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "turnip",
+      "word": "turnip",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/turnip",
+      "accents": {
+        "us": {
+          "actual": "ˈtɝ.nɪp",
+          "reference": [
+            "/ˈtɜːrnɪp/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈtɜːnɪp",
+          "reference": [
+            "/ˈtɜːnɪp/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "classical",
+      "word": "classical",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/classical",
+      "accents": {
+        "us": {
+          "actual": "ˈklæs.ɪ.k(ə)l",
+          "reference": [
+            "/ˈklæsɪkl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈklæs.ɪ.k(ə)l",
+          "reference": [
+            "/ˈklæsɪkl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "ferry",
+      "word": "ferry",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/ferry",
+      "accents": {
+        "us": {
+          "actual": "ˈfɛɹi",
+          "reference": [
+            "/ˈferi/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈfɛɹi",
+          "reference": [
+            "/ˈferi/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "reinterpretation",
+      "word": "reinterpretation",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/reinterpretation",
+      "accents": {
+        "us": {
+          "actual": "ɹˌiːɪntˌɜːpɹɪtˈeɪʃən",
+          "reference": [
+            "/ˌriːɪnˌtɜːrprəˈteɪʃn/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ɹˌiːɪntˌɜːpɹɪtˈeɪʃən",
+          "reference": [
+            "/ˌriːɪnˌtɜːprəˈteɪʃn/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "occurrence",
+      "word": "occurrence",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/occurrence",
+      "accents": {
+        "us": {
+          "actual": "əˈkɜɹ.əns",
+          "reference": [
+            "/əˈkɜːrəns/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "əˈkʌɹ.əns",
+          "reference": [
+            "/əˈkʌrəns/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "traction",
+      "word": "traction",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/traction",
+      "accents": {
+        "us": {
+          "actual": "ˈtɹæk.ʃən",
+          "reference": [
+            "/ˈtrækʃn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈtɹæk.ʃən",
+          "reference": [
+            "/ˈtrækʃn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "derange",
+      "word": "derange",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/derange_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "diˈɹeɪnd͡ʒ",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "dɪˈɹeɪnd͡ʒ",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "ruler",
+      "word": "ruler",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/ruler",
+      "accents": {
+        "us": {
+          "actual": "ˈɹulɚ",
+          "reference": [
+            "/ˈruːlər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈɹuːlə",
+          "reference": [
+            "/ˈruːlə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "boardinghouse",
+      "word": "boardinghouse",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/boardinghouse_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "bˈoːɹdɪŋhˌaʊs",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "bˈɔːdɪŋhˌaʊs",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "soybean",
+      "word": "soybean",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/soybean_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "ˈsɔɪˌbin",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "sˈɔɪbiːn",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "stew",
+      "word": "stew",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/stew",
+      "accents": {
+        "us": {
+          "actual": "stu",
+          "reference": [
+            "/stuː/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "stjuː",
+          "reference": [
+            "/stjuː/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "slime",
+      "word": "slime",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/slime",
+      "accents": {
+        "us": {
+          "actual": "slaɪm",
+          "reference": [
+            "/slaɪm/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "slaɪm",
+          "reference": [
+            "/slaɪm/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "insufficient",
+      "word": "insufficient",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/insufficient",
+      "accents": {
+        "us": {
+          "actual": "ɪnsəfˈɪʃənt",
+          "reference": [
+            "/ˌɪnsəˈfɪʃnt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪnsəfˈɪʃənt",
+          "reference": [
+            "/ˌɪnsəˈfɪʃnt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "humans",
+      "word": "humans",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/humans_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "hjˈuːmənz",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "hjˈuːmənz",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "spectacle",
+      "word": "spectacle",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/spectacle",
+      "accents": {
+        "us": {
+          "actual": "spˈɛktəkəl",
+          "reference": [
+            "/ˈspektəkl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "spˈɛktəkəl",
+          "reference": [
+            "/ˈspektəkl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "hindrance",
+      "word": "hindrance",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/hindrance",
+      "accents": {
+        "us": {
+          "actual": "hˈɪndɹəns",
+          "reference": [
+            "/ˈhɪndrəns/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "hˈɪndɹəns",
+          "reference": [
+            "/ˈhɪndrəns/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "pulse",
+      "word": "pulse",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/pulse",
+      "accents": {
+        "us": {
+          "actual": "pʌls",
+          "reference": [
+            "/pʌls/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "pʌls",
+          "reference": [
+            "/pʌls/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "conjure",
+      "word": "conjure",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/conjure",
+      "accents": {
+        "us": {
+          "actual": "ˈkɑn.d͡ʒɚ",
+          "reference": [
+            "/ˈkɑːndʒər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈkʌn.d͡ʒə",
+          "reference": [
+            "/ˈkʌndʒə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "persuasive",
+      "word": "persuasive",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/persuasive",
+      "accents": {
+        "us": {
+          "actual": "pɚswˈeɪsɪv",
+          "reference": [
+            "/pərˈsweɪsɪv/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "pəswˈeɪsɪv",
+          "reference": [
+            "/pəˈsweɪsɪv/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "pompous",
+      "word": "pompous",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/pompous",
+      "accents": {
+        "us": {
+          "actual": "ˈpɑmpəs",
+          "reference": [
+            "/ˈpɑːmpəs/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈpɒmpəs",
+          "reference": [
+            "/ˈpɒmpəs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "viability",
+      "word": "viability",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/viability",
+      "accents": {
+        "us": {
+          "actual": "ˌvaɪəˈbɪlɪti",
+          "reference": [
+            "/ˌvaɪəˈbɪləti/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ˌvaɪəˈbɪləti",
+          "reference": [
+            "/ˌvaɪəˈbɪləti/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "naturalist",
+      "word": "naturalist",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/naturalist",
+      "accents": {
+        "us": {
+          "actual": "ˈnætʃrəlɪst",
+          "reference": [
+            "/ˈnætʃrəlɪst/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈnætʃrəlɪst",
+          "reference": [
+            "/ˈnætʃrəlɪst/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "ascertain",
+      "word": "ascertain",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/ascertain",
+      "accents": {
+        "us": {
+          "actual": "ˌæsɚˈteɪn",
+          "reference": [
+            "/ˌæsərˈteɪn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˌæsəˈteɪn",
+          "reference": [
+            "/ˌæsəˈteɪn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "categorical",
+      "word": "categorical",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/categorical",
+      "accents": {
+        "us": {
+          "actual": "ˌkætəˈɡɔɹɪk(ə)l",
+          "reference": [
+            "/ˌkætəˈɡɔːrɪkl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˌkætəˈɡɒɹɪk(ə)l",
+          "reference": [
+            "/ˌkætəˈɡɒrɪkl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "upright",
+      "word": "upright",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/upright",
+      "accents": {
+        "us": {
+          "actual": "ˈʌpɹaɪt",
+          "reference": [
+            "/ˈʌpraɪt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈʌpɹaɪt",
+          "reference": [
+            "/ˈʌpraɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "sap",
+      "word": "sap",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/sap",
+      "accents": {
+        "us": {
+          "actual": "sˈæp",
+          "reference": [
+            "/sæp/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "sˈæp",
+          "reference": [
+            "/sæp/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "growl",
+      "word": "growl",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/growl",
+      "accents": {
+        "us": {
+          "actual": "ˈɡɹaʊ̯l",
+          "reference": [
+            "/ɡraʊl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈɡɹaʊ̯l",
+          "reference": [
+            "/ɡraʊl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "drinks",
+      "word": "drinks",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/drinks_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "dɹˈɪŋks",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "dɹˈɪŋks",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "yeast",
+      "word": "yeast",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/yeast",
+      "accents": {
+        "us": {
+          "actual": "jist",
+          "reference": [
+            "/jiːst/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "jiːst",
+          "reference": [
+            "/jiːst/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "leak",
+      "word": "leak",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/leak",
+      "accents": {
+        "us": {
+          "actual": "lˈiːk",
+          "reference": [
+            "/liːk/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "lˈiːk",
+          "reference": [
+            "/liːk/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "hermit",
+      "word": "hermit",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/hermit",
+      "accents": {
+        "us": {
+          "actual": "ˈhɝmɪt",
+          "reference": [
+            "/ˈhɜːrmɪt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈhɜːmɪt",
+          "reference": [
+            "/ˈhɜːmɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "anthem",
+      "word": "anthem",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/anthem",
+      "accents": {
+        "us": {
+          "actual": "ˈænθəm",
+          "reference": [
+            "/ˈænθəm/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈænθəm",
+          "reference": [
+            "/ˈænθəm/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "enforcement",
+      "word": "enforcement",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/enforcement",
+      "accents": {
+        "us": {
+          "actual": "ɪnˈfoɹsm(ə)nt",
+          "reference": [
+            "/ɪnˈfɔːrsmənt/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ɪnˈfɔːsm(ə)nt",
+          "reference": [
+            "/ɪnˈfɔːsmənt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "bottle",
+      "word": "bottle",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/bottle",
+      "accents": {
+        "us": {
+          "actual": "ˈbɑtəl",
+          "reference": [
+            "/ˈbɑːtl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈbɒtəl",
+          "reference": [
+            "/ˈbɒtl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "tune",
+      "word": "tune",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/tune",
+      "accents": {
+        "us": {
+          "actual": "tuːn",
+          "reference": [
+            "/tuːn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "tjuːn",
+          "reference": [
+            "/tjuːn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "doctors",
+      "word": "doctors",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/doctors_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "ˈdɑktɚz",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "ˈdɒktəz",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "ripen",
+      "word": "ripen",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/ripen",
+      "accents": {
+        "us": {
+          "actual": "ɹˈaɪpən",
+          "reference": [
+            "/ˈraɪpən/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɹˈaɪpən",
+          "reference": [
+            "/ˈraɪpən/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "disrespect",
+      "word": "disrespect",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/disrespect",
+      "accents": {
+        "us": {
+          "actual": "dˌɪsɹɪspˈɛkt",
+          "reference": [
+            "/ˌdɪsrɪˈspekt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "dɪsɹɪˈspɛkt",
+          "reference": [
+            "/ˌdɪsrɪˈspekt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "explosion",
+      "word": "explosion",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/explosion",
+      "accents": {
+        "us": {
+          "actual": "ɛkˈsploʊ.ʒən",
+          "reference": [
+            "/ɪkˈspləʊʒn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪkˈspləʊ.ʒən",
+          "reference": [
+            "/ɪkˈspləʊʒn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "terminus",
+      "word": "terminus",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/terminus",
+      "accents": {
+        "us": {
+          "actual": "ˈtɝ.mə.nəs",
+          "reference": [
+            "/ˈtɜːrmɪnəs/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ˈtɜː.mɪ.nəs",
+          "reference": [
+            "/ˈtɜːmɪnəs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "juicy",
+      "word": "juicy",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/juicy",
+      "accents": {
+        "us": {
+          "actual": "dʒˈuːsi",
+          "reference": [
+            "/ˈdʒuːsi/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈdʒuːsi",
+          "reference": [
+            "/ˈdʒuːsi/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "hearth",
+      "word": "hearth",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/hearth",
+      "accents": {
+        "us": {
+          "actual": "ˈhɑɹθ",
+          "reference": [
+            "/hɑːrθ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈhɑːθ",
+          "reference": [
+            "/hɑːθ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "studies",
+      "word": "studies",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/studies_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "stˈʌdiz",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "stˈʌdɪz",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "impale",
+      "word": "impale",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/impale",
+      "accents": {
+        "us": {
+          "actual": "ɪmˈpeɪl",
+          "reference": [
+            "/ɪmˈpeɪl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪmˈpeɪl",
+          "reference": [
+            "/ɪmˈpeɪl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "repetitive",
+      "word": "repetitive",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/repetitive",
+      "accents": {
+        "us": {
+          "actual": "ɹᵻpˈɛɾᵻtˌɪv",
+          "reference": [
+            "/rɪˈpetətɪv/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ɹɪpˈɛtɪtˌɪv",
+          "reference": [
+            "/rɪˈpetətɪv/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "telecommuter",
+      "word": "telecommuter",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/telecommuter",
+      "accents": {
+        "us": {
+          "actual": "ˌtelikəˈmjuːtər",
+          "reference": [
+            "/ˌtelikəˈmjuːtər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˌtelikəˈmjuːtə",
+          "reference": [
+            "/ˌtelikəˈmjuːtə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "chaste",
+      "word": "chaste",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/chaste",
+      "accents": {
+        "us": {
+          "actual": "tʃˈeɪst",
+          "reference": [
+            "/tʃeɪst/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "tʃˈeɪst",
+          "reference": [
+            "/tʃeɪst/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "damp",
+      "word": "damp",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/damp",
+      "accents": {
+        "us": {
+          "actual": "ˈdeə̯mp",
+          "reference": [
+            "/dæmp/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "dˈæmp",
+          "reference": [
+            "/dæmp/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "incarcerate",
+      "word": "incarcerate",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/incarcerate",
+      "accents": {
+        "us": {
+          "actual": "ɪnˈkɑɹ.səˌɹeɪt",
+          "reference": [
+            "/ɪnˈkɑːrsəreɪt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪnˈkɑː.səˌɹeɪt",
+          "reference": [
+            "/ɪnˈkɑːsəreɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "bid",
+      "word": "bid",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/bid_1",
+      "accents": {
+        "us": {
+          "actual": "bˈɪd",
+          "reference": [
+            "/bɪd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "bˈɪd",
+          "reference": [
+            "/bɪd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "hints",
+      "word": "hints",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/hints_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "hˈɪnts",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "hˈɪnts",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "count",
+      "word": "count",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/count",
+      "accents": {
+        "us": {
+          "actual": "kaʊnt",
+          "reference": [
+            "/kaʊnt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "kaʊnt",
+          "reference": [
+            "/kaʊnt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "alteration",
+      "word": "alteration",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/alteration",
+      "accents": {
+        "us": {
+          "actual": "ɔl.tɚˈeɪ.ʃən",
+          "reference": [
+            "/ˌɔːltəˈreɪʃn/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ɒl.tə(ɹ)ˈeɪ.ʃən",
+          "reference": [
+            "/ˌɔːltəˈreɪʃn/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "customer",
+      "word": "customer",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/customer",
+      "accents": {
+        "us": {
+          "actual": "ˈkʌstəmɚ",
+          "reference": [
+            "/ˈkʌstəmər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈkʌs.tə.mə",
+          "reference": [
+            "/ˈkʌstəmə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "bristle",
+      "word": "bristle",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/bristle",
+      "accents": {
+        "us": {
+          "actual": "bɹˈɪsəl",
+          "reference": [
+            "/ˈbrɪsl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "bɹˈɪsəl",
+          "reference": [
+            "/ˈbrɪsl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "secondly",
+      "word": "secondly",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/secondly",
+      "accents": {
+        "us": {
+          "actual": "ˈsɛk.(ə)ndli",
+          "reference": [
+            "/ˈsekəndli/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈsɛkəndli",
+          "reference": [
+            "/ˈsekəndli/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "bubble",
+      "word": "bubble",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/bubble",
+      "accents": {
+        "us": {
+          "actual": "ˈbʌbəl",
+          "reference": [
+            "/ˈbʌbl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈbʌbəl",
+          "reference": [
+            "/ˈbʌbl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "oppose",
+      "word": "oppose",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/oppose",
+      "accents": {
+        "us": {
+          "actual": "əˈpoʊz",
+          "reference": [
+            "/əˈpəʊz/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "əˈpəʊz",
+          "reference": [
+            "/əˈpəʊz/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "extravagant",
+      "word": "extravagant",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/extravagant",
+      "accents": {
+        "us": {
+          "actual": "ɛkstɹˈævəɡənt",
+          "reference": [
+            "/ɪkˈstrævəɡənt/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ɛkstɹˈævəɡənt",
+          "reference": [
+            "/ɪkˈstrævəɡənt/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "bleach",
+      "word": "bleach",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/bleach",
+      "accents": {
+        "us": {
+          "actual": "blit͡ʃ",
+          "reference": [
+            "/bliːtʃ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "bliːt͡ʃ",
+          "reference": [
+            "/bliːtʃ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "superiority",
+      "word": "superiority",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/superiority",
+      "accents": {
+        "us": {
+          "actual": "suːpˌiəɹɪˈɔːɹᵻɾi",
+          "reference": [
+            "/suːˌpɪriˈɔːrəti/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "sʊˌpɪə(ɹ).iˈɒ.ɹɪ.ti",
+          "reference": [
+            "/suːˌpɪəriˈɒrəti/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "reception",
+      "word": "reception",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/reception",
+      "accents": {
+        "us": {
+          "actual": "ɹᵻsˈɛpʃən",
+          "reference": [
+            "/rɪˈsepʃn/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ɹɪsˈɛpʃən",
+          "reference": [
+            "/rɪˈsepʃn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "stairway",
+      "word": "stairway",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/stairway",
+      "accents": {
+        "us": {
+          "actual": "ˈstɛɹweɪ",
+          "reference": [
+            "/ˈsterweɪ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈstɛəweɪ",
+          "reference": [
+            "/ˈsteəweɪ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "introspective",
+      "word": "introspective",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/introspective",
+      "accents": {
+        "us": {
+          "actual": "ˌɪntɹəˈspɛktɪv",
+          "reference": [
+            "/ˌɪntrəˈspektɪv/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˌɪntɹəˈspɛktɪv",
+          "reference": [
+            "/ˌɪntrəˈspektɪv/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "balanced",
+      "word": "balanced",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/balanced",
+      "accents": {
+        "us": {
+          "actual": "bˈælənst",
+          "reference": [
+            "/ˈbælənst/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "bˈælənst",
+          "reference": [
+            "/ˈbælənst/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "transplant",
+      "word": "transplant",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/transplant",
+      "accents": {
+        "us": {
+          "actual": "tɹænzˈplænt",
+          "reference": [
+            "/trænsˈplænt/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "tɹɑːnzˈplɑːnt",
+          "reference": [
+            "/trænsˈplɑːnt/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "cloth",
+      "word": "cloth",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/cloth",
+      "accents": {
+        "us": {
+          "actual": "klˈɔθ",
+          "reference": [
+            "/klɔːθ/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "klɒθ",
+          "reference": [
+            "/klɒθ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "instability",
+      "word": "instability",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/instability",
+      "accents": {
+        "us": {
+          "actual": "ˌɪnstəˈbɪləti",
+          "reference": [
+            "/ˌɪnstəˈbɪləti/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪnstəˈbɪlɪti",
+          "reference": [
+            "/ˌɪnstəˈbɪləti/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "back",
+      "word": "back",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/back",
+      "accents": {
+        "us": {
+          "actual": "bæk",
+          "reference": [
+            "/bæk/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "bæk",
+          "reference": [
+            "/bæk/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "orient",
+      "word": "orient",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/orient",
+      "accents": {
+        "us": {
+          "actual": "ˈɔ.ɹi.ənt",
+          "reference": [
+            "/ˈɔːrient/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈɔː.ɹɪ.ənt",
+          "reference": [
+            "/ˈɔːrient/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "flask",
+      "word": "flask",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/flask",
+      "accents": {
+        "us": {
+          "actual": "ˈflæsk",
+          "reference": [
+            "/flæsk/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈflɑːsk",
+          "reference": [
+            "/flɑːsk/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "systematical",
+      "word": "systematical",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/systematical_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "sˌɪstəmˈæɾɪkəl",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "sˌɪstəmˈætɪkəl",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "wealth",
+      "word": "wealth",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/wealth",
+      "accents": {
+        "us": {
+          "actual": "wɛlθ",
+          "reference": [
+            "/welθ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "wɛlθ",
+          "reference": [
+            "/welθ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "suddenly",
+      "word": "suddenly",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/suddenly",
+      "accents": {
+        "us": {
+          "actual": "sˈʌdənli",
+          "reference": [
+            "/ˈsʌdənli/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈsʌdənli",
+          "reference": [
+            "/ˈsʌdənli/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "muddy",
+      "word": "muddy",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/muddy",
+      "accents": {
+        "us": {
+          "actual": "ˈmʌdi",
+          "reference": [
+            "/ˈmʌdi/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈmʌdi",
+          "reference": [
+            "/ˈmʌdi/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "highly",
+      "word": "highly",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/highly",
+      "accents": {
+        "us": {
+          "actual": "hˈaɪli",
+          "reference": [
+            "/ˈhaɪli/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈhaɪli",
+          "reference": [
+            "/ˈhaɪli/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "out",
+      "word": "out",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/out",
+      "accents": {
+        "us": {
+          "actual": "ˈaʊ̯t",
+          "reference": [
+            "/aʊt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈäʊ̯t",
+          "reference": [
+            "/aʊt/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "veteran",
+      "word": "veteran",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/veteran",
+      "accents": {
+        "us": {
+          "actual": "ˈvetərən",
+          "reference": [
+            "/ˈvetərən/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "vˈɛtəɹən",
+          "reference": [
+            "/ˈvetərən/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "nearly",
+      "word": "nearly",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/nearly",
+      "accents": {
+        "us": {
+          "actual": "ˈnɪɹli",
+          "reference": [
+            "/ˈnɪrli/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈnɪəli",
+          "reference": [
+            "/ˈnɪəli/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "ceramics",
+      "word": "ceramics",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/ceramics_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "sᵻɹˈæmɪks",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "sɪɹˈæmɪks",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "allow",
+      "word": "allow",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/allow",
+      "accents": {
+        "us": {
+          "actual": "ɐlˈaʊ",
+          "reference": [
+            "/əˈlaʊ/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ɐlˈaʊ",
+          "reference": [
+            "/əˈlaʊ/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "development",
+      "word": "development",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/development",
+      "accents": {
+        "us": {
+          "actual": "dɪˈvɛl.əp.mənt",
+          "reference": [
+            "/dɪˈveləpmənt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "dɪˈvɛl.əp.mənt",
+          "reference": [
+            "/dɪˈveləpmənt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "people",
+      "word": "people",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/people",
+      "accents": {
+        "us": {
+          "actual": "ˈpi.pəl",
+          "reference": [
+            "/ˈpiːpl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈpiː.pəl",
+          "reference": [
+            "/ˈpiːpl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "fighter",
+      "word": "fighter",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/fighter",
+      "accents": {
+        "us": {
+          "actual": "ˈfaɪtɚ",
+          "reference": [
+            "/ˈfaɪtər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈfaɪ.tə(ɹ)",
+          "reference": [
+            "/ˈfaɪtə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "enlarge",
+      "word": "enlarge",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/enlarge",
+      "accents": {
+        "us": {
+          "actual": "ɪnˈlɑɹd͡ʒ",
+          "reference": [
+            "/ɪnˈlɑːrdʒ/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪnˈlɑːd͡ʒ",
+          "reference": [
+            "/ɪnˈlɑːdʒ/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "honorable",
+      "word": "honorable",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/honorable",
+      "accents": {
+        "us": {
+          "actual": "ˈɑn.ə.ɹəbl̩",
+          "reference": [
+            "/ˈɑːnərəbl/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈɒn.ə ɹəbl̩",
+          "reference": [
+            "/ˈɒnərəbl/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "tutorial",
+      "word": "tutorial",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/tutorial",
+      "accents": {
+        "us": {
+          "actual": "tuwˈtɔrijəɫ",
+          "reference": [
+            "/tuːˈtɔːriəl/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "ˌtjuːˈtɔːɹɪəl",
+          "reference": [
+            "/tjuːˈtɔːriəl/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "weekly",
+      "word": "weekly",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/weekly",
+      "accents": {
+        "us": {
+          "actual": "wˈiːkli",
+          "reference": [
+            "/ˈwiːkli/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈwiːkli",
+          "reference": [
+            "/ˈwiːkli/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "heredity",
+      "word": "heredity",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/heredity",
+      "accents": {
+        "us": {
+          "actual": "həˈɹɛdəti",
+          "reference": [
+            "/həˈredəti/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "hɪˈɹɛdɪti",
+          "reference": [
+            "/həˈredəti/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "choke",
+      "word": "choke",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/choke",
+      "accents": {
+        "us": {
+          "actual": "t͡ʃoʊk",
+          "reference": [
+            "/tʃəʊk/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "t͡ʃəʊk",
+          "reference": [
+            "/tʃəʊk/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "naked",
+      "word": "naked",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/naked",
+      "accents": {
+        "us": {
+          "actual": "nˈeɪkᵻd",
+          "reference": [
+            "/ˈneɪkɪd/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "nˈeɪkɪd",
+          "reference": [
+            "/ˈneɪkɪd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "indent",
+      "word": "indent",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/indent",
+      "accents": {
+        "us": {
+          "actual": "ˌɪndˈɛnt",
+          "reference": [
+            "/ɪnˈdent/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˌɪndˈɛnt",
+          "reference": [
+            "/ɪnˈdent/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "regulations",
+      "word": "regulations",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/regulations_1",
+      "error": "HTTP 404",
+      "accents": {
+        "us": {
+          "actual": "ɹˌɛɡjʊlˈeɪʃənz",
+          "reference": [],
+          "status": "unavailable"
+        },
+        "uk": {
+          "actual": "ɹˌɛɡjʊlˈeɪʃənz",
+          "reference": [],
+          "status": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "contour",
+      "word": "contour",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/contour",
+      "accents": {
+        "us": {
+          "actual": "ˈkɑntɔɹ",
+          "reference": [
+            "/ˈkɑːntʊr/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈkɒntɔː",
+          "reference": [
+            "/ˈkɒntʊə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "enclose",
+      "word": "enclose",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/enclose",
+      "accents": {
+        "us": {
+          "actual": "ɪnˈkloʊz",
+          "reference": [
+            "/ɪnˈkləʊz/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɪnˈkləʊz",
+          "reference": [
+            "/ɪnˈkləʊz/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "white",
+      "word": "white",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/white",
+      "accents": {
+        "us": {
+          "actual": "wˈaɪt",
+          "reference": [
+            "/waɪt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "wˈaɪt",
+          "reference": [
+            "/waɪt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "hook",
+      "word": "hook",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/hook",
+      "accents": {
+        "us": {
+          "actual": "hʊk",
+          "reference": [
+            "/hʊk/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "hʊk",
+          "reference": [
+            "/hʊk/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "long-lasting",
+      "word": "long-lasting",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/long-lasting",
+      "accents": {
+        "us": {
+          "actual": "lˈɔŋlˈæstɪŋ",
+          "reference": [
+            "/ˌlɔːŋ ˈlæstɪŋ/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "lˈɒŋlˈɑːstɪŋ",
+          "reference": [
+            "/ˌlɒŋ ˈlɑːstɪŋ/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "reject",
+      "word": "reject",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/reject",
+      "accents": {
+        "us": {
+          "actual": "ɹɪˈd͡ʒɛkt",
+          "reference": [
+            "/rɪˈdʒekt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɹɪˈd͡ʒɛkt",
+          "reference": [
+            "/rɪˈdʒekt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "tiny",
+      "word": "tiny",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/tiny",
+      "accents": {
+        "us": {
+          "actual": "tˈaɪni",
+          "reference": [
+            "/ˈtaɪni/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈtaɪni",
+          "reference": [
+            "/ˈtaɪni/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "scatter",
+      "word": "scatter",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/scatter",
+      "accents": {
+        "us": {
+          "actual": "ˈskætɚ",
+          "reference": [
+            "/ˈskætər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈskætə",
+          "reference": [
+            "/ˈskætə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "nutritional",
+      "word": "nutritional",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/nutritional",
+      "accents": {
+        "us": {
+          "actual": "nuˈtɹɪʃ.ə.nəl",
+          "reference": [
+            "/nuˈtrɪʃənl/"
+          ],
+          "status": "review"
+        },
+        "uk": {
+          "actual": "njuːˈtɹɪʃ.ə.nəl",
+          "reference": [
+            "/njuˈtrɪʃənl/"
+          ],
+          "status": "review"
+        }
+      }
+    },
+    {
+      "id": "realism",
+      "word": "realism",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/realism",
+      "accents": {
+        "us": {
+          "actual": "ɹˈiːəlɪzəm",
+          "reference": [
+            "/ˈriːəlɪzəm/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ɹˈiəlɪzəm",
+          "reference": [
+            "/ˈriːəlɪzəm/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "self",
+      "word": "self",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/self",
+      "accents": {
+        "us": {
+          "actual": "sˈɛlf",
+          "reference": [
+            "/self/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "sˈɛlf",
+          "reference": [
+            "/self/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "honour",
+      "word": "honour",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/honour",
+      "accents": {
+        "us": {
+          "actual": "ˈɑnəɹ",
+          "reference": [
+            "/ˈɑːnər/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈɒnə",
+          "reference": [
+            "/ˈɒnə(r)/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "clandestine",
+      "word": "clandestine",
+      "sample": true,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/clandestine",
+      "accents": {
+        "us": {
+          "actual": "klændˈɛstɪn",
+          "reference": [
+            "/klænˈdestɪn/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "klændˈɛstɪn",
+          "reference": [
+            "/klænˈdestɪn/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "lead:metal",
+      "word": "lead",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/lead_3",
+      "accents": {
+        "us": {
+          "actual": "led",
+          "reference": [
+            "/led/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "led",
+          "reference": [
+            "/led/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "read:past",
+      "word": "read",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/read_1",
+      "accents": {
+        "us": {
+          "actual": "red",
+          "reference": [
+            "/red/",
+            "/red/",
+            "/red/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "red",
+          "reference": [
+            "/red/",
+            "/red/",
+            "/red/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "read:present",
+      "word": "read",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/read_1",
+      "accents": {
+        "us": {
+          "actual": "riːd",
+          "reference": [
+            "/riːd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "riːd",
+          "reference": [
+            "/riːd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "record:noun",
+      "word": "record",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/record_1",
+      "accents": {
+        "us": {
+          "actual": "ˈrekərd",
+          "reference": [
+            "/ˈrekərd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈrekɔːd",
+          "reference": [
+            "/ˈrekɔːd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "record:verb",
+      "word": "record",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/record_2",
+      "accents": {
+        "us": {
+          "actual": "rɪˈkɔːrd",
+          "reference": [
+            "/rɪˈkɔːrd/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "rɪˈkɔːd",
+          "reference": [
+            "/rɪˈkɔːd/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "produce:noun",
+      "word": "produce",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/produce_2",
+      "accents": {
+        "us": {
+          "actual": "ˈproʊduːs",
+          "reference": [
+            "/ˈprəʊduːs/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈprɒdjuːs",
+          "reference": [
+            "/ˈprɒdjuːs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "produce:verb",
+      "word": "produce",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/produce_1",
+      "accents": {
+        "us": {
+          "actual": "prəˈduːs",
+          "reference": [
+            "/prəˈduːs/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "prəˈdjuːs",
+          "reference": [
+            "/prəˈdjuːs/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "present:noun-adjective",
+      "word": "present",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/present_1",
+      "accents": {
+        "us": {
+          "actual": "ˈpreznt",
+          "reference": [
+            "/ˈpreznt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈpreznt",
+          "reference": [
+            "/ˈpreznt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "present:verb",
+      "word": "present",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/present_3",
+      "accents": {
+        "us": {
+          "actual": "prɪˈzent",
+          "reference": [
+            "/prɪˈzent/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "prɪˈzent",
+          "reference": [
+            "/prɪˈzent/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "object:noun",
+      "word": "object",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/object_1",
+      "accents": {
+        "us": {
+          "actual": "ˈɑːbdʒɪkt",
+          "reference": [
+            "/ˈɑːbdʒɪkt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈɒbdʒɪkt",
+          "reference": [
+            "/ˈɒbdʒɪkt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "object:verb",
+      "word": "object",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/object_2",
+      "accents": {
+        "us": {
+          "actual": "əbˈdʒekt",
+          "reference": [
+            "/əbˈdʒekt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "əbˈdʒekt",
+          "reference": [
+            "/əbˈdʒekt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "content:adjective",
+      "word": "content",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/content_2",
+      "accents": {
+        "us": {
+          "actual": "kənˈtent",
+          "reference": [
+            "/kənˈtent/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "kənˈtent",
+          "reference": [
+            "/kənˈtent/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "content:noun",
+      "word": "content",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/content_1",
+      "accents": {
+        "us": {
+          "actual": "ˈkɑːntent",
+          "reference": [
+            "/ˈkɑːntent/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈkɒntent",
+          "reference": [
+            "/ˈkɒntent/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "desert:noun",
+      "word": "desert",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/desert_1",
+      "accents": {
+        "us": {
+          "actual": "ˈdezərt",
+          "reference": [
+            "/ˈdezərt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "ˈdezət",
+          "reference": [
+            "/ˈdezət/"
+          ],
+          "status": "agreement"
+        }
+      }
+    },
+    {
+      "id": "desert:verb",
+      "word": "desert",
+      "sample": false,
+      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/desert_2",
+      "accents": {
+        "us": {
+          "actual": "dɪˈzɜːrt",
+          "reference": [
+            "/dɪˈzɜːrt/"
+          ],
+          "status": "agreement"
+        },
+        "uk": {
+          "actual": "dɪˈzɜːt",
+          "reference": [
+            "/dɪˈzɜːt/"
+          ],
+          "status": "agreement"
+        }
+      }
+    }
+  ]
+}
