@@ -8,7 +8,7 @@
   const prefetchAbort = new AbortController();
   let prefetchRetried = false;
   function prefetch() {
-    if (disposed || !/^https?:$/.test(location.protocol)) return;
+    if (disposed) return;
     if (document.readyState !== "complete") {
       window.addEventListener("load", prefetch, {
         once: true,
@@ -16,8 +16,11 @@
       });
       return;
     }
-    void WorkTimeApp.services.assets
+    void WorkTimeApp.services.vocabularyIdle
       .whenIdle({ signal: prefetchAbort.signal })
+      .then(() =>
+        WorkTimeApp.services.assets.whenIdle({ signal: prefetchAbort.signal }),
+      )
       .then(() => {
         if (disposed) return;
         return WorkTimeApp.services.assets

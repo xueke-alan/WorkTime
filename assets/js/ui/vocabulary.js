@@ -33,6 +33,7 @@ WorkTimeApp.ui.vocabulary = (() => {
     advancePending = false,
     savedScroll = 0,
     settingsController;
+  let closeCacheConfirmation = () => {};
   let modelBusy = false;
   let audioReady = false,
     view = "home",
@@ -92,7 +93,6 @@ WorkTimeApp.ui.vocabulary = (() => {
   let modeAnimations = [],
     modeSnapshots = [],
     movingSurface = null,
-    movingTitle = null,
     movingDistance = 0;
   let modeStyles = [];
   function modeStyle(element, property, value) {
@@ -110,7 +110,7 @@ WorkTimeApp.ui.vocabulary = (() => {
     modeStyles.splice(0).forEach(({ element, property, value }) => {
       element.style[property] = value;
     });
-    movingSurface = movingTitle = null;
+    movingSurface = null;
     movingDistance = 0;
     if (editor.classList.contains("is-vocabulary-drawer-moving"))
       editor.classList.remove("is-vocabulary-drawer-moving");
@@ -283,13 +283,6 @@ WorkTimeApp.ui.vocabulary = (() => {
   function refreshCache() {
     const toggle = panel?.querySelector('[data-setting="autoCache"]');
     if (toggle) toggle.checked = idle.settings.enabled && !idle.settings.paused;
-    const verify = panel?.querySelector(".vocabulary-verify-cache");
-    if (verify) {
-      verify.disabled = busy || idle.state.verifyingCache;
-      verify.textContent = t(
-        idle.state.verifyingCache ? "verifyingCache" : "verifyCache",
-      );
-    }
   }
   const unsubscribeCache = idle.subscribe(refreshCache);
   function refreshModels() {
@@ -301,7 +294,9 @@ WorkTimeApp.ui.vocabulary = (() => {
         (state.phase === "downloading" && state.total
           ? " " + Math.floor((state.loaded / state.total) * 100) + "%"
           : "");
-    for (const control of content.querySelectorAll("[data-model-action]"))
+    for (const control of content.querySelectorAll(
+      '[data-model-action="import"]',
+    ))
       control.disabled =
         modelBusy || ["downloading", "importing"].includes(state.phase);
     const cancel = content.querySelector(".vocabulary-model-cancel");
@@ -899,13 +894,79 @@ WorkTimeApp.ui.vocabulary = (() => {
     size.value = String(idle.settings.limit);
     size.onchange = () => idle.configure({ limit: Number(size.value) });
     capacity.append(size);
-    const clear = button(t("clear"), async () => {
-      try {
-        await speech.clear();
-      } catch {
-        speechStatus = "cacheWarning";
-      }
-      refreshCache();
+    const confirmation = node(
+      "div",
+      undefined,
+      "vocabulary-cache-confirmation",
+    );
+    confirmation.id = "vocabularyCacheConfirmation";
+    confirmation.setAttribute("popover", "auto");
+    confirmation.setAttribute("role", "dialog");
+    confirmation.setAttribute(
+      "aria-describedby",
+      "vocabularyCacheConfirmationText",
+    );
+    confirmation.setAttribute("aria-label", t("clear"));
+    const prompt = node(
+      "p",
+      t("clearCacheConfirm").replace(/([?？])\s*/, "$1\n"),
+    );
+    prompt.id = "vocabularyCacheConfirmationText";
+    const actions = node("div", undefined, "vocabulary-confirm-actions");
+    const cancel = button(t("cancel"), () => closeCacheConfirmation());
+    const accept = button(
+      t("confirm"),
+      async () => {
+        closeCacheConfirmation();
+        clear.disabled = true;
+        try {
+          await speech.clear();
+        } catch {
+          speechStatus = "cacheWarning";
+        } finally {
+          clear.disabled = busy || !!failed;
+          refreshCache();
+        }
+      },
+      "ui-button vocabulary-primary",
+    );
+    actions.append(cancel, accept);
+    confirmation.append(prompt, actions);
+    panel.append(confirmation);
+    const clear = button(t("clear"), () => {
+      if (popover.isOpen()) return closeCacheConfirmation();
+      popover.show();
+      positionConfirmation();
+      cancel.focus({ preventScroll: true });
+    });
+    clear.setAttribute("aria-controls", confirmation.id);
+    clear.setAttribute("aria-haspopup", "dialog");
+    clear.setAttribute("aria-expanded", "false");
+    const popover = WorkTimeApp.ui.popover.create(confirmation, {
+      trigger: () => clear,
+    });
+    closeCacheConfirmation = () => popover.hide({ restoreFocus: true });
+    function positionConfirmation() {
+      if (!popover.isOpen()) return;
+      if (!visible() || !clear.isConnected) return closeCacheConfirmation();
+      const anchor = clear.getBoundingClientRect();
+      const box = confirmation.getBoundingClientRect();
+      const gap = 10;
+      const left = Math.max(
+        gap,
+        Math.min(anchor.right - box.width, innerWidth - box.width - gap),
+      );
+      const below = anchor.bottom + gap;
+      const top =
+        below + box.height <= innerHeight - gap
+          ? below
+          : Math.max(gap, anchor.top - box.height - gap);
+      confirmation.style.left = left + "px";
+      confirmation.style.top = top + "px";
+      WorkTimeApp.ui.popover.point(confirmation, clear);
+    }
+    confirmation.addEventListener("toggle", () => {
+      clear.setAttribute("aria-expanded", String(popover.isOpen()));
     });
     clear.classList.add("vocabulary-clear-cache");
     const pool = node("label", t("workerPool"), "vocabulary-field");
@@ -926,21 +987,9 @@ WorkTimeApp.ui.vocabulary = (() => {
         poolSize: poolSize.value === "auto" ? "auto" : Number(poolSize.value),
       });
     pool.append(poolSize);
-    const verify = button(t("verifyCache"), async () => {
-      try {
-        await idle.verify();
-      } catch {
-        speechStatus = "cacheWarning";
-      }
-      refreshCache();
-    });
-    verify.classList.add("vocabulary-verify-cache");
-    verify.disabled = busy || idle.state.verifyingCache;
     const resources = node("div", undefined, "vocabulary-resource-settings");
     resources.append(pool, capacity);
-    const actions = node("div", undefined, "vocabulary-cache-actions");
-    actions.append(verify, clear);
-    panel.append(resources, actions);
+    panel.append(resources);
     const modelSection = node(
       "section",
       undefined,
@@ -962,9 +1011,13 @@ WorkTimeApp.ui.vocabulary = (() => {
         refreshModels();
       }
     }
-    const download = button(t("modelDownload"), () =>
-      manageModel(() => models.prepare()),
-    );
+    const download = button(t("modelDownload"), () => {
+      window.open(
+        "https://github.com/xueke-alan/WorkTime/releases",
+        "_blank",
+        "noopener,noreferrer",
+      );
+    });
     download.dataset.modelAction = "download";
     const upload = node("input");
     upload.type = "file";
@@ -981,21 +1034,31 @@ WorkTimeApp.ui.vocabulary = (() => {
     cancelModel.classList.add("vocabulary-model-cancel");
     download.textContent = t("modelDownloadShort");
     importModel.textContent = t("modelImportShort");
-    verify.textContent = t("cacheVerifyShort");
     clear.textContent = t("cacheClearShort");
-    modelActions.append(download, importModel);
+    modelActions.append(download, importModel, clear);
     modelSection.append(node("h4", t("modelGroup")), modelActions);
-    const cacheSection = node(
-      "section",
-      undefined,
-      "vocabulary-cache-settings",
-    );
-    cacheSection.append(node("h4", t("cacheGroup")), actions);
     const groups = node("div", undefined, "vocabulary-management-groups");
-    groups.append(modelSection, cacheSection);
+    groups.append(modelSection);
     panel.append(groups, cancelModel, upload, modelStatus);
     refreshModels();
     settingsController = new AbortController();
+    settingsController.signal.addEventListener(
+      "abort",
+      () => {
+        popover.destroy();
+        confirmation.remove();
+        closeCacheConfirmation = () => {};
+      },
+      { once: true },
+    );
+    window.addEventListener("resize", positionConfirmation, {
+      signal: settingsController.signal,
+    });
+    document.addEventListener("scroll", positionConfirmation, {
+      capture: true,
+      passive: true,
+      signal: settingsController.signal,
+    });
     for (const [index, native] of [
       ...panel.querySelectorAll("select"),
     ].entries()) {
@@ -1248,7 +1311,7 @@ WorkTimeApp.ui.vocabulary = (() => {
         );
       const playButton = button(
         "",
-        () => play({ word: example.en }),
+        () => play({ word: example.en, kind: "example" }),
         "vocabulary-example-play",
       );
       playButton.setAttribute("aria-label", t("play") + ": " + example.en);
@@ -1297,9 +1360,8 @@ WorkTimeApp.ui.vocabulary = (() => {
       activePage === "learning" ? "title" : pageLabels[activePage],
     );
     if (headerTitle.textContent !== title) {
-      const replacing = !!headerTitle.textContent;
       headerTitle.textContent = title;
-      if (replacing) WorkTimeApp.ui.motion.play(headerTitle, "motion-title");
+      WorkTimeApp.ui.motion.refreshEditorTitle();
     }
     panel = node("div", undefined, "vocabulary-page");
     panel.id = "vocabularyPage";
@@ -1431,6 +1493,7 @@ WorkTimeApp.ui.vocabulary = (() => {
       stopModeAnimation();
     const next = !visible();
     if (next && !suspended) {
+      closeCacheConfirmation();
       speech.stop();
       flushInput();
     }
@@ -1467,7 +1530,6 @@ WorkTimeApp.ui.vocabulary = (() => {
     const animate =
       changed && !host.hidden && !document.hidden && !motionPreference.matches;
     let progress = miniMode ? 1 : 0;
-    let titleOpacity = miniMode ? 0 : 1;
     if (movingSurface) {
       const transform = getComputedStyle(movingSurface).transform;
       const height = movingDistance;
@@ -1476,8 +1538,6 @@ WorkTimeApp.ui.vocabulary = (() => {
           0,
           Math.min(1, new DOMMatrixReadOnly(transform).m42 / height),
         );
-      if (movingTitle)
-        titleOpacity = Number(getComputedStyle(movingTitle).opacity);
     }
     const beforeBody = drawerViewport.getBoundingClientRect();
     const sourceAnchor = (miniMode ? mini : drawerBody).querySelector(
@@ -1494,17 +1554,6 @@ WorkTimeApp.ui.vocabulary = (() => {
       animate && value
         ? drawerSnapshot(drawerBody, drawerViewport.getBoundingClientRect())
         : null;
-    const editorHeader = () =>
-      [
-        ...editor.querySelectorAll(
-          ".editor-content .editor-mode-header, .editor-content .year-analysis-header",
-        ),
-      ].find((element) => element.getBoundingClientRect().height > 0);
-    const outgoingHeader = animate
-      ? drawerSnapshot(
-          value ? content.querySelector(".vocabulary-header") : editorHeader(),
-        )
-      : null;
     if (value && changed) savedScroll = panel.scrollTop;
     if (!value && changed) {
       if (view !== "study") savedScroll = 0;
@@ -1529,14 +1578,7 @@ WorkTimeApp.ui.vocabulary = (() => {
     if (animate) {
       editor.classList.add("is-vocabulary-drawer-moving");
       const surface = outgoingBody || drawerBody;
-      const title = (
-        value ? outgoingHeader : content.querySelector(".vocabulary-header")
-      )?.querySelector("h2");
-      const otherTitle = (
-        value ? editorHeader() : outgoingHeader
-      )?.querySelector(".editor-date, h2");
       movingSurface = surface;
-      movingTitle = title;
       const targetAnchor = (value ? mini : drawerBody).querySelector(
         ".vocabulary-word-header",
       );
@@ -1575,35 +1617,6 @@ WorkTimeApp.ui.vocabulary = (() => {
           { duration, easing: "cubic-bezier(.22,.8,.25,1)" },
         ),
       ];
-      const titleMotion = WorkTimeApp.ui.motion.title;
-      for (const [element, entering] of [
-        [title, !value],
-        [otherTitle, value],
-      ]) {
-        if (!element) continue;
-        WorkTimeApp.ui.motion.stop(element);
-        const end = entering ? titleMotion.enterTo : titleMotion.leaveTo;
-        modeStyle(element, "opacity", String(end.opacity));
-        modeStyle(element, "translate", end.translate);
-        const initialOpacity =
-          element === title ? titleOpacity : 1 - titleOpacity;
-        const start = entering
-          ? {
-              ...titleMotion.enterFrom,
-              opacity: Math.max(titleMotion.enterFrom.opacity, initialOpacity),
-            }
-          : {
-              opacity: initialOpacity,
-              translate: titleMotion.enterTo.translate,
-            };
-        tracks.push(
-          animationCompat.animate(element, [start, end], {
-            duration: titleMotion.duration,
-            easing: titleMotion.easing,
-            fill: "backwards",
-          }),
-        );
-      }
       if (value) {
         for (const meaning of surface.querySelectorAll(".vocabulary-meaning")) {
           const opacity = getComputedStyle(meaning).opacity;
@@ -1645,9 +1658,11 @@ WorkTimeApp.ui.vocabulary = (() => {
             }),
           );
         }
-        for (const background of editor.querySelectorAll(
-          ":scope > .editor-content, :scope > #agendaEditor",
-        )) {
+        for (const background of [
+          ...editor.querySelectorAll(
+            ":scope > .editor-content, :scope > #agendaEditor",
+          ),
+        ].flatMap(WorkTimeApp.ui.motion.editorContent)) {
           if (getComputedStyle(background).display === "none") continue;
           modeStyle(background, "opacity", "1");
           tracks.push(
@@ -1664,6 +1679,7 @@ WorkTimeApp.ui.vocabulary = (() => {
         if (modeAnimations === tracks) stopModeAnimation();
       });
     }
+    WorkTimeApp.ui.motion.refreshEditorTitle();
   }
   function collapseOnClick(event) {
     if (
@@ -1691,9 +1707,9 @@ WorkTimeApp.ui.vocabulary = (() => {
     get isMini() {
       return miniMode;
     },
-    open() {
+    open(options = {}) {
       if (disposed) return;
-      void models.prepare().catch(() => {});
+      if (!options.fromSettings) void models.prepare().catch(() => {});
       setMini(false);
     },
     refresh() {

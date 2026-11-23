@@ -311,7 +311,10 @@ WorkTimeApp.services.vocabularySpeech = (() => {
       accent,
       { background = false, valid = () => true, canStart = () => true } = {},
     ) {
-      const profile = WorkTimeApp.services.vocabularyIdle.profile(accent);
+      const profile = WorkTimeApp.services.vocabularyIdle.profile(
+        accent,
+        entry,
+      );
       if (!background) foreground++;
       clearTimeout(releaseTimer);
       const job = serial
@@ -325,7 +328,7 @@ WorkTimeApp.services.vocabularySpeech = (() => {
             valid() &&
             JSON.stringify(profile) ===
               JSON.stringify(
-                WorkTimeApp.services.vocabularyIdle.profile(accent),
+                WorkTimeApp.services.vocabularyIdle.profile(accent, entry),
               );
           if (!current()) return null;
           currentSynthesis = { word: entry.word, valid: current };
@@ -484,7 +487,10 @@ WorkTimeApp.services.vocabularySpeech = (() => {
         const token = generation;
         try {
           // Cached playback bypasses the synthesis queue and its activity state.
-          const profile = WorkTimeApp.services.vocabularyIdle.profile(accent);
+          const profile = WorkTimeApp.services.vocabularyIdle.profile(
+            accent,
+            entry,
+          );
           let blob;
           try {
             blob = await filesCache.read(entry, accent, profile);

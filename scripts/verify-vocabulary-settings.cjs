@@ -55,6 +55,90 @@ async function main() {
         .locator('.vocabulary-nav-item[data-page="preferences"]')
         .click();
       await page.locator(".shared-select-trigger").first().waitFor();
+      assert.deepEqual(
+        await page
+          .locator(".vocabulary-cache-actions > button")
+          .allTextContents(),
+        ["下载", "导入", "清理"],
+      );
+      assert.equal(await page.locator(".vocabulary-verify-cache").count(), 0);
+      assert.equal(await page.locator(".vocabulary-cache-settings").count(), 0);
+      await page.evaluate(() => {
+        window.originalClearSpeechCache =
+          WorkTimeApp.services.vocabularySpeech.clear;
+        window.clearSpeechCacheCalls = 0;
+        WorkTimeApp.services.vocabularySpeech.clear = async () => {
+          window.clearSpeechCacheCalls++;
+        };
+      });
+      const clear = page.locator(".vocabulary-clear-cache");
+      const confirmation = page.locator(".vocabulary-cache-confirmation");
+      await clear.click();
+      await confirmation.waitFor({ state: "visible" });
+      assert.match(await confirmation.textContent(), /清理已生成的发音缓存/);
+      const anchor = await clear.boundingBox();
+      const box = await confirmation.boundingBox();
+      assert(box.x >= 0 && box.x + box.width <= width);
+      assert(box.width <= 280 && box.height < 150);
+      const promptLayout = await confirmation
+        .locator("p")
+        .evaluate((prompt) => {
+          const style = getComputedStyle(prompt);
+          const parent = getComputedStyle(prompt.parentElement);
+          return {
+            lines:
+              prompt.getBoundingClientRect().height /
+              parseFloat(style.lineHeight),
+            padding: [
+              parent.paddingTop,
+              parent.paddingRight,
+              parent.paddingBottom,
+              parent.paddingLeft,
+            ],
+          };
+        });
+      assert(Math.abs(promptLayout.lines - 2) < 0.1);
+      assert(promptLayout.padding.every((value) => value === "18px"));
+      const actionBoxes = await confirmation
+        .locator("button")
+        .evaluateAll((buttons) =>
+          buttons.map((button) => {
+            const { top, bottom, height } = button.getBoundingClientRect();
+            return { top, bottom, height };
+          }),
+        );
+      assert(Math.abs(actionBoxes[0].top - actionBoxes[1].top) < 1);
+      assert(Math.abs(actionBoxes[0].bottom - actionBoxes[1].bottom) < 1);
+      assert(actionBoxes.every((box) => box.height === 32));
+      assert(
+        Math.min(
+          Math.abs(box.y - anchor.y - anchor.height),
+          Math.abs(anchor.y - box.y - box.height),
+        ) <= 11,
+      );
+      await confirmation
+        .getByRole("button", { name: "取消", exact: true })
+        .click();
+      await confirmation.waitFor({ state: "hidden" });
+      assert.equal(await page.evaluate(() => window.clearSpeechCacheCalls), 0);
+      await clear.click();
+      await page.keyboard.press("Escape");
+      await confirmation.waitFor({ state: "hidden" });
+      assert(await clear.evaluate((el) => el === document.activeElement));
+      await clear.click();
+      await page.locator(".vocabulary-header").click();
+      await confirmation.waitFor({ state: "hidden" });
+      assert.equal(await page.evaluate(() => window.clearSpeechCacheCalls), 0);
+      await clear.click();
+      await confirmation
+        .getByRole("button", { name: "确定", exact: true })
+        .click();
+      await confirmation.waitFor({ state: "hidden" });
+      assert.equal(await page.evaluate(() => window.clearSpeechCacheCalls), 1);
+      await page.evaluate(() => {
+        WorkTimeApp.services.vocabularySpeech.clear =
+          window.originalClearSpeechCache;
+      });
       const centeredLabels = await page
         .locator(".vocabulary-preferences .shared-select-trigger")
         .evaluateAll((buttons) =>

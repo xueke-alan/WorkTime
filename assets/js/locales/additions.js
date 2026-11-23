@@ -188,12 +188,12 @@
       "드래그 종료 대기 중",
     ],
     waitingGame: [
-      "等待游戏结束后继续",
-      "Waiting for the game to close",
-      "等待遊戲結束後繼續",
-      "等待遊戲結束後繼續",
-      "ゲーム終了を待機中",
-      "게임 종료 대기 중",
+      "等待 AI 模型任务结束",
+      "Waiting for the AI model task",
+      "等待 AI 模型工作結束",
+      "等待 AI 模型工作結束",
+      "AIモデルの処理終了を待機中",
+      "AI 모델 작업 완료 대기 중",
     ],
     waitingPlayback: [
       "等待前台发音结束",

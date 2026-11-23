@@ -195,21 +195,21 @@ WorkTimeApp.games.rapfiResources = (() => {
       ? ["wasm", "renjuBlack", "renjuWhite", "classical"]
       : ["wasm", "model", "classical"];
   }
-  async function prefetch(forbidden = false) {
+  async function prefetch(
+    forbidden = false,
+    { waitForIdle = async () => {} } = {},
+  ) {
     if (!/^https?:$/.test(location.protocol)) return;
+    await waitForIdle();
     const assets = await manifest("low");
-    const results = await Promise.allSettled(
-      resourceKeys(forbidden)
-        .map((key) => assets[key])
-        .map(async (info) => {
-          if (!inFlight.has(info.name) && (await cached(info))) return;
-          const result = await resource(info, "low");
-          await result.persistence;
-        }),
-    );
-    // Let outstanding downloads settle before the idle service retries.
-    const failure = results.find((result) => result.status === "rejected");
-    if (failure) throw failure.reason;
+    for (const key of resourceKeys(forbidden)) {
+      await waitForIdle();
+      const info = assets[key];
+      if (!inFlight.has(info.name) && (await cached(info))) continue;
+      const result = await resource(info, "low");
+      await result.persistence;
+    }
+    await waitForIdle();
     await cleanup(assets);
   }
   async function load(forbidden = false) {
@@ -351,7 +351,7 @@ WorkTimeApp.games.createGomokuEngine = function () {
     });
     return loading;
   }
-  return {
+  const controller = {
     load,
     cancel,
     budgets,
@@ -403,4 +403,7 @@ WorkTimeApp.games.createGomokuEngine = function () {
       cancel();
     },
   };
+  return (
+    WorkTimeApp.services.vocabularyIdle?.trackModel?.(controller) || controller
+  );
 };

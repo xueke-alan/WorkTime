@@ -125,6 +125,7 @@ WorkTimeApp.ui.createEditor = function (options) {
     if (editorDateMarkup !== dateMarkup) {
       editorDate.innerHTML = dateMarkup;
       editorDateMarkup = dateMarkup;
+      WorkTimeApp.ui.motion?.refreshEditorTitle();
     }
     const schedule = C.scheduleForDate(state, selected);
     $("dayStart").placeholder = schedule.workStart;

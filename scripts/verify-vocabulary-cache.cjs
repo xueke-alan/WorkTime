@@ -611,6 +611,7 @@ async function main() {
       ["shared-example", "us"],
       ["new-example", "us"],
       ["a simple phrase", "us"],
+      ["new-word", "us"],
       ["learned-example", "us"],
       ["global-word", "uk"],
       ["global-word", "us"],
@@ -618,7 +619,7 @@ async function main() {
       ["global-example", "us"],
     ];
     assert.deepEqual(
-      await page.evaluate(() => window.cacheCalls.slice(-20)),
+      await page.evaluate(() => window.cacheCalls.slice(-21)),
       priorityOrder,
       "Eight phases prioritize both word accents, then today's examples, all words, and remaining examples",
     );
@@ -626,10 +627,19 @@ async function main() {
       await page.evaluate(() => {
         const S = WorkTimeApp.services;
         const keys = window.cacheCalls
-          .slice(-20)
-          .map(([word, accent]) =>
-            S.vocabularyAudioCache.key({ word }, accent),
-          );
+          .slice(-21)
+          .map(([word, accent], index, calls) => {
+            const example =
+              word.includes("example") ||
+              word === "a simple phrase" ||
+              calls
+                .slice(0, index)
+                .some(([w, a]) => w === word && a === accent);
+            return S.vocabularyAudioCache.key(
+              { word, ...(example ? { kind: "example" } : {}) },
+              accent,
+            );
+          });
         return {
           completed: S.vocabularyIdle.state.completed,
           total: S.vocabularyIdle.state.total,
@@ -641,9 +651,9 @@ async function main() {
         };
       }),
       {
-        completed: 20,
-        total: 20,
-        progress: { generatedTotal: 20, audioTotal: 20, progressExact: true },
+        completed: 21,
+        total: 21,
+        progress: { generatedTotal: 21, audioTotal: 21, progressExact: true },
       },
       "Progress counts unique word and example audio across both accents",
     );
@@ -654,11 +664,18 @@ async function main() {
     });
     await page.clock.runFor(5000);
     assert.deepEqual(
-      await page.evaluate(() => window.cacheCalls.slice(-20)),
-      priorityOrder.map(([word, accent]) => [
-        word,
-        accent === "uk" ? "us" : "uk",
-      ]),
+      await page.evaluate(() => window.cacheCalls.slice(-21)),
+      priorityOrder
+        .filter(
+          ([word, accent], index) =>
+            !(word === "new-word" && accent === "us" && index > 10),
+        )
+        .map(([word, accent]) => [word, accent === "uk" ? "us" : "uk"])
+        .flatMap((item) =>
+          item[0] === "learned-example" && item[1] === "us"
+            ? [["new-word", "us"], item]
+            : [item],
+        ),
       "Changing the selected accent rebuilds all eight phases",
     );
     await page.evaluate(() => {
@@ -683,13 +700,14 @@ async function main() {
           "shared-example",
           "new-example",
           "a simple phrase",
+          ...(accent === "us" ? ["new-word"] : []),
           "global-example",
           "learned-example",
         ].map((word) => [word, accent]),
       ),
     ];
     assert.deepEqual(
-      await page.evaluate(() => window.cacheCalls.slice(-20)),
+      await page.evaluate(() => window.cacheCalls.slice(-21)),
       learnedOrder,
       "A newly studied word and its examples move into today's phases",
     );
@@ -701,9 +719,13 @@ async function main() {
         ["due-word", "new-word"].map((word) => [word, accent]),
       ),
       ...["us", "uk"].flatMap((accent) =>
-        ["due-example", "shared-example", "new-example", "a simple phrase"].map(
-          (word) => [word, accent],
-        ),
+        [
+          "due-example",
+          "shared-example",
+          "new-example",
+          "a simple phrase",
+          ...(accent === "us" ? ["new-word"] : []),
+        ].map((word) => [word, accent]),
       ),
       ...["us", "uk"].flatMap((accent) =>
         ["global-word", "learned-word"].map((word) => [word, accent]),
@@ -713,7 +735,7 @@ async function main() {
       ),
     ];
     assert.deepEqual(
-      await page.evaluate(() => window.cacheCalls.slice(-20)),
+      await page.evaluate(() => window.cacheCalls.slice(-21)),
       nextDayOrder,
       "After midnight yesterday's learned examples return behind all words",
     );
@@ -831,7 +853,7 @@ async function main() {
     assert.equal(await calls(), baseline);
     await page.clock.runFor(4000);
     assert.equal(await calls(), baseline + 4);
-    for (const kind of ["pointer", "native", "agenda", "game"]) {
+    for (const kind of ["pointer", "native", "agenda", "model"]) {
       baseline = await calls();
       await page.evaluate((kind) => {
         if (kind === "pointer") {
@@ -853,10 +875,9 @@ async function main() {
         if (kind === "native") window.dispatchEvent(new Event("dragstart"));
         if (kind === "agenda")
           document.body.classList.add("agenda-is-resizing");
-        if (kind === "game")
-          document
-            .querySelector(".workspace")
-            .classList.add("is-game-expanded");
+        if (kind === "model")
+          window.finishModelTask =
+            WorkTimeApp.services.vocabularyIdle.beginModelTask();
       }, kind);
       await restartQueue();
       await page.clock.runFor(6000);
@@ -869,10 +890,7 @@ async function main() {
         if (kind === "native") window.dispatchEvent(new Event("dragend"));
         if (kind === "agenda")
           document.body.classList.remove("agenda-is-resizing");
-        if (kind === "game")
-          document
-            .querySelector(".workspace")
-            .classList.remove("is-game-expanded");
+        if (kind === "model") window.finishModelTask();
       }, kind);
       await page.clock.runFor(1500);
       assert.equal(await calls(), baseline);

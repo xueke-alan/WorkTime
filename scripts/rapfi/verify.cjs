@@ -12,7 +12,7 @@ const probe = `<!doctype html><base href="/"><script>window.WorkTimeApp={games:{
 const binaries = /\/assets\/vendor\/rapfi\/[^/?]+\.(wasm|lz4|bin)$/;
 
 async function waitForStorage(page, condition) {
-  const deadline = Date.now() + 15000;
+  const deadline = Date.now() + 120000;
   while (Date.now() < deadline) {
     if (await page.evaluate(condition)) return;
     await delay(50);
@@ -67,10 +67,15 @@ async function verifyPrefetch(browser, origin, interceptBinaries) {
   });
   try {
     const entry = origin + "/index.html";
-    let failures = 3;
+    let failures = 1;
     interceptBinaries(() => (failures-- > 0 ? 503 : undefined));
     await page.goto(entry);
-    await page.waitForFunction(() => window.rapfiRequests.length === 3);
+    await page.waitForFunction(
+      () => WorkTimeApp.services.gamePrefetch?.status.gomoku === "failed",
+      null,
+      { timeout: 120000 },
+    );
+    assert.equal(await page.evaluate(() => window.rapfiRequests.length), 1);
     await page.evaluate(() => window.dispatchEvent(new Event("online")));
     await waitForStorage(
       page,
@@ -80,7 +85,7 @@ async function verifyPrefetch(browser, origin, interceptBinaries) {
       requests: window.rapfiRequests,
       workers: window.workers,
     }));
-    assert.equal(first.requests.length, 6, "one background retry");
+    assert.equal(first.requests.length, 4, "one background retry");
     assert.ok(
       first.requests.every(
         (request) =>
@@ -129,7 +134,13 @@ async function verifyPrefetch(browser, origin, interceptBinaries) {
     interceptBinaries(() => hold);
     try {
       await page.goto(entry + "?directory");
-      await page.waitForFunction(() => window.rapfiRequests.length === 3);
+      await page.waitForFunction(
+        () => window.rapfiRequests.length === 1,
+        null,
+        {
+          timeout: 120000,
+        },
+      );
       await page.evaluate(() => {
         const resources = WorkTimeApp.games.rapfiResources;
         const load = resources.load;

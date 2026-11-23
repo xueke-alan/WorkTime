@@ -58,6 +58,8 @@ __pycache__/
 !/scripts/verify-site-footer.cjs
 !/scripts/verify-offline-shell.cjs
 !/scripts/verify-game-prefetch.cjs
+!/scripts/verify-idle-preload.cjs
+!/scripts/verify-editor-titles.cjs
 !/scripts/verify-deferred-styles.cjs
 !/scripts/sokoban-optimal.cjs
 !/scripts/generate-sokoban-optima.cjs

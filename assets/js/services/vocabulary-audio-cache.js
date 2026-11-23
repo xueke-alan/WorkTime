@@ -6,9 +6,9 @@ WorkTimeApp.services.vocabularyAudioCache = (() => {
     [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))]
       .map((n) => n.toString(16).padStart(2, "0"))
       .join("");
-  const profileFor = (accent) =>
-    WorkTimeApp.services.vocabularyIdle.profile(accent);
-  const key = (entry, accent, profile = profileFor(accent)) =>
+  const profileFor = (accent, entry) =>
+    WorkTimeApp.services.vocabularyIdle.profile(accent, entry);
+  const key = (entry, accent, profile = profileFor(accent, entry)) =>
     profile.engine === "supertonic"
       ? JSON.stringify([
           "supertonic-3-v1",
@@ -216,7 +216,7 @@ WorkTimeApp.services.vocabularyAudioCache = (() => {
         for (const accent of ["us", "uk"]) {
           expected.add(key(entry, accent));
           for (const example of entry.examples || [])
-            expected.add(key({ word: example.en }, accent));
+            expected.add(key({ word: example.en, kind: "example" }, accent));
         }
       matched = 0;
       for (const identity of generated) if (expected.has(identity)) matched++;
@@ -580,7 +580,7 @@ WorkTimeApp.services.vocabularyAudioCache = (() => {
           : run();
       });
     },
-    async read(entry, accent, profile = profileFor(accent)) {
+    async read(entry, accent, profile = profileFor(accent, entry)) {
       if (clearing || folderInfo?.indexStatus === "clearing") return null;
       const identity = key(entry, accent, profile),
         name = await hash(new TextEncoder().encode(identity));
@@ -645,7 +645,7 @@ WorkTimeApp.services.vocabularyAudioCache = (() => {
       blob,
       limit,
       valid = () => true,
-      profile = profileFor(accent),
+      profile = profileFor(accent, entry),
     ) {
       if (clearing) return false;
       const bytes = await blob.arrayBuffer();

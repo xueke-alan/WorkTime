@@ -225,6 +225,66 @@ const site = path.resolve(
       await center.getAttribute("aria-label"),
       "banana\nWorker: 4\n13 / 100",
     );
+    // Model transfers replace an already-open synthesis hint and keep it live.
+    await page.evaluate(() => {
+      window.footerModels = WorkTimeApp.services.vocabularyModels;
+      window.footerModelState = { phase: "downloading", loaded: 0, total: 100 };
+      WorkTimeApp.services.vocabularyModels = {
+        get state() {
+          return window.footerModelState;
+        },
+      };
+      document.dispatchEvent(new Event("worktime:modelschange"));
+    });
+    for (const [phase, loaded, total, accent, expected] of [
+      [
+        "downloading",
+        0,
+        104857600,
+        "uk",
+        "正在下载模型文件\n英音模型\n0% · 100.0 MiB",
+      ],
+      [
+        "downloading",
+        67108864,
+        104857600,
+        "us",
+        "正在下载模型文件\n美音模型\n64% · 100.0 MiB",
+      ],
+      ["importing", 1, 2, null, "正在校验并导入模型包 50%"],
+    ]) {
+      await page.evaluate(
+        (state) => {
+          window.footerModelState = state;
+          document.dispatchEvent(new Event("worktime:modelschange"));
+        },
+        { phase, loaded, total, accent },
+      );
+      await page.waitForFunction(
+        (text) => document.getElementById("siteHint").innerText.trim() === text,
+        expected,
+      );
+      assert.equal(await center.getAttribute("aria-label"), expected);
+      assert.equal(await center.getAttribute("title"), null);
+    }
+    await page.keyboard.press("Escape");
+    await page.mouse.move(0, 0);
+    await center.hover();
+    await page.locator("#siteHint").waitFor({ state: "visible" });
+    assert.equal(
+      (await page.locator("#siteHint").innerText()).trim(),
+      "正在校验并导入模型包 50%",
+      "Reopening the popover uses the current model transfer progress",
+    );
+    await page.evaluate(() => {
+      WorkTimeApp.services.vocabularyModels = window.footerModels;
+      document.dispatchEvent(new Event("worktime:modelschange"));
+    });
+    await page.waitForFunction(
+      () =>
+        document.getElementById("siteHint").innerText ===
+        "banana\nWorker: 4\n13 / 100",
+    );
     await page.evaluate(async () => {
       window.footerDetailChanges = [];
       window.footerProgressChanges = [];

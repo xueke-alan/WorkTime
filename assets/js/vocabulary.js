@@ -49,6 +49,9 @@ WorkTimeApp.ui.vocabulary = (() => {
     preloadTimer = setTimeout(() => {
       const run = async () => {
         try {
+          await WorkTimeApp.services.vocabularyIdle.whenIdle({
+            signal: preloadAbort.signal,
+          });
           await WorkTimeApp.services.assets.whenIdle({
             signal: preloadAbort.signal,
           });

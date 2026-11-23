@@ -28,6 +28,7 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     idleVisible = false,
     idleWasCovered = true;
   let clockLocale, clockFormatter, dateFormatter;
+  let idlePointer = null;
   function updateIdleClock(animate = idleVisible) {
     const now = new Date();
     const locale = WorkTimeApp.i18n.locale;
@@ -68,7 +69,18 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     idleCover.classList.remove("is-visible", "is-initial");
   }
   function interactingWithSidebar() {
-    return sidebar.matches(":hover") || sidebar.querySelector(":focus-visible");
+    if (sidebar.matches(":hover") || sidebar.querySelector(":focus-visible"))
+      return true;
+    if (!idlePointer) return false;
+    // A newly revealed panel can receive :hover/pointerenter only after its
+    // mutation observer runs. Use the last pointer position before painting.
+    const bounds = sidebar.getBoundingClientRect();
+    return (
+      idlePointer.x >= bounds.left &&
+      idlePointer.x < bounds.right &&
+      idlePointer.y >= bounds.top &&
+      idlePointer.y < bounds.bottom
+    );
   }
   function refreshIdleCover() {
     const covered =
@@ -559,10 +571,23 @@ WorkTimeApp.ui.createGamesController = function ({ document, window }) {
     if (selector) menu?.querySelector(selector)?.focus();
   }
   events.listen(exitButton, "click", exit);
+  function rememberIdlePointer(event) {
+    if (event.pointerType !== "touch")
+      idlePointer = { x: event.clientX, y: event.clientY };
+  }
+  events.listen(document, "pointermove", rememberIdlePointer);
+  events.listen(document, "pointerdown", rememberIdlePointer);
+  events.listen(document, "pointerleave", () => {
+    idlePointer = null;
+    refreshIdleCover();
+  });
   events.listen(sidebar, "pointerenter", (event) => {
     if (!document.hidden && event.pointerType !== "touch") hideIdleCover();
   });
-  events.listen(sidebar, "pointerleave", refreshIdleCover);
+  events.listen(sidebar, "pointerleave", (event) => {
+    rememberIdlePointer(event);
+    refreshIdleCover();
+  });
   events.listen(sidebar, "focusin", () => {
     if (!document.hidden) hideIdleCover();
   });

@@ -262,6 +262,11 @@ WorkTimeApp.ui.secondary.settings = function (options) {
       );
     };
     if (keepSettings) requestSettingsLeave(resume);
+    else if (target.matches(".vocabulary-mini-expand"))
+      requestSettingsLeave(() => {
+        actions.closeSettings({ animate: false });
+        WorkTimeApp.ui.vocabulary.open({ fromSettings: true });
+      });
     else requestSettingsExit(resume);
   }
   function trapScheduleFocus(event) {

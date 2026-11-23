@@ -124,6 +124,7 @@ async function verifyGames(browser) {
     // Deterministic search results let these checks isolate presentation timing.
     WorkTimeApp.games.createGomokuEngine = () => ({
       search({ board }) {
+        window.aiThinkingTest.searchStartedAt = performance.now();
         return new Promise((resolve) =>
           setTimeout(
             () => resolve({ move: board[112] ? board.indexOf(0) : 112 }),
@@ -137,6 +138,7 @@ async function verifyGames(browser) {
     WorkTimeApp.games.createXiangqiEngine = () => ({
       load: () => Promise.resolve(),
       search(fen) {
+        window.aiThinkingTest.searchStartedAt = performance.now();
         const rules = WorkTimeApp.games.xiangqiRules;
         const [pieces, side] = fen.split(" ");
         const board = pieces
@@ -312,7 +314,13 @@ async function verifyGames(browser) {
       window.aiThinkingTest.delay = 4000;
     });
     await action(game, game === "gomoku" ? "start-red" : "start-black");
-    await page.clock.runFor(3999);
+    // Gomoku paints two frames before starting a cold search. Measure the
+    // worker delay from the search itself rather than the initiating click.
+    await page.clock.runFor(40);
+    const elapsed = await page.evaluate(
+      () => performance.now() - window.aiThinkingTest.searchStartedAt,
+    );
+    await page.clock.runFor(3999 - elapsed);
     assert.equal(await plies(game), 0);
     await page.clock.runFor(2);
     assert.equal(await plies(game), 1, "slow searches do not wait twice");

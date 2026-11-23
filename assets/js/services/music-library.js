@@ -2,8 +2,40 @@
 /** Local-only directory index and bounded metadata readers. Never writes to source files. */
 WorkTimeApp.services.musicLibrary = (() => {
   const audioPattern = /\.(mp3|m4a|mp4|aac|flac|wav|wave|ogg|oga|opus|webm)$/i;
-  const decoder = new TextDecoder();
-  const text = (bytes) => decoder.decode(bytes).replace(/\0/g, "").trim();
+  const cleanText = (value) => value.replace(/\0+$/g, "").trim();
+  function decodeText(bytes, encoding = "utf-8", legacy = false) {
+    // Inspect bytes before decoding: replacement characters lose the evidence
+    // needed to distinguish old Chinese tags from malformed Unicode.
+    if (bytes[0] === 255 && bytes[1] === 254) encoding = "utf-16le";
+    else if (bytes[0] === 254 && bytes[1] === 255) encoding = "utf-16be";
+    else if (bytes[0] === 239 && bytes[1] === 187 && bytes[2] === 191)
+      encoding = "utf-8";
+    const decode = (label) => {
+      try {
+        return new TextDecoder(label, { fatal: true }).decode(bytes);
+      } catch {
+        return null;
+      }
+    };
+    const unicode = decode(encoding);
+    if (unicode !== null) return unicode;
+    // Explicit UTF-16 must not be reinterpreted as a single-byte encoding.
+    if (encoding.startsWith("utf-16")) return "";
+    const chinese = decode("gb18030");
+    if (
+      chinese !== null &&
+      /\p{Script=Han}/u.test(chinese) &&
+      !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/u.test(
+        chinese.replace(/\0+$/g, ""),
+      )
+    )
+      return chinese;
+    return legacy ? decode("windows-1252") || "" : "";
+  }
+  const text = (bytes, legacy = false, encoding = "utf-8") => {
+    const value = cleanText(decodeText(bytes, encoding, legacy));
+    return /[\u0000-\u001f\u007f-\u009f\ufffd]/u.test(value) ? "" : value;
+  };
   const ascii = (bytes) => String.fromCharCode(...bytes);
   const uint = (b, p) =>
     new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(p);
@@ -15,18 +47,35 @@ WorkTimeApp.services.musicLibrary = (() => {
   const read = async (file, start, size) =>
     new Uint8Array(await file.slice(start, start + size).arrayBuffer());
   const limit = 8 * 1024 * 1024;
-  function tagText(b) {
+  function tagText(b, multiline = false, inheritedEncoding) {
     if (!b.length) return "";
-    const encoding =
-      ["windows-1252", "utf-16", "utf-16be", "utf-8"][b[0]] || "utf-8";
-    return new TextDecoder(encoding)
-      .decode(b.subarray(1))
-      .replace(/\0/g, "")
-      .trim();
+    const encoding = [
+      "utf-8",
+      inheritedEncoding || "utf-16le",
+      "utf-16be",
+      "utf-8",
+    ][b[0]];
+    if (!encoding) return "";
+    const wide =
+      b[0] === 1 ||
+      b[0] === 2 ||
+      (b[1] === 255 && b[2] === 254) ||
+      (b[1] === 254 && b[2] === 255);
+    let end = b.length;
+    for (let p = 1; p < b.length; p += wide ? 2 : 1)
+      if (!b[p] && (!wide || (p + 1 < b.length && !b[p + 1]))) {
+        end = p;
+        break;
+      }
+    const payload = b.subarray(1, end);
+    return multiline
+      ? cleanText(decodeText(payload, encoding, b[0] === 0))
+      : text(payload, b[0] === 0, encoding);
   }
   function terminator(b, start, wide) {
     for (let p = start; p < b.length; p += wide ? 2 : 1)
-      if (!b[p] && (!wide || !b[p + 1])) return p + (wide ? 2 : 1);
+      if (!b[p] && (!wide || (p + 1 < b.length && !b[p + 1])))
+        return p + (wide ? 2 : 1);
     return b.length;
   }
   function picture(b, old = false) {
@@ -79,12 +128,16 @@ WorkTimeApp.services.musicLibrary = (() => {
       if (key) result[key] = tagText(body);
       if (name === "APIC" || name === "PIC")
         result.cover = picture(body, name === "PIC") || result.cover;
-      if (name === "USLT" || name === "ULT") {
+      if ((name === "USLT" || name === "ULT") && body.length >= 4) {
         const start = terminator(body, 4, body[0] === 1 || body[0] === 2);
         const payload = new Uint8Array(1 + body.length - start);
         payload[0] = body[0];
         payload.set(body.subarray(start), 1);
-        result.lyrics = tagText(payload);
+        const inheritedEncoding =
+          body[0] === 1 && body[4] === 254 && body[5] === 255
+            ? "utf-16be"
+            : undefined;
+        result.lyrics = tagText(payload, true, inheritedEncoding);
       }
     }
   }
@@ -96,7 +149,7 @@ WorkTimeApp.services.musicLibrary = (() => {
       const length = view.getUint32(p, true);
       p += 4;
       if (length > b.length - p) throw Error("Invalid comment length");
-      const value = text(b.subarray(p, p + length));
+      const value = cleanText(decodeText(b.subarray(p, p + length)));
       p += length;
       return value;
     };
@@ -167,7 +220,11 @@ WorkTimeApp.services.musicLibrary = (() => {
           result.cover = new Blob([value], {
             type: kind === 14 ? "image/png" : "image/jpeg",
           });
-        else if (key !== "cover") result[key] = text(value);
+        else if (key !== "cover" && [1, 2].includes(kind))
+          result[key] =
+            key === "lyrics"
+              ? cleanText(decodeText(value, kind === 2 ? "utf-16be" : "utf-8"))
+              : text(value, false, kind === 2 ? "utf-16be" : "utf-8");
       }
       p += size;
     }
@@ -210,7 +267,10 @@ WorkTimeApp.services.musicLibrary = (() => {
                   ascii(info.subarray(q, q + 4))
                 ];
                 if (key)
-                  result[key] = text(info.subarray(q + 8, q + 8 + length));
+                  result[key] = text(
+                    info.subarray(q + 8, q + 8 + length),
+                    true,
+                  );
                 q += 8 + length + (length % 2);
               }
           }
@@ -283,15 +343,15 @@ WorkTimeApp.services.musicLibrary = (() => {
           p += size;
         }
       }
-      if (!result.title && /\.mp3$/i.test(file.name) && file.size >= 128) {
+      if (/\.mp3$/i.test(file.name) && file.size >= 128) {
         const tail = await read(file, file.size - 128, 128);
         if (ascii(tail.subarray(0, 3)) === "TAG") {
-          const decode = (start, end) =>
-            new TextDecoder("windows-1252")
-              .decode(tail.subarray(start, end))
-              .replace(/\0/g, "")
-              .trim();
-          result.title = decode(3, 33);
+          const decode = (start, end) => {
+            const bytes = tail.subarray(start, end);
+            const zero = bytes.indexOf(0);
+            return text(zero < 0 ? bytes : bytes.subarray(0, zero), true);
+          };
+          result.title ||= decode(3, 33);
           result.artist ||= decode(33, 63);
           result.album ||= decode(63, 93);
         }
@@ -302,16 +362,7 @@ WorkTimeApp.services.musicLibrary = (() => {
     return result;
   }
   function decodeLyrics(buffer) {
-    const b = new Uint8Array(buffer);
-    if (b[0] === 255 && b[1] === 254)
-      return new TextDecoder("utf-16le").decode(b);
-    if (b[0] === 254 && b[1] === 255)
-      return new TextDecoder("utf-16be").decode(b);
-    try {
-      return new TextDecoder("utf-8", { fatal: true }).decode(b);
-    } catch {
-      return new TextDecoder("gb18030").decode(b);
-    }
+    return cleanText(decodeText(new Uint8Array(buffer)));
   }
   function lyrics(source) {
     const lines = [],

@@ -103,6 +103,128 @@ async function metadataChecks() {
       Buffer.alloc(2),
       value,
     ]);
+  const taggedFile = (...frames) => {
+    const body = Buffer.concat(frames);
+    return new File(
+      [
+        Buffer.from([
+          73,
+          68,
+          51,
+          3,
+          0,
+          0,
+          (body.length >>> 21) & 127,
+          (body.length >>> 14) & 127,
+          (body.length >>> 7) & 127,
+          body.length & 127,
+        ]),
+        body,
+      ],
+      "encoding.mp3",
+    );
+  };
+  // Fixed byte fixtures do not depend on the machine's default encoding.
+  const gbChinese = Buffer.from([0xd6, 0xd0, 0xce, 0xc4]); // 中文
+  const utf16 = (value, bigEndian = false, bom = true) => {
+    const bytes = Buffer.from(value, "utf16le");
+    if (bigEndian) bytes.swap16();
+    return Buffer.concat([
+      bom ? Buffer.from(bigEndian ? [254, 255] : [255, 254]) : Buffer.alloc(0),
+      bytes,
+    ]);
+  };
+  for (const [encoding, bytes, expected] of [
+    [0, gbChinese, "中文"],
+    [3, gbChinese, "中文"],
+    [0, Buffer.from("中文 🎵"), "中文 🎵"],
+    [3, Buffer.from("日本語 한국어 café 🎵"), "日本語 한국어 café 🎵"],
+    [1, utf16("中文 🎵"), "中文 🎵"],
+    [1, utf16("中文", true), "中文"],
+    [0, utf16("中文", true), "中文"],
+    [3, utf16("中文"), "中文"],
+    [2, utf16("中文", true, false), "中文"],
+    [0, Buffer.from("ASCII"), "ASCII"],
+    [0, Buffer.from([0x63, 0x61, 0x66, 0xe9]), "café"],
+    [3, Buffer.from([0xe4]), ""],
+    [1, Buffer.from([255, 254, 0x2d]), ""],
+    [9, Buffer.from("unknown"), ""],
+    [3, Buffer.alloc(0), ""],
+  ]) {
+    const fields = await lib.metadata(
+      taggedFile(
+        ...["TIT2", "TPE1", "TALB"].map((key) =>
+          frame(key, Buffer.concat([Buffer.from([encoding]), bytes])),
+        ),
+      ),
+    );
+    for (const key of ["title", "artist", "album"])
+      assert.equal(fields[key], expected, `${encoding}: ${key}`);
+  }
+  const isolated = await lib.metadata(
+    taggedFile(
+      frame("TIT2", Buffer.from([1, 255, 254, 0x2d])),
+      frame("TPE1", Buffer.from([3, ...Buffer.from("Good artist")])),
+    ),
+  );
+  assert.equal(isolated.title, "");
+  assert.equal(isolated.artist, "Good artist");
+  const fallback = await lib.details(
+    {
+      path: "encoding.mp3",
+      title: "Filename fallback",
+      getFile: async () => taggedFile(frame("TIT2", Buffer.from([3, 255]))),
+    },
+    new Map(),
+  );
+  assert.equal(fallback.title, "Filename fallback");
+  const tail = Buffer.alloc(128);
+  tail.write("TAG");
+  for (const offset of [3, 33, 63]) gbChinese.copy(tail, offset);
+  const legacy = await lib.metadata(new File([tail], "legacy.mp3"));
+  for (const key of ["title", "artist", "album"])
+    assert.equal(legacy[key], "中文");
+  const partial = await lib.metadata(
+    new File(
+      [
+        await taggedFile(
+          frame("TIT2", Buffer.from([3, 78, 101, 119])),
+        ).arrayBuffer(),
+        tail,
+      ],
+      "partial.mp3",
+    ),
+  );
+  assert.equal(partial.title, "New");
+  assert.equal(partial.artist, "中文");
+  assert.equal(partial.album, "中文");
+  const lyricText = "[00:01.00]中文\n[00:02.00]下一行";
+  for (const bytes of [
+    Buffer.from(lyricText),
+    Buffer.concat([Buffer.from([239, 187, 191]), Buffer.from(lyricText)]),
+    utf16(lyricText),
+    utf16(lyricText, true),
+  ])
+    assert.equal(lib.decodeLyrics(Uint8Array.from(bytes).buffer), lyricText);
+  assert.equal(lib.decodeLyrics(Uint8Array.from(gbChinese).buffer), "中文");
+  assert.equal(
+    lib.decodeLyrics(Uint8Array.from([0x95, 0x32, 0x82, 0x36]).buffer),
+    "𠀀",
+  );
+  const embedded = await lib.metadata(
+    taggedFile(
+      frame(
+        "USLT",
+        Buffer.concat([
+          Buffer.from([1, 101, 110, 103]),
+          utf16("description", true),
+          Buffer.from([0, 0]),
+          utf16(lyricText, true, false),
+        ]),
+      ),
+    ),
+  );
+  assert.equal(embedded.lyrics, lyricText);
   const tag = Buffer.concat([
     frame("TIT2", Buffer.concat([Buffer.from([3]), Buffer.from("Title 中文")])),
     frame("TPE1", Buffer.concat([Buffer.from([3]), Buffer.from("Artist")])),
@@ -183,6 +305,22 @@ async function metadataChecks() {
   );
   assert.equal(m4a.title, "M4A title");
   assert.equal(m4a.cover.type, "image/png");
+  for (const [kind, value] of [
+    [1, gbChinese],
+    [2, utf16("中文", true, false)],
+  ]) {
+    const encodedTitle = atom(
+      "©nam",
+      atom("data", Buffer.concat([size32(kind), size32(0), value])),
+    );
+    const encodedM4a = await lib.metadata(
+      new File(
+        [atom("moov", atom("udta", atom("ilst", encodedTitle)))],
+        "encoded.m4a",
+      ),
+    );
+    assert.equal(encodedM4a.title, "中文");
+  }
   const comments = [
     "TITLE=FLAC title",
     "ARTIST=FLAC artist",
@@ -212,6 +350,31 @@ async function metadataChecks() {
   assert.equal(flac.title, "FLAC title");
   assert.equal(flac.artist, "FLAC artist");
   assert.equal(flac.lyrics, "FLAC lyrics");
+  const encodedComments = [
+    Buffer.concat([Buffer.from("TITLE="), gbChinese]),
+    Buffer.from("LYRICS=" + lyricText),
+  ];
+  const encodedFlac = await lib.metadata(
+    new File(
+      [
+        Buffer.from("fLaC"),
+        block(
+          132,
+          Buffer.concat([
+            little32(0),
+            little32(encodedComments.length),
+            ...encodedComments.flatMap((value) => [
+              little32(value.length),
+              value,
+            ]),
+          ]),
+        ),
+      ],
+      "encoded.flac",
+    ),
+  );
+  assert.equal(encodedFlac.title, "中文");
+  assert.equal(encodedFlac.lyrics, lyricText);
   const infoField = (kind, value) =>
     Buffer.concat([
       Buffer.from(kind),
@@ -233,6 +396,22 @@ async function metadataChecks() {
   assert.equal(
     (await lib.metadata(new File([wave], "tags.wav"))).title,
     "WAV title",
+  );
+  const chineseInfo = Buffer.concat([
+    Buffer.from("INFOINAM"),
+    little32(gbChinese.length),
+    gbChinese,
+  ]);
+  const chineseWave = Buffer.concat([
+    Buffer.from("RIFF"),
+    little32(chineseInfo.length + 12),
+    Buffer.from("WAVELIST"),
+    little32(chineseInfo.length),
+    chineseInfo,
+  ]);
+  assert.equal(
+    (await lib.metadata(new File([chineseWave], "chinese.wav"))).title,
+    "中文",
   );
   assert.deepEqual(
     Object.keys(
@@ -714,6 +893,9 @@ async function miniChecks(browser) {
     await page.waitForFunction(
       () => document.querySelector("#musicMiniProgress").value === "9",
     );
+    await page.waitForFunction(
+      () => document.querySelector("#musicDialog").hidden,
+    );
     assert.equal(
       await page
         .locator(".music-mini-progress .music-time")
@@ -874,7 +1056,7 @@ async function miniChecks(browser) {
     const settingsHeight = await height();
     await page.locator("#date-tab-weather").click();
     assert.ok(Math.abs((await height()) - settingsHeight) <= 1);
-    await page.locator("#personalSettingsCancel").click();
+    assert.equal(await page.locator("#settingsPane").isVisible(), false);
     await page.locator("#agendaMode").click();
     await page.locator("#musicOpen").click();
     assert.equal(await page.locator("#musicPanel").isVisible(), true);
@@ -1021,7 +1203,7 @@ async function miniChecks(browser) {
     await page.close();
   }
 }
-async function animationChecks(browser) {
+async function animationChecks(browser, { musicOnly = false } = {}) {
   const page = await browser.newPage({
     viewport: { width: 1440, height: 900 },
     reducedMotion: "no-preference",
@@ -1134,12 +1316,32 @@ async function animationChecks(browser) {
     await page.waitForFunction(
       () => document.querySelector("#musicDialog").dataset.state === "open",
     );
+    await page.evaluate(() => {
+      window.musicMiniRequests = 0;
+      document
+        .querySelector(".workspace > .editor")
+        .addEventListener("worktime:auxiliaryrequest", (event) => {
+          if (event.detail.id === "music" && event.detail.open)
+            window.musicMiniRequests++;
+        });
+    });
     const minimize = await capture("music", "#musicMinimize");
     assert.deepEqual(minimize.tracks, game.tracks);
+    assert.equal(
+      await page.locator(".music-mini-song").textContent(),
+      await page.evaluate(() => WorkTimeApp.ui.musicText("idle")),
+      "The first mini title must be populated while the full player is closing",
+    );
+    assert.equal(await page.locator("#musicMiniPlay").isDisabled(), true);
     await page.waitForFunction(
       () =>
         document.querySelector("#musicDialog").hidden &&
         !document.querySelector("#musicPanel").hidden,
+    );
+    assert.equal(
+      await page.evaluate(() => window.musicMiniRequests),
+      1,
+      "Minimizing must request the auxiliary panel only once",
     );
     await page.evaluate(() => {
       WorkTimeApp.ui.music.expand();
@@ -1166,7 +1368,23 @@ async function animationChecks(browser) {
         ),
       false,
     );
+    if (musicOnly) {
+      assert.deepEqual(errors, []);
+      console.log(
+        "Music workspace motion: first mini content, single panel request, shared timing and rapid reversal passed.",
+      );
+      return;
+    }
+    await page.evaluate(() => {
+      location.hash = "dev";
+    });
+    await page.locator("#date-tab-tools").click();
     await page.locator("#readerOpen").click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector(".reader-placeholder") ||
+        document.querySelector("#readerDialog")?.dataset.state === "open",
+    );
     if (await page.locator(".reader-placeholder").count()) {
       assert.equal(await page.locator(".reader-placeholder").isVisible(), true);
       assert.deepEqual(errors, []);
@@ -1456,6 +1674,7 @@ async function internalMotionChecks(browser) {
       await page.locator(".music-settings").evaluate((element) => element.open),
       false,
     );
+    await page.locator(".music-menu-leaving").waitFor({ state: "attached" });
     assert.equal(await page.locator(".music-menu-leaving").count(), 1);
     await settle();
     assert.equal(await page.locator(".music-menu-leaving").count(), 0);
@@ -1501,6 +1720,9 @@ async function internalMotionChecks(browser) {
     await settle();
     assert.equal(await page.locator(".music-library").isVisible(), true);
     await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("reduce"),
+    );
     await clearLog();
     await page.locator(".music-search").fill("Beta");
     await page.locator(".music-search").fill("");
@@ -1510,6 +1732,9 @@ async function internalMotionChecks(browser) {
       "Reduced motion skips content effects",
     );
     await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("full"),
+    );
     await page.locator("#musicMinimize").click();
     await page.waitForFunction(
       () => document.querySelector("#musicDialog").hidden,
@@ -1583,6 +1808,56 @@ async function browserChecks() {
     headless: true,
   });
   try {
+    if (process.argv.includes("--encoding-only")) {
+      const page = await browser.newPage({ reducedMotion: "reduce" });
+      const errors = [];
+      page.on("pageerror", (error) => errors.push(error.message));
+      await page.addInitScript(installRuntimeFixture);
+      await page.goto(runtimeEntry);
+      await page.waitForFunction(
+        () => document.documentElement.dataset.appState === "ready",
+      );
+      await page.locator("#musicOpen").click();
+      await page.waitForFunction(() => !!WorkTimeApp.services.musicLibrary);
+      const result = await page.evaluate(async () => {
+        const lib = WorkTimeApp.services.musicLibrary;
+        const title = new Uint8Array([
+          84, 73, 84, 50, 0, 0, 0, 5, 0, 0, 0, 0xd6, 0xd0, 0xce, 0xc4,
+        ]);
+        const tags = await lib.metadata(
+          new File(
+            [new Uint8Array([73, 68, 51, 3, 0, 0, 0, 0, 0, 15]), title],
+            "中文.mp3",
+          ),
+        );
+        return {
+          title: tags.title,
+          lyrics: lib.decodeLyrics(
+            new Uint8Array([0xd6, 0xd0, 0xce, 0xc4]).buffer,
+          ),
+          unicode: lib.decodeLyrics(new TextEncoder().encode("中文 🎵").buffer),
+        };
+      });
+      assert.deepEqual(result, {
+        title: "中文",
+        lyrics: "中文",
+        unicode: "中文 🎵",
+      });
+      assert.deepEqual(errors, []);
+      await page.close();
+      await offlineMusicEntryChecks(browser);
+      console.log(
+        "Music browser encoding: GBK tags/lyrics and Unicode passed.",
+      );
+      return;
+    }
+    if (process.argv.includes("--workspace-motion-only")) {
+      await animationChecks(browser, {
+        musicOnly: !process.argv.includes("--with-reader"),
+      });
+      await offlineMusicEntryChecks(browser);
+      return;
+    }
     const page = await browser.newPage({
       viewport: { width: 1440, height: 900 },
       reducedMotion: "reduce",
@@ -1699,7 +1974,7 @@ async function browserChecks() {
     await page.keyboard.press("Shift+Tab");
     assert.equal(
       await page
-        .locator(".music-settings > summary")
+        .locator("#musicDialog .site-meta a")
         .evaluate((element) => element === document.activeElement),
       true,
     );
@@ -1845,6 +2120,9 @@ async function browserChecks() {
       document.querySelector("#musicOpen").classList.contains("is-playing"),
     );
     await page.keyboard.press("Escape");
+    await page.waitForFunction(
+      () => document.querySelector("#musicDialog").hidden,
+    );
     assert.equal(
       await page.locator("#musicDialog").evaluate((element) => element.hidden),
       true,

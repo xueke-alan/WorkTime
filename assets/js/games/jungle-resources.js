@@ -4,6 +4,7 @@ WorkTimeApp.games.jungleResources = (() => {
   const base = "assets/vendor/misty-jungle/";
   const cacheName = "worktime-misty-jungle-binaries-v1";
   let loading = null;
+  let promoteLoading = null;
   function url(path) {
     const version = WorkTimeApp.data.assetVersions?.[path];
     return new URL(path + (version ? "?v=" + version : ""), document.baseURI)
@@ -30,7 +31,7 @@ WorkTimeApp.games.jungleResources = (() => {
       ).join("") === info.hash
     );
   }
-  async function read(priority) {
+  async function read(priority, waitForIdle = async () => {}) {
     const { assets } = WorkTimeApp.services;
     await assets.script(base + "manifest.js", { fetchPriority: priority });
     const info = WorkTimeApp.games.mistyJungleResources;
@@ -74,6 +75,7 @@ WorkTimeApp.games.jungleResources = (() => {
       // Retry corrupt or inaccessible cache entries from the network.
     }
     if (!bytes) {
+      await waitForIdle();
       const response = await fetch(target, {
         cache: "no-store",
         signal: AbortSignal.timeout(30000),
@@ -108,20 +110,35 @@ WorkTimeApp.games.jungleResources = (() => {
     }
     return bytes;
   }
-  async function load(priority = "high") {
+  async function load(priority = "high", waitForIdle) {
+    // A foreground model task blocks idle work, so it must release a shared
+    // background request that is still waiting to start its download.
+    if (priority !== "low") promoteLoading?.();
     if (!loading) {
-      const task = read(priority);
+      const foreground = new Promise((resolve) => {
+        promoteLoading = resolve;
+      });
+      const task = read(
+        priority,
+        waitForIdle
+          ? () => Promise.race([waitForIdle(), foreground])
+          : undefined,
+      );
       loading = task;
       const release = () => {
-        if (loading === task) loading = null;
+        if (loading === task) {
+          loading = null;
+          promoteLoading = null;
+        }
       };
       task.then(release, release);
     }
     // Each Worker owns its transferred bytes, even when sharing a download.
     return (await loading).slice(0);
   }
-  async function prefetch() {
-    if (/^https?:$/.test(location.protocol)) await load("low");
+  async function prefetch(_unused, { waitForIdle = async () => {} } = {}) {
+    await waitForIdle();
+    if (/^https?:$/.test(location.protocol)) await load("low", waitForIdle);
   }
   return { load, prefetch };
 })();

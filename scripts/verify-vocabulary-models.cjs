@@ -61,7 +61,25 @@ async function main() {
       await page.addScriptTag({
         url: new URL("assets/js/services/" + name + ".js", server.url).href,
       });
-    await page.evaluate(() => WorkTimeApp.services.vocabularyModels.prepare());
+    const progress = await page.evaluate(async () => {
+      const models = WorkTimeApp.services.vocabularyModels;
+      const states = [];
+      const unsubscribe = models.subscribe(() => {
+        if (models.state.phase === "downloading") states.push(models.state);
+      });
+      await models.prepare();
+      unsubscribe();
+      return states;
+    });
+    for (const [accent, name] of [
+      ["us", "us.onnx"],
+      ["uk", "uk.onnx"],
+    ]) {
+      const states = progress.filter((state) => state.accent === accent);
+      assert(states.length > 0);
+      assert(states.every((state) => state.modelTotal === files[name].bytes));
+      assert.equal(states.at(-1).modelLoaded, files[name].bytes);
+    }
     assert.equal(requests, 2);
     assert(
       await page.evaluate(async (spec) => {
@@ -234,7 +252,7 @@ async function main() {
     await ui.locator('[data-page="preferences"]').click();
     assert.deepEqual(
       await ui.locator(".vocabulary-management-groups h4").allTextContents(),
-      ["发音模型", "缓存"],
+      ["发音模型"],
     );
     assert.equal(
       await ui.locator(".vocabulary-model-settings .vocabulary-muted").count(),
@@ -244,14 +262,18 @@ async function main() {
       await ui.locator(".vocabulary-accent-caution").innerText(),
       /英音发音准确度不高/,
     );
+    await ui.evaluate(() => {
+      window.modelDownloadLinks = [];
+      window.open = (...args) => window.modelDownloadLinks.push(args);
+    });
     await ui.getByRole("button", { name: "下载", exact: true }).click();
-    await ui.waitForFunction(
-      () => WorkTimeApp.services.vocabularyModels.state.phase === "failed",
-    );
-    assert.match(
-      await ui.locator(".vocabulary-model-status").innerText(),
-      /运行文件夹/,
-    );
+    assert.deepEqual(await ui.evaluate(() => window.modelDownloadLinks), [
+      [
+        "https://github.com/xueke-alan/WorkTime/releases",
+        "_blank",
+        "noopener,noreferrer",
+      ],
+    ]);
     assert.equal(
       await ui.locator(".vocabulary-model-cancel").isVisible(),
       false,

@@ -13,7 +13,11 @@ async function audit(context, fallback = false) {
       const show = HTMLDialogElement.prototype.showModal;
       HTMLDialogElement.prototype.showModal = function (...args) {
         const result = show.apply(this, args);
-        if (this.id === "onboardingDialog") this.close();
+        if (
+          this.id === "onboardingDialog" ||
+          this.id === "startupPermissionsDialog"
+        )
+          this.close();
         return result;
       };
       window.secondaryAudit = { creates: {}, binds: {}, motionAtWarm: null };

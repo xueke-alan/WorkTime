@@ -1,4 +1,4 @@
-/* Explicit animation triggers keep ordinary renders and ticking content still. */
+/* Shared motion keeps ordinary renders still; editor titles follow visible text changes. */
 (() => {
   "use strict";
   const reduced = WorkTimeApp.ui.animationCompat.preference();
@@ -45,7 +45,58 @@
     "motion-calendar-year",
   ]);
   let disposed = true,
-    unlisten;
+    unlisten,
+    titleObserver,
+    editorHeading = null,
+    editorHeadingText = "";
+  const editorHeaders =
+    ".editor-mode-header, .year-analysis-header, .analysis-sidebar-header";
+  function editorContent(element) {
+    if (!element || element.matches(editorHeaders)) return [];
+    if (!element.querySelector(editorHeaders)) return [element];
+    return [...element.children].flatMap(editorContent);
+  }
+  function refreshEditorTitle() {
+    const editor = document.querySelector(".workspace > .editor");
+    if (!editor || disposed) return;
+    const heading = [
+      ...editor.querySelectorAll(
+        ".editor-mode-header h2, .editor-mode-header .editor-date, .year-analysis-header h2, .analysis-sidebar-header",
+      ),
+    ].find(
+      (element) =>
+        !element.closest(".vocabulary-drawer-snapshot") &&
+        element.getClientRects().length &&
+        getComputedStyle(element).visibility === "visible",
+    );
+    if (!heading) return;
+    const text = heading.textContent;
+    if (heading === editorHeading && text === editorHeadingText) return;
+    // Optional panels can begin their reveal before exposing the new heading.
+    // Keep that reveal on the body so it cannot multiply the title's motion.
+    for (
+      let parent = heading.parentElement;
+      parent && parent !== editor;
+      parent = parent.parentElement
+    ) {
+      const entry = running.get(parent);
+      if (!entry?.animation) continue;
+      const name = entry.name;
+      stop(parent);
+      for (const content of editorContent(parent)) play(content, name);
+    }
+    const previous = editorHeading;
+    if (previous) stop(previous);
+    editorHeading = heading;
+    editorHeadingText = text;
+    if (previous && !document.documentElement.classList.contains("app-loading"))
+      play(heading, "motion-title");
+  }
+  function playEditorSurface(element, name) {
+    stop(element);
+    for (const content of editorContent(element)) play(content, name);
+    refreshEditorTitle();
+  }
   function stop(element) {
     const entry = running.get(element);
     if (!entry) return;
@@ -135,7 +186,7 @@
       });
       return;
     }
-    // Only explicit user changes restart an animation; there is no subtree observer.
+    // CSS effects restart only when explicitly triggered.
     if (restarting) void element.offsetWidth;
     element.style.setProperty("--motion-delay", delay + "ms");
     element.classList.add(name);
@@ -168,6 +219,10 @@
     [...running.keys()].forEach(stop);
     unlisten?.();
     unlisten = null;
+    titleObserver?.disconnect();
+    titleObserver = null;
+    editorHeading = null;
+    editorHeadingText = "";
     document.removeEventListener("visibilitychange", onVisibility);
   }
   function mount() {
@@ -175,9 +230,40 @@
     disposed = false;
     unlisten = WorkTimeApp.ui.animationCompat.listen(reduced, onPreference);
     document.addEventListener("visibilitychange", onVisibility);
+    const editor = document.querySelector(".workspace > .editor");
+    if (editor) {
+      refreshEditorTitle();
+      titleObserver = new MutationObserver((records) => {
+        if (
+          records.some((record) => {
+            const target =
+              record.target.nodeType === 1
+                ? record.target
+                : record.target.parentElement;
+            return (
+              target?.closest(editorHeaders) ||
+              target?.matches(
+                ".editor, .editor-content, #dayEditor, #batchBar, #yearAnalysisSidebar, #analysisSidebar, #agendaEditor, #settingsPane, #vocabularyPanel, #vocabularyContent",
+              )
+            );
+          })
+        )
+          refreshEditorTitle();
+      });
+      titleObserver.observe(editor, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ["hidden", "class"],
+      });
+    }
   }
   WorkTimeApp.ui.motion = {
     title,
+    editorContent,
+    refreshEditorTitle,
+    playEditorSurface,
     calendar,
     animateCalendar,
     play,

@@ -157,8 +157,7 @@ const site = path.resolve(
       const oldTitle = document.querySelector(
         ".vocabulary-drawer-snapshot > .vocabulary-header h2",
       );
-      const titleAligned =
-        Math.abs(oldTitle.getBoundingClientRect().top - originalTitleTop) < 1;
+      const titleAligned = !oldTitle;
       const body = document.querySelector(
         ".vocabulary-drawer-snapshot > .vocabulary-drawer-body",
       );
@@ -168,10 +167,8 @@ const site = path.resolve(
         meaningAnimation?.effect.getKeyframes().at(-1).opacity === "0" &&
         !body.querySelector(".vocabulary-revealing");
       body.getAnimations()[0].pause();
-      await oldTitle.getAnimations()[0]?.finished.catch(() => {});
       await Promise.resolve();
-      const noTitleFlash =
-        !oldTitle.isConnected || getComputedStyle(oldTitle).opacity === "0";
+      const noTitleFlash = !oldTitle;
       await prefs.saveMotionMode("reduce");
       const mini = document.querySelector(".vocabulary-mini");
       const identicalMini = fullAppearance === JSON.stringify(appearance(mini));
@@ -215,8 +212,7 @@ const site = path.resolve(
       const fadingDate = document.querySelector(
         ".vocabulary-drawer-snapshot .editor-day-header .editor-date",
       );
-      const dateAligned =
-        Math.abs(fadingDate.getBoundingClientRect().top - editorTitleTop) < 1;
+      const dateAligned = !fadingDate && editorTitleTop > 0;
       const reviewTitle = document.querySelector(
         "#vocabularyContent .vocabulary-header h2",
       );
@@ -376,7 +372,7 @@ const site = path.resolve(
         Math.abs(originalWordTop + downDistance - destinationTop) < 1;
       const backdropFade = document
         .querySelector(".editor-content")
-        .getAnimations()
+        .getAnimations({ subtree: true })
         .some((animation) => {
           const frames = animation.effect.getKeyframes();
           return (
@@ -443,6 +439,23 @@ const site = path.resolve(
       "full",
     ])
       assert.equal(transition[key], true, key);
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.evaluate(async () => {
+      await WorkTimeApp.services.preferences.page.saveMotionMode("full");
+    });
+    await page.locator("#pageSettingsOpen").click();
+    await mini.waitFor();
+    await expand.click();
+    assert.equal(await page.locator("#settingsPane").isVisible(), false);
+    assert.equal(await page.locator(".vocabulary-header h2").isVisible(), true);
+    assert.equal(
+      await page.locator(".vocabulary-drawer-snapshot .editor-date").count(),
+      0,
+      "Expanding from settings must not animate a snapshot of the date title",
+    );
+    await page.waitForFunction(
+      () => !document.querySelector(".vocabulary-drawer-snapshot"),
+    );
     for (const width of [1000, 390]) {
       await page.setViewportSize({ width, height: 1000 });
       const contained = await page.evaluate(async () => {

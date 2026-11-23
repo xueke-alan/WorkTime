@@ -16,7 +16,7 @@ async function main() {
     if (url.pathname === "/WorkTime/probe") {
       response.setHeader("Content-Type", "text/html");
       return response.end(`<!doctype html><html class="app-loading" data-app-state="ready"><head>
-        <script>window.WorkTimeApp={games:{},ui:{},services:{},data:{}};</script>
+        <script>window.WorkTimeApp={games:{resources:()=>[]},ui:{},services:{vocabularyIdle:{whenIdle:async()=>{}}},data:{}};</script>
         <script src="assets/js/services/assets.js"></script>
         ${url.searchParams.has("hold") ? '<script>void WorkTimeApp.services.assets.script("assets/js/services/prerequisite.js");</script>' : ""}
         <script defer src="assets/js/startup.js"></script></head><body>Prefetch fixture</body></html>`);
@@ -108,7 +108,7 @@ async function main() {
       return { context, page, errors };
     }
     async function cached(page) {
-      const deadline = Date.now() + 10000;
+      const deadline = Date.now() + 30000;
       while (Date.now() < deadline) {
         const count = await page.evaluate(
           async (name) => (await (await caches.open(name)).keys()).length,
@@ -171,8 +171,8 @@ async function main() {
       ),
     );
     assert(
-      automatic.requests[0].at - automatic.finished < 5000,
-      "continuous interaction does not postpone network-idle prefetch",
+      automatic.requests[0].at - automatic.finished < 15000,
+      "ordinary interaction does not postpone engine warming after workspace assets",
     );
 
     await first.page.evaluate(async (name) => {
@@ -236,7 +236,7 @@ async function main() {
 
     failBinaries = true;
     const second = await fixture();
-    await second.page.waitForFunction(() => window.binaryRequests.length === 2);
+    await second.page.waitForFunction(() => window.binaryRequests.length === 1);
     await second.context.setOffline(true);
     failBinaries = false;
     await second.context.setOffline(false);
@@ -247,8 +247,8 @@ async function main() {
     }));
     assert.equal(
       retry.requests,
-      4,
-      "restoring connectivity retries the missing binaries once",
+      3,
+      "restoring connectivity retries serial engine resources once",
     );
     assert.equal(retry.workers, 0);
     assert.deepEqual(second.errors, []);

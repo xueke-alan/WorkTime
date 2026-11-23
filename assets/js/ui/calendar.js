@@ -1017,11 +1017,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
     }
     $("dayEditor").classList.toggle("hidden", batchMode);
     if (modeChanged) {
-      const heading = document.querySelector(
-        batchMode ? ".batch-editor-header h2" : "#editorDate",
-      );
-      WorkTimeApp.ui.motion?.stop(heading);
-      WorkTimeApp.ui.motion?.play(heading, "motion-title");
+      WorkTimeApp.ui.motion?.refreshEditorTitle();
     }
     $("batchToggle").setAttribute("aria-pressed", String(batchMode));
     $("batchToggle").title = batchMode

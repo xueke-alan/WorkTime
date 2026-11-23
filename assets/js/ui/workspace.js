@@ -207,6 +207,12 @@ WorkTimeApp.ui.createSiteFooter = function (host, expanded = false) {
     detailTimer = null;
     pendingPhase = "";
   }
+  function setHint(label) {
+    if (activity.dataset.dateMarkerHint !== label)
+      activity.dataset.dateMarkerHint = label;
+    if (activity.getAttribute("aria-label") !== label)
+      activity.setAttribute("aria-label", label);
+  }
   function updateLabel(state, detail = displayedDetail) {
     displayedDetail = detail;
     // Preparation runs again between batches; only cache validity determines
@@ -224,25 +230,40 @@ WorkTimeApp.ui.createSiteFooter = function (host, expanded = false) {
         completed: progressKnown ? state.generatedTotal : "?",
         total: state.audioTotal,
       });
-    if (activity.dataset.dateMarkerHint !== label)
-      activity.dataset.dateMarkerHint = label;
-    if (activity.getAttribute("aria-label") !== label)
-      activity.setAttribute("aria-label", label);
+    setHint(label);
   }
   function refresh() {
     const state = idle.state;
     const model = WorkTimeApp.services.vocabularyModels?.state;
     if (model && ["downloading", "importing"].includes(model.phase)) {
       cancelDetail();
+      displayedDetail = "";
       activity.hidden = false;
       activity.classList.add("is-busy");
-      const label =
-        WorkTimeApp.i18n.t("vocabulary.models_" + model.phase) +
-        (model.total
-          ? " " + Math.floor((model.loaded / model.total) * 100) + "%"
-          : "");
-      activity.title = label;
-      activity.setAttribute("aria-label", label);
+      const downloading = model.phase === "downloading";
+      const total = downloading ? model.modelTotal || model.total : model.total;
+      const loaded =
+        downloading && model.modelTotal ? model.modelLoaded : model.loaded;
+      const label = [
+        WorkTimeApp.i18n.t("vocabulary.models_" + model.phase),
+        ...(downloading && model.accent
+          ? [
+              WorkTimeApp.i18n.t(
+                "vocabulary.model" + model.accent.toUpperCase(),
+              ),
+            ]
+          : []),
+        ...(total
+          ? [
+              Math.floor((loaded / total) * 100) +
+                "%" +
+                (downloading
+                  ? " · " + (total / 1024 / 1024).toFixed(1) + " MiB"
+                  : ""),
+            ]
+          : []),
+      ].join(downloading ? "\n" : " ");
+      setHint(label);
       return;
     }
     activity.removeAttribute("title");

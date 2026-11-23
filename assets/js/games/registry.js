@@ -72,6 +72,7 @@ WorkTimeApp.games = (() => {
       }
     },
     load,
+    resources: () => [...definitions.values()],
     prepareArchive: (ids = [...definitions.keys()]) =>
       Promise.all(ids.map((id) => load(id, true))),
     register(entry) {

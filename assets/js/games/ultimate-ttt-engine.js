@@ -192,18 +192,19 @@ WorkTimeApp.games.utttaiResources = (() => {
           await folder.removeEntry(name);
     });
   }
-  async function prefetch() {
+  async function prefetch(_unused, { waitForIdle = async () => {} } = {}) {
     if (!/^https?:$/.test(location.protocol)) return;
+    await waitForIdle();
     const assets = await manifest("low");
-    await Promise.all(
-      Object.values(assets)
-        .filter((info) => info && typeof info.name === "string")
-        .map(async (info) => {
-          if (!inFlight.has(info.name) && (await cached(info))) return;
-          const result = await resource(info, "low");
-          await result.persistence;
-        }),
-    );
+    for (const info of Object.values(assets).filter(
+      (info) => info && typeof info.name === "string",
+    )) {
+      await waitForIdle();
+      if (!inFlight.has(info.name) && (await cached(info))) continue;
+      const result = await resource(info, "low");
+      await result.persistence;
+    }
+    await waitForIdle();
     await cleanup(assets);
   }
   async function load() {
@@ -316,7 +317,7 @@ WorkTimeApp.games.createUltimateTttEngine = function () {
     });
     return loading;
   }
-  return {
+  const controller = {
     load,
     cancel,
     budgets,
@@ -348,4 +349,7 @@ WorkTimeApp.games.createUltimateTttEngine = function () {
       cancel();
     },
   };
+  return (
+    WorkTimeApp.services.vocabularyIdle?.trackModel?.(controller) || controller
+  );
 };

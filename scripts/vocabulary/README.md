@@ -111,7 +111,8 @@ official examination syllabus.
 
 ## Fixed offline speech
 
-US uses Supertonic 3 F1 (16 steps, speed 1.05, 44,100 Hz PCM).
+US uses Supertonic 3 F1 (16 steps, speed 1.05 for words and 1 for example
+sentences, 44,100 Hz PCM).
 UK uses Piper en_GB-jenny_dioco-medium (speed 1, noise_scale 0.5,
 noise_w 0.333, 22,050 Hz PCM). There are no model selectors. Legacy model
 preferences are ignored and removed. Only these voices are supported;

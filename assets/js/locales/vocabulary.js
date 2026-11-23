@@ -1,6 +1,24 @@
 "use strict";
 (() => {
   const messages = {
+    cancel: ["取消", "Cancel", "取消", "取消", "キャンセル", "취소"],
+    confirm: ["确定", "Confirm", "確定", "確定", "確認", "확인"],
+    modelUK: [
+      "英音模型",
+      "British model",
+      "英音模型",
+      "英音模型",
+      "イギリス英語モデル",
+      "영국식 모델",
+    ],
+    modelUS: [
+      "美音模型",
+      "American model",
+      "美音模型",
+      "美音模型",
+      "アメリカ英語モデル",
+      "미국식 모델",
+    ],
     modelGroup: [
       "发音模型",
       "Speech models",
@@ -28,6 +46,14 @@
     ],
     cacheVerifyShort: ["校验", "Verify", "驗證", "驗證", "検証", "확인"],
     cacheClearShort: ["清理", "Clear", "清理", "清理", "削除", "정리"],
+    clearCacheConfirm: [
+      "确定清理已生成的发音缓存？清理后可重新生成。",
+      "Clear generated pronunciation audio? It can be generated again later.",
+      "確定清理已產生的發音快取？清理後可重新產生。",
+      "確定清理已產生的發音快取？清理後可重新產生。",
+      "生成済みの発音キャッシュを削除しますか？後で再生成できます。",
+      "생성된 발음 캐시를 삭제할까요? 나중에 다시 생성할 수 있습니다.",
+    ],
     accentCaution: [
       "英音发音准确度不高，请甄别",
       "British pronunciation may be inaccurate; please verify.",
@@ -330,12 +356,12 @@
       "캐시 재개",
     ],
     cacheHint: [
-      "依次缓存今日单词、今日例句、其余全部单词、其余全部例句；每组先所选口音，再另一口音。进度包含单词和例句，相同文本与口音只计一次。启动 2 秒后开始；移动鼠标、点击和滚动不打断。输入或拖拽结束 2 秒后继续，游戏和前台发音优先。模型与音频存入运行文件夹 english；清除音频后保持暂停并保留模型。",
-      "Cache today’s words, today’s examples, remaining words, then remaining examples. Each group uses the selected accent first, then the other accent. Progress includes words and examples; identical text and accent count once. Start 2 seconds after startup. Moving, clicking and scrolling do not interrupt it. Resume 2 seconds after editing or dragging; games and foreground speech take priority. Files live in english in the runtime folder. Clearing audio pauses generation and keeps models.",
-      "依序快取今日單詞、今日例句、其餘全部單詞、其餘全部例句；每組先所選口音，再另一口音。進度包含單詞和例句，相同文字與口音只計一次。啟動 2 秒後開始；移動滑鼠、點擊和捲動不打斷。輸入或拖曳結束 2 秒後繼續，遊戲和前景發音優先。檔案存入執行資料夾 english；清除音訊後暫停並保留模型。",
-      "依序快取今日單詞、今日例句、其餘全部單詞、其餘全部例句；每組先所選口音，再另一口音。進度包含單詞和例句，相同文字與口音只計一次。啟動 2 秒後開始；移動滑鼠、點擊和捲動不打斷。輸入或拖曳結束 2 秒後繼續，遊戲和前景發音優先。檔案存入執行資料夾 english；清除音訊後暫停並保留模型。",
-      "今日の単語、今日の例文、残りの全単語、残りの全例文の順に保存します。各グループは選択中の発音、もう一方の順です。進捗には単語と例文を含め、同じテキストと発音は一度だけ数えます。起動2秒後に開始します。マウス移動・クリック・スクロールでは中断しません。入力やドラッグ終了2秒後に再開し、ゲームと発音再生を優先します。english に保存し、音声削除後は停止してモデルを保持します。",
-      "오늘 단어, 오늘 예문, 나머지 전체 단어, 나머지 전체 예문 순으로 저장합니다. 각 그룹은 선택한 억양, 나머지 억양 순입니다. 진행률에는 단어와 예문이 포함되며 같은 텍스트와 억양은 한 번만 셉니다. 시작 2초 후 진행합니다. 마우스 이동, 클릭, 스크롤은 중단하지 않습니다. 입력이나 드래그가 끝난 2초 후 재개하며 게임과 발음 재생이 우선합니다. english에 저장하고 오디오 삭제 후 중지하며 모델은 유지합니다.",
+      "依次缓存今日单词、今日例句、其余全部单词、其余全部例句；每组先所选口音，再另一口音。进度包含单词和例句，相同文本与口音只计一次。启动 2 秒后开始；移动鼠标、点击和滚动不打断。输入或拖拽结束 2 秒后继续，AI 模型任务和前台发音优先。模型与音频存入运行文件夹 english；清除音频后保持暂停并保留模型。",
+      "Cache today’s words, today’s examples, remaining words, then remaining examples. Each group uses the selected accent first, then the other accent. Progress includes words and examples; identical text and accent count once. Start 2 seconds after startup. Moving, clicking and scrolling do not interrupt it. Resume 2 seconds after editing or dragging; AI model tasks and foreground speech take priority. Files live in english in the runtime folder. Clearing audio pauses generation and keeps models.",
+      "依序快取今日單詞、今日例句、其餘全部單詞、其餘全部例句；每組先所選口音，再另一口音。進度包含單詞和例句，相同文字與口音只計一次。啟動 2 秒後開始；移動滑鼠、點擊和捲動不打斷。輸入或拖曳結束 2 秒後繼續，AI 模型工作和前景發音優先。檔案存入執行資料夾 english；清除音訊後暫停並保留模型。",
+      "依序快取今日單詞、今日例句、其餘全部單詞、其餘全部例句；每組先所選口音，再另一口音。進度包含單詞和例句，相同文字與口音只計一次。啟動 2 秒後開始；移動滑鼠、點擊和捲動不打斷。輸入或拖曳結束 2 秒後繼續，AI 模型工作和前景發音優先。檔案存入執行資料夾 english；清除音訊後暫停並保留模型。",
+      "今日の単語、今日の例文、残りの全単語、残りの全例文の順に保存します。各グループは選択中の発音、もう一方の順です。進捗には単語と例文を含め、同じテキストと発音は一度だけ数えます。起動2秒後に開始します。マウス移動・クリック・スクロールでは中断しません。入力やドラッグ終了2秒後に再開し、AIモデルの処理と発音再生を優先します。english に保存し、音声削除後は停止してモデルを保持します。",
+      "오늘 단어, 오늘 예문, 나머지 전체 단어, 나머지 전체 예문 순으로 저장합니다. 각 그룹은 선택한 억양, 나머지 억양 순입니다. 진행률에는 단어와 예문이 포함되며 같은 텍스트와 억양은 한 번만 셉니다. 시작 2초 후 진행합니다. 마우스 이동, 클릭, 스크롤은 중단하지 않습니다. 입력이나 드래그가 끝난 2초 후 재개하며 AI 모델 작업과 발음 재생이 우선합니다. english에 저장하고 오디오 삭제 후 중지하며 모델은 유지합니다.",
     ],
     cacheStatus_waiting: [
       "等待闲时",

@@ -683,7 +683,6 @@ WorkTimeApp.ui.music = (() => {
       }
       if (!expansion.isOpen && pendingMini) {
         pendingMini = false;
-        WorkTimeApp.ui.dateInfo.showMusicPanel();
       }
       render();
     },
@@ -1103,12 +1102,8 @@ WorkTimeApp.ui.music = (() => {
     }
   }
   function renderMini(state) {
-    if (
-      miniHost.hidden ||
-      expansion.isOpen ||
-      !miniHost.getClientRects().length
-    )
-      return;
+    // Keep the hidden player ready before the editor starts fading back in.
+    // The expansion remains open throughout its closing animation.
     const name = state.current?.title || t("idle"),
       artist = state.current?.artist || (!state.current ? t("pickSong") : "");
     if (miniSong.textContent !== name) miniSong.textContent = name;

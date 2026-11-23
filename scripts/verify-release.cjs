@@ -144,6 +144,8 @@ const agendaChecks = [
   "agenda-position",
   "analysis-ratio",
   "view-focus",
+  "idle-preload",
+  "editor-titles",
 ];
 try {
   run(path.join(root, "scripts/verify-game-prefetch.cjs"));

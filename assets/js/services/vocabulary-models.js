@@ -6,9 +6,17 @@ WorkTimeApp.services.vocabularyModels = (() => {
     flights = new Map(),
     controllers = new Set();
   let state = { phase: "idle", loaded: 0, total: 0 };
+  const modelBytes = new Map();
+  let activeSpec;
   let preparation;
   const notify = (next) => {
     state = { ...state, ...next };
+    if (
+      next.loaded !== undefined &&
+      activeSpec &&
+      state.phase === "downloading"
+    )
+      modelBytes.set(activeSpec.sha256, next.loaded);
     for (const listener of listeners) listener();
     document.dispatchEvent(new Event("worktime:modelschange"));
   };
@@ -22,6 +30,10 @@ WorkTimeApp.services.vocabularyModels = (() => {
     if (flights.has(spec.sha256))
       return (await flights.get(spec.sha256)).slice();
     const operation = (async () => {
+      const report = (next) => {
+        activeSpec = spec;
+        notify(next);
+      };
       const controller = new AbortController();
       controllers.add(controller);
       let timer;
@@ -30,7 +42,7 @@ WorkTimeApp.services.vocabularyModels = (() => {
         timer = setTimeout(() => controller.abort(), 60000);
       };
       try {
-        notify({ phase: "downloading", loaded: 0, total: spec.bytes });
+        report({ phase: "downloading", loaded: 0, total: spec.bytes });
         if (spec.parts) {
           const bytes = new Uint8Array(spec.bytes);
           let offset = 0;
@@ -66,7 +78,7 @@ WorkTimeApp.services.vocabularyModels = (() => {
             );
             bytes.set(chunk, offset);
             offset += chunk.length;
-            notify({ loaded: offset });
+            report({ loaded: offset });
           }
           if (
             offset !== spec.bytes ||
@@ -74,7 +86,7 @@ WorkTimeApp.services.vocabularyModels = (() => {
               spec.sha256
           )
             throw Error("Model checksum mismatch");
-          notify({ phase: "idle" });
+          report({ phase: "idle" });
           return bytes;
         }
         heartbeat();
@@ -97,7 +109,7 @@ WorkTimeApp.services.vocabularyModels = (() => {
           }
           bytes.set(value, offset);
           offset += value.length;
-          notify({ loaded: offset });
+          report({ loaded: offset });
         }
         if (
           offset !== spec.bytes ||
@@ -105,10 +117,10 @@ WorkTimeApp.services.vocabularyModels = (() => {
             spec.sha256
         )
           throw Error("Model resource checksum mismatch");
-        notify({ phase: "idle" });
+        report({ phase: "idle" });
         return bytes;
       } catch (error) {
-        notify({ phase: controller.signal.aborted ? "cancelled" : "failed" });
+        report({ phase: controller.signal.aborted ? "cancelled" : "failed" });
         throw error;
       } finally {
         clearTimeout(timer);
@@ -226,6 +238,7 @@ WorkTimeApp.services.vocabularyModels = (() => {
               () => download(spec),
               engine,
             );
+            modelBytes.set(spec.sha256, spec.bytes);
           }
         notify({ phase: "installed" });
       } catch (error) {
@@ -237,7 +250,22 @@ WorkTimeApp.services.vocabularyModels = (() => {
       for (const controller of controllers) controller.abort();
     },
     get state() {
-      return { ...state };
+      const manifest = WorkTimeApp.data.vocabularySpeech;
+      const group = Object.entries(manifest?.groups || {}).find(([, names]) =>
+        names.some(
+          (name) => manifest.files[name].sha256 === activeSpec?.sha256,
+        ),
+      );
+      const files = group ? group[1].map((name) => manifest.files[name]) : [];
+      return {
+        ...state,
+        accent: group ? (group[0] === "piper" ? "uk" : "us") : null,
+        modelLoaded: files.reduce(
+          (sum, file) => sum + (modelBytes.get(file.sha256) || 0),
+          0,
+        ),
+        modelTotal: files.reduce((sum, file) => sum + file.bytes, 0),
+      };
     },
     subscribe(listener) {
       listeners.add(listener);

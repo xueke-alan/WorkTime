@@ -50,11 +50,13 @@ WorkTimeApp.games.jungleEngine = (() => {
     return frames.join("\n");
   }
   function search(state, difficulty, { onResult, onError }) {
+    const finishModel = WorkTimeApp.services.vocabularyIdle?.beginModelTask?.();
     let cancelled = false,
       worker = null,
       url = null,
       watchdog = null;
     function cancel() {
+      finishModel?.();
       cancelled = true;
       clearTimeout(watchdog);
       worker?.terminate();

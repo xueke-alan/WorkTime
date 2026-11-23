@@ -86,6 +86,21 @@ async function main() {
     );
     assert.equal(await page.locator("[data-voice-accent]").count(), 0);
     assert.deepEqual(
+      await page.evaluate(() => {
+        const idle = WorkTimeApp.services.vocabularyIdle;
+        const cache = WorkTimeApp.services.vocabularyAudioCache;
+        const word = { word: "Hello there." };
+        const example = { ...word, kind: "example" };
+        return [
+          idle.profile("us", example).speed,
+          idle.profile("uk", example).speed,
+          cache.key(word, "us") !== cache.key(example, "us"),
+          cache.key(word, "uk") === cache.key(example, "uk"),
+        ];
+      }),
+      [1, 1, true, true],
+    );
+    assert.deepEqual(
       await page.evaluate(() => [
         WorkTimeApp.services.vocabularyIdle.profile("us"),
         WorkTimeApp.services.vocabularyIdle.profile("uk"),
@@ -266,7 +281,7 @@ async function main() {
       );
       const exampleAudio = await page.evaluate(async () => {
         const S = WorkTimeApp.services;
-        const entry = { word: "We drink clean water." };
+        const entry = { word: "We drink clean water.", kind: "example" };
         const us = await S.vocabularyAudioCache.read(entry, "us");
         const uk = await S.vocabularyAudioCache.read(entry, "uk");
         const original = Worker.prototype.postMessage;

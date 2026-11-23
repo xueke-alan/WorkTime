@@ -141,7 +141,10 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       const content = editor.closest(".agenda-mode")
         ? document.getElementById("agendaEditor")
         : editor.querySelector(".editor-content");
-      WorkTimeApp.ui.motion?.play(content, "motion-sidebar-back");
+      WorkTimeApp.ui.motion?.playEditorSurface(
+        content,
+        "motion-sidebar-forward",
+      );
       settingsButton.focus({ preventScroll: true });
     }
   }
@@ -166,7 +169,10 @@ WorkTimeApp.ui.createSidebarPanels = function ({
       updateSettingsButton(true);
       WorkTimeApp.ui.motion?.stop(editor.querySelector(".editor-content"));
       WorkTimeApp.ui.motion?.stop(document.getElementById("agendaEditor"));
-      WorkTimeApp.ui.motion?.play(settings, "motion-sidebar-forward");
+      WorkTimeApp.ui.motion?.playEditorSurface(
+        settings,
+        "motion-sidebar-forward",
+      );
       if (window.matchMedia("(max-width: 1150px)").matches)
         editor.scrollIntoView({ block: "start" });
     }

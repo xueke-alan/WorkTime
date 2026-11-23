@@ -41,6 +41,36 @@ const { chromium } = require("playwright");
       const shown = () =>
         cover.evaluate((el) => el.classList.contains("is-visible"));
       assert.equal(await shown(), true, "First visit is covered immediately");
+      await page.locator("#date-tab-tools").click();
+      await page.evaluate(() => {
+        const cover = document.querySelector(".game-idle-cover");
+        window.idleCoverFlashes = [];
+        window.idleCoverObserver = new MutationObserver((records) => {
+          for (const record of records)
+            if (record.oldValue?.split(" ").includes("is-visible"))
+              window.idleCoverFlashes.push(record.oldValue);
+        });
+        window.idleCoverObserver.observe(cover, {
+          attributes: true,
+          attributeFilter: ["class"],
+          attributeOldValue: true,
+        });
+      });
+      await page.locator("#gamesToolOpen").click();
+      await page.waitForTimeout(400);
+      assert.equal(
+        await shown(),
+        false,
+        "App launcher keeps the menu uncovered",
+      );
+      assert.deepEqual(
+        await page.evaluate(() => {
+          window.idleCoverObserver.disconnect();
+          return window.idleCoverFlashes;
+        }),
+        [],
+        "App-to-game navigation never briefly shows the cover",
+      );
       assert.equal(await cover.getAttribute("aria-hidden"), "true");
       const motto = cover.locator(".game-idle-motto");
       assert.equal(await motto.textContent(), "我爱上班，从不摸鱼");

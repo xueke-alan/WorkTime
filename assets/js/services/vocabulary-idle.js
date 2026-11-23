@@ -21,9 +21,14 @@ WorkTimeApp.services.vocabularyIdle = (() => {
     limit: limits[0],
     poolSize: "auto",
   };
-  function profile(accent) {
+  function profile(accent, entry) {
     if (accent === "us")
-      return { engine: "supertonic", voice: "F1", speed: 1.05, steps: 16 };
+      return {
+        engine: "supertonic",
+        voice: "F1",
+        speed: entry?.kind === "example" ? 1 : 1.05,
+        steps: 16,
+      };
     return {
       voice: "en_GB-jenny_dioco-medium",
       speed: 1,
@@ -42,8 +47,8 @@ WorkTimeApp.services.vocabularyIdle = (() => {
   let composing = false,
     nativeDragging = false,
     interactionObserver;
-  let gameOpen = false,
-    layoutDragging = false;
+  const modelTasks = new Set();
+  let layoutDragging = false;
   let queue,
     queueIndex = 0,
     signature = "",
@@ -179,7 +184,7 @@ WorkTimeApp.services.vocabularyIdle = (() => {
       !composing &&
       !nativeDragging &&
       !layoutDragging &&
-      !gameOpen &&
+      !modelTasks.size &&
       ![...pointers.values()].some((pointer) => pointer.dragging) &&
       !WorkTimeApp.services.vocabularySpeech?.active
     );
@@ -255,7 +260,7 @@ WorkTimeApp.services.vocabularyIdle = (() => {
       const appendExamples = (list, accent) => {
         for (const entry of list)
           for (const example of entry.examples || [])
-            append([{ word: example.en }], accent);
+            append([{ word: example.en, kind: "example" }], accent);
       };
       append(priority, selected);
       append(priority, other);
@@ -471,16 +476,12 @@ WorkTimeApp.services.vocabularyIdle = (() => {
       )
     )
       return;
-    const nextGame = !!document.querySelector(
-      ".workspace.is-game-expanded, #gameShell:not([hidden])",
-    );
     const nextDrag =
       document.body.classList.contains("agenda-is-dragging") ||
       document.body.classList.contains("agenda-is-resizing") ||
       document.body.classList.contains("agenda-timetable-resizing") ||
       !!document.querySelector(".agenda-timetable.is-dragging");
-    if (gameOpen !== nextGame || layoutDragging !== nextDrag) {
-      gameOpen = nextGame;
+    if (layoutDragging !== nextDrag) {
       layoutDragging = nextDrag;
       defer();
     }
@@ -516,6 +517,58 @@ WorkTimeApp.services.vocabularyIdle = (() => {
     "blur",
   ];
   return {
+    beginModelTask() {
+      const token = {};
+      modelTasks.add(token);
+      defer();
+      return () => {
+        if (modelTasks.delete(token)) defer();
+      };
+    },
+    trackModel(controller) {
+      for (const name of ["load", "search"]) {
+        const original = controller[name];
+        if (!original) continue;
+        controller[name] = (...args) => {
+          const finish = this.beginModelTask();
+          try {
+            return Promise.resolve(original.apply(controller, args)).finally(
+              finish,
+            );
+          } catch (error) {
+            finish();
+            throw error;
+          }
+        };
+      }
+      return controller;
+    },
+    // Resource warming shares interaction rules, independently of audio settings.
+    whenIdle({ signal } = {}) {
+      return new Promise((resolve, reject) => {
+        let timeout;
+        const finish = (error) => {
+          clearTimeout(timeout);
+          signal?.removeEventListener("abort", abort);
+          if (error) reject(error);
+          else resolve();
+        };
+        const abort = () => finish(new DOMException("Cancelled", "AbortError"));
+        const check = () => {
+          if (
+            !stopped &&
+            document.readyState === "complete" &&
+            !document.documentElement.classList.contains("app-loading") &&
+            interactionAllowed()
+          )
+            finish();
+          else timeout = setTimeout(check, 100);
+        };
+        if (signal?.aborted) return abort();
+        signal?.addEventListener("abort", abort, { once: true });
+        check();
+      });
+    },
     load,
     profile,
     configure,
@@ -546,7 +599,7 @@ WorkTimeApp.services.vocabularyIdle = (() => {
             ? "indexingCache"
             : state;
       if (state === "waiting") {
-        audioPhase = gameOpen
+        audioPhase = modelTasks.size
           ? "waitingGame"
           : composing
             ? "waitingInput"

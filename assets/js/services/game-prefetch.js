@@ -1,5 +1,5 @@
 "use strict";
-/** One background engine at a time. Foreground consumers keep sharing resource promises. */
+/** Warm optional workspaces first, then engines; foreground consumers share the bytes. */
 WorkTimeApp.services.gamePrefetch = (() => {
   const definitions = {
     xiangqi: ["xiangqi-engine", "pikafishResources"],
@@ -11,28 +11,72 @@ WorkTimeApp.services.gamePrefetch = (() => {
   const abort = new AbortController();
   let running = false,
     reconnect = 0;
+  async function waitForIdle() {
+    const { assets, vocabularyIdle } = WorkTimeApp.services;
+    await vocabularyIdle.whenIdle({ signal: abort.signal });
+    await assets.whenIdle({ signal: abort.signal });
+    // Input may have started while a foreground resource was still loading.
+    await vocabularyIdle.whenIdle({ signal: abort.signal });
+  }
+  function queueAssets() {
+    const add = (id, paths) => {
+      if (!jobs.has(id))
+        jobs.set(id, {
+          id,
+          paths: [...new Set(paths)],
+          state: "queued",
+          retried: false,
+        });
+    };
+    add("shared", [
+      "assets/js/ui/secondary-runtime.min.js",
+      "assets/css/game-session.css",
+    ]);
+    for (const game of WorkTimeApp.games.resources())
+      add(game.id, [...game.rules, game.style, game.source]);
+    for (const app of ["music", "typing", "reader"])
+      add("app-" + app, [
+        "assets/css/" + app + ".css",
+        "assets/js/ui/" + app + "-runtime.min.js",
+      ]);
+    add(
+      "typing-lessons",
+      Array.from(
+        { length: 12 },
+        (_, i) => "assets/data/typing/en-" + (i + 1) + ".js",
+      ),
+    );
+  }
   async function drain() {
     if (running || abort.signal.aborted) return;
     running = true;
     try {
-      while (!abort.signal.aborted && navigator.onLine !== false) {
+      while (!abort.signal.aborted) {
         const job = [...jobs.values()].find((item) => item.state === "queued");
         if (!job) break;
         job.state = "running";
         const attempt = reconnect;
         try {
           const assets = WorkTimeApp.services.assets;
-          await assets.whenIdle({ signal: abort.signal });
+          await waitForIdle();
           if (abort.signal.aborted) break;
-          if (navigator.onLine === false) throw Error("Offline");
-          const [script, resource] = definitions[job.id];
-          await assets.script("assets/js/games/" + script + ".js", {
-            fetchPriority: "low",
-          });
-          await assets.whenIdle({ signal: abort.signal });
-          if (abort.signal.aborted) break;
-          if (navigator.onLine === false) throw Error("Offline");
-          await WorkTimeApp.games[resource].prefetch();
+          if (/^https?:$/.test(location.protocol) && navigator.onLine === false)
+            throw Error("Offline");
+          if (job.paths) {
+            for (const path of job.paths) {
+              await waitForIdle();
+              await assets.preload(path, path.endsWith(".css"));
+            }
+          } else {
+            const [script, resource] = definitions[job.id];
+            await assets.script("assets/js/games/" + script + ".js", {
+              fetchPriority: "low",
+            });
+            await waitForIdle();
+            await WorkTimeApp.games[resource].prefetch(undefined, {
+              waitForIdle,
+            });
+          }
           job.state = abort.signal.aborted ? "cancelled" : "complete";
         } catch {
           job.state = abort.signal.aborted ? "cancelled" : "failed";
@@ -72,7 +116,12 @@ WorkTimeApp.services.gamePrefetch = (() => {
   );
   return {
     start(id) {
-      if (abort.signal.aborted || !/^https?:$/.test(location.protocol)) return;
+      if (abort.signal.aborted) return;
+      if (!id) queueAssets();
+      if (!/^https?:$/.test(location.protocol)) {
+        void drain();
+        return;
+      }
       for (const key of id ? [id] : Object.keys(definitions)) {
         if (!definitions[key]) throw Error("Unknown prefetch job: " + key);
         if (!jobs.has(key))
@@ -82,12 +131,14 @@ WorkTimeApp.services.gamePrefetch = (() => {
     },
     prioritize(id) {
       const key = id.replace(/^game-/, "");
-      const job = jobs.get(key);
-      if (job?.state !== "queued") return;
-      const rest = [...jobs].filter(([name]) => name !== key);
-      jobs.clear();
-      jobs.set(key, job);
-      for (const [name, item] of rest) jobs.set(name, item);
+      for (const candidate of [key, "game-" + key]) {
+        const job = jobs.get(candidate);
+        if (job?.state !== "queued") continue;
+        const rest = [...jobs].filter(([name]) => name !== candidate);
+        jobs.clear();
+        jobs.set(candidate, job);
+        for (const [name, item] of rest) jobs.set(name, item);
+      }
     },
     get status() {
       return Object.fromEntries([...jobs].map(([id, job]) => [id, job.state]));
