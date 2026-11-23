@@ -212,6 +212,13 @@ body .editor .vocabulary-mini { justify-content: center; }
 .vocabulary-model-settings .vocabulary-muted { margin: 0 0 12px; font-size: .8rem; line-height: 1.6; }
 .vocabulary-model-status { margin: 12px 0 0; font-size: .8rem; line-height: 1.6; }
 .vocabulary-model-settings [hidden] { display: none !important; }
+.vocabulary-model-cancel[hidden] { display: none !important; }
+.vocabulary-management-groups { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; margin-top: 18px; }
+.vocabulary-management-groups > section { margin: 0; padding: 0; border: 0; min-width: 0; }
+.vocabulary-management-groups h4 { margin: 0 0 8px; font-size: .85rem; font-weight: 500; }
+.vocabulary-management-groups .vocabulary-cache-actions { gap: 6px; }
+.vocabulary-management-groups .ui-button { min-width: 0; padding-inline: 6px; }
+.vocabulary-accent-caution { display: block; margin-top: 4px; font-size: .7rem; color: var(--muted); }
 
 /* Word lists and reference pages share the review typography and speaker asset. */
 .vocabulary-book-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }

@@ -6,9 +6,11 @@ WorkTimeApp.services.vocabularyModels = (() => {
     flights = new Map(),
     controllers = new Set();
   let state = { phase: "idle", loaded: 0, total: 0 };
+  let preparation;
   const notify = (next) => {
     state = { ...state, ...next };
     for (const listener of listeners) listener();
+    document.dispatchEvent(new Event("worktime:modelschange"));
   };
   async function definition() {
     await WorkTimeApp.services.assets.script(
@@ -29,6 +31,52 @@ WorkTimeApp.services.vocabularyModels = (() => {
       };
       try {
         notify({ phase: "downloading", loaded: 0, total: spec.bytes });
+        if (spec.parts) {
+          const bytes = new Uint8Array(spec.bytes);
+          let offset = 0;
+          for (const url of spec.parts) {
+            const encoded = await new Promise((resolve, reject) => {
+              const script = document.createElement("script");
+              const finish = (error) => {
+                clearTimeout(timeout);
+                controller.signal.removeEventListener("abort", abort);
+                script.remove();
+                if (error) reject(error);
+                else resolve(WorkTimeApp.data.vocabularyModelChunk);
+                WorkTimeApp.data.vocabularyModelChunk = null;
+              };
+              const abort = () =>
+                finish(new DOMException("Cancelled", "AbortError"));
+              const timeout = setTimeout(
+                () => finish(Error("Model download timed out")),
+                60000,
+              );
+              controller.signal.addEventListener("abort", abort, {
+                once: true,
+              });
+              script.onload = () => finish();
+              script.onerror = () => finish(Error("Model download failed"));
+              script.src = url;
+              document.head.append(script);
+            });
+            if (typeof encoded !== "string")
+              throw Error("Invalid model fragment");
+            const chunk = Uint8Array.from(atob(encoded), (c) =>
+              c.charCodeAt(0),
+            );
+            bytes.set(chunk, offset);
+            offset += chunk.length;
+            notify({ loaded: offset });
+          }
+          if (
+            offset !== spec.bytes ||
+            (await WorkTimeApp.services.vocabularyAudioCache.hash(bytes)) !==
+              spec.sha256
+          )
+            throw Error("Model checksum mismatch");
+          notify({ phase: "idle" });
+          return bytes;
+        }
         heartbeat();
         const response = await fetch(spec.url, {
           signal: controller.signal,
@@ -160,7 +208,13 @@ WorkTimeApp.services.vocabularyModels = (() => {
         throw error;
       }
     },
-    async prepare() {
+    prepare() {
+      preparation ||= this.prepareAll().finally(() => {
+        preparation = null;
+      });
+      return preparation;
+    },
+    async prepareAll() {
       try {
         const manifest = await definition();
         for (const [engine, names] of Object.entries(manifest.groups))

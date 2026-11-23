@@ -246,7 +246,7 @@ WorkTimeApp.ui.secondary.settings = function (options) {
     )
       return;
     const target = event.target.closest(
-      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #agendaMode, #batchToggle, #yearViewToggle, #restore, #restoreStorage, #initializeStorage, #analysisToggle, .notification-tab, .tool-card",
+      "#calendar .day[data-date], #calendar [data-year-date], #prevMonth, #nextMonth, #todayButton, #monthTitle, #agendaMode, #batchToggle, #yearViewToggle, #restore, #restoreStorage, #initializeStorage, #analysisToggle, .notification-tab, .tool-card, .vocabulary-mini-expand",
     );
     if (!target) return;
     const keepSettings = target.matches(

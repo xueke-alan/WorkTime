@@ -862,7 +862,11 @@ WorkTimeApp.ui.vocabulary = (() => {
           accent.setAttribute("aria-label", t("accent") + ": " + t(value));
           updateSettings("accent", value);
         };
-        row.append(node("span", t("accent")), accent);
+        const accentLabel = node("span", t("accent"));
+        accentLabel.append(
+          node("small", t("accentCaution"), "vocabulary-accent-caution"),
+        );
+        row.append(accentLabel, accent);
         return row;
       })(),
       toggle("autoRead", data.settings.autoRead !== false, (checked) =>
@@ -942,7 +946,6 @@ WorkTimeApp.ui.vocabulary = (() => {
       undefined,
       "vocabulary-model-settings",
     );
-    modelSection.append(node("p", t("modelInfo"), "vocabulary-muted"));
     const modelStatus = node("p", "", "vocabulary-model-status");
     modelStatus.setAttribute("role", "status");
     const modelActions = node("div", undefined, "vocabulary-cache-actions");
@@ -976,9 +979,21 @@ WorkTimeApp.ui.vocabulary = (() => {
     importModel.dataset.modelAction = "import";
     const cancelModel = button(t("modelCancel"), () => models.cancel());
     cancelModel.classList.add("vocabulary-model-cancel");
-    modelActions.append(download, importModel, cancelModel, upload);
-    modelSection.append(modelActions, modelStatus);
-    panel.append(modelSection);
+    download.textContent = t("modelDownloadShort");
+    importModel.textContent = t("modelImportShort");
+    verify.textContent = t("cacheVerifyShort");
+    clear.textContent = t("cacheClearShort");
+    modelActions.append(download, importModel);
+    modelSection.append(node("h4", t("modelGroup")), modelActions);
+    const cacheSection = node(
+      "section",
+      undefined,
+      "vocabulary-cache-settings",
+    );
+    cacheSection.append(node("h4", t("cacheGroup")), actions);
+    const groups = node("div", undefined, "vocabulary-management-groups");
+    groups.append(modelSection, cacheSection);
+    panel.append(groups, cancelModel, upload, modelStatus);
     refreshModels();
     settingsController = new AbortController();
     for (const [index, native] of [
@@ -1409,8 +1424,9 @@ WorkTimeApp.ui.vocabulary = (() => {
   function synchronizeVisibility() {
     if (
       host.hidden ||
-      editor.classList.contains("is-settings-open") ||
-      editor.classList.contains("is-page-settings-open")
+      (!miniMode &&
+        (editor.classList.contains("is-settings-open") ||
+          editor.classList.contains("is-page-settings-open")))
     )
       stopModeAnimation();
     const next = !visible();
@@ -1651,6 +1667,15 @@ WorkTimeApp.ui.vocabulary = (() => {
   }
   function collapseOnClick(event) {
     if (
+      !miniMode &&
+      visible() &&
+      event.target instanceof Element &&
+      event.target.closest("#pageSettingsOpen")
+    ) {
+      setMini(true);
+      return;
+    }
+    if (
       miniMode ||
       !visible() ||
       !(event.target instanceof Element) ||
@@ -1668,6 +1693,7 @@ WorkTimeApp.ui.vocabulary = (() => {
     },
     open() {
       if (disposed) return;
+      void models.prepare().catch(() => {});
       setMini(false);
     },
     refresh() {

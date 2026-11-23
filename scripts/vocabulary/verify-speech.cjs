@@ -64,9 +64,7 @@ async function main() {
     if (packagePath) {
       const chooser = page.waitForEvent("filechooser");
       await page.locator('[data-page="preferences"]').click();
-      await page
-        .getByRole("button", { name: "导入离线模型包", exact: true })
-        .click();
+      await page.getByRole("button", { name: "导入", exact: true }).click();
       await (await chooser).setFiles(path.resolve(packagePath));
       await page.waitForFunction(
         () => WorkTimeApp.services.vocabularyModels.state.phase === "installed",

@@ -145,13 +145,15 @@ async function prepareSpeech() {
       files[file] = {
         ...spec,
         url:
-          "https://huggingface.co/" +
-          source.repo.replace(/^models\//, "") +
-          "/resolve/" +
-          source.revision +
-          "/" +
-          file,
+          "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/" +
+          name +
+          "-" +
+          file.replaceAll("/", "-"),
       };
+      files[file].parts = Array.from(
+        { length: Math.ceil(spec.bytes / (3 * 1024 ** 2)) },
+        (_, index) => files[file].url + ".part-" + index + ".js",
+      );
     }
     Object.assign(manifest.files, files);
     manifest.groups[name] = Object.keys(files);

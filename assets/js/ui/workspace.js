@@ -231,6 +231,21 @@ WorkTimeApp.ui.createSiteFooter = function (host, expanded = false) {
   }
   function refresh() {
     const state = idle.state;
+    const model = WorkTimeApp.services.vocabularyModels?.state;
+    if (model && ["downloading", "importing"].includes(model.phase)) {
+      cancelDetail();
+      activity.hidden = false;
+      activity.classList.add("is-busy");
+      const label =
+        WorkTimeApp.i18n.t("vocabulary.models_" + model.phase) +
+        (model.total
+          ? " " + Math.floor((model.loaded / model.total) * 100) + "%"
+          : "");
+      activity.title = label;
+      activity.setAttribute("aria-label", label);
+      return;
+    }
+    activity.removeAttribute("title");
     if (
       idle.settings.enabled === false ||
       ["disabled", "paused"].includes(state.audioPhase)
@@ -298,12 +313,14 @@ WorkTimeApp.ui.createSiteFooter = function (host, expanded = false) {
     }
   }
   const unsubscribe = idle.subscribe(refresh);
+  document.addEventListener("worktime:modelschange", refresh);
   document.addEventListener("worktime:languagechange", refresh);
   refresh();
   return () => {
     disposePlayback();
     cancelDetail();
     unsubscribe();
+    document.removeEventListener("worktime:modelschange", refresh);
     document.removeEventListener("worktime:languagechange", refresh);
     if (expanded) footer.remove();
     else {

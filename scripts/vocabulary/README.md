@@ -119,7 +119,7 @@ recognized retired voice caches are cleaned up, with current audio preserved.
 
 `npm run prepare:speech` builds the lightweight runtime and pinned model manifest
 without downloading model binaries. First foreground speech downloads the needed
-engine from its pinned Hugging Face revision, verifies SHA-256, and saves it in
+engine from the pinned speech-models-v1 GitHub Release, verifies SHA-256, and saves it in
 english/resources-piper/ or english/resources-supertonic-3/. Settings can download
 both engines or cancel an active download. Background synthesis reuses installed
 models and never initiates a model download. Network transfer does not hold the
@@ -151,3 +151,5 @@ the full audio identity across words and examples. Example text matches manual
 playback exactly, so existing recordings are reused. Foreground speech retains
 priority, and changes to learning records, settings or the local date rebuild
 the priority queue without discarding cached audio.
+
+模型统一从 https://github.com/xueke-alan/WorkTime/releases/tag/speech-models-v1 分发。原始模型及浏览器分片均为 Release Assets，不进入 Git 历史；分片还原后仍按原始 SHA-256 校验。设置中的发音模型与缓存各有一组操作，下载进度显示在底部状态栏。

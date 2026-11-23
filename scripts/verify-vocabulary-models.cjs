@@ -232,9 +232,19 @@ async function main() {
     await ui.locator("#date-tab-tools").click();
     await ui.locator("#vocabularyOpen").click();
     await ui.locator('[data-page="preferences"]').click();
-    await ui
-      .getByRole("button", { name: "下载英美发音模型", exact: true })
-      .click();
+    assert.deepEqual(
+      await ui.locator(".vocabulary-management-groups h4").allTextContents(),
+      ["发音模型", "缓存"],
+    );
+    assert.equal(
+      await ui.locator(".vocabulary-model-settings .vocabulary-muted").count(),
+      0,
+    );
+    assert.match(
+      await ui.locator(".vocabulary-accent-caution").innerText(),
+      /英音发音准确度不高/,
+    );
+    await ui.getByRole("button", { name: "下载", exact: true }).click();
     await ui.waitForFunction(
       () => WorkTimeApp.services.vocabularyModels.state.phase === "failed",
     );
@@ -247,9 +257,7 @@ async function main() {
       false,
     );
     assert.equal(
-      await ui
-        .getByRole("button", { name: "导入离线模型包", exact: true })
-        .count(),
+      await ui.getByRole("button", { name: "导入", exact: true }).count(),
       1,
     );
     assert(
@@ -268,6 +276,21 @@ async function main() {
       unexpected,
       [],
       "Opening settings never downloads model binaries",
+    );
+    await ui.setViewportSize({ width: 1440, height: 1000 });
+    await ui.evaluate(async () => {
+      await WorkTimeApp.services.preferences.page.saveMotionMode("full");
+      WorkTimeApp.ui.vocabulary.open();
+    });
+    await ui.locator("#pageSettingsOpen").click();
+    await ui.waitForFunction(() => WorkTimeApp.ui.vocabulary.isMini);
+    await ui
+      .locator(".vocabulary-mini-expand")
+      .click({ position: { x: 10, y: 100 } });
+    await ui.waitForFunction(
+      () =>
+        !WorkTimeApp.ui.vocabulary.isMini &&
+        document.getElementById("settingsPane").hidden,
     );
     await ui.close();
     console.log(

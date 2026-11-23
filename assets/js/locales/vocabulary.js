@@ -1,6 +1,41 @@
 "use strict";
 (() => {
   const messages = {
+    modelGroup: [
+      "发音模型",
+      "Speech models",
+      "發音模型",
+      "發音模型",
+      "音声モデル",
+      "음성 모델",
+    ],
+    cacheGroup: ["缓存", "Cache", "快取", "快取", "キャッシュ", "캐시"],
+    modelDownloadShort: [
+      "下载",
+      "Download",
+      "下載",
+      "下載",
+      "ダウンロード",
+      "다운로드",
+    ],
+    modelImportShort: [
+      "导入",
+      "Import",
+      "匯入",
+      "匯入",
+      "読み込む",
+      "가져오기",
+    ],
+    cacheVerifyShort: ["校验", "Verify", "驗證", "驗證", "検証", "확인"],
+    cacheClearShort: ["清理", "Clear", "清理", "清理", "削除", "정리"],
+    accentCaution: [
+      "英音发音准确度不高，请甄别",
+      "British pronunciation may be inaccurate; please verify.",
+      "英音發音準確度不高，請甄別",
+      "英音發音準確度不高，請甄別",
+      "イギリス英語の発音は不正確な場合があります。ご確認ください。",
+      "영국식 발음이 정확하지 않을 수 있으니 확인해 주세요.",
+    ],
     models_cancelled: [
       "下载已取消，已保存的模型会保留，可随时重试。",
       "Download cancelled. Saved models are kept; you can retry anytime.",

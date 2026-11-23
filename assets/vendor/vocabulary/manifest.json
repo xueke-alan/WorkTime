@@ -27,57 +27,235 @@
     "onnx/duration_predictor.onnx": {
       "bytes": 3700147,
       "sha256": "c3eb91414d5ff8a7a239b7fe9e34e7e2bf8a8140d8375ffb14718b1c639325db",
-      "url": "https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/aafc6e32416a594460b32413efc49d7fe4ce6d46/onnx/duration_predictor.onnx"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-duration_predictor.onnx",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-duration_predictor.onnx.part-0.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-duration_predictor.onnx.part-1.js"
+      ]
     },
     "onnx/text_encoder.onnx": {
       "bytes": 36416150,
       "sha256": "c7befd5ea8c3119769e8a6c1486c4edc6a3bc8365c67621c881bbb774b9902ff",
-      "url": "https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/aafc6e32416a594460b32413efc49d7fe4ce6d46/onnx/text_encoder.onnx"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-0.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-1.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-2.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-3.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-4.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-5.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-6.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-7.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-8.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-9.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-10.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-text_encoder.onnx.part-11.js"
+      ]
     },
     "onnx/vector_estimator.onnx": {
       "bytes": 256534781,
       "sha256": "883ac868ea0275ef0e991524dc64f16b3c0376efd7c320af6b53f5b780d7c61c",
-      "url": "https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/aafc6e32416a594460b32413efc49d7fe4ce6d46/onnx/vector_estimator.onnx"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-0.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-1.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-2.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-3.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-4.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-5.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-6.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-7.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-8.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-9.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-10.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-11.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-12.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-13.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-14.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-15.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-16.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-17.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-18.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-19.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-20.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-21.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-22.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-23.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-24.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-25.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-26.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-27.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-28.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-29.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-30.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-31.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-32.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-33.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-34.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-35.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-36.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-37.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-38.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-39.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-40.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-41.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-42.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-43.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-44.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-45.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-46.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-47.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-48.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-49.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-50.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-51.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-52.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-53.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-54.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-55.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-56.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-57.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-58.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-59.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-60.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-61.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-62.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-63.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-64.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-65.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-66.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-67.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-68.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-69.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-70.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-71.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-72.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-73.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-74.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-75.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-76.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-77.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-78.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-79.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-80.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vector_estimator.onnx.part-81.js"
+      ]
     },
     "onnx/vocoder.onnx": {
       "bytes": 101424195,
       "sha256": "085de76dd8e8d5836d6ca66826601f615939218f90e519f70ee8a36ed2a4c4ba",
-      "url": "https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/aafc6e32416a594460b32413efc49d7fe4ce6d46/onnx/vocoder.onnx"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-0.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-1.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-2.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-3.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-4.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-5.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-6.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-7.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-8.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-9.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-10.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-11.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-12.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-13.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-14.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-15.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-16.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-17.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-18.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-19.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-20.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-21.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-22.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-23.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-24.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-25.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-26.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-27.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-28.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-29.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-30.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-31.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-vocoder.onnx.part-32.js"
+      ]
     },
     "onnx/tts.json": {
       "bytes": 8253,
       "sha256": "42078d3aef1cd43ab43021f3c54f47d2d75ceb4e75f627f118890128b06a0d09",
-      "url": "https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/aafc6e32416a594460b32413efc49d7fe4ce6d46/onnx/tts.json"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-tts.json",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-tts.json.part-0.js"
+      ]
     },
     "onnx/unicode_indexer.json": {
       "bytes": 277676,
       "sha256": "9bf7346e43883a81f8645c81224f786d43c5b57f3641f6e7671a7d6c493cb24f",
-      "url": "https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/aafc6e32416a594460b32413efc49d7fe4ce6d46/onnx/unicode_indexer.json"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-unicode_indexer.json",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-onnx-unicode_indexer.json.part-0.js"
+      ]
     },
     "voice_styles/F1.json": {
       "bytes": 292046,
       "sha256": "bbdec6ee00231c2c742ad05483df5334cab3b52fda3ba38e6a07059c4563dbc2",
-      "url": "https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/aafc6e32416a594460b32413efc49d7fe4ce6d46/voice_styles/F1.json"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-voice_styles-F1.json",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-voice_styles-F1.json.part-0.js"
+      ]
     },
     "LICENSE": {
       "bytes": 15007,
       "sha256": "0d944a9110fed9a9602d60e0423a272903e7bd21ab060490774efc77c2275e9f",
-      "url": "https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/aafc6e32416a594460b32413efc49d7fe4ce6d46/LICENSE"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-LICENSE",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/supertonic-LICENSE.part-0.js"
+      ]
     },
     "en/en_GB/jenny_dioco/medium/en_GB-jenny_dioco-medium.onnx": {
       "bytes": 63221984,
       "sha256": "62ba183a504cfcd8816ec1b50ee856ed318ccc9dd22fd0bedd7d839c95dfa20e",
-      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/e9c8a39444359388adaa94255becb37a5a2b8e51/en/en_GB/jenny_dioco/medium/en_GB-jenny_dioco-medium.onnx"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-0.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-1.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-2.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-3.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-4.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-5.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-6.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-7.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-8.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-9.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-10.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-11.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-12.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-13.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-14.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-15.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-16.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-17.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-18.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-19.js",
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.part-20.js"
+      ]
     },
     "en/en_GB/jenny_dioco/medium/en_GB-jenny_dioco-medium.onnx.json": {
       "bytes": 6375,
       "sha256": "2d28804145e37cf6b277d17417769a2c84f6e4157273678dfe495240cc6e00e9",
-      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/e9c8a39444359388adaa94255becb37a5a2b8e51/en/en_GB/jenny_dioco/medium/en_GB-jenny_dioco-medium.onnx.json"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.json",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-en_GB-jenny_dioco-medium.onnx.json.part-0.js"
+      ]
     },
     "en/en_GB/jenny_dioco/medium/MODEL_CARD": {
       "bytes": 475,
       "sha256": "851f5b7ffe4b50ff3235192baef96a1943cda6b4bfa1c9badcf6cf78b6ffc292",
-      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/e9c8a39444359388adaa94255becb37a5a2b8e51/en/en_GB/jenny_dioco/medium/MODEL_CARD"
+      "url": "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-MODEL_CARD",
+      "parts": [
+        "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/piper-en-en_GB-jenny_dioco-medium-MODEL_CARD.part-0.js"
+      ]
     },
     "mjs": {
       "parts": [

@@ -142,10 +142,14 @@ function unit() {
   const manifest = context.WorkTimeApp.data.vocabularySpeech;
   for (const file of Object.values(manifest.files)) {
     if (file.url) {
-      assert(file.url.startsWith("https://huggingface.co/"));
-      assert.match(file.url, /\/resolve\/[a-f0-9]{40}\//);
+      assert(
+        file.url.startsWith(
+          "https://github.com/xueke-alan/WorkTime/releases/download/speech-models-v1/",
+        ),
+      );
+      assert(!file.url.includes("huggingface"));
       assert.match(file.sha256, /^[a-f0-9]{64}$/);
-      assert(!file.parts);
+      assert(file.parts.every((part) => part.startsWith(file.url)));
       continue;
     }
     const chunks = file.parts.map((part) => {
