@@ -172,9 +172,9 @@ async function verifyPacing(page) {
     return results;
   });
   for (const result of results) {
-    assert.equal(result.firstDelay, 500);
+    assert.equal(result.firstDelay, 250);
     result.intervals.forEach((interval, step) => {
-      const expected = 100 + 400 * (1 - Math.min(step / 100, 1)) ** 2;
+      const expected = 100 + 150 * (1 - Math.min(step / 60, 1)) ** 2;
       assert.ok(Math.abs(interval - expected) < 0.001);
     });
     assert.equal(
@@ -191,12 +191,12 @@ async function verifyPacing(page) {
     );
     assert.equal(result.confirmationTimers, 0);
     assert.equal(result.cancelDelay, 100);
-    assert.equal(result.resetDelay, 500);
+    assert.equal(result.resetDelay, 250);
     assert.equal(result.disposedTimers, 0);
     if (result.reduced) assert.deepEqual(result.durations, []);
     else {
       assert.ok(
-        Math.abs(result.durations[0] + result.durations[1] - 375) < 0.001,
+        Math.abs(result.durations[0] + result.durations[1] - 187.5) < 0.001,
       );
       assert.ok(
         Math.abs(result.durations[200] + result.durations[201] - 75) < 0.001,
@@ -353,7 +353,7 @@ async function verify() {
     await action("confirm").click();
     assert.equal(
       await action("ai").locator("use").getAttribute("href"),
-      "#ms-robot-2",
+      "#ms-stop-circle",
     );
     assert.equal(await action("undo").isDisabled(), true);
     const aiBestCard = page.locator("[data-puzzle-ai-best]");
@@ -376,6 +376,40 @@ async function verify() {
     const aiRecord = await page.evaluate(
       () => JSON.parse(localStorage.getItem("worktime.games.2048.v1")).aiBest,
     );
+    await action("ai").click();
+    assert.equal(await page.locator(".puzzle-confirm").isVisible(), true);
+    const stoppedBoard = await page.locator(".puzzle-grid").textContent();
+    await page.waitForTimeout(650);
+    assert.equal(
+      await page.locator(".puzzle-grid").textContent(),
+      stoppedBoard,
+    );
+    await action("cancel").click();
+    assert.equal(
+      await page.locator(".game-2048").getAttribute("data-mode"),
+      "ai",
+    );
+    await action("ai").click();
+    await action("confirm").click();
+    assert.equal(
+      await page.locator(".game-2048").getAttribute("data-mode"),
+      "manual",
+    );
+    assert.equal(
+      await page.locator(".puzzle-grid").textContent(),
+      originalBoard,
+    );
+    assert.deepEqual(
+      await read(),
+      saved,
+      "stopping restores player state and undo history",
+    );
+    assert.equal(
+      await action("ai").locator("use").getAttribute("href"),
+      "#ms-robot-2",
+    );
+    await action("ai").click();
+    await action("confirm").click();
     await action("restart").click();
     const values = () =>
       page

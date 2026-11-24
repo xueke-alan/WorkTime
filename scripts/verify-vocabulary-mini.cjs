@@ -281,6 +281,7 @@ const site = path.resolve(
       assert.equal(morph[key], true, key);
     await page.locator('.vocabulary-nav-item[data-page="preferences"]').click();
     // Switching mode clears the active card; the mini view must not start a session.
+    await page.locator('.vocabulary-nav-item[data-page="books"]').click();
     await choose(page, "练习方式", "spelling");
     await page.waitForFunction(
       () => !WorkTimeApp.services.vocabularyStorage.read().draft,

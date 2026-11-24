@@ -168,11 +168,11 @@ async function main() {
       );
       const native = page.locator(".vocabulary-preferences select");
       assert.deepEqual(
-        await native.nth(1).locator("option").allTextContents(),
+        await native.nth(0).locator("option").allTextContents(),
         ["自动", "1", "2", "4", "8"],
       );
       assert.deepEqual(
-        await native.nth(2).locator("option").allTextContents(),
+        await native.nth(1).locator("option").allTextContents(),
         ["5 GiB", "15 GiB", "20 GiB", "不限制"],
       );
       const equal = await page.evaluate(() => {
@@ -181,7 +181,6 @@ async function main() {
             (e) => e.getBoundingClientRect().width,
           );
         const pairs = [
-          widths(".vocabulary-controls > *"),
           widths(".vocabulary-resource-settings > .vocabulary-field"),
           widths(".vocabulary-cache-actions > *"),
         ];
@@ -237,11 +236,17 @@ async function main() {
         }),
         [8, Number.MAX_SAFE_INTEGER],
       );
-      const mode = page.getByRole("button", { name: "练习方式" });
+      assert.equal(
+        await page
+          .locator(".vocabulary-preferences .vocabulary-controls")
+          .count(),
+        0,
+      );
+      const mode = page.getByRole("button", { name: "Worker 池大小" });
       await mode.focus();
       await page.keyboard.press("ArrowDown");
       await page
-        .getByRole("option", { name: "记忆卡", exact: true })
+        .getByRole("option", { name: "自动", exact: true })
         .waitFor({ state: "visible" });
       await page.keyboard.press("Escape");
       assert.equal(await mode.getAttribute("aria-expanded"), "false");

@@ -182,7 +182,96 @@ function verifyBank() {
     }
   }
 }
+function verifyBranches() {
+  const puzzle = { givens: "0".repeat(81) };
+  const fresh = () => {
+    const state = rules.create(puzzle);
+    rules.initBranches(puzzle, state);
+    state.replay = rules.startReplay(puzzle, state);
+    return state;
+  };
+  const state = fresh();
+  rules.enter(puzzle, state, 0, 1);
+  rules.enter(puzzle, state, 9, 7);
+  assert.equal(state.branches[0].values[0], 1);
+  assert.equal(state.branches[0].values[9], 7);
+  assert(rules.mark(state, 9, puzzle));
+  assert.deepEqual(
+    plain(state.branches[0].values),
+    plain(state.branches[1].values),
+  );
+  assert.equal(state.history.length, 0);
+  assert.equal(rules.undo(state), false);
+  rules.enter(puzzle, state, 1, 2);
+  assert.equal(state.branches[0].values[1], 0);
+  assert.equal(state.branches[1].values[1], 2);
+  assert.equal(rules.switchBranch(puzzle, state, 0, 1), 9);
+  assert.equal(rules.undo(state), false);
+  const count = state.branches.length;
+  assert.equal(rules.enter(puzzle, state, 0, 1), false);
+  assert.equal(state.branches.length, count);
+  assert.equal(rules.enter(puzzle, state, 1, 3), true);
+  assert.equal(state.activeBranch, 2);
+  assert.equal(state.branches[2].parent, 0);
+  assert.equal(state.branches[0].values[1], 0);
+  assert.equal(state.branches[1].values[1], 2);
+  rules.enter(puzzle, state, 2, 4);
+  assert.equal(state.branches.length, 3);
+  assert(rules.undo(state));
+  assert.equal(state.branches[2].values[2], 0);
+  assert(rules.undo(state));
+  assert.equal(state.values[1], 0);
+  assert.equal(rules.undo(state), false);
+  rules.switchBranch(puzzle, state, 0, 2);
+  rules.enter(puzzle, state, 2, 5, true);
+  assert.equal(state.activeBranch, 3);
+  assert.equal(state.branches[0].notes[2], 0);
+  rules.switchBranch(puzzle, state, 0, 2);
+  rules.enter(puzzle, state, 0, 0);
+  assert.equal(state.activeBranch, 4);
+  assert.equal(state.branches[0].values[0], 1);
+  rules.switchBranch(puzzle, state, 0, 0);
+  const before = JSON.stringify(state);
+  assert.equal(rules.enter(puzzle, state, 3, 6), null);
+  assert.equal(rules.mark(state, 0, puzzle), false);
+  assert.equal(JSON.stringify(state), before);
+  rules.deleteBranch(puzzle, state, 4);
+  assert(rules.enter(puzzle, state, 3, 6));
+  const restored = rules.restore(puzzle, plain(state));
+  assert.deepEqual(plain(restored.values), plain(state.values));
+  assert.deepEqual(
+    plain(restored.branches.map((b) => b.values)),
+    plain(state.branches.map((b) => b.values)),
+  );
+  const leaf = state.activeBranch;
+  const total = state.branches.length;
+  assert(rules.confirmMark(state, 3));
+  assert.equal(state.activeBranch, leaf);
+  assert.equal(state.branches.length, total);
+  const legacy = fresh();
+  rules.mark(legacy, 0, puzzle);
+  rules.switchBranch(puzzle, legacy, 0, 0);
+  legacy.values[5] = 8;
+  rules.switchBranch(puzzle, legacy, 1, 5);
+  assert.equal(legacy.branches[2].values[5], 8);
+  assert.equal(legacy.branches[0].values[5], 0);
+  legacy.activeBranch = 0;
+  legacy.values = [...legacy.branches[0].values];
+  legacy.notes = [...legacy.branches[0].notes];
+  while (legacy.branches.filter((b) => b.parent === 0).length < 4) {
+    rules.mark(legacy, 0, puzzle);
+    rules.switchBranch(puzzle, legacy, 0, 0);
+  }
+  legacy.values[6] = 9;
+  const pending = JSON.stringify(legacy);
+  assert.equal(rules.switchBranch(puzzle, legacy, 1, 6), null);
+  assert.equal(JSON.stringify(legacy), pending);
+  console.log(
+    "Sudoku branches: live leaves, frozen parents, automatic forks, undo boundaries, limits, restore and legacy draft preservation passed.",
+  );
+}
 async function main() {
+  verifyBranches();
   verifyBank();
   fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({
@@ -243,7 +332,7 @@ async function main() {
       const buttons = await Promise.all(
         ["undo", "notes", "erase"].map((name) => action(name).boundingBox()),
       );
-      assert.equal(await page.locator(".sudoku-actions button").count(), 3);
+      assert.equal(await page.locator(".sudoku-actions button").count(), 5);
       assert.ok(buttons.every((box) => Math.abs(box.y - buttons[0].y) < 1));
       assert.ok(buttons[0].x < buttons[1].x && buttons[1].x < buttons[2].x);
     }
@@ -406,7 +495,19 @@ async function main() {
         "board fits available height",
       );
       assert.ok(
-        board.width >= Math.min(480, viewport.height * 0.55),
+        board.width >=
+          Math.min(
+            480,
+            viewport.height * 0.55,
+            (await page.locator(".sudoku-play").boundingBox()).width -
+              27 *
+                (await page.evaluate(() =>
+                  parseFloat(
+                    getComputedStyle(document.documentElement).fontSize,
+                  ),
+                )),
+          ) -
+            1,
         "board uses available space",
       );
       await page.screenshot({
@@ -562,8 +663,9 @@ async function main() {
           ]),
         ),
       );
+      const translationKeys = translations["zh-CN"].map(([key]) => key).sort();
       for (const entries of Object.values(translations)) {
-        assert.equal(entries.length, 96);
+        assert.deepEqual(entries.map(([key]) => key).sort(), translationKeys);
         assert.ok(entries.every(([, v]) => typeof v === "string" && v.length));
       }
     }
@@ -846,7 +948,9 @@ async function main() {
     await browser.close();
   }
 }
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (process.argv.includes("--branches-unit")) verifyBranches();
+else
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });

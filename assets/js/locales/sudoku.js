@@ -831,3 +831,152 @@ for (const [language, labels] of Object.entries({
   WorkTimeApp.data.locales[language]["games.sudoku.tenBox"] = labels[0];
   WorkTimeApp.data.locales[language]["games.sudoku.tenBoxRule"] = labels[1];
 }
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["建立标记", "返回标记", "确认推理", "推理标记：第 {n} 层"],
+  "zh-TW": ["建立標記", "返回標記", "確認推理", "推理標記：第 {n} 層"],
+  "zh-HK": ["建立標記", "返回標記", "確認推理", "推理標記：第 {n} 層"],
+  en: [
+    "Set marker",
+    "Return to marker",
+    "Confirm reasoning",
+    "Reasoning depth: {n}",
+  ],
+  ja: ["目印を作成", "目印に戻る", "推論を確定", "推論の深さ：{n}"],
+  ko: ["표시 만들기", "표시로 돌아가기", "추론 확정", "추론 깊이: {n}"],
+})) {
+  ["mark", "returnMark", "confirmMark", "markDepth"].forEach((key, i) => {
+    WorkTimeApp.data.locales[language]["games.sudoku." + key] = labels[i];
+  });
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "推理分支",
+    "初始盘面",
+    "当前",
+    "推理中",
+    "失败",
+    "已确认",
+    "返回上级",
+  ],
+  "zh-TW": [
+    "推理分支",
+    "初始盤面",
+    "目前",
+    "推理中",
+    "失敗",
+    "已確認",
+    "返回上級",
+  ],
+  "zh-HK": [
+    "推理分支",
+    "初始盤面",
+    "目前",
+    "推理中",
+    "失敗",
+    "已確認",
+    "返回上級",
+  ],
+  en: [
+    "Branches",
+    "Initial board",
+    "Current",
+    "Open",
+    "Failed",
+    "Confirmed",
+    "Go to parent",
+  ],
+  ja: [
+    "推論の分岐",
+    "初期盤面",
+    "現在",
+    "推論中",
+    "失敗",
+    "確定済み",
+    "親に戻る",
+  ],
+  ko: [
+    "추론 분기",
+    "초기 보드",
+    "현재",
+    "추론 중",
+    "실패",
+    "확정됨",
+    "상위로 돌아가기",
+  ],
+})) {
+  [
+    "branches",
+    "branchRoot",
+    "branchCurrent",
+    "open",
+    "failed",
+    "confirmed",
+    "returnMark",
+  ].forEach((key, i) => {
+    WorkTimeApp.data.locales[language]["games.sudoku." + key] = labels[i];
+  });
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": [
+    "删除分支",
+    "删除此节点及其后续共 {n} 个节点？",
+    "当前路径已有相同状态",
+  ],
+  "zh-TW": [
+    "刪除分支",
+    "刪除此節點及其後續共 {n} 個節點？",
+    "目前路徑已有相同狀態",
+  ],
+  "zh-HK": [
+    "刪除分支",
+    "刪除此節點及其後續共 {n} 個節點？",
+    "目前路徑已有相同狀態",
+  ],
+  en: [
+    "Delete branch",
+    "Delete this node and its descendants ({n} nodes)?",
+    "This path already contains this state",
+  ],
+  ja: [
+    "分岐を削除",
+    "このノードと子孫（{n} 個）を削除しますか？",
+    "同じ状態がこの経路にあります",
+  ],
+  ko: [
+    "분기 삭제",
+    "이 노드와 하위 노드 {n}개를 삭제할까요?",
+    "현재 경로에 같은 상태가 있습니다",
+  ],
+})) {
+  ["deleteBranch", "deleteBranchConfirm", "duplicateBranch"].forEach(
+    (key, i) => {
+      WorkTimeApp.data.locales[language]["games.sudoku." + key] = labels[i];
+    },
+  );
+}
+
+for (const [language, labels] of Object.entries({
+  "zh-CN": ["创建分支", "标记失败"],
+  "zh-TW": ["建立分支", "標記失敗"],
+  "zh-HK": ["建立分支", "標記失敗"],
+  en: ["Create branch", "Mark failed"],
+  ja: ["分岐を作成", "失敗にする"],
+  ko: ["분기 만들기", "실패로 표시"],
+})) {
+  ["mark", "markFailed"].forEach((key, i) => {
+    WorkTimeApp.data.locales[language]["games.sudoku." + key] = labels[i];
+  });
+}
+
+for (const [language, text] of Object.entries({
+  "zh-CN": "每个节点最多创建 4 个子分支，请切换节点或删除已有分支后再创建。",
+  "zh-TW": "每個節點最多建立 4 個子分支，請切換節點或刪除已有分支後再建立。",
+  "zh-HK": "每個節點最多建立 4 個子分支，請切換節點或刪除已有分支後再建立。",
+  en: "Each node supports up to 4 child branches. Select another node or delete a branch first.",
+  ja: "各ノードの子分岐は4個までです。別のノードを選ぶか、分岐を削除してください。",
+  ko: "노드당 하위 분기는 최대 4개입니다. 다른 노드를 선택하거나 기존 분기를 삭제하세요.",
+}))
+  WorkTimeApp.data.locales[language]["games.sudoku.branchLimit"] = text;

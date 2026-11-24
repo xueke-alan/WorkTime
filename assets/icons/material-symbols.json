@@ -8,6 +8,20 @@
   "revision": "737e3324305806514d7909874fa1818ae1808232",
   "icons": [
     {
+      "id": "ms-stop-circle",
+      "name": "stop_circle",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/stop_circle/materialsymbolsrounded/stop_circle_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "0814f78fe2b237e26492e16d32446e9de5aecb62e477c8dc6cf1c52994b3ec6f"
+    },
+    {
+      "id": "ms-search",
+      "name": "search",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/search/materialsymbolsrounded/search_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "a6302666a4a8ae7c451131054e1f8077f7c33042beb4cb6d683a0a1e4d9ae2c3"
+    },
+    {
       "id": "ms-pause-light",
       "name": "pause",
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/pause/materialsymbolsrounded/pause_wght200_24px.svg",
@@ -605,6 +619,27 @@
       "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/insert_chart/materialsymbolsrounded/insert_chart_24px.svg",
       "viewBox": "0 -960 960 960",
       "sha256": "b530d6bfb908f68c70fb15ba0617933c180876e738e0db8e28ee6ff1c8fe426c"
+    },
+    {
+      "id": "ms-flag-2",
+      "name": "flag_2",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/flag_2/materialsymbolsrounded/flag_2_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "69334440325bbde003a009fd416d9f5c7ebc238564470f6a570278bdd828663b"
+    },
+    {
+      "id": "ms-disabled-by-default",
+      "name": "disabled_by_default",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/disabled_by_default/materialsymbolsrounded/disabled_by_default_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "b0aff5c006bc7ec775f0bfaa0118b4487a6c43977114db2779e8ccbaaa464488"
+    },
+    {
+      "id": "ms-strikethrough-s",
+      "name": "strikethrough_s",
+      "source": "https://raw.githubusercontent.com/google/material-design-icons/737e3324305806514d7909874fa1818ae1808232/symbols/web/strikethrough_s/materialsymbolsrounded/strikethrough_s_24px.svg",
+      "viewBox": "0 -960 960 960",
+      "sha256": "0d3ac1f0d030c92e79be4024bb5e94b99f333eee1ba258090a9a4de30b818b60"
     }
   ]
 }

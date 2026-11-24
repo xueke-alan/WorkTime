@@ -85,7 +85,7 @@ WorkTimeApp.games.register({
       stopAI();
       stopMotion();
       clearPointer();
-      confirmationAction = "ai";
+      confirmationAction = demonstrating ? "aiStop" : "ai";
       confirming = true;
       render();
       cancel.focus();
@@ -120,7 +120,7 @@ WorkTimeApp.games.register({
       () => {
         confirming = false;
         render();
-        (confirmationAction === "ai" ? ai : restart).focus();
+        (confirmationAction !== "restart" ? ai : restart).focus();
         scheduleAI();
       },
       "close",
@@ -132,14 +132,26 @@ WorkTimeApp.games.register({
       () => {
         confirming = false;
         stopAI();
-        if (confirmationAction === "ai") {
-          if (!demonstrating)
-            playerSave = { state: rules.snapshot(state), previous, best };
-          demonstrating = true;
+        if (confirmationAction === "aiStop") {
+          ({ state, previous, best } = playerSave);
+          playerSave = null;
+          demonstrating = false;
           aiSteps = 0;
-        } else demonstrating = false;
-        state = rules.create();
-        previous = null;
+        } else {
+          if (confirmationAction === "ai") {
+            if (!demonstrating)
+              playerSave = {
+                state: rules.snapshot(state),
+                previous: previous ? rules.snapshot(previous) : null,
+                best,
+              };
+            demonstrating = true;
+            aiSteps = 0;
+          } else demonstrating = false;
+          state = rules.create();
+          previous = null;
+          playerSave = demonstrating ? playerSave : null;
+        }
         save();
         render();
         board.focus();
@@ -153,6 +165,23 @@ WorkTimeApp.games.register({
       cancel: cancel,
       accept: confirm,
       signal,
+      labels: () => ({
+        title: t(
+          confirmationAction === "aiStop"
+            ? "aiStopHint"
+            : confirmationAction === "ai"
+              ? "aiConfirmHint"
+              : "confirmTitle",
+        ),
+        cancel: t("cancel"),
+        accept: t(
+          confirmationAction === "aiStop"
+            ? "aiStop"
+            : confirmationAction === "ai"
+              ? "aiStart"
+              : "confirm",
+        ),
+      }),
     });
     const board = node("div", "puzzle-board", root);
     board.tabIndex = 0;
@@ -244,11 +273,11 @@ WorkTimeApp.games.register({
         element.style.fontSize = counterSize;
       }
       root.dataset.mode = demonstrating ? "ai" : "manual";
-      WorkTimeApp.games.setIcon(ai, "robot-2");
-      ai.title = t("ai");
-      ai.setAttribute("aria-label", t("ai"));
+      WorkTimeApp.games.setIcon(ai, demonstrating ? "stop-circle" : "robot-2");
+      ai.title = t(demonstrating ? "aiStop" : "ai");
+      ai.setAttribute("aria-label", t(demonstrating ? "aiStop" : "ai"));
       ai.setAttribute("aria-pressed", String(demonstrating));
-      ai.disabled = confirming || (demonstrating && !rules.lost(state.board));
+      ai.disabled = confirming;
       aiNotice.hidden = !demonstrating;
       aiNotice.textContent = t(
         rules.lost(state.board) ? "aiFinished" : "aiRunning",
@@ -391,7 +420,7 @@ WorkTimeApp.games.register({
       aiRunning = false;
     }
     function aiInterval() {
-      return 100 + 400 * (1 - Math.min(aiSteps / 100, 1)) ** 2;
+      return 100 + 150 * (1 - Math.min(aiSteps / 60, 1)) ** 2;
     }
     function scheduleAI(delay = aiInterval()) {
       if (

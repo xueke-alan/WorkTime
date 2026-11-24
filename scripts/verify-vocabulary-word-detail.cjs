@@ -55,7 +55,9 @@ async function main() {
         .locator(".vocabulary-book-heading")
         .evaluate((el) => {
           const box = el.getBoundingClientRect();
-          const button = el.querySelector("button").getBoundingClientRect();
+          const button = el
+            .querySelector(".vocabulary-use-book")
+            .getBoundingClientRect();
           const title = el.querySelector("h3").getBoundingClientRect();
           return {
             right: Math.abs(box.right - button.right),

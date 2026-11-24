@@ -16,6 +16,9 @@ WorkTimeApp.ui.vocabulary = (() => {
     busy = false,
     failed = null;
   let query = "",
+    booksQuery = "",
+    booksShown = 40,
+    wordReturn = "book",
     shown = 40,
     disposed = false,
     draftTimer,
@@ -224,10 +227,16 @@ WorkTimeApp.ui.vocabulary = (() => {
       next.draft.answer = inputDraft.answer;
     inputDraft = null;
     next.settings[key] = value;
+    if (key === "wordOrder" && value === "random")
+      next.settings.orderSeed = crypto.getRandomValues(new Uint32Array(1))[0];
     if (!["accent", "autoRead"].includes(key)) next.draft = null;
-    const settingsPanel = view === "preferences" ? panel : null;
+    const settingsPanel =
+      view === "preferences" ||
+      (["wordOrder", "mode"].includes(key) && view === "books")
+        ? panel
+        : null;
     if (settingsPanel) settingsPanel.inert = true;
-    void persist(
+    return persist(
       next,
       () => {
         if (!["accent", "autoRead"].includes(key)) {
@@ -236,11 +245,21 @@ WorkTimeApp.ui.vocabulary = (() => {
           previousReview = correction = null;
         }
         audioReady = false;
+        if (key === "mode" && view === "books") refreshBookSelection();
         after?.();
       },
       !settingsPanel,
     ).finally(() => {
       if (settingsPanel) settingsPanel.inert = false;
+      if (
+        key === "mode" &&
+        settingsPanel?.isConnected &&
+        !failed &&
+        document.activeElement === document.body
+      )
+        settingsPanel
+          .querySelector('[data-setting-field="mode"] .shared-select-trigger')
+          ?.focus({ preventScroll: true });
     });
   }
   function phoneticText(entry) {
@@ -353,24 +372,27 @@ WorkTimeApp.ui.vocabulary = (() => {
     }
   }
   function controls() {
-    const row = node("div", undefined, "vocabulary-controls");
-    row.append(select("mode", ["recall", "spelling", "dictation"]));
-    const label = node("label", t("dailyNew"), "vocabulary-field"),
+    const row = node("div", undefined, "vocabulary-controls is-compact");
+    const label = node(
+        "label",
+        undefined,
+        "vocabulary-field vocabulary-plan-control",
+      ),
       count = node("input");
-    label.dataset.settingField = "dailyNew";
+    label.append(node("span", t("dailyTotal")));
+    label.dataset.settingField = "dailyTotal";
+    count.setAttribute("aria-label", t("dailyTotal"));
     count.type = "number";
     count.min = "1";
-    count.max = "200";
-    count.value = data.settings.dailyNew;
+    count.value = data.settings.dailyTotal;
     count.disabled = busy || !!failed;
     count.onchange = () => {
       const n = Number(count.value);
-      if (Number.isInteger(n) && n >= 1 && n <= 200)
-        updateSettings("dailyNew", n);
-      else count.value = data.settings.dailyNew;
+      if (Number.isSafeInteger(n) && n >= 1) updateSettings("dailyTotal", n);
+      else count.value = data.settings.dailyTotal;
     };
     label.append(count);
-    row.append(label);
+    row.append(label, select("mode", ["recall", "spelling", "dictation"]));
     return row;
   }
   function start() {
@@ -382,7 +404,7 @@ WorkTimeApp.ui.vocabulary = (() => {
     if (
       data.draft &&
       data.draft.mode === data.settings.mode &&
-      lookup.has(data.draft.id)
+      items.some((entry) => entry.id === data.draft.id)
     ) {
       const entry = lookup.get(data.draft.id);
       session = [entry, ...items.filter((e) => e.id !== entry.id)];
@@ -397,6 +419,13 @@ WorkTimeApp.ui.vocabulary = (() => {
     }
     advancePending = false;
     panel.scrollTop = 0;
+    if (session && !correction) {
+      session = E.queue(data, entries).items;
+      if (data.draft?.mode === data.settings.mode) {
+        const index = session.findIndex((entry) => entry.id === data.draft.id);
+        if (index > 0) session.unshift(...session.splice(index, 1));
+      }
+    }
     current = session?.[0] || null;
     audioReady = false;
     if (current) {
@@ -448,6 +477,7 @@ WorkTimeApp.ui.vocabulary = (() => {
         mode,
         key,
         card: structuredClone(data.cards[key]),
+        reinforcement: structuredClone(data.reinforcement),
         draft: structuredClone(data.draft),
         session: [...session],
         grade: value,
@@ -459,7 +489,7 @@ WorkTimeApp.ui.vocabulary = (() => {
       before.log = structuredClone(next.logs.at(-1));
       void persist(next, () => {
         speech.stop();
-        previousReview = correcting ? null : before;
+        previousReview = before;
         correction = null;
         session.shift();
         advanceTimer = setTimeout(nextCard, 0);
@@ -481,6 +511,8 @@ WorkTimeApp.ui.vocabulary = (() => {
     if (previous.card === undefined) delete next.cards[previous.key];
     else next.cards[previous.key] = structuredClone(previous.card);
     next.logs.pop();
+    if (previous.reinforcement === undefined) delete next.reinforcement;
+    else next.reinforcement = structuredClone(previous.reinforcement);
     const resumeDraft =
       next.draft?.id !== previous.entry.id ? next.draft : null;
     next.draft = structuredClone(previous.draft);
@@ -554,27 +586,40 @@ WorkTimeApp.ui.vocabulary = (() => {
   }
   document.addEventListener("keydown", keyboard);
   function library(book = data.settings.book) {
+    const globalSearch = book === null;
+    let searchQuery = globalSearch ? booksQuery : query;
+    let displayLimit = globalSearch ? booksShown : shown;
     const box = node("section", undefined, "vocabulary-library");
     const search = node("input");
     search.type = "search";
     search.placeholder = t("search");
     search.setAttribute("aria-label", t("search"));
-    search.value = query;
+    search.value = searchQuery;
+    if (globalSearch) box.classList.add("vocabulary-global-search");
+    const searchField = node("div", undefined, "vocabulary-search-field");
+    searchField.innerHTML =
+      '<svg class="ui-icon" aria-hidden="true"><use href="#ms-search"/></svg>';
+    searchField.append(search);
     const results = node("div", undefined, "vocabulary-list");
     function fill() {
       results.replaceChildren();
+      results.hidden = globalSearch && !searchQuery.trim();
+      if (results.hidden) return;
       const matching = entries.filter(
         (e) =>
-          e.books.includes(book) &&
-          (!query ||
-            (e.word + " " + e.zh).toLowerCase().includes(query.toLowerCase())),
+          (globalSearch || e.books.includes(book)) &&
+          (!searchQuery.trim() ||
+            (e.word + " " + e.zh)
+              .toLowerCase()
+              .includes(searchQuery.trim().toLowerCase())),
       );
-      for (const entry of matching.slice(0, shown)) {
+      for (const entry of matching.slice(0, displayLimit)) {
         const row = node("div", undefined, "vocabulary-row"),
           text = node("div");
         const open = () => {
           if (busy || failed) return;
-          bookScroll = results.scrollTop;
+          bookScroll = globalSearch ? panel.scrollTop : results.scrollTop;
+          wordReturn = globalSearch ? "books" : "book";
           viewedEntry = entry;
           changePage("word");
           content
@@ -602,7 +647,7 @@ WorkTimeApp.ui.vocabulary = (() => {
         );
         const heading = node("div", undefined, "vocabulary-list-heading");
         heading.append(word, pronunciation);
-        text.append(heading, node("p", entry.zh));
+        text.append(heading);
         row.append(text);
         row.onclick = (event) => {
           if (
@@ -614,29 +659,35 @@ WorkTimeApp.ui.vocabulary = (() => {
         results.append(row);
       }
       if (!matching.length) results.append(node("p", t("empty")));
-      if (matching.length > shown)
+      if (matching.length > displayLimit)
         results.append(
           button(t("more"), () => {
-            shown += 40;
+            displayLimit += 40;
+            if (globalSearch) booksShown = displayLimit;
+            else shown = displayLimit;
             fill();
           }),
         );
     }
     search.oninput = () => {
-      query = search.value;
-      shown = 40;
+      searchQuery = search.value;
+      if (globalSearch) booksQuery = searchQuery;
+      else query = searchQuery;
+      displayLimit = 40;
+      if (globalSearch) booksShown = 40;
+      else shown = 40;
       fill();
       results.scrollTop = 0;
+      if (globalSearch)
+        panel.querySelector(".vocabulary-books-overview").hidden =
+          !!searchQuery.trim();
     };
-    box.append(search, results);
+    box.append(searchField, results);
     fill();
     return box;
   }
   function home() {
     const stats = E.statistics(data);
-    const today = data.logs.filter(
-      (log) => E.day(log.at) === E.day(Date.now()),
-    );
     const hero = node("section", undefined, "vocabulary-hero");
     hero.append(
       node("span", t("streak"), "vocabulary-eyebrow"),
@@ -650,9 +701,10 @@ WorkTimeApp.ui.vocabulary = (() => {
       hero,
       node("h3", t("todayPlan")),
       metrics({
-        newLearned: today.filter((log) => log.first).length,
-        reviewCount: today.filter((log) => !log.first).length,
+        newLearned: stats.newLearned,
+        reviewCount: stats.reviewCount,
         today: stats.today,
+        pendingPractice: E.queue(data, entries).practice.length,
       }),
     );
   }
@@ -670,15 +722,181 @@ WorkTimeApp.ui.vocabulary = (() => {
       known = new Set(data.logs.map((l) => l.id));
     return words.filter((e) => known.has(e.id)).length + " / " + words.length;
   }
+  function bookCover(id) {
+    const index = ["daily", "cet6", "kaoyan", "toefl", "ielts"].indexOf(id);
+    const cover = node("span", undefined, "vocabulary-book-cover");
+    cover.dataset.color = String(index);
+    cover.setAttribute("aria-hidden", "true");
+    cover.append(
+      node("small", "ENGLISH"),
+      node("strong", id === "daily" ? "Aa" : id.toUpperCase()),
+      node("span", String(index + 1).padStart(2, "0")),
+    );
+    return cover;
+  }
+  function refreshBookSelection() {
+    const queue = E.queue(data, entries);
+    const values = [
+      queue.due.length + " / " + queue.allDue,
+      String(queue.fresh.length),
+      String(queue.practice.length),
+    ];
+    panel
+      .querySelectorAll(".vocabulary-plan-counts strong")
+      .forEach((element, index) => {
+        element.textContent = values[index];
+      });
+    const distribution = E.bookDistribution(data, entries);
+    const total = Object.values(distribution).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
+    for (const [state, count] of Object.entries(distribution)) {
+      panel.querySelector(
+        `.vocabulary-distribution-bar [data-state="${state}"]`,
+      ).style.width = (total ? (count / total) * 100 : 0) + "%";
+      panel.querySelector(
+        `.vocabulary-distribution-legend [data-state="${state}"]`,
+      ).textContent = t(state) + " " + count;
+    }
+    panel.querySelector(".vocabulary-book-progress-line > span").textContent =
+      total - distribution.unlearned + "/" + total;
+    const days = E.estimateLearningDays(data, entries);
+    panel.querySelector(".vocabulary-learning-estimate").textContent = days
+      ? t("estimatedDays", { days })
+      : t("estimateComplete");
+    const badge = drawerBody.querySelector(".vocabulary-review-badge");
+    if (badge) {
+      badge.textContent = String(queue.items.length);
+      badge.setAttribute(
+        "aria-label",
+        t("remaining") + ": " + queue.items.length,
+      );
+    }
+  }
   function books() {
+    panel.classList.add("vocabulary-book-selection");
+    const search = library(null);
+    const overview = node("div", undefined, "vocabulary-books-overview");
+    overview.hidden = !!booksQuery.trim();
+    const settings = controls();
+    const queue = E.queue(data, entries);
+    const counts = node("div", undefined, "vocabulary-plan-counts");
+    for (const [name, value] of [
+      ["pendingReviewShort", queue.due.length + " / " + queue.allDue],
+      ["pendingNew", String(queue.fresh.length)],
+      ["pendingPractice", String(queue.practice.length)],
+    ]) {
+      const item = node("div");
+      item.append(node("span", t(name)), node("strong", value));
+      counts.append(item);
+    }
+    counts.firstChild.title = t("pendingReview");
+    const openCurrent = () => {
+      if (busy || failed) return;
+      viewedBook = data.settings.book;
+      query = "";
+      shown = 40;
+      changePage("book");
+    };
+    const current = node("section", undefined, "vocabulary-current-book");
+    current.onclick = (event) => {
+      if (!event.target.closest("button")) openCurrent();
+    };
+    const distribution = E.bookDistribution(data, entries);
+    const total = Object.values(distribution).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
+    const bar = node("span", undefined, "vocabulary-distribution-bar");
+    bar.setAttribute("aria-hidden", "true");
+    const legend = node("span", undefined, "vocabulary-distribution-legend");
+    for (const [state, count] of Object.entries(distribution)) {
+      const segment = node("span");
+      segment.dataset.state = state;
+      segment.style.width = (total ? (count / total) * 100 : 0) + "%";
+      bar.append(segment);
+      const label = node("span", t(state) + " " + count);
+      label.dataset.state = state;
+      legend.append(label);
+    }
+    const currentInfo = node("span", undefined, "vocabulary-current-book-info");
+    const currentTitle = node("strong");
+    currentTitle.append(
+      button(
+        t(data.settings.book),
+        openCurrent,
+        "vocabulary-current-book-open",
+      ),
+    );
+    currentInfo.append(
+      node("small", t("currentBook")),
+      currentTitle,
+      bar,
+      legend,
+    );
+    const days = E.estimateLearningDays(data, entries);
+    const estimate = node(
+      "small",
+      days ? t("estimatedDays", { days }) : t("estimateComplete"),
+      "vocabulary-learning-estimate",
+    );
+    estimate.title = t("estimateHint");
+    const progress = node("small", undefined, "vocabulary-book-progress-line");
+    progress.append(
+      node("span", total - distribution.unlearned + "/" + total),
+      estimate,
+    );
+    currentInfo.append(progress);
+    const tools = node("span", undefined, "vocabulary-book-tools");
+    const order = button(
+      "",
+      () => {
+        if (busy || failed) return;
+        void updateSettings(
+          "wordOrder",
+          data.settings.wordOrder === "random" ? "ordered" : "random",
+          () => {
+            order.setAttribute(
+              "aria-checked",
+              String(data.settings.wordOrder === "random"),
+            );
+            const remaining = E.queue(data, entries).items.length;
+            const badge = drawerBody.querySelector(".vocabulary-review-badge");
+            if (badge) {
+              badge.textContent = String(remaining);
+              badge.setAttribute(
+                "aria-label",
+                t("remaining") + ": " + remaining,
+              );
+            }
+          },
+        ).then(() => {
+          if (
+            order.isConnected &&
+            view === "books" &&
+            (document.activeElement === document.body ||
+              document.activeElement === order)
+          )
+            order.focus({ preventScroll: true });
+        });
+      },
+      "vocabulary-order-switch",
+    );
+    order.setAttribute("role", "switch");
+    order.setAttribute("aria-label", t("wordOrder"));
+    order.setAttribute(
+      "aria-checked",
+      String(data.settings.wordOrder === "random"),
+    );
+    order.title = t("wordOrderHint");
+    order.disabled = busy || !!failed;
+    order.append(node("span", t("ordered")), node("span", t("randomOrder")));
+    tools.append(order, bookCover(data.settings.book));
+    current.append(tools, currentInfo);
+    current.title = t("familiarityHint");
     const list = node("div", undefined, "vocabulary-books");
-    for (const [index, id] of [
-      "daily",
-      "cet6",
-      "kaoyan",
-      "toefl",
-      "ielts",
-    ].entries()) {
+    for (const id of ["daily", "cet6", "kaoyan", "toefl", "ielts"]) {
       const book = button(
         "",
         () => {
@@ -691,30 +909,28 @@ WorkTimeApp.ui.vocabulary = (() => {
       );
       book.dataset.book = id;
       book.classList.toggle("is-current", id === data.settings.book);
-      const cover = node("span", undefined, "vocabulary-book-cover");
-      cover.dataset.color = String(index);
-      cover.append(
-        node("small", "ENGLISH"),
-        node("strong", id === "daily" ? "Aa" : id.toUpperCase()),
-        node("span", String(index + 1).padStart(2, "0")),
-      );
       const info = node("span", undefined, "vocabulary-book-info");
-      info.append(
-        node("strong", t(id)),
-        node("small", bookSummary(id)),
-        node(
-          "span",
-          t(id === data.settings.book ? "currentBook" : "chooseBook"),
-        ),
-      );
-      book.append(cover, info);
+      info.append(node("strong", t(id)), node("small", bookSummary(id)));
+      if (id === data.settings.book)
+        info.append(node("span", t("currentBook")));
+      book.append(bookCover(id), info);
       list.append(book);
     }
-    panel.append(list);
+    overview.append(settings, counts, current, node("h3", t("allBooks")), list);
+    panel.append(search, overview);
+    settingsController = new AbortController();
+    enhanceSettingsSelects();
+    settings
+      .querySelector(".shared-select-trigger")
+      .classList.add("vocabulary-plan-control");
   }
   function bookDetail() {
     const id = viewedBook || data.settings.book;
     const heading = node("div", undefined, "vocabulary-book-heading");
+    const back = button("", () => changePage("books"), "vocabulary-book-back");
+    back.setAttribute("aria-label", t("backToSelection"));
+    back.innerHTML =
+      '<svg class="ui-icon" aria-hidden="true"><use href="#ms-arrow-back"/></svg>';
     const title = node("div", undefined, "vocabulary-book-title");
     title.append(
       node("h3", t(id)),
@@ -731,10 +947,10 @@ WorkTimeApp.ui.vocabulary = (() => {
           view = "home";
         });
       },
-      "ui-button primary vocabulary-use-book",
+      "ui-button vocabulary-use-book",
     );
     use.dataset.action = "use-book";
-    heading.append(title, use);
+    heading.append(back, title, use);
     panel.append(heading, library(id));
   }
   function analysis() {
@@ -834,7 +1050,6 @@ WorkTimeApp.ui.vocabulary = (() => {
       return label;
     }
     panel.append(
-      controls(),
       (() => {
         const row = node("div", undefined, "vocabulary-switch-row");
         const accent = node("button", undefined, "vocabulary-accent-switch");
@@ -1059,6 +1274,9 @@ WorkTimeApp.ui.vocabulary = (() => {
       passive: true,
       signal: settingsController.signal,
     });
+    enhanceSettingsSelects();
+  }
+  function enhanceSettingsSelects() {
     for (const [index, native] of [
       ...panel.querySelectorAll("select"),
     ].entries()) {
@@ -1081,6 +1299,9 @@ WorkTimeApp.ui.vocabulary = (() => {
 
   function enterReview() {
     if (busy || failed) return;
+    if (session && !correction) {
+      session = E.queue(data, entries).items;
+    }
     if (session === null || session.length === 0) {
       start();
       return;
@@ -1197,24 +1418,35 @@ WorkTimeApp.ui.vocabulary = (() => {
           b.classList.toggle("is-previous-choice", selected);
           b.setAttribute("aria-pressed", String(selected));
         }
-        const result = globalThis.WorkTimeFSRS.review(
-          data.cards[E.key(current.id, mode)],
-          rating,
-          now,
-        );
-        const minutes = Math.max(
-          1,
-          Math.ceil((Date.parse(result.card.due) - now) / 60000),
-        );
-        const delay =
-          rating <= 2 || minutes < 1440
-            ? t("reviewToday")
-            : t("reviewDays", { n: Math.round(minutes / 1440) });
+        const result = E.preview(data, current, mode, rating, now);
+        const practicing = data.reinforcement?.[E.key(current.id, mode)];
+        const delay = result.gap
+          ? rating === 3
+            ? t("practiceRemaining", { n: result.remaining })
+            : t("practiceGap", { n: result.gap })
+          : practicing
+            ? t("practiceComplete")
+            : t("reviewDays", {
+                n: Math.max(
+                  1,
+                  Math.round((Date.parse(result.card.due) - now) / 86400000),
+                ),
+              });
         b.append(node("strong", t(key)), node("small", delay));
         if (draft.correct === false && rating !== 1) b.disabled = true;
         ratings.append(b);
       });
       studyActions.append(ratings);
+    }
+    if (data.reinforcement?.[E.key(current.id, mode)]) {
+      const plan = E.queue(data, entries);
+      card.append(
+        node(
+          "p",
+          t(plan.early ? "practiceEarly" : "practicePending"),
+          "vocabulary-muted",
+        ),
+      );
     }
     const studyHeader = node("div", undefined, "vocabulary-study-header");
     studyHeader.append(card);
@@ -1266,8 +1498,11 @@ WorkTimeApp.ui.vocabulary = (() => {
       "",
       () => {
         const id = viewedEntry.id;
-        changePage("book");
-        panel.querySelector(".vocabulary-list").scrollTop = bookScroll;
+        changePage(wordReturn);
+        (wordReturn === "books"
+          ? panel
+          : panel.querySelector(".vocabulary-list")
+        ).scrollTop = bookScroll;
         [...panel.querySelectorAll(".vocabulary-word-open")]
           .find((button) => button.dataset.word === id)
           ?.focus({ preventScroll: true });
@@ -1421,13 +1656,7 @@ WorkTimeApp.ui.vocabulary = (() => {
         const planned = new Set(
           E.queue(data, entries).items.map((entry) => entry.id),
         );
-        if (
-          data.draft &&
-          data.draft.mode === data.settings.mode &&
-          lookup.has(data.draft.id)
-        )
-          planned.add(data.draft.id);
-        const remaining = session === null ? planned.size : session.length;
+        const remaining = planned.size;
         const badge = node(
           "span",
           String(remaining),

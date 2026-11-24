@@ -385,6 +385,7 @@ WorkTimeApp.games.sudokuRules = (() => {
     elapsed: 0,
     hints: 0,
     history: [],
+    markers: [],
   });
   function restore(puzzle, value) {
     if (
@@ -415,7 +416,58 @@ WorkTimeApp.games.sudokuRules = (() => {
       value.hints > 1000000
     )
       return null;
+    const branches = [];
+    const source = Array.isArray(value.branches)
+      ? value.branches
+      : value.markers || [];
+    for (const entry of source.slice(0, 2000)) {
+      const snapshot = restore(puzzle, {
+        values: entry.values,
+        notes: entry.notes,
+        elapsed: 0,
+        hints: 0,
+      });
+      if (
+        !snapshot ||
+        !Number.isInteger(entry.selected) ||
+        entry.selected < 0 ||
+        entry.selected >= puzzle.givens.length
+      )
+        break;
+      const parent = value.branches ? entry.parent : branches.length - 1;
+      if (!Number.isInteger(parent) || parent < -1 || parent >= branches.length)
+        break;
+      branches.push({
+        values: snapshot.values,
+        notes: snapshot.notes,
+        selected: entry.selected,
+        parent,
+        status: ["failed", "confirmed"].includes(entry.status)
+          ? entry.status
+          : "open",
+        history: [],
+      });
+    }
+    if (!Array.isArray(value.branches) && branches.length) {
+      for (const branch of branches) branch.parent++;
+      branches.unshift({
+        values: Array.from(puzzle.givens, Number),
+        notes: Array(puzzle.givens.length).fill(0),
+        selected: Math.max(0, puzzle.givens.indexOf("0")),
+        parent: -1,
+        status: "open",
+        history: [],
+      });
+    }
     return {
+      markers: [],
+      branches,
+      activeBranch:
+        Number.isInteger(value.activeBranch) &&
+        value.activeBranch >= 0 &&
+        value.activeBranch < branches.length
+          ? value.activeBranch
+          : branches.length - 1,
       values: [...value.values],
       notes: [...value.notes],
       elapsed: value.elapsed,
@@ -435,11 +487,20 @@ WorkTimeApp.games.sudokuRules = (() => {
     )
       return false;
     if (pencil && digit && state.values[index]) return false;
+    if (
+      !(pencil && digit) &&
+      state.values[index] === digit &&
+      !state.notes[index]
+    )
+      return false;
     const values = [...state.values],
       notes = [...state.notes];
+    if (state.branches?.length && hasBranchChildren(state)) {
+      if (!forkBranch(state, index)) return null;
+      state.replay = startReplay(puzzle, state);
+    }
     if (pencil && digit) state.notes[index] ^= 1 << (digit - 1);
     else {
-      if (state.values[index] === digit && !state.notes[index]) return false;
       state.values[index] = digit;
       state.notes[index] = 0;
       if (digit)
@@ -448,11 +509,135 @@ WorkTimeApp.games.sudokuRules = (() => {
     }
     state.history.push({ values, notes });
     if (state.history.length > 200) state.history.shift();
+    saveBranch(state, index);
     return true;
   }
+  function initBranches(puzzle, state) {
+    if (state.branches?.length) return;
+    state.branches = [
+      {
+        values: [...state.values],
+        notes: [...state.notes],
+        selected: Math.max(0, puzzle.givens.indexOf("0")),
+        parent: -1,
+        status: "open",
+        history: state.history.slice(),
+      },
+    ];
+    state.activeBranch = 0;
+  }
+  function hasBranchChildren(state) {
+    return !!state.branches?.some(
+      (branch) => branch.parent === state.activeBranch,
+    );
+  }
+  function branchDirty(state) {
+    const base = state.branches[state.activeBranch];
+    return (
+      state.values.some((v, i) => v !== base.values[i]) ||
+      state.notes.some((v, i) => v !== base.notes[i])
+    );
+  }
+  function saveBranch(state, selected) {
+    if (!state.branches?.length || hasBranchChildren(state)) return;
+    const branch = state.branches[state.activeBranch];
+    branch.values = [...state.values];
+    branch.notes = [...state.notes];
+    branch.history = state.history.slice();
+    if (selected !== undefined) branch.selected = selected;
+  }
+  function forkBranch(state, selected) {
+    if (
+      state.branches.filter((branch) => branch.parent === state.activeBranch)
+        .length >= 4
+    )
+      return false;
+    state.branches.push({
+      values: [...state.values],
+      notes: [...state.notes],
+      selected,
+      parent: state.activeBranch,
+      status: "open",
+      history: [],
+    });
+    state.activeBranch = state.branches.length - 1;
+    state.history = [];
+    return true;
+  }
+  function mark(state, selected, puzzle) {
+    saveBranch(state, selected);
+    if (!forkBranch(state, selected)) return false;
+    if (puzzle) state.replay = startReplay(puzzle, state);
+    return true;
+  }
+  function switchBranch(puzzle, state, target, selected) {
+    if (!state.branches[target]) return null;
+    // Preserve an older archive's unsaved working board without rewriting its parent.
+    if (hasBranchChildren(state) && branchDirty(state)) {
+      if (!forkBranch(state, selected)) return null;
+    } else saveBranch(state, selected);
+    const branch = state.branches[target];
+    state.values = [...branch.values];
+    state.notes = [...branch.notes];
+    state.activeBranch = target;
+    state.history = hasBranchChildren(state) ? [] : branch.history.slice();
+    state.replay = startReplay(puzzle, state);
+    return branch.selected;
+  }
+  function returnToMark(puzzle, state, selected) {
+    const target = state.branches[state.activeBranch].parent;
+    return target < 0 ? null : switchBranch(puzzle, state, target, selected);
+  }
+  function confirmMark(state, selected) {
+    if (hasBranchChildren(state)) {
+      if (!forkBranch(state, selected)) return false;
+    }
+    saveBranch(state, selected);
+    state.branches[state.activeBranch].status = "confirmed";
+    return true;
+  }
+  function branchSubtree(state, target) {
+    const removed = new Set([target]);
+    state.branches.forEach((branch, id) => {
+      if (removed.has(branch.parent)) removed.add(id);
+    });
+    return removed;
+  }
+  function deleteBranch(puzzle, state, target) {
+    if (!state.branches[target] || state.branches[target].parent < 0)
+      return null;
+    const parent = state.branches[target].parent;
+    const removed = branchSubtree(state, target);
+    const remap = new Map();
+    const kept = state.branches
+      .filter((branch, id) => {
+        if (removed.has(id)) return false;
+        remap.set(id, remap.size);
+        return true;
+      })
+      .map((branch) => ({
+        ...branch,
+        parent: branch.parent < 0 ? -1 : remap.get(branch.parent),
+      }));
+    const active = removed.has(state.activeBranch)
+      ? parent
+      : state.activeBranch;
+    state.branches = kept;
+    state.activeBranch = remap.get(active);
+    const branch = kept[state.activeBranch];
+    state.values = [...branch.values];
+    state.notes = [...branch.notes];
+    state.history = [];
+    state.replay = startReplay(puzzle, state);
+    return branch.selected;
+  }
   function undo(state) {
+    if (hasBranchChildren(state)) return false;
     const previous = state.history.pop();
-    if (previous) Object.assign(state, previous);
+    if (previous) {
+      Object.assign(state, previous);
+      saveBranch(state);
+    }
     return !!previous;
   }
   const conflicts = (puzzle, state) =>
@@ -540,6 +725,14 @@ WorkTimeApp.games.sudokuRules = (() => {
     restore,
     enter,
     undo,
+    initBranches,
+    hasBranchChildren,
+    switchBranch,
+    mark,
+    returnToMark,
+    confirmMark,
+    branchSubtree,
+    deleteBranch,
     conflicts,
     won,
     startReplay,

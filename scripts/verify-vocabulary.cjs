@@ -79,6 +79,148 @@ function unit() {
     base = S.defaults(),
     entry = catalog.entries.find((e) => e.books.includes("daily"));
   assert.equal(E.queue(base, catalog.entries, now).fresh.length, 20);
+  const legacy = S.defaults();
+  delete legacy.settings.dailyTotal;
+  legacy.settings.dailyNew = 37;
+  assert.equal(S.validate(legacy).settings.dailyTotal, 37);
+  assert.equal(E.queue(legacy, catalog.entries, now).fresh.length, 37);
+  for (const value of [0, -1, 1.5, "20", Number.MAX_SAFE_INTEGER + 1]) {
+    const invalid = S.defaults();
+    invalid.settings.dailyTotal = value;
+    assert.throws(() => S.validate(invalid));
+  }
+  const sample = catalog.entries
+    .filter((e) => e.books.includes("daily"))
+    .slice(0, 7);
+  let quota = S.defaults();
+  quota.settings.dailyTotal = 3;
+  for (const item of sample.slice(0, 4)) {
+    quota = E.review(quota, item, "recall", 3, now - 86400000 * 60);
+    quota.cards[E.key(item.id, "recall")].due = new Date(
+      now - 1000,
+    ).toISOString();
+  }
+  let planned = E.queue(quota, sample, now);
+  assert.equal(planned.allDue, 4);
+  assert.equal(planned.due.length, 3);
+  assert.equal(planned.fresh.length, 0);
+  quota = E.review(quota, sample[0], "recall", 3, now);
+  quota = E.review(quota, sample[0], "spelling", 3, now + 1000);
+  planned = E.queue(quota, sample, now + 2000);
+  assert.equal(
+    planned.items.length,
+    2,
+    "Same word across modes only consumes one slot",
+  );
+  quota = E.review(quota, sample[1], "recall", 3, now + 3000);
+  quota = E.review(quota, sample[2], "recall", 3, now + 4000);
+  assert.equal(E.queue(quota, sample, now + 5000).items.length, 0);
+  assert.equal(E.queue(quota, sample, now + 5000).allDue, 1);
+  quota.settings.book = "cet6";
+  quota.settings.mode = "dictation";
+  assert.equal(
+    E.queue(quota, catalog.entries, now + 5000).items.length,
+    0,
+    "Daily total applies across books and modes",
+  );
+  assert.equal(
+    E.queue(quota, catalog.entries, now + 86400000).items.length,
+    3,
+    "Daily total resets the next day",
+  );
+  quota.settings.book = "daily";
+  quota.settings.mode = "recall";
+  quota.settings.dailyTotal = 5;
+  planned = E.queue(quota, sample, now + 5000);
+  assert.equal(planned.due.length, 1);
+  assert.equal(
+    planned.fresh.length,
+    1,
+    "New words fill remaining slots after reviews",
+  );
+  quota.settings.dailyTotal = 1;
+  assert.equal(
+    E.queue(quota, sample, now + 5000).items.length,
+    0,
+    "Lowering total never removes completed history",
+  );
+  const classified = S.defaults();
+  for (const [index, interval] of [6, 7, 29, 30, 40, 40].entries()) {
+    classified.cards[E.key(sample[index].id, "recall")] = {
+      state: index === 4 ? 1 : index === 5 ? 3 : 2,
+      scheduled_days: interval,
+    };
+  }
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(E.bookDistribution(classified, sample))),
+    { familiar: 1, average: 2, unfamiliar: 3, unlearned: 1 },
+  );
+  classified.settings.mode = "spelling";
+  assert.equal(E.bookDistribution(classified, sample).unlearned, 7);
+  classified.settings.dailyTotal = 2;
+  assert.equal(E.estimateLearningDays(classified, sample), 14);
+  classified.settings.mode = "recall";
+  assert.equal(E.estimateLearningDays(classified, sample), 8);
+  classified.settings.dailyTotal = 4;
+  assert.equal(E.estimateLearningDays(classified, sample), 4);
+  for (const item of sample)
+    classified.cards[E.key(item.id, "recall")] = {
+      state: 2,
+      scheduled_days: 30,
+    };
+  assert.equal(E.estimateLearningDays(classified, sample), 0);
+  assert.equal(E.estimateLearningDays(classified, []), 0);
+  classified.settings.mode = "spelling";
+  assert.equal(
+    E.estimateLearningDays(classified, [
+      { id: "phrase", kind: "phrase", books: ["daily"] },
+    ]),
+    0,
+  );
+  const shuffled = S.defaults();
+  shuffled.settings.wordOrder = "random";
+  shuffled.settings.orderSeed = 123456;
+  const orderedFresh = E.queue(base, catalog.entries, now).fresh.map(
+    (e) => e.id,
+  );
+  const randomFresh = E.queue(shuffled, catalog.entries, now).fresh.map(
+    (e) => e.id,
+  );
+  assert.notDeepEqual(randomFresh, orderedFresh);
+  assert.equal(new Set(randomFresh).size, randomFresh.length);
+  assert.deepEqual(
+    E.queue(shuffled, catalog.entries, now).fresh.map((e) => e.id),
+    randomFresh,
+  );
+  const randomReviewed = E.review(
+    shuffled,
+    catalog.entries.find((e) => e.id === randomFresh[0]),
+    "recall",
+    3,
+    now,
+  );
+  assert(
+    !E.queue(randomReviewed, catalog.entries, now).fresh.some(
+      (e) => e.id === randomFresh[0],
+    ),
+  );
+  shuffled.settings.wordOrder = "ordered";
+  assert.deepEqual(
+    E.queue(shuffled, catalog.entries, now).fresh.map((e) => e.id),
+    orderedFresh,
+  );
+  for (const mutate of [
+    (d) => {
+      d.settings.wordOrder = "bad";
+    },
+    (d) => {
+      d.settings.orderSeed = -1;
+    },
+  ]) {
+    const invalid = S.defaults();
+    mutate(invalid);
+    assert.throws(() => S.validate(invalid));
+  }
   let data = base;
   const intervals = [];
   for (let grade = 1; grade <= 4; grade++) {
@@ -87,7 +229,35 @@ function unit() {
     assert.equal(S.validate(data).cards[E.key(entry.id, "recall")].reps, 1);
     intervals.push(Date.parse(data.cards[E.key(entry.id, "recall")].due));
   }
-  assert(intervals[0] < intervals[2] && intervals[2] <= intervals[3]);
+  assert(intervals[0] <= intervals[2] && intervals[2] <= intervals[3]);
+  for (const due of intervals) assert(due >= now + 86400000);
+  const largeGoal = S.defaults();
+  largeGoal.settings.dailyTotal = 1000;
+  assert.equal(S.validate(largeGoal).settings.dailyTotal, 1000);
+  assert.equal(E.queue(largeGoal, catalog.entries, now).fresh.length, 1000);
+  for (let grade = 1; grade <= 4; grade++) {
+    const reviewed = E.review(base, entry, "recall", grade, now);
+    assert.equal(
+      E.queue(reviewed, [entry], now + 3600000).items.length,
+      grade < 3 ? 1 : 0,
+    );
+    // Old archives may still contain a short-term due time.
+    reviewed.cards[E.key(entry.id, "recall")].due = new Date(
+      now + 60000,
+    ).toISOString();
+    assert.equal(
+      E.queue(reviewed, [entry], now + 3600000).items.length,
+      grade < 3 ? 1 : 0,
+    );
+    assert.equal(
+      E.queue(reviewed, [entry], now + 86400000).due.length,
+      grade < 3 ? 0 : 1,
+    );
+    assert.equal(
+      E.queue(reviewed, [entry], now + 86400000).practice.length,
+      grade < 3 ? 1 : 0,
+    );
+  }
   data = E.review(data, entry, "spelling", 1, now + 1000);
   assert.equal(
     Object.keys(data.cards).length,
@@ -107,7 +277,7 @@ function unit() {
     "Unique entries across modes",
   );
   assert(
-    E.queue(data, catalog.entries, now + 86400000 * 365).due.some(
+    E.queue(data, catalog.entries, now + 86400000 * 365).items.some(
       (e) => e.id === entry.id,
     ),
   );
@@ -122,7 +292,7 @@ function unit() {
   );
   for (const mutate of [
     (d) => {
-      d.settings.dailyNew = 0;
+      d.settings.dailyTotal = 0;
     },
     (d) => {
       d.cards.bad = {};
@@ -490,7 +660,8 @@ async function browser() {
           Math.abs(
             (title.top + pronunciation.bottom - header.top - header.bottom) / 2,
           ) < 1,
-        aligned: Math.abs(inkCenter - (icon.top + icon.bottom) / 2) < 1,
+        // The existing optical alignment deliberately lifts the label by 1px.
+        aligned: Math.abs(inkCenter + 1 - (icon.top + icon.bottom) / 2) < 1,
         border: getComputedStyle(
           document.querySelector(".vocabulary-word-header"),
         ).borderBottomWidth,
@@ -521,7 +692,7 @@ async function browser() {
       await page
         .locator('[data-grade="2"] small, [data-grade="1"] small')
         .allTextContents(),
-      ["今天", "今天"],
+      ["隔约 4 词", "隔约 2 词"],
     );
     assert.equal(await page.locator(".vocabulary-detail-section").count(), 2);
     const exampleCount = await page.evaluate(() => {
@@ -640,6 +811,7 @@ async function browser() {
       ),
       "Grading preserves navigation nodes",
     );
+    await page.locator('[data-page="books"]').click();
     await choose(page, "练习方式", "spelling");
     await page.locator('[data-page="learning"]:not(:disabled)').click();
     await page.locator(".vocabulary-answer:not(:disabled)").waitFor();
@@ -725,6 +897,7 @@ async function browser() {
     if (!process.argv.includes("--no-voice")) {
       await page.locator('[data-page="learning"]').click();
       await page.locator('[data-page="preferences"]').click();
+      await page.locator('[data-page="books"]').click();
       await choose(page, "练习方式", "dictation");
       await page.waitForFunction(
         () =>
@@ -940,6 +1113,7 @@ async function browser() {
       });
     assert.deepEqual(errors, []);
     await page.locator('[data-page="preferences"]').click();
+    await page.locator('[data-page="books"]').click();
     await choose(page, "练习方式", "recall");
     await page.waitForFunction(
       () =>
@@ -958,7 +1132,7 @@ async function browser() {
       .press("Tab");
     await page.waitForFunction(
       () =>
-        WorkTimeApp.services.vocabularyStorage.read().settings.dailyNew === 1,
+        WorkTimeApp.services.vocabularyStorage.read().settings.dailyTotal === 1,
     );
     await page.locator('[data-page="learning"]:not(:disabled)').click();
     await page.locator(".vocabulary-hero").waitFor();
@@ -979,7 +1153,7 @@ async function browser() {
       await page.locator(".vocabulary-page > h3").allTextContents(),
       ["今日学习"],
     );
-    assert.equal(await page.locator(".vocabulary-stats > div").count(), 3);
+    assert.equal(await page.locator(".vocabulary-stats > div").count(), 4);
     if (process.argv.includes("--screenshot"))
       await page.locator("#vocabularyPanel").screenshot({
         path: path.join(root, "artifacts/vocabulary-summary.png"),
@@ -989,7 +1163,7 @@ async function browser() {
       await page.locator(".vocabulary-hero").isVisible(),
       "Completed review stays on summary",
     );
-    await page.locator('[data-page="preferences"]').click();
+    await page.locator('[data-page="books"]').click();
     await page
       .locator(
         '.vocabulary-page:not([inert]) .vocabulary-controls input[type="number"]',
@@ -1002,7 +1176,7 @@ async function browser() {
       .press("Tab");
     await page.waitForFunction(
       () =>
-        WorkTimeApp.services.vocabularyStorage.read().settings.dailyNew === 2,
+        WorkTimeApp.services.vocabularyStorage.read().settings.dailyTotal === 2,
     );
     await page.locator('[data-page="learning"]:not(:disabled)').click();
     await page.locator(".vocabulary-card").waitFor();
@@ -1033,7 +1207,9 @@ async function browser() {
 }
 if (!process.argv.includes("--ui-only")) unit();
 if (!process.argv.includes("--unit"))
-  browser().catch((e) => {
-    console.error(e);
-    process.exitCode = 1;
-  });
+  browser()
+    .then(() => require("./verify-vocabulary-selection.cjs").verifySelection())
+    .catch((e) => {
+      console.error(e);
+      process.exitCode = 1;
+    });

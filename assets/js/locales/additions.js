@@ -4756,3 +4756,22 @@ for (const [language, values] of Object.entries({
       WorkTimeApp.data.locales[language][key] = values[i];
     });
 })();
+
+(() => {
+  const messages = {
+    "zh-CN": ["退出演绎", "退出算法演绎并恢复演绎前的棋盘？"],
+    "zh-TW": ["退出演繹", "退出演算法演繹並恢復演繹前的棋盤？"],
+    "zh-HK": ["退出演繹", "退出演算法演繹並恢復演繹前的棋盤？"],
+    en: [
+      "Stop demonstration",
+      "Stop the demonstration and restore your previous board?",
+    ],
+    ja: ["デモを終了", "デモを終了して開始前の盤面に戻りますか？"],
+    ko: ["시연 종료", "시연을 종료하고 시작 전 보드로 돌아갈까요?"],
+  };
+  for (const [locale, values] of Object.entries(messages)) {
+    ["aiStop", "aiStopHint"].forEach((key, index) => {
+      WorkTimeApp.data.locales[locale]["games.puzzle." + key] = values[index];
+    });
+  }
+})();

@@ -369,6 +369,217 @@ WorkTimeApp.games.register({
       render();
     });
     const erase = button(actions, "erase", () => input(0));
+    const mark = button(actions, "mark", () => {
+      if (!canInput()) return;
+      if (!rules.mark(state, selected, current)) {
+        showBranchLimit();
+        return;
+      }
+      save();
+      render();
+    });
+    const branchPanel = node("details", "sudoku-branches", play);
+    branchPanel.open = window.innerWidth > 700;
+    const branchHeading = node("summary", "", branchPanel);
+    const branchList = node("div", "sudoku-branch-list", branchPanel);
+    const branchLimitPopup = node("div", "sudoku-branch-limit-popover", root);
+    branchLimitPopup.setAttribute("popover", "auto");
+    branchLimitPopup.setAttribute("role", "alert");
+    function showBranchLimit() {
+      branchLimitPopup.textContent = t("branchLimit");
+      branchLimitPopup.showPopover();
+      const anchor = mark.getBoundingClientRect();
+      const box = branchLimitPopup.getBoundingClientRect();
+      branchLimitPopup.style.left =
+        Math.max(8, Math.min(anchor.left, window.innerWidth - box.width - 8)) +
+        "px";
+      branchLimitPopup.style.top =
+        Math.max(8, anchor.top - box.height - 8) + "px";
+    }
+    const deleteBranch = button(actions, "delete-branch", () => {
+      if (
+        replay ||
+        choosing ||
+        manualPaused ||
+        suspended ||
+        confirming ||
+        state.activeBranch === 0
+      )
+        return;
+      pendingDelete = { state, id: state.activeBranch };
+      deletePrompt.textContent = t("deleteBranchConfirm", {
+        n: rules.branchSubtree(state, state.activeBranch).size,
+      });
+      deleteCancel.textContent = t("cancel");
+      deleteAccept.textContent = t("deleteBranch");
+      deletePopup.showPopover();
+      const anchor = deleteBranch.getBoundingClientRect();
+      const rect = deletePopup.getBoundingClientRect();
+      deletePopup.style.left =
+        Math.max(
+          8,
+          Math.min(
+            anchor.left + anchor.width / 2 - rect.width / 2,
+            window.innerWidth - rect.width - 8,
+          ),
+        ) + "px";
+      deletePopup.style.top =
+        Math.max(
+          8,
+          anchor.top >= rect.height + 16
+            ? anchor.top - rect.height - 8
+            : Math.min(anchor.bottom + 8, window.innerHeight - rect.height - 8),
+        ) + "px";
+      deleteCancel.focus({ preventScroll: true });
+    });
+    let pendingDelete = null;
+    const deletePopup = node("div", "sudoku-delete-popover", root);
+    deletePopup.setAttribute("popover", "auto");
+    deletePopup.setAttribute("role", "dialog");
+    const deletePrompt = node("p", "", deletePopup);
+    const deletePopupActions = node(
+      "div",
+      "sudoku-delete-popover-actions",
+      deletePopup,
+    );
+    const deleteCancel = button(deletePopupActions, "delete-cancel", () => {
+      deletePopup.hidePopover();
+      deleteBranch.focus({ preventScroll: true });
+    });
+    const deleteAccept = button(deletePopupActions, "delete-accept", () => {
+      const target = pendingDelete;
+      deletePopup.hidePopover();
+      if (
+        !target ||
+        target.state !== state ||
+        target.id !== state.activeBranch ||
+        deleteBranch.disabled
+      )
+        return;
+      settle();
+      selected = rules.deleteBranch(current, state, target.id);
+      syncClock();
+      save();
+      render();
+      deleteBranch.focus({ preventScroll: true });
+    });
+    listen(deletePopup, "toggle", (event) => {
+      if (event.newState === "closed") pendingDelete = null;
+    });
+    listen(branchHeading, "click", (event) => {
+      if (window.innerWidth > 700) event.preventDefault();
+    });
+    let branchSignature = "";
+    let branchDesktop = window.innerWidth > 700;
+    function paintBranches() {
+      const desktop = window.innerWidth > 700;
+      if (desktop) branchPanel.open = true;
+      else if (branchDesktop) branchPanel.open = false;
+      branchDesktop = desktop;
+      branchHeading.textContent = "⑂";
+      branchHeading.setAttribute("aria-label", t("branches"));
+      branchPanel.hidden = !!replay || choosing;
+      if (!state) return;
+      labelButton(deleteBranch, t("deleteBranch"), "strikethrough-s");
+      deleteBranch.disabled =
+        state.activeBranch === 0 ||
+        !!replay ||
+        manualPaused ||
+        suspended ||
+        confirming;
+      if (
+        pendingDelete &&
+        (pendingDelete.state !== state ||
+          pendingDelete.id !== state.activeBranch ||
+          deleteBranch.disabled)
+      )
+        deletePopup.hidePopover();
+      const signature = JSON.stringify([
+        current.id,
+        state.branches,
+        state.activeBranch,
+      ]);
+      if (signature === branchSignature) return;
+      branchSignature = signature;
+      branchList.replaceChildren();
+      const path = new Set();
+      for (let id = state.activeBranch; id >= 0; id = state.branches[id].parent)
+        path.add(id);
+      const lanes = [];
+      const children = new Map();
+      state.branches.forEach((branch, id) => {
+        const siblings = children.get(branch.parent) || 0;
+        children.set(branch.parent, siblings + 1);
+        lanes[id] =
+          branch.parent < 0
+            ? 0
+            : siblings === 0
+              ? lanes[branch.parent]
+              : Math.max(...lanes) + 1;
+      });
+      const x = (id) => 16 + lanes[id] * 24;
+      const y = (id) => 16 + id * 32;
+      const graphWidth = 32 + Math.max(...lanes) * 24;
+      branchList.style.width = graphWidth + "px";
+      branchList.style.height = state.branches.length * 32 + "px";
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", String(graphWidth));
+      svg.setAttribute("height", String(state.branches.length * 32));
+      svg.setAttribute("aria-hidden", "true");
+      branchList.append(svg);
+      state.branches.forEach((branch, id) => {
+        if (branch.parent >= 0) {
+          const line = document.createElementNS(svg.namespaceURI, "path");
+          line.setAttribute(
+            "d",
+            `M ${x(branch.parent)} ${y(branch.parent)} C ${x(branch.parent)} ${y(branch.parent) + 24} ${x(id)} ${y(branch.parent) + 4} ${x(id)} ${y(branch.parent) + 28} V ${y(id)}`,
+          );
+          line.setAttribute("class", path.has(id) ? "is-current-path" : "");
+          svg.append(line);
+        }
+        const b = button(branchList, "branch-" + id, () => {
+          if (replay || choosing || manualPaused || suspended || confirming)
+            return;
+          settle();
+          const target = rules.switchBranch(current, state, id, selected);
+          if (target === null) {
+            showBranchLimit();
+            return;
+          }
+          selected = target;
+          syncClock();
+          save();
+          render();
+          if (window.innerWidth <= 700) branchPanel.open = false;
+        });
+        b.style.left = x(id) - 12 + "px";
+        b.style.top = y(id) - 12 + "px";
+        const description =
+          (id ? "#" + id : t("branchRoot")) +
+          " · " +
+          t(branch.status) +
+          (id === state.activeBranch ? " · " + t("branchCurrent") : "") +
+          " · " +
+          (Math.floor(branch.selected / 9) + 1) +
+          ":" +
+          ((branch.selected % 9) + 1);
+        b.title = description;
+        b.setAttribute("aria-label", description);
+        const circle = node("span", "sudoku-branch-dot", b);
+        circle.setAttribute("aria-hidden", "true");
+        b.dataset.branchStatus = branch.status;
+        b.classList.toggle("is-active", id === state.activeBranch);
+        b.setAttribute(
+          "aria-current",
+          id === state.activeBranch ? "true" : "false",
+        );
+      });
+    }
+    actions.append(mark, deleteBranch);
+    for (const control of [mark, deleteBranch])
+      control.classList.add("sudoku-branch-action");
+    const markStatus = node("span", "sudoku-mark-status", actions);
+    markStatus.setAttribute("role", "status");
     const keypad = node("div", "sudoku-keypad", tools);
     const digits = Array.from({ length: 9 }, (_, i) => {
       const b = button(keypad, "digit-" + (i + 1), () => input(i + 1));
@@ -461,6 +672,8 @@ WorkTimeApp.games.register({
               elapsed: draft.elapsed,
               hints: draft.hints,
               replay: draft.replay,
+              branches: draft.branches,
+              activeBranch: draft.activeBranch,
             },
           ]),
         );
@@ -496,6 +709,7 @@ WorkTimeApp.games.register({
       if (current) drafts[current.id] = state;
       current = puzzle;
       state = drafts[puzzle.id] || fresh(puzzle);
+      rules.initBranches(puzzle, state);
       drafts[puzzle.id] = state;
       selected = firstCell();
       choosing = false;
@@ -525,8 +739,10 @@ WorkTimeApp.games.register({
       }
     }
     function input(digit) {
-      if (canInput() && rules.enter(current, state, selected, digit, pencil))
-        changed(selected, digit, pencil);
+      if (!canInput()) return;
+      const result = rules.enter(current, state, selected, digit, pencil);
+      if (result === null) showBranchLimit();
+      else if (result) changed(selected, digit, pencil);
     }
     function undoEdit() {
       if (!canInput() || !rules.undo(state)) return;
@@ -537,6 +753,7 @@ WorkTimeApp.games.register({
       settle();
       const won = isWon();
       if (won) {
+        rules.confirmMark(state, selected);
         const record = completed[current.id];
         // Preserve how assisted attempts from older saves rank.
         if (
@@ -883,6 +1100,7 @@ WorkTimeApp.games.register({
         cell.disabled = !editable;
         cell.classList.toggle("is-given", current.givens[i] !== "0");
         cell.classList.toggle("is-selected", focused);
+
         cell.classList.toggle("is-peer", !replay && related.has(i));
         cell.classList.toggle("is-same", !!value && digit === value);
         cell.classList.toggle("is-conflict", invalid[i]);
@@ -998,6 +1216,7 @@ WorkTimeApp.games.register({
       });
     }
     function render() {
+      if (state && current) rules.initBranches(current, state);
       if (signal.aborted) return;
       root.dataset.playing = String(!choosing);
       const group = groups.find((g) => g.id === selectedGroup);
@@ -1133,7 +1352,12 @@ WorkTimeApp.games.register({
         labelButton(b, t(name), icon);
         b.disabled = !canInput();
       }
-      undo.disabled = !canInput() || !state.history.length;
+      labelButton(mark, t("mark"), "flag-2");
+      mark.disabled = !canInput();
+      markStatus.hidden = true;
+      paintBranches();
+      undo.disabled =
+        !canInput() || !state.history.length || rules.hasBranchChildren(state);
       notes.setAttribute("aria-pressed", String(pencil));
       actions.hidden = !!replay;
       keypad.hidden = !!replay;
@@ -1167,7 +1391,9 @@ WorkTimeApp.games.register({
       const style = window.getComputedStyle(play);
       const columns = style.gridTemplateColumns.split(" ").map(parseFloat);
       const gap = parseFloat(style.columnGap) || 0;
-      const boardWidth = width - columns[1] - gap;
+      const branchReserve =
+        9 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const boardWidth = width - columns[1] - branchReserve - gap * 2;
       root.style.setProperty(
         "--sudoku-size",
         Math.floor(Math.max(260, Math.min(boardWidth, boardHeight))) + "px",

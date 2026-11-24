@@ -603,6 +603,8 @@ WorkTimeApp.services.gameArchive = (() => {
             "notes",
             "elapsed",
             "hints",
+            "branches",
+            "activeBranch",
           ]);
           const replay = G.sudokuRules.restoreReplay(
             entry,

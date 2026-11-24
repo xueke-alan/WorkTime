@@ -10,6 +10,9 @@ WorkTimeApp.services.vocabularyStorage = (() => {
       mode: "recall",
       accent: "us",
       dailyNew: 20,
+      dailyTotal: 20,
+      wordOrder: "ordered",
+      orderSeed: 0,
       autoRead: true,
     },
     cards: {},
@@ -46,16 +49,29 @@ WorkTimeApp.services.vocabularyStorage = (() => {
     const s = data.settings;
     if (s.autoRead !== undefined && typeof s.autoRead !== "boolean") bad();
     if (
+      s.wordOrder !== undefined &&
+      !["ordered", "random"].includes(s.wordOrder)
+    )
+      bad();
+    if (
+      s.orderSeed !== undefined &&
+      (!Number.isInteger(s.orderSeed) ||
+        s.orderSeed < 0 ||
+        s.orderSeed > 4294967295)
+    )
+      bad();
+    if (
       !books.includes(s.book) ||
       !modes.includes(s.mode) ||
       !["us", "uk"].includes(s.accent) ||
       !Number.isInteger(s.dailyNew) ||
       s.dailyNew < 1 ||
-      s.dailyNew > 200
+      (s.dailyTotal !== undefined &&
+        (!Number.isSafeInteger(s.dailyTotal) || s.dailyTotal < 1))
     )
       bad();
     if (!object(data.cards) || Object.keys(data.cards).length > 150000) bad();
-    for (const [key, c] of Object.entries(data.cards)) {
+    function validateCard(key, c) {
       if (
         !text(key, 300) ||
         !object(c) ||
@@ -77,6 +93,42 @@ WorkTimeApp.services.vocabularyStorage = (() => {
         if (!Number.isFinite(c[name]) || c[name] < 0) bad();
       if (c.difficulty > 10 || c.reps < 1) bad();
     }
+    for (const [key, c] of Object.entries(data.cards)) validateCard(key, c);
+    if (data.reinforcement !== undefined) {
+      if (
+        !object(data.reinforcement) ||
+        Object.keys(data.reinforcement).length > 150000
+      )
+        bad();
+      for (const [key, p] of Object.entries(data.reinforcement)) {
+        if (
+          !object(p) ||
+          !text(p.id) ||
+          !modes.includes(p.mode) ||
+          key !== p.mode + ":" + p.id ||
+          !Object.hasOwn(data.cards, key) ||
+          !date(p.firstAt) ||
+          !date(p.lastAt) ||
+          ![1, 2].includes(p.worstGrade) ||
+          ![1, 2].includes(p.required) ||
+          (p.worstGrade === 1 && p.required !== 2) ||
+          !Number.isInteger(p.successes) ||
+          p.successes < 0 ||
+          p.successes >= p.required ||
+          !Number.isSafeInteger(p.failures) ||
+          p.failures < 1 ||
+          !Number.isInteger(p.gap) ||
+          p.gap < 1 ||
+          p.gap > 12 ||
+          !Array.isArray(p.seen) ||
+          p.seen.length > p.gap ||
+          p.seen.some((id) => !text(id) || id === p.id) ||
+          new Set(p.seen).size !== p.seen.length
+        )
+          bad();
+        if (p.baseline !== null) validateCard(key, p.baseline);
+      }
+    }
     if (
       !Array.isArray(data.logs) ||
       data.logs.length > 200000 ||
@@ -94,6 +146,8 @@ WorkTimeApp.services.vocabularyStorage = (() => {
         !Number.isInteger(log.grade) ||
         log.grade < 1 ||
         log.grade > 4 ||
+        (log.practice !== undefined && typeof log.practice !== "boolean") ||
+        (log.completed !== undefined && typeof log.completed !== "boolean") ||
         typeof log.first !== "boolean"
       )
         bad();
@@ -108,7 +162,11 @@ WorkTimeApp.services.vocabularyStorage = (() => {
         ![null, true, false].includes(data.draft.correct))
     )
       bad();
-    return structuredClone(data);
+    const result = structuredClone(data);
+    result.settings.dailyTotal ??= result.settings.dailyNew;
+    result.settings.wordOrder ??= "ordered";
+    result.settings.orderSeed ??= 0;
+    return result;
   }
   const find = (state) =>
     state?._archive?.unknownModules?.find((m) => m.id === ID);

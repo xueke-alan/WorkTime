@@ -329,6 +329,7 @@ Thumbs.db
 !/scripts/verify-typing.cjs
 !/scripts/prepare-vocabulary.cjs
 !/scripts/verify-vocabulary.cjs
+!/scripts/verify-vocabulary-selection.cjs
 !/scripts/vocabulary/
 !/scripts/vocabulary/**
 
@@ -338,9 +339,12 @@ Thumbs.db
 !/scripts/verify-typing-layout.cjs
 
 !/scripts/verify-vocabulary-shortcuts.cjs
+!/scripts/verify-vocabulary-reinforcement.cjs
 
 !/scripts/verify-vocabulary-loading.cjs
 
 !/scripts/verify-vocabulary-settings.cjs
 
 !/scripts/verify-vocabulary-word-detail.cjs
+
+!/scripts/verify-sudoku-branches.cjs
