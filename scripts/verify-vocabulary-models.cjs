@@ -274,9 +274,10 @@ async function main() {
         "noopener,noreferrer",
       ],
     ]);
+    assert.equal(await ui.locator(".vocabulary-model-cancel").count(), 0);
     assert.equal(
-      await ui.locator(".vocabulary-model-cancel").isVisible(),
-      false,
+      await ui.locator(".vocabulary-model-status").textContent(),
+      "",
     );
     assert.equal(
       await ui.getByRole("button", { name: "导入", exact: true }).count(),
@@ -299,6 +300,12 @@ async function main() {
       [],
       "Opening settings never downloads model binaries",
     );
+    await ui.locator('input[accept=".wtmodels"]').setInputFiles({
+      name: "invalid.wtmodels",
+      mimeType: "application/octet-stream",
+      buffer: Buffer.from("invalid package"),
+    });
+    await ui.getByText(/模型未安装完成/).waitFor();
     await ui.setViewportSize({ width: 1440, height: 1000 });
     await ui.evaluate(async () => {
       await WorkTimeApp.services.preferences.page.saveMotionMode("full");

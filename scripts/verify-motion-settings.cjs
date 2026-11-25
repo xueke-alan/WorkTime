@@ -75,9 +75,7 @@ async function verify() {
       const folderBox = await page
         .locator(".auto-backup-folder-control")
         .boundingBox();
-      const autoBackupBox = await page
-        .locator("#autoBackupTrigger")
-        .boundingBox();
+      assert.equal(await page.locator("#autoBackupTrigger").count(), 0);
       if (mobile && process.env.WORKTIME_SHOT)
         await page
           .locator("#pageSettingsPane .page-settings-body")
@@ -97,12 +95,10 @@ async function verify() {
         "install action must fill one quarter of the settings row",
       );
       assert.ok(
-        folderBox.x + folderBox.width < autoBackupBox.x &&
-          autoBackupBox.x + autoBackupBox.width < installBox.x &&
-          Math.abs(folderBox.width - autoBackupBox.width) < 1 &&
-          Math.abs(autoBackupBox.y - folderBox.y) < 1 &&
-          Math.abs(installBox.y - folderBox.y) < 1,
-        "folder and backup must share the remaining width to the left of install",
+        folderBox.x + folderBox.width < installBox.x &&
+          Math.abs(installBox.y - folderBox.y) < 1 &&
+          Math.abs(folderBox.x - backupRowBox.x) < 1,
+        "runtime folder fills the space to the left of install",
       );
       assert.equal(await page.locator("#motionHelp").count(), 0);
       assert.equal(

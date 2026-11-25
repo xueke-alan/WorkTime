@@ -201,7 +201,7 @@ async function browser() {
     const beforeGrade = await state();
     assert.equal(
       await page.locator('[data-grade="1"] small').innerText(),
-      "隔约 2 词",
+      "今日",
     );
     await page.evaluate(() => {
       const storage = WorkTimeApp.services.vocabularyStorage;
@@ -250,14 +250,20 @@ async function browser() {
       "Forgotten word returns after two other words",
     );
     assert.equal(
+      await page
+        .getByText("当天巩固中，请重新回忆后评分。", { exact: true })
+        .count(),
+      0,
+    );
+    assert.equal(
       await page.locator(".vocabulary-review-badge").innerText(),
       "1",
     );
     await page.locator('[data-action="reveal"]:not(:disabled)').click();
     await page.locator('[data-grade="3"]:not(:disabled)').waitFor();
-    assert.equal(
-      await page.locator('[data-grade="3"] small').innerText(),
-      "还需认识 1 次",
+    assert.deepEqual(
+      await page.locator(".vocabulary-rating small").allTextContents(),
+      ["今日", "今日", "今日"],
     );
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -291,11 +297,15 @@ async function browser() {
       "Reload preserves partially completed practice",
     );
     assert.equal((await state()).draft.id, firstId);
+    assert.equal(
+      await page.getByText("剩余词不足，提前巩固。", { exact: true }).count(),
+      1,
+    );
     await page.locator('[data-action="reveal"]:not(:disabled)').click();
     await page.locator('[data-grade="3"]:not(:disabled)').waitFor();
-    assert.equal(
+    assert.match(
       await page.locator('[data-grade="3"] small').innerText(),
-      "完成本轮巩固",
+      /^[1-9]\d*日后$/,
     );
     await page.locator('[data-grade="3"]').click();
     await page.locator(".vocabulary-hero").waitFor();
@@ -322,6 +332,76 @@ async function browser() {
     );
     await page.locator('[data-grade="3"]').click();
     await page.locator(".vocabulary-hero").waitFor();
+    await page.evaluate(() =>
+      WorkTimeApp.services.preferences.page.saveMotionMode("full"),
+    );
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const centered = await page.evaluate(() => {
+        const box = document
+          .getElementById("vocabularyPage")
+          .getBoundingClientRect();
+        const summary = document
+          .querySelector(".vocabulary-summary")
+          .getBoundingClientRect();
+        return (
+          Math.abs((summary.top + summary.bottom - box.top - box.bottom) / 2) <=
+          1
+        );
+      });
+      assert(centered, "The completed summary is vertically centered");
+      const animation = await page.evaluate(() => {
+        document.getElementById("prevMonth").click();
+        const hero = document.querySelector(
+          ".vocabulary-drawer-snapshot > .vocabulary-hero",
+        );
+        const mini = document.querySelector(".vocabulary-mini");
+        const track = hero?.parentElement.getAnimations()[0];
+        const start = hero?.getBoundingClientRect();
+        const target = mini
+          .querySelector(".vocabulary-hero")
+          .getBoundingClientRect();
+        const last = track?.effect.getKeyframes().at(-1).transform;
+        if (!last) return null;
+        const move = new DOMMatrixReadOnly(last);
+        return {
+          label: hero.querySelector(".vocabulary-streak").textContent,
+          landsAtCenter:
+            Math.abs(
+              start.left +
+                start.width / 2 +
+                move.m41 -
+                (target.left + target.width / 2),
+            ) <= 1 &&
+            Math.abs(
+              start.top +
+                start.height / 2 +
+                move.m42 -
+                (target.top + target.height / 2),
+            ) <= 1,
+        };
+      });
+      assert.deepEqual(animation, { label: "01", landsAtCenter: true });
+      await page.waitForFunction(
+        () => !document.querySelector(".vocabulary-drawer-snapshot"),
+      );
+      const mini = page.locator(".vocabulary-mini");
+      assert.equal(await mini.locator(".vocabulary-streak").innerText(), "01");
+      assert.equal(
+        await mini.locator(".vocabulary-stats, .vocabulary-mini-word").count(),
+        0,
+      );
+      await mini.locator(".vocabulary-mini-expand").press("Enter");
+      await page.waitForFunction(
+        () => !document.querySelector(".vocabulary-drawer-snapshot"),
+      );
+      assert.equal(
+        await page
+          .locator(".vocabulary-summary .vocabulary-stats > div")
+          .count(),
+        4,
+      );
+    }
     assert.deepEqual(errors, []);
     console.log(
       "Offline browser: dynamic reinsertion, save retry, hidden answers, two recalls, reload, undo, unique counts and 1440/390 layouts passed.",

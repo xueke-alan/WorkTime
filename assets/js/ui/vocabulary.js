@@ -5,6 +5,8 @@ WorkTimeApp.ui.vocabulary = (() => {
   const speech = WorkTimeApp.services.vocabularySpeech;
   const speakerIcon =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4zM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14"/></svg>';
+  const synthesisIcon =
+    '<svg class="site-audio-spinner" fill="currentColor" aria-hidden="true"><use href="#ms-progress-activity"/></svg>';
   const idle = WorkTimeApp.services.vocabularyIdle;
   const models = WorkTimeApp.services.vocabularyModels;
   const entries = WorkTimeApp.data.vocabularyCatalog.entries;
@@ -37,7 +39,7 @@ WorkTimeApp.ui.vocabulary = (() => {
     savedScroll = 0,
     settingsController;
   let closeCacheConfirmation = () => {};
-  let modelBusy = false;
+  let modelImportStatus = "";
   let audioReady = false,
     view = "home",
     notice = "saved",
@@ -96,6 +98,7 @@ WorkTimeApp.ui.vocabulary = (() => {
   let modeAnimations = [],
     modeSnapshots = [],
     movingSurface = null,
+    movingStreak = null,
     movingDistance = 0;
   let modeStyles = [];
   function modeStyle(element, property, value) {
@@ -114,6 +117,7 @@ WorkTimeApp.ui.vocabulary = (() => {
       element.style[property] = value;
     });
     movingSurface = null;
+    movingStreak = null;
     movingDistance = 0;
     if (editor.classList.contains("is-vocabulary-drawer-moving"))
       editor.classList.remove("is-vocabulary-drawer-moving");
@@ -223,7 +227,7 @@ WorkTimeApp.ui.vocabulary = (() => {
   function updateSettings(key, value, after) {
     speech.stop();
     const next = structuredClone(data);
-    if (key === "accent" && inputDraft?.id === next.draft?.id)
+    if (key === "accent" && inputDraft && inputDraft.id === next.draft?.id)
       next.draft.answer = inputDraft.answer;
     inputDraft = null;
     next.settings[key] = value;
@@ -308,18 +312,13 @@ WorkTimeApp.ui.vocabulary = (() => {
     const status = content.querySelector(".vocabulary-model-status");
     const state = models.state;
     if (status)
-      status.textContent =
-        t("models_" + state.phase) +
-        (state.phase === "downloading" && state.total
-          ? " " + Math.floor((state.loaded / state.total) * 100) + "%"
-          : "");
+      status.textContent = modelImportStatus ? t(modelImportStatus) : "";
     for (const control of content.querySelectorAll(
       '[data-model-action="import"]',
     ))
       control.disabled =
-        modelBusy || ["downloading", "importing"].includes(state.phase);
-    const cancel = content.querySelector(".vocabulary-model-cancel");
-    if (cancel) cancel.hidden = state.phase !== "downloading";
+        modelImportStatus === "models_importing" ||
+        ["downloading", "importing"].includes(state.phase);
   }
   const unsubscribeModels = models.subscribe(refreshModels);
   const unsubscribeStorage = S.subscribe((changes, reset) => {
@@ -335,7 +334,24 @@ WorkTimeApp.ui.vocabulary = (() => {
     failed = null;
     render();
   });
-  async function play(entry = current, miniPlayback = false) {
+  function playbackButton(entry, className, label, miniPlayback = false) {
+    const control = button(
+      "",
+      () =>
+        play(entry, miniPlayback, (synthesizing) => {
+          control.firstElementChild.outerHTML = synthesizing
+            ? synthesisIcon
+            : speakerIcon;
+          if (synthesizing) control.setAttribute("aria-busy", "true");
+          else control.removeAttribute("aria-busy");
+        }),
+      className,
+    );
+    control.setAttribute("aria-label", label);
+    control.innerHTML = speakerIcon;
+    return control;
+  }
+  async function play(entry = current, miniPlayback = false, onSynthesis) {
     if (
       !entry ||
       (miniPlayback
@@ -349,7 +365,11 @@ WorkTimeApp.ui.vocabulary = (() => {
     const id = current?.id,
       mode = data.settings.mode;
     try {
-      const played = await speech.play(entry, data.settings.accent);
+      const played = await speech.play(
+        entry,
+        data.settings.accent,
+        onSynthesis,
+      );
       if (
         played &&
         !miniPlayback &&
@@ -567,6 +587,9 @@ WorkTimeApp.ui.vocabulary = (() => {
     ].includes(event.key);
     if (
       !recognized ||
+      (event.key === " " &&
+        target instanceof Element &&
+        target.closest(".vocabulary-word-copy")) ||
       (view !== "study" && !(event.key === "ArrowUp" && previousReview))
     )
       return;
@@ -634,13 +657,11 @@ WorkTimeApp.ui.vocabulary = (() => {
           undefined,
           "vocabulary-list-pronunciation",
         );
-        const playButton = button(
-          "",
-          () => play(entry),
+        const playButton = playbackButton(
+          entry,
           "vocabulary-list-play",
+          t("play") + ": " + entry.word,
         );
-        playButton.setAttribute("aria-label", t("play") + ": " + entry.word);
-        playButton.innerHTML = speakerIcon;
         pronunciation.append(
           node("small", phoneticText(entry), "vocabulary-phonetic"),
           playButton,
@@ -686,20 +707,19 @@ WorkTimeApp.ui.vocabulary = (() => {
     fill();
     return box;
   }
-  function home() {
-    const stats = E.statistics(data);
+  function streakHero(streak) {
     const hero = node("section", undefined, "vocabulary-hero");
     hero.append(
       node("span", t("streak"), "vocabulary-eyebrow"),
-      node(
-        "strong",
-        String(stats.streak).padStart(2, "0"),
-        "vocabulary-streak",
-      ),
+      node("strong", String(streak).padStart(2, "0"), "vocabulary-streak"),
     );
-    panel.append(
-      hero,
-      node("h3", t("todayPlan")),
+    return hero;
+  }
+  function home() {
+    const stats = E.statistics(data);
+    const summary = node("div", undefined, "vocabulary-summary");
+    summary.append(
+      streakHero(stats.streak),
       metrics({
         newLearned: stats.newLearned,
         reviewCount: stats.reviewCount,
@@ -707,6 +727,7 @@ WorkTimeApp.ui.vocabulary = (() => {
         pendingPractice: E.queue(data, entries).practice.length,
       }),
     );
+    panel.append(summary);
   }
   function metrics(values) {
     const row = node("div", undefined, "vocabulary-stats");
@@ -1213,16 +1234,16 @@ WorkTimeApp.ui.vocabulary = (() => {
     const modelStatus = node("p", "", "vocabulary-model-status");
     modelStatus.setAttribute("role", "status");
     const modelActions = node("div", undefined, "vocabulary-cache-actions");
-    async function manageModel(action) {
-      if (modelBusy) return;
-      modelBusy = true;
+    async function importModels(file) {
+      if (modelImportStatus === "models_importing") return;
+      modelImportStatus = "models_importing";
       refreshModels();
       try {
-        await action();
+        await models.install(file);
+        modelImportStatus = "models_installed";
       } catch {
-        /* The model status supplies the retry/import guidance. */
+        modelImportStatus = "models_failed";
       } finally {
-        modelBusy = false;
         refreshModels();
       }
     }
@@ -1241,12 +1262,10 @@ WorkTimeApp.ui.vocabulary = (() => {
     upload.onchange = () => {
       const file = upload.files[0];
       upload.value = "";
-      if (file) void manageModel(() => models.install(file));
+      if (file) void importModels(file);
     };
     const importModel = button(t("modelImport"), () => upload.click());
     importModel.dataset.modelAction = "import";
-    const cancelModel = button(t("modelCancel"), () => models.cancel());
-    cancelModel.classList.add("vocabulary-model-cancel");
     download.textContent = t("modelDownloadShort");
     importModel.textContent = t("modelImportShort");
     clear.textContent = t("cacheClearShort");
@@ -1254,7 +1273,7 @@ WorkTimeApp.ui.vocabulary = (() => {
     modelSection.append(node("h4", t("modelGroup")), modelActions);
     const groups = node("div", undefined, "vocabulary-management-groups");
     groups.append(modelSection);
-    panel.append(groups, cancelModel, upload, modelStatus);
+    panel.append(groups, upload, modelStatus);
     refreshModels();
     settingsController = new AbortController();
     settingsController.signal.addEventListener(
@@ -1321,21 +1340,52 @@ WorkTimeApp.ui.vocabulary = (() => {
     const draft = showAnswer
       ? { revealed: true }
       : data.draft || { revealed: false };
-    if (mode === "recall" || draft.revealed)
-      wordHeader.append(node("h3", entry.word));
+    if (mode === "recall" || draft.revealed) {
+      const heading = node("h3");
+      const status = node("span", undefined, "vocabulary-word-copy-status");
+      status.setAttribute("role", "status");
+      let feedbackTimer;
+      let copyAttempt = 0;
+      const copy = button(
+        entry.word,
+        async () => {
+          const attempt = ++copyAttempt;
+          clearTimeout(feedbackTimer);
+          status.textContent = "";
+          status.classList.remove("is-error");
+          let result = "wordCopied";
+          try {
+            await navigator.clipboard.writeText(entry.word);
+          } catch {
+            result = "wordCopyFailed";
+          }
+          if (attempt !== copyAttempt || !status.isConnected) return;
+          status.classList.toggle("is-error", result === "wordCopyFailed");
+          status.textContent = t(result);
+          feedbackTimer = setTimeout(() => {
+            status.textContent = "";
+            status.classList.remove("is-error");
+          }, 1800);
+        },
+        "vocabulary-word-copy",
+      );
+      copy.title = t("copyWord", { word: entry.word });
+      copy.setAttribute("aria-label", copy.title);
+      heading.append(copy);
+      wordHeader.append(heading, status);
+    }
     const voiceLabel = t(data.settings.accent === "uk" ? "shortUK" : "shortUS");
     const phonetic = phoneticText(entry);
     if (mode !== "spelling" || draft.revealed) {
       const pronunciation = node("div", undefined, "vocabulary-pronunciation");
       if ((draft.revealed || mode === "recall") && phonetic)
         pronunciation.append(node("span", phonetic, "vocabulary-phonetic"));
-      const playButton = button(
-        "",
-        () => play(entry, miniPlayback),
+      const playButton = playbackButton(
+        entry,
         "vocabulary-pronunciation-play",
+        t("play") + " · " + voiceLabel,
+        miniPlayback,
       );
-      playButton.setAttribute("aria-label", t("play") + " · " + voiceLabel);
-      playButton.innerHTML = speakerIcon;
       playButton.append(node("span", voiceLabel));
       pronunciation.append(playButton);
       wordHeader.append(pronunciation);
@@ -1402,6 +1452,7 @@ WorkTimeApp.ui.vocabulary = (() => {
         );
       const ratings = node("div", undefined, "vocabulary-ratings");
       const now = Date.now();
+      const today = Date.parse(E.day(now));
       [
         ["recognized", 3],
         ["uncertain", 2],
@@ -1419,34 +1470,25 @@ WorkTimeApp.ui.vocabulary = (() => {
           b.setAttribute("aria-pressed", String(selected));
         }
         const result = E.preview(data, current, mode, rating, now);
-        const practicing = data.reinforcement?.[E.key(current.id, mode)];
         const delay = result.gap
-          ? rating === 3
-            ? t("practiceRemaining", { n: result.remaining })
-            : t("practiceGap", { n: result.gap })
-          : practicing
-            ? t("practiceComplete")
-            : t("reviewDays", {
-                n: Math.max(
-                  1,
-                  Math.round((Date.parse(result.card.due) - now) / 86400000),
-                ),
-              });
+          ? t("reviewToday")
+          : t("reviewDays", {
+              n: Math.max(
+                1,
+                (Date.parse(E.day(result.card.due)) - today) / 86400000,
+              ),
+            });
         b.append(node("strong", t(key)), node("small", delay));
         if (draft.correct === false && rating !== 1) b.disabled = true;
         ratings.append(b);
       });
       studyActions.append(ratings);
     }
-    if (data.reinforcement?.[E.key(current.id, mode)]) {
-      const plan = E.queue(data, entries);
-      card.append(
-        node(
-          "p",
-          t(plan.early ? "practiceEarly" : "practicePending"),
-          "vocabulary-muted",
-        ),
-      );
+    if (
+      data.reinforcement?.[E.key(current.id, mode)] &&
+      E.queue(data, entries).early
+    ) {
+      card.append(node("p", t("practiceEarly"), "vocabulary-muted"));
     }
     const studyHeader = node("div", undefined, "vocabulary-study-header");
     studyHeader.append(card);
@@ -1520,6 +1562,92 @@ WorkTimeApp.ui.vocabulary = (() => {
     studyHeader.append(back, card);
     drawerBody.insertBefore(studyHeader, panel);
     studyDetails(viewedEntry);
+    memoryHistory(viewedEntry);
+  }
+  function memoryHistory(entry) {
+    const section = node("section", undefined, "vocabulary-detail-section");
+    const results = node("div", undefined, "vocabulary-memory-history");
+    const logs = data.logs
+      .filter((log) => log.id === entry.id)
+      .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+    const date = new Intl.DateTimeFormat(WorkTimeApp.i18n.language, {
+      dateStyle: "medium",
+    });
+    const calendarDay = (at) => Date.parse(E.day(at));
+    const daysBetween = (later, earlier) =>
+      (calendarDay(later) - calendarDay(earlier)) / 86400000;
+    const ratings = ["forgotten", "uncertain", "recognized", "easy"];
+    const batchSize = 24;
+
+    if (logs.length) {
+      const first = logs[0].at;
+      const last = logs.at(-1).at;
+      const start = date.format(new Date(first));
+      const end = date.format(new Date(last));
+      const range = E.day(first) === E.day(last) ? start : `${start} → ${end}`;
+      results.append(
+        node("p", t("memoryHistorySummary", { range, n: logs.length })),
+      );
+      const showMode = new Set(logs.map((log) => log.mode)).size > 1;
+      const list = node("ol", undefined, "vocabulary-memory-events");
+      list.setAttribute("role", "list");
+      let from = logs.length;
+      const more = button(t("memoryHistoryEarlier"), () => {
+        prependEvents();
+        if (more.hidden) list.focus();
+      });
+      more.classList.add("vocabulary-memory-earlier");
+      list.tabIndex = -1;
+      function prependEvents() {
+        const start = Math.max(0, from - batchSize);
+        const items = logs.slice(start, from).map(({ at, grade, mode }) => {
+          const item = node("li");
+          const rating = ratings[grade - 1];
+          item.dataset.rating = rating;
+          const time = node("time", `D${daysBetween(at, first) + 1}`);
+          time.dateTime = at;
+          time.title = date.format(new Date(at));
+          item.append(time, " · ", t(rating));
+          if (showMode) item.append(" · ", t(mode));
+          return item;
+        });
+        list.prepend(...items);
+        from = start;
+        more.hidden = from === 0;
+      }
+      prependEvents();
+      results.append(more, list);
+    } else {
+      results.append(node("p", t("memoryHistoryEmpty"), "vocabulary-muted"));
+    }
+
+    const now = Date.now();
+    for (const mode of ["recall", "spelling", "dictation"]) {
+      const key = E.key(entry.id, mode);
+      const due = data.cards[key]?.due;
+      const pending = data.reinforcement?.[key];
+      if (!due && !pending) continue;
+      let status = t("pendingPractice");
+      let overdue = false;
+      if (!pending) {
+        const days = daysBetween(due, now);
+        overdue = days < 0;
+        status = overdue
+          ? t("memoryHistoryOverdue", { n: -days })
+          : days === 0
+            ? t("memoryHistoryDueToday")
+            : t("memoryHistoryNext", { date: date.format(new Date(due)) });
+      }
+      const line = node(
+        "p",
+        `${t(mode)} · ${status}`,
+        "vocabulary-muted vocabulary-memory-due",
+      );
+      if (overdue) line.dataset.overdue = "true";
+      results.append(line);
+    }
+    section.append(node("h4", t("memoryHistory")), results);
+    panel.append(section);
   }
   function studyDetails(entry = current) {
     function section(key) {
@@ -1544,13 +1672,11 @@ WorkTimeApp.ui.vocabulary = (() => {
           node("mark", text.slice(index, index + needle.length)),
           document.createTextNode(text.slice(index + needle.length)),
         );
-      const playButton = button(
-        "",
-        () => play({ word: example.en, kind: "example" }),
+      const playButton = playbackButton(
+        { word: example.en, kind: "example" },
         "vocabulary-example-play",
+        t("play") + ": " + example.en,
       );
-      playButton.setAttribute("aria-label", t("play") + ": " + example.en);
-      playButton.innerHTML = speakerIcon;
       english.prepend(playButton);
       item.append(
         english,
@@ -1738,19 +1864,17 @@ WorkTimeApp.ui.vocabulary = (() => {
     miniBack.title = WorkTimeApp.i18n.t("tools.back");
     miniExpand.setAttribute("aria-label", t("expand"));
     miniHeader.replaceChildren();
-    const card = node("section", undefined, "vocabulary-card");
-    if (entry) {
-      const wordHeader = createWordHeader(entry, true);
-      wordHeader.querySelector("h3")?.classList.add("vocabulary-mini-word");
-      wordHeader
-        .querySelector(".vocabulary-phonetic")
-        ?.classList.add("vocabulary-mini-phonetic");
-      card.append(wordHeader);
-    } else {
-      const wordHeader = node("div", undefined, "vocabulary-word-header");
-      wordHeader.append(node("h3", t("miniEmpty"), "vocabulary-mini-word"));
-      card.append(wordHeader);
+    if (!entry) {
+      miniHeader.append(streakHero(E.statistics(data).streak));
+      return;
     }
+    const card = node("section", undefined, "vocabulary-card");
+    const wordHeader = createWordHeader(entry, true);
+    wordHeader.querySelector("h3")?.classList.add("vocabulary-mini-word");
+    wordHeader
+      .querySelector(".vocabulary-phonetic")
+      ?.classList.add("vocabulary-mini-phonetic");
+    card.append(wordHeader);
     miniHeader.append(card);
   }
   function setMini(value) {
@@ -1769,9 +1893,11 @@ WorkTimeApp.ui.vocabulary = (() => {
         );
     }
     const beforeBody = drawerViewport.getBoundingClientRect();
-    const sourceAnchor = (miniMode ? mini : drawerBody).querySelector(
-      ".vocabulary-word-header",
-    );
+    const source = miniMode ? mini : drawerBody;
+    const sourceAnchor = source.querySelector(".vocabulary-word-header");
+    const sourceStreak =
+      animate && (movingStreak || source.querySelector(".vocabulary-hero"));
+    const streakBounds = sourceStreak && sourceStreak.getBoundingClientRect();
     let sourceTop = sourceAnchor?.getBoundingClientRect().top;
     if (sourceTop !== undefined && !miniMode && movingSurface === drawerBody) {
       const transform = getComputedStyle(drawerBody).transform;
@@ -1808,9 +1934,10 @@ WorkTimeApp.ui.vocabulary = (() => {
       editor.classList.add("is-vocabulary-drawer-moving");
       const surface = outgoingBody || drawerBody;
       movingSurface = surface;
-      const targetAnchor = (value ? mini : drawerBody).querySelector(
-        ".vocabulary-word-header",
-      );
+      const destination = value ? mini : drawerBody;
+      const targetAnchor = destination.querySelector(".vocabulary-word-header");
+      const targetStreak = destination.querySelector(".vocabulary-hero");
+      const targetStreakBounds = targetStreak?.getBoundingClientRect();
       const targetTop = targetAnchor?.getBoundingClientRect().top;
       const distance = Math.max(
         0,
@@ -1846,6 +1973,31 @@ WorkTimeApp.ui.vocabulary = (() => {
           { duration, easing: "cubic-bezier(.22,.8,.25,1)" },
         ),
       ];
+      if (streakBounds && targetStreakBounds) {
+        movingStreak = drawerSnapshot(sourceStreak, streakBounds);
+        movingStreak.style.boxSizing = "border-box";
+        const outgoingStreak = outgoingBody?.querySelector(".vocabulary-hero");
+        if (outgoingStreak) outgoingStreak.style.opacity = "0";
+        modeStyle(targetStreak, "opacity", "0");
+        const x =
+          targetStreakBounds.left -
+          streakBounds.left +
+          (targetStreakBounds.width - streakBounds.width) / 2;
+        const y =
+          targetStreakBounds.top -
+          streakBounds.top +
+          (targetStreakBounds.height - streakBounds.height) / 2;
+        tracks.push(
+          animationCompat.animate(
+            movingStreak.parentElement,
+            [
+              { transform: "translate(0px, 0px)" },
+              { transform: `translate(${x}px, ${y}px)` },
+            ],
+            { duration, easing: "cubic-bezier(.22,.8,.25,1)" },
+          ),
+        );
+      }
       if (value) {
         for (const meaning of surface.querySelectorAll(".vocabulary-meaning")) {
           const opacity = getComputedStyle(meaning).opacity;

@@ -20,11 +20,13 @@ WorkTimeApp.services.vocabularySpeech = (() => {
       initializedEngine,
       audio,
       audioURL,
+      playbackSynthesis,
       database,
       serial = Promise.resolve();
     let sequence = 0,
       workerEpoch = 0,
       generation = 0,
+      playingGeneratedAudio = false,
       cacheHealthy = true,
       status = "idle",
       phase = "idle",
@@ -298,8 +300,15 @@ WorkTimeApp.services.vocabularySpeech = (() => {
       initializationQueue = initialization.catch(() => {});
       return initialization;
     }
+    function finishPlaybackSynthesis() {
+      const listener = playbackSynthesis;
+      playbackSynthesis = null;
+      listener?.(false);
+    }
     function stop() {
       generation++;
+      finishPlaybackSynthesis();
+      playingGeneratedAudio = false;
       if (currentSynthesis && !currentSynthesis.valid()) notify("idle");
       audio?.pause();
       audio = null;
@@ -383,7 +392,11 @@ WorkTimeApp.services.vocabularySpeech = (() => {
           await initialize(profile, !background);
           if (!current() || (background && (foreground || !canStart())))
             return null;
-          currentSynthesis = { word: entry.word, valid: current };
+          currentSynthesis = {
+            word: entry.word,
+            kind: entry.kind === "example" ? "example" : "word",
+            valid: current,
+          };
           notify("generating");
           const started = performance.now();
           const result = await request({
@@ -457,7 +470,10 @@ WorkTimeApp.services.vocabularySpeech = (() => {
       synthesize,
       stop,
       get active() {
-        return foreground > 0 || !!(audio && !audio.paused && !audio.ended);
+        return (
+          foreground > 0 ||
+          (playingGeneratedAudio && !!audio && !audio.paused && !audio.ended)
+        );
       },
       release() {
         if (working || foreground) releasePending = true;
@@ -478,11 +494,16 @@ WorkTimeApp.services.vocabularySpeech = (() => {
       get currentWord() {
         return currentSynthesis?.valid() ? currentSynthesis.word : "";
       },
+      get generatingKind() {
+        return phase === "generating" && currentSynthesis?.valid()
+          ? currentSynthesis.kind
+          : "";
+      },
       subscribe(listener) {
         listeners.add(listener);
         return () => listeners.delete(listener);
       },
-      async play(entry, accent) {
+      async play(entry, accent, onSynthesis) {
         stop();
         const token = generation;
         try {
@@ -500,16 +521,24 @@ WorkTimeApp.services.vocabularySpeech = (() => {
           if (token !== generation) return false;
           blob ||= await readBrowser(filesCache.key(entry, accent, profile));
           if (token !== generation) return false;
-          blob ||= await WorkTimeApp.services.vocabularySpeech.synthesize(
-            entry,
-            accent,
-            {
-              valid: () => token === generation,
-            },
-          );
+          const needsSynthesis = !blob;
+          if (needsSynthesis) {
+            playbackSynthesis = onSynthesis;
+            try {
+              onSynthesis?.(true);
+              blob = await WorkTimeApp.services.vocabularySpeech.synthesize(
+                entry,
+                accent,
+                { valid: () => token === generation },
+              );
+            } finally {
+              if (token === generation) finishPlaybackSynthesis();
+            }
+          }
           if (!blob || token !== generation) return false;
           audioURL = URL.createObjectURL(blob);
           audio = new Audio(audioURL);
+          playingGeneratedAudio = needsSynthesis;
           audio.addEventListener(
             "ended",
             () => {
@@ -719,6 +748,16 @@ WorkTimeApp.services.vocabularySpeech = (() => {
     },
     get phase() {
       return slots.find((slot) => slot.busy)?.lane.phase || primary.phase;
+    },
+    get generatingKind() {
+      let kind = "";
+      for (const { lane, busy } of slots) {
+        const next = busy && lane.generatingKind;
+        if (!next) continue;
+        if (kind && kind !== next) return "mixed";
+        kind = next;
+      }
+      return kind;
     },
     get currentWord() {
       return slots

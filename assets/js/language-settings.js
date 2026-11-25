@@ -58,17 +58,8 @@
     const notice = document.createElement("p");
     notice.className = "theme-save-notice";
     notice.setAttribute("role", "status");
-    const help = document.createElement("p");
-    help.className = "help";
-    help.id = config.id + "Help";
-    help.setAttribute("role", "status");
-    if (config.help) trigger.setAttribute("aria-describedby", help.id);
     function synchronize() {
       label.textContent = i18n.t(config.label);
-      if (config.help) {
-        help.textContent = config.help();
-        help.hidden = !help.textContent;
-      }
       config.options().forEach((option, index) => {
         select.options[index].textContent = option.name;
       });
@@ -177,18 +168,12 @@
     document.addEventListener("worktime:languagechange", synchronize);
     if (config.id === "motion")
       document.addEventListener("worktime:motionchange", synchronize);
-    const stopClock = config.help
-      ? WorkTimeApp.services.clock
-          .create({ dateKey: WorkTimeApp.domain.time.businessDate })
-          .watch({ document, onChange: synchronize })
-      : () => {};
     window.addEventListener(
       "pagehide",
       () => {
         settingsPane.removeEventListener("settings-tab-leave", leaveTab);
         languageRevision++;
         unsubscribe();
-        stopClock();
         document.removeEventListener("worktime:languagechange", synchronize);
         if (config.id === "motion")
           document.removeEventListener("worktime:motionchange", synchronize);
@@ -196,47 +181,14 @@
       { once: true },
     );
     field.append(label, select, trigger, list, notice);
-    if (config.help) field.append(help);
     host.append(field);
     synchronize();
   }
   function mount() {
     if (document.documentElement.dataset.appState === "failed") return;
-    const host = document.querySelector(".auto-backup-settings");
-    if (!host) return;
     const row = document.createElement("div");
     row.className = "settings-select-row";
     document.querySelector(".theme-settings-host").after(row);
-    const backupRow = host;
-    function backupStatus() {
-      const saved = preferences.state.lastBackupAt;
-      if (!saved) return "";
-      const date = new Date(saved);
-      if (!Number.isFinite(date.getTime())) return "";
-      const shifted = new Date(date.getTime() + 8 * 3600000);
-      const time = {
-        month: shifted.getUTCMonth() + 1,
-        day: shifted.getUTCDate(),
-        hour: shifted.getUTCHours(),
-        minute: String(shifted.getUTCMinutes()).padStart(2, "0"),
-      };
-      return i18n.t("autoBackup.savedDate", time);
-    }
-    mountPicker(backupRow, {
-      id: "autoBackup",
-      selectId: "autoBackupDays",
-      label: "autoBackup.label",
-      preference: "autoBackupDays",
-      failed: "autoBackup.saveFailed",
-      help: backupStatus,
-      options: () =>
-        [1, 3, 7].map((days) => ({
-          id: String(days),
-          name: i18n.t("autoBackup.option" + days),
-        })),
-      read: () => String(preferences.state.autoBackupDays || 1),
-      save: (value) => preferences.saveAutoBackupDays(Number(value)),
-    });
     mountPicker(row, {
       id: "language",
       selectId: "languageSelect",

@@ -434,10 +434,13 @@ async function main() {
       });
       await bgStarted;
       const NativeAudio = window.Audio;
+      let finishPlayback;
       window.Audio = class {
         paused = false;
         ended = false;
-        addEventListener() {}
+        addEventListener(type, listener) {
+          if (type === "ended") finishPlayback = listener;
+        }
         async play() {}
         pause() {
           this.paused = true;
@@ -455,9 +458,8 @@ async function main() {
         speech.currentWord === "held-background" && playbackNotifications === 0,
         "Cached playback does not touch background status or its queue",
       );
-      speech.stop();
       unsubscribePlayback();
-      window.Audio = NativeAudio;
+      check(!speech.active, "Cached playback leaves idle generation eligible");
       const skipped = speech.synthesize({ word: "queued-background" }, "us", {
         background: true,
       });
@@ -476,6 +478,32 @@ async function main() {
           order.at(-1) === "priority-foreground",
         "Foreground waits for only the active background job",
       );
+      for (const entry of [missing, { word: "browser-fallback" }]) {
+        const count = generated;
+        check(await speech.play(entry, "us"), "Cached audio plays");
+        check(
+          generated === count,
+          "Playback uses existing file or browser audio",
+        );
+        check(
+          await speech.synthesize({ word: `idle-during-${entry.word}` }, "us", {
+            background: true,
+            canStart: () => !speech.active,
+          }),
+          "Next background word starts before cached playback ends",
+        );
+      }
+      check(
+        await speech.play({ word: "fresh-playback" }, "us"),
+        "Uncached audio plays",
+      );
+      check(speech.active, "Fresh playback retains foreground priority");
+      finishPlayback();
+      check(!speech.active, "Playback ending clears foreground priority");
+      await speech.play({ word: "fresh-playback-stop" }, "us");
+      speech.stop();
+      check(!speech.active, "Stopping playback clears foreground priority");
+      window.Audio = NativeAudio;
       window.speechCounters = () => ({ workers, terminated, generated });
       return { workers, terminated, generated, resourceLoads: loads };
     });
@@ -508,7 +536,7 @@ async function main() {
       const S = WorkTimeApp.services;
       window.cacheCalls = [];
       const data = S.vocabularyStorage.defaults();
-      data.settings.dailyNew = 1;
+      data.settings.dailyTotal = 1;
       S.vocabularyStorage.read = () => data;
       WorkTimeApp.data.vocabularyCatalog.entries = [
         { id: "a", word: "alpha", books: ["daily"] },
@@ -534,7 +562,7 @@ async function main() {
     });
     await page.clock.runFor(1999);
     assert.equal(await page.evaluate(() => window.cacheCalls.length), 0);
-    await page.clock.runFor(3500);
+    await page.clock.runFor(5000);
     assert.deepEqual(await page.evaluate(() => window.cacheCalls), [
       ["alpha", "us"],
       ["alpha", "uk"],
@@ -553,7 +581,7 @@ async function main() {
       window.savedPriorityEntries = WorkTimeApp.data.vocabularyCatalog.entries;
       const data = S.vocabularyStorage.defaults();
       data.settings.accent = "uk";
-      data.settings.dailyNew = 1;
+      data.settings.dailyTotal = 4;
       data.logs = [
         { id: "learned", at: new Date().toISOString(), first: false },
       ];
@@ -679,14 +707,55 @@ async function main() {
       "Changing the selected accent rebuilds all eight phases",
     );
     await page.evaluate(() => {
-      WorkTimeApp.services.vocabularyStorage.read().logs.push({
+      const S = WorkTimeApp.services;
+      const speech = S.vocabularySpeech;
+      const cache = S.vocabularyAudioCache;
+      const originalSynthesize = speech.synthesize;
+      const originalInfo = cache.info;
+      window.studyCacheChecks = 0;
+      cache.info = async (...args) => {
+        window.studyCacheChecks++;
+        return originalInfo(...args);
+      };
+      speech.synthesize = async (entry, accent, options) => {
+        speech.synthesize = originalSynthesize;
+        await new Promise((resolve) => {
+          window.finishStudyBatch = resolve;
+        });
+        window.studyBatchStillValid = options.valid();
+        return originalSynthesize(entry, accent, options);
+      };
+      window.restoreStudyCacheInfo = () => {
+        cache.info = originalInfo;
+      };
+      S.vocabularyIdle.configure({ paused: false });
+    });
+    await page.clock.runFor(1500);
+    await page.waitForFunction(() => !!window.finishStudyBatch);
+    await page.evaluate(() => {
+      const S = WorkTimeApp.services;
+      S.vocabularyStorage.read().logs.push({
         id: "global",
         at: new Date().toISOString(),
         first: false,
       });
       window.dispatchEvent(new Event("pageshow"));
+      window.studyQueueAfterReview = S.vocabularyIdle.state.status;
+      window.finishStudyBatch();
     });
     await page.clock.runFor(5000);
+    assert.deepEqual(
+      await page.evaluate(() => {
+        window.restoreStudyCacheInfo();
+        return [
+          window.studyBatchStillValid,
+          window.studyQueueAfterReview,
+          window.studyCacheChecks,
+        ];
+      }),
+      [true, "running", 1],
+      "Study updates preserve in-flight results and reuse folder preparation",
+    );
     const learnedOrder = [
       ...["us", "uk"].flatMap((accent) =>
         ["due-word", "new-word", "global-word", "learned-word"].map((word) => [
@@ -712,8 +781,18 @@ async function main() {
       "A newly studied word and its examples move into today's phases",
     );
     const priorityTime = await page.evaluate(() => Date.now());
+    const completedCalls = await page.evaluate(() => window.cacheCalls.length);
     await page.clock.setSystemTime(priorityTime + 86400000);
     await page.clock.runFor(11000);
+    assert.equal(
+      await page.evaluate(() => window.cacheCalls.length),
+      completedCalls,
+      "A new day does not replay a fully processed audio queue",
+    );
+    await page.evaluate(() =>
+      WorkTimeApp.services.vocabularyIdle.configure({ paused: false }),
+    );
+    await page.clock.runFor(5000);
     const nextDayOrder = [
       ...["us", "uk"].flatMap((accent) =>
         ["due-word", "new-word"].map((word) => [word, accent]),
@@ -998,7 +1077,7 @@ async function main() {
     assert.equal(
       await page.evaluate(() => window.cacheCalls.length),
       beforePlayback,
-      "No background work during playback",
+      "No new background work during foreground synthesis or fresh playback",
     );
     await page.evaluate(() => {
       WorkTimeApp.services.vocabularySpeech.active = false;

@@ -481,13 +481,33 @@ async function main() {
         await page.locator(".vocabulary-review-badge").innerText(),
         "0",
       );
+      assert.equal(
+        await page.evaluate(
+          () => WorkTimeApp.services.vocabularyStorage.read().draft,
+        ),
+        null,
+      );
+      const preferences = () =>
+        page.locator('.vocabulary-nav-item[data-page="preferences"]').click();
+      const accent = page.locator('[data-setting="accent"]');
+      await preferences();
+      await accent.click();
+      await page.waitForFunction(
+        () =>
+          WorkTimeApp.services.vocabularyStorage.read().settings.accent ===
+          "uk",
+      );
       await books();
+      await preferences();
+      assert.equal(await accent.getAttribute("aria-checked"), "false");
       await page.reload();
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
       await page.locator("#date-tab-tools").click();
       await page.locator("#vocabularyOpen").click();
+      await preferences();
+      assert.equal(await accent.getAttribute("aria-checked"), "false");
       await books();
       assert.equal(await goal.inputValue(), "1");
       assert.deepEqual(

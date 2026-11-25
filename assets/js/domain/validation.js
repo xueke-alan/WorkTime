@@ -277,17 +277,26 @@ const WorkTimeDomainValidation = (() => {
     if (![0, 3, 5, 7].includes(weatherDays))
       fail("preferences.weatherDays", "备份中的天气显示天数无效。");
     clean.preferences.weatherDays = weatherDays;
-    const autoBackupDays = input.preferences.autoBackupDays ?? 1;
     const lastAutoBackupDate = input.preferences.lastAutoBackupDate ?? null;
-    if (![0, 1, 3, 7].includes(autoBackupDays))
-      fail("preferences.autoBackupDays", "Invalid automatic backup interval.");
+    const lastAutoBackupHour = input.preferences.lastAutoBackupHour ?? null;
     if (
       lastAutoBackupDate !== null &&
       (typeof lastAutoBackupDate !== "string" || !validDate(lastAutoBackupDate))
     )
       fail("preferences.lastAutoBackupDate", "Invalid automatic backup date.");
-    clean.preferences.autoBackupDays = autoBackupDays || 1;
     clean.preferences.lastAutoBackupDate = lastAutoBackupDate;
+    if (
+      lastAutoBackupHour !== null &&
+      (typeof lastAutoBackupHour !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}T\d{2}:00:00\.000Z$/.test(lastAutoBackupHour) ||
+        !Number.isFinite(Date.parse(lastAutoBackupHour)) ||
+        new Date(lastAutoBackupHour).toISOString() !== lastAutoBackupHour)
+    )
+      fail(
+        "preferences.lastAutoBackupHour",
+        "Invalid hourly backup timestamp.",
+      );
+    clean.preferences.lastAutoBackupHour = lastAutoBackupHour;
     const lastBackupAt = input.preferences.lastBackupAt ?? null;
     if (
       lastBackupAt !== null &&

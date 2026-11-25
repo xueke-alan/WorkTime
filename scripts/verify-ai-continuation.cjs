@@ -187,9 +187,6 @@ async function browser() {
       await page.evaluate(() =>
         WorkTimeApp.services.preferences.page.saveMotionMode("reduce"),
       );
-      await page.evaluate(() =>
-        WorkTimeApp.services.preferences.page.saveAutoBackupDays(0),
-      );
       await page.waitForTimeout(700);
       await page.waitForFunction(
         () =>

@@ -91,8 +91,9 @@ const { chromium } = require("playwright");
         full = await decode(text);
       check(
         cache.stats.fullExports === before.fullExports &&
-          cache.stats.compressions === before.compressions,
-        "warm capture must not export or compress",
+          cache.stats.partialExports === before.partialExports &&
+          JSON.parse(text).format === "worktime-full-backup",
+        "warm capture returns plain JSON without exporting again",
       );
       check(
         full.work.futureField === "retained" &&
@@ -117,9 +118,9 @@ const { chromium } = require("playwright");
         "immediate edit included",
       );
       check(
-        cache.stats.compressions === before.compressions + 1 &&
+        cache.stats.partialExports === before.partialExports + 1 &&
           cache.stats.fullExports === before.fullExports,
-        "memo edit recompresses exactly one part without full export",
+        "memo edit updates the cached module without full export",
       );
       const days = { ...state.days };
       delete days["2026-01-02"];
@@ -175,7 +176,7 @@ const { chromium } = require("playwright");
         memo(restored) === "restored" && !restored.work.futureField,
         "reset invalidates envelope and deleted modules",
       );
-      // Large batches split at 512 records and deletions remove all related modules.
+      // Large batches roundtrip and deletions remove related records.
       const batch = (id, count) => ({
         id,
         records: Array.from({ length: count }, (_, i) => ({
@@ -195,12 +196,6 @@ const { chromium } = require("playwright");
         JSON.stringify(batchDoc.work.modules) ===
           JSON.stringify(A.encode(state).modules),
         "large batches and evidence roundtrip",
-      );
-      const manifest = JSON.parse(batches.slice(S.backupChunks.PREFIX.length));
-      check(
-        manifest.modules.find((m) => m.header.id === A.ids.observations).parts
-          .length === 4,
-        "512 record sharding",
       );
       state = { ...state, imports: [state.imports[1]] };
       cache.invalidate({ imports: ["a"] });
@@ -237,21 +232,58 @@ const { chromium } = require("playwright");
       release();
       await slowWarm;
       gate = null;
-      const count = cache.stats.compressions;
+      const count = cache.stats.partialExports;
       for (let i = 0; i < 22; i++) {
         state = { ...state, memo: "stream-" + i };
         cache.invalidate({ memo: true });
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       check(
-        cache.stats.compressions > count,
+        cache.stats.partialExports > count,
         "max debounce wait processes continuous updates",
       );
       check(
         memo(await decode(await cache.capture())) === "stream-21",
         "continuous updates end at newest snapshot",
       );
-      const serial = JSON.parse(text.slice(S.backupChunks.PREFIX.length));
+      // Keep verifying the previous compressed transport alongside plain exports.
+      const { modules, ...workHeader } = full.work;
+      const { games, ...gamesHeader } = full.games;
+      const serial = {
+        format: full.format,
+        version: full.version,
+        exportedAt: full.exportedAt,
+        work: workHeader,
+        games: gamesHeader,
+        modules: [],
+        gameParts: [],
+        chunks: [],
+      };
+      async function addLegacyChunk(value) {
+        const id = "legacy-" + serial.chunks.length;
+        const encoded = await S.backup.encode(JSON.stringify(value));
+        serial.chunks.push({
+          id,
+          encoding: "gzip",
+          payload: encoded.slice(S.backup.PREFIX.length),
+        });
+        return id;
+      }
+      for (const { records, ...header } of modules)
+        serial.modules.push({
+          header,
+          count: records.length,
+          parts: [await addLegacyChunk(records)],
+        });
+      for (const [id, value] of Object.entries(games))
+        serial.gameParts.push({ id, part: await addLegacyChunk(value) });
+      const legacy = await decode(
+        S.backupChunks.PREFIX + JSON.stringify(serial),
+      );
+      check(
+        JSON.stringify(legacy.work.modules) === JSON.stringify(modules),
+        "legacy compressed backup roundtrip",
+      );
       async function rejects(doc, message, options) {
         let ok = false;
         try {
@@ -276,18 +308,15 @@ const { chromium } = require("playwright");
       const bad = structuredClone(serial);
       bad.chunks[0].payload = "invalid!";
       await rejects(bad, "corrupt part rejected");
-      state = { ...state, memo: "a".repeat(10000) };
-      cache.invalidate({ memo: true });
-      const bomb = await cache.capture();
-      let limited = false;
-      try {
-        await decode(bomb, {
-          maxBytes: new TextEncoder().encode(bomb).length + 20,
-        });
-      } catch (error) {
-        limited = error.code === "tooLarge";
-      }
-      check(limited, "cumulative decompression limit");
+      const largeLegacy = structuredClone(serial);
+      const packed = await S.backup.encode(JSON.stringify(["a".repeat(10000)]));
+      largeLegacy.chunks[0].payload = packed.slice(S.backup.PREFIX.length);
+      await rejects(largeLegacy, "cumulative decompression limit", {
+        maxBytes:
+          new TextEncoder().encode(
+            S.backupChunks.PREFIX + JSON.stringify(largeLegacy),
+          ).length + 20,
+      });
       cache.dispose();
       // State notifications must include edits whose browser save failed.
       const owner = S.application.createState({
@@ -309,7 +338,7 @@ const { chromium } = require("playwright");
       owner.reload(D.state.defaultState());
       check(notices === 2, "reload invalidates cache");
       unsub();
-      // Browser fallback: no Worker and no CompressionStream.
+      // Plain backup generation works without Worker or CompressionStream.
       const NativeWorker = window.Worker,
         NativeCompression = window.CompressionStream;
       window.Worker = function () {
@@ -323,10 +352,8 @@ const { chromium } = require("playwright");
         "raw JSON fallback roundtrip",
       );
       check(
-        JSON.parse(plain.slice(S.backupChunks.PREFIX.length)).chunks.every(
-          (c) => c.encoding === "json",
-        ),
-        "raw JSON encoding fallback",
+        JSON.parse(plain).format === "worktime-full-backup",
+        "plain JSON encoding",
       );
       fallback.dispose();
       window.Worker = NativeWorker;
@@ -382,9 +409,9 @@ const { chromium } = require("playwright");
         const captureMs = performance.now() - start;
         if (
           before.fullExports !== cache.stats.fullExports ||
-          before.compressions !== cache.stats.compressions
+          before.partialExports !== cache.stats.partialExports
         )
-          throw Error("warm benchmark capture performed export/compression");
+          throw Error("warm benchmark capture performed another export");
         start = performance.now();
         state = { ...state, memo: "small update" };
         cache.invalidate({ memo: true });

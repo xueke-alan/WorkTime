@@ -9,10 +9,10 @@ async function downloadBackup(page, variable) {
     WorkTimeApp.services.autoBackupFolder.write = async (
       name,
       text,
-      { kind },
+      options,
     ) => {
-      if (kind !== "manual")
-        return window.archiveTestWrite(name, text, { kind });
+      if (options.kind !== "manual")
+        return window.archiveTestWrite(name, text, options);
       window.archiveTestOutput = text;
       return true;
     };

@@ -14,6 +14,7 @@ const { chromium } = require("playwright");
     page.on("download", () => assert.fail("Backup triggered browser download"));
     await page.addInitScript(() => {
       localStorage.setItem("worktime.onboarding.v1", "dismissed");
+      navigator.permissions.query = async () => ({ state: "granted" });
       window.showOpenFilePicker = undefined;
     });
     await page.route(/^https?:\/\/(?!127\.0\.0\.1:)/, (route) => route.abort());
@@ -146,8 +147,9 @@ const { chromium } = require("playwright");
       window.showOpenFilePicker = undefined;
     });
     assert.ok(
-      await page.evaluate(() =>
-        /^WORKTIME:(GZIP|DEFLATE|CHUNKS):1:/.test(window.testBackupText),
+      await page.evaluate(
+        () =>
+          JSON.parse(window.testBackupText).format === "worktime-full-backup",
       ),
     );
     const original = await page.evaluate(async () => {

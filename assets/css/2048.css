@@ -84,6 +84,20 @@
   color: var(--theme-text-muted, var(--muted));
   line-height: 1.6;
 }
+body .game-session .puzzle-ai-confirm > .game-restart-content {
+  gap: 0.65rem;
+}
+.puzzle-ai-confirm .game-restart-message {
+  font-size: clamp(1.25rem, 5.5cqw, 1.65rem);
+}
+.puzzle-ai-confirm .game-restart-content > p {
+  max-width: min(100%, 20em);
+  font-size: 0.9375rem;
+  text-wrap: balance;
+}
+.puzzle-ai-confirm .game-restart-actions {
+  margin-block-start: 0.35rem;
+}
 .puzzle-confirm .puzzle-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

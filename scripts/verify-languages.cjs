@@ -439,6 +439,7 @@ async function verify() {
       await capture("year");
       await page.locator("#monthTitle").click();
       await page.locator("#date-tab-history").click();
+      await page.locator("#date-context-history").click();
       await page.waitForSelector(".history-event");
       await capture("history");
       const chinese = language.startsWith("zh-");

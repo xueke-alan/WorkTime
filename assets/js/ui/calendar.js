@@ -411,6 +411,20 @@ WorkTimeApp.ui.createCalendar = function (options) {
       return "";
     return '<span class="worktime-corner is-short" aria-hidden="true"></span>';
   }
+  function belowOvertimeTarget(minutes, targetMinutes, displayedHours) {
+    if (
+      !Number.isFinite(minutes) ||
+      !Number.isFinite(targetMinutes) ||
+      minutes >= targetMinutes
+    )
+      return false;
+    const { duration } = WorkTimeApp.i18n,
+      targetHours = duration(targetMinutes);
+    return (
+      displayedHours !== targetHours &&
+      !(targetHours === duration(0) && displayedHours === duration(-0))
+    );
+  }
   function plannedOvertimeAverage(state, date, cache) {
     const cursor = C.localDate(date);
     let remaining = 2;
@@ -693,11 +707,11 @@ WorkTimeApp.ui.createCalendar = function (options) {
         plannedTarget = showPlannedHours
           ? C.selectOvertimeRequirement(state, first, k).targetMinutes
           : null,
-        plannedBelowTarget =
-          plannedAverage?.minutes !== null &&
-          Number.isFinite(plannedAverage?.minutes) &&
-          Number.isFinite(plannedTarget) &&
-          plannedAverage.minutes < plannedTarget,
+        plannedBelowTarget = belowOvertimeTarget(
+          plannedAverage?.minutes,
+          plannedTarget,
+          plannedHours,
+        ),
         plannedReference = plannedAverage?.date
           ? WorkTimeApp.i18n.t("calendar.plannedHoursReference", {
               date: plannedAverage.date,
@@ -885,9 +899,7 @@ WorkTimeApp.ui.createCalendar = function (options) {
         '">' +
         (averageText
           ? '<span class="day-average-value' +
-            (average !== null &&
-            Number.isFinite(targetMinutes) &&
-            average < targetMinutes
+            (belowOvertimeTarget(average, targetMinutes, averageText)
               ? " below-target"
               : "") +
             '">' +

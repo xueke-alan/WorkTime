@@ -36,6 +36,14 @@ const site = path.resolve(
       const data = storage.defaults();
       data.settings.autoRead = false;
       await storage.save(data);
+      window.copiedWords = [];
+      Object.defineProperty(navigator, "clipboard", {
+        value: {
+          async writeText(word) {
+            window.copiedWords.push(word);
+          },
+        },
+      });
     });
     const open = async () => {
       await page.locator("#date-tab-tools").click();
@@ -58,11 +66,29 @@ const site = path.resolve(
     await ready();
     const initial = await state();
     const word = await page.locator(".vocabulary-word-header h3").innerText();
+    const copyWord = page.locator("#vocabularyContent .vocabulary-word-copy");
+    await copyWord.press("Space");
+    await copyWord.press("Enter");
+    assert.deepEqual(await page.evaluate(() => window.copiedWords), [
+      word,
+      word,
+    ]);
+    assert.deepEqual(
+      await state(),
+      initial,
+      "Copy shortcuts do not reveal the card",
+    );
     const month = await page.locator("#monthTitle").innerText();
     await page.locator("#nextMonth").click();
     await mini.waitFor();
     assert.notEqual(await page.locator("#monthTitle").innerText(), month);
     assert.equal(await page.locator(".vocabulary-mini-word").innerText(), word);
+    await mini.locator(".vocabulary-word-copy").click();
+    assert.deepEqual(await page.evaluate(() => window.copiedWords), [
+      word,
+      word,
+      word,
+    ]);
     assert.equal(await page.locator(".editor.is-vocabulary-open").count(), 0);
     assert.equal(await page.locator("#toolsPanel").isVisible(), false);
     assert.equal(await page.locator("#vocabularyContent").isVisible(), false);
@@ -288,10 +314,8 @@ const site = path.resolve(
     );
     await page.locator("#prevMonth").click();
     await mini.waitFor();
-    assert.equal(
-      await page.locator(".vocabulary-mini-word").innerText(),
-      "暂无学习中的单词",
-    );
+    assert.equal(await mini.locator(".vocabulary-streak").innerText(), "00");
+    assert.equal(await mini.locator(".vocabulary-mini-word").count(), 0);
     assert.equal((await state()).draft, null);
     await expand.click();
     await page.locator('.vocabulary-nav-item[data-page="learning"]').click();

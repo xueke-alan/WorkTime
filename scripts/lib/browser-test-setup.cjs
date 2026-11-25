@@ -30,7 +30,13 @@ chromium.launch = async (...args) => {
         document.addEventListener(
           "worktime:ready",
           () => {
-            void WorkTimeApp.services.preferences.page.saveAutoBackupDays(0);
+            const now = new Date();
+            void WorkTimeApp.services.preferences.page.saveBackupAt(null, {
+              lastAutoBackupDate: WorkTimeApp.domain.time.businessDate(now),
+              lastAutoBackupHour: new Date(
+                Math.floor(now.getTime() / 3600000) * 3600000,
+              ).toISOString(),
+            });
           },
           { once: true },
         );

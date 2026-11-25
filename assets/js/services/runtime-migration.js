@@ -21,6 +21,8 @@ WorkTimeApp.services.runtimeMigration = (() => {
       directories = [
         "backups",
         "backups/automatic",
+        "backups/automatic/day",
+        "backups/automatic/hour",
         "backups/manual",
         "ebooks",
         "music",

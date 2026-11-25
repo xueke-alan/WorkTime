@@ -361,8 +361,9 @@ WorkTimeApp.services.runtimeFolder = (() => {
     });
   }
   function write(name, text, { kind } = {}) {
-    if (!["automatic", "manual"].includes(kind))
+    if (!["day", "hour", "manual"].includes(kind))
       return Promise.reject(Error("Invalid backup kind"));
+    const directoryPath = kind === "manual" ? "manual" : "automatic/" + kind;
     if (
       !name ||
       /[\\/\u0000-\u001f]/.test(name) ||
@@ -381,7 +382,7 @@ WorkTimeApp.services.runtimeFolder = (() => {
         initialization = null;
         await initialize();
         const backups = await getDirectory("backups");
-        const directory = await prepareBackups(backups, kind);
+        const directory = await prepareBackups(backups, directoryPath);
         let writable;
         let uniqueName;
         try {
@@ -407,20 +408,31 @@ WorkTimeApp.services.runtimeFolder = (() => {
           } catch {}
           throw fail(
             error.name === "NotAllowedError" ? "permission" : "failed",
-            "backups/" + kind,
+            "backups/" + directoryPath,
           );
         }
       }),
     );
   }
-  async function prepareBackups(backups, selectedKind) {
-    let selected;
-    for (const kind of ["automatic", "manual"]) {
+  async function prepareBackups(backups, selectedPath) {
+    const directories = new Map([["", backups]]);
+    for (const path of [
+      "automatic",
+      "manual",
+      "automatic/day",
+      "automatic/hour",
+    ]) {
+      const slash = path.lastIndexOf("/");
+      const parent = slash < 0 ? "" : path.slice(0, slash);
       try {
-        const directory = await backups.getDirectoryHandle(kind, {
-          create: true,
-        });
-        if (kind === selectedKind) selected = directory;
+        directories.set(
+          path,
+          await directories
+            .get(parent)
+            .getDirectoryHandle(path.slice(slash + 1), {
+              create: true,
+            }),
+        );
       } catch (error) {
         throw fail(
           error.name === "TypeMismatchError"
@@ -428,11 +440,11 @@ WorkTimeApp.services.runtimeFolder = (() => {
             : error.name === "NotAllowedError"
               ? "permission"
               : "failed",
-          "backups/" + kind,
+          "backups/" + path,
         );
       }
     }
-    return selected;
+    return directories.get(selectedPath);
   }
   function locked(action) {
     return navigator.locks

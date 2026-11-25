@@ -962,6 +962,7 @@ async function verify() {
         () => !document.getElementById("panelContent").inert,
       );
       await page.locator("#date-tab-history").click();
+      await page.locator("#date-context-history").click();
       await page.waitForSelector(".history-event");
       assert.equal(
         await page.locator("#date-context-almanac").isVisible(),

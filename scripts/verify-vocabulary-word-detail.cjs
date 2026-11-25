@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
+const site = process.argv[2] || path.resolve(__dirname, "..");
 async function main() {
   const browser = await chromium.launch({ headless: true });
   try {
@@ -14,9 +15,7 @@ async function main() {
       });
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
-      await page.goto(
-        pathToFileURL(path.resolve(__dirname, "../index.html")).href,
-      );
+      await page.goto(pathToFileURL(path.join(site, "index.html")).href);
       await page.waitForFunction(
         () => document.documentElement.dataset.appState === "ready",
       );
@@ -27,7 +26,47 @@ async function main() {
         const d = S.defaults();
         d.settings.autoRead = false;
         d.settings.mode = width === 390 ? "spelling" : "recall";
-        await S.save(d);
+        const E = WorkTimeApp.services.vocabularyEngine;
+        const words = WorkTimeApp.data.vocabularyCatalog.entries.filter(
+          (entry) => entry.books.includes("cet6"),
+        );
+        const { id } = words[5];
+        const time = (offset, hour = 12) => {
+          const date = new Date();
+          date.setHours(hour, 0, 0, 0);
+          date.setDate(date.getDate() + offset);
+          return date.toISOString();
+        };
+        const recall = { id, mode: "recall", first: false };
+        d.logs = [
+          { ...recall, at: time(-10), grade: 1, first: true },
+          { ...recall, at: time(-10, 13), grade: 2, practice: true },
+          ...Array.from({ length: 24 }, () => ({
+            ...recall,
+            at: time(-8),
+            grade: 3,
+          })),
+          { id, mode: "spelling", at: time(-3), grade: 4, first: false },
+          { ...recall, id: words[0].id, at: time(-50), grade: 3 },
+        ];
+        for (const [mode, offset, due] of [
+          ["recall", -8, -2],
+          ["spelling", -3, width === 390 ? 2 : 0],
+        ]) {
+          const card = E.schedule(undefined, 3, time(offset)).card;
+          card.due = time(due, 23);
+          d.cards[E.key(id, mode)] = card;
+        }
+        await S.save(E.review(d, words[5], "dictation", 1, time(-9)));
+        window.wordDetailCopies = [];
+        Object.defineProperty(navigator, "clipboard", {
+          value: {
+            async writeText(word) {
+              if (window.rejectWordCopy) throw Error("Clipboard write denied");
+              window.wordDetailCopies.push(word);
+            },
+          },
+        });
         window.wordDetailPlays = [];
         WorkTimeApp.services.vocabularySpeech.play = async (entry) => {
           window.wordDetailPlays.push(entry.word);
@@ -131,6 +170,42 @@ async function main() {
         await page.locator(".vocabulary-word-header h3").innerText(),
         word,
       );
+      const copy = page.locator(".vocabulary-word-copy");
+      const copyStatus = page.locator(".vocabulary-word-copy-status");
+      await copy.hover();
+      assert.equal(
+        await copy.evaluate(
+          (button) => getComputedStyle(button).textDecorationLine,
+        ),
+        "none",
+      );
+      await copy.click();
+      await copyStatus
+        .getByText("已复制", { exact: true })
+        .waitFor({ state: "attached" });
+      assert.equal(
+        await copyStatus.evaluate(
+          (status) => getComputedStyle(status).clipPath,
+        ),
+        "inset(50%)",
+      );
+      assert.deepEqual(await page.evaluate(() => window.wordDetailCopies), [
+        word,
+      ]);
+      await page.evaluate(() => {
+        window.rejectWordCopy = true;
+      });
+      await copy.click();
+      await copyStatus.getByText("复制失败", { exact: true }).waitFor();
+      assert.equal(
+        await copyStatus.evaluate(
+          (status) => getComputedStyle(status).clipPath,
+        ),
+        "none",
+      );
+      assert.deepEqual(await page.evaluate(() => window.wordDetailPlays), [
+        word,
+      ]);
       assert.equal(
         await page.locator(".vocabulary-meaning").innerText(),
         entry.zh,
@@ -147,6 +222,37 @@ async function main() {
         await page.locator(".vocabulary-example").count(),
         entry.examples?.length || 0,
       );
+      const history = page.locator(".vocabulary-memory-history");
+      const attempts = history.getByRole("listitem");
+      assert.equal(
+        await page.locator("#vocabularyPage").getByRole("combobox").count(),
+        0,
+      );
+      assert.match(
+        await history.locator("p").first().innerText(),
+        /→.*作答 28 次/,
+      );
+      assert.equal(await attempts.count(), 24);
+      assert.equal(await attempts.first().innerText(), "D3 · 认识 · 记忆卡");
+      assert.equal(await attempts.last().innerText(), "D8 · 轻松 · 拼写");
+      await history
+        .getByText("记忆卡 · 已逾期 2 天", { exact: true })
+        .waitFor();
+      await history.getByText("听写 · 待巩固", { exact: true }).waitFor();
+      assert.match(
+        await history.getByText(/^拼写 · /).innerText(),
+        width === 390 ? /^拼写 · 下次复习 / : /^拼写 · 今日到期$/,
+      );
+      const earlier = history.getByRole("button", { name: "显示更早记录" });
+      await earlier.click();
+      assert.equal(await attempts.count(), 28);
+      assert.deepEqual((await attempts.allTextContents()).slice(0, 4), [
+        "D1 · 忘记 · 记忆卡",
+        "D1 · 模糊 · 记忆卡",
+        "D2 · 忘记 · 听写",
+        "D3 · 认识 · 记忆卡",
+      ]);
+      assert.equal(await earlier.isVisible(), false);
       await page.locator(".vocabulary-pronunciation-play").click();
       if (entry.examples?.length)
         await page.locator(".vocabulary-example-play").first().click();
@@ -183,6 +289,14 @@ async function main() {
         await page.evaluate(() => document.activeElement?.dataset.word),
         entry.id,
       );
+      const words = page.locator(".vocabulary-word-open");
+      await words.first().click();
+      assert.deepEqual(await attempts.allTextContents(), ["D1 · 认识"]);
+      await page.locator(".vocabulary-word-back").click();
+      await words.nth(1).click();
+      await history.getByText("暂无记忆记录", { exact: true }).waitFor();
+      assert.equal(await attempts.count(), 0);
+      await page.locator(".vocabulary-word-back").click();
       const search = page.locator(".vocabulary-library input[type=search]");
       await search.fill(word);
       await page.locator(".vocabulary-word-open").first().click();
@@ -198,7 +312,7 @@ async function main() {
       await page.close();
     }
     console.log(
-      "Word reference pages: aligned book action, inline speakers, full details without grading, list return and review preservation passed at 1440/390px.",
+      "Word reference pages: browsing, playback, shared memory history, and review preservation passed at 1440/390px.",
     );
   } finally {
     await browser.close();

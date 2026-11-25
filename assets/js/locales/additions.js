@@ -132,12 +132,36 @@
       "음성 모델 로딩 중",
     ],
     generating: [
-      "正在合成：{word}",
-      "Synthesizing: {word}",
-      "正在合成：{word}",
-      "正在合成：{word}",
-      "合成中：{word}",
-      "합성 중: {word}",
+      "正在合成发音",
+      "Synthesizing audio",
+      "正在合成發音",
+      "正在合成發音",
+      "音声を合成中",
+      "음성 합성 중",
+    ],
+    generating_word: [
+      "正在合成单词发音",
+      "Synthesizing word audio",
+      "正在合成單詞發音",
+      "正在合成單詞發音",
+      "単語の音声を合成中",
+      "단어 음성 합성 중",
+    ],
+    generating_example: [
+      "正在合成例句发音",
+      "Synthesizing example audio",
+      "正在合成例句發音",
+      "正在合成例句發音",
+      "例文の音声を合成中",
+      "예문 음성 합성 중",
+    ],
+    generating_mixed: [
+      "正在合成单词和例句发音",
+      "Synthesizing words and examples",
+      "正在合成單詞和例句發音",
+      "正在合成單詞和例句發音",
+      "単語・例文の音声を合成中",
+      "단어·예문 음성 합성 중",
     ],
     savingFiles: [
       "正在保存发音文件",
@@ -284,6 +308,18 @@
   };
   for (const [language, label] of Object.entries(progress))
     WorkTimeApp.data.locales[language]["footer.audioProgress"] = label;
+  const synthesizers = [
+    "合成器：{count}",
+    "Synthesizers: {count}",
+    "合成器：{count}",
+    "合成器：{count}",
+    "合成器：{count}",
+    "합성기: {count}",
+  ];
+  languages.forEach((language, index) => {
+    WorkTimeApp.data.locales[language]["footer.audioSynthesizers"] =
+      synthesizers[index];
+  });
 })();
 
 (() => {
@@ -1346,7 +1382,7 @@ for (const [language, values] of Object.entries({
       "AI 演绎结束 · 不计入个人记录",
       "算法最高分",
       "开始算法演绎",
-      "将离开当前棋盘，从新棋局开始算法演绎。个人进度和最高分会保留。",
+      "从新棋局开始，保留个人进度和最高分。",
     ],
     en: [
       "AI demo",
@@ -1354,7 +1390,7 @@ for (const [language, values] of Object.entries({
       "AI demo complete · Personal record unchanged",
       "Algorithm best",
       "Start algorithm demo",
-      "Leave this board and start an algorithm demo from a new game. Your progress and personal best will be preserved.",
+      "The demo starts a new game. Your progress and best score are saved.",
     ],
     "zh-TW": [
       "AI 演繹",
@@ -1362,7 +1398,7 @@ for (const [language, values] of Object.entries({
       "AI 演繹結束 · 不計入個人紀錄",
       "演算法最高分",
       "開始演算法演繹",
-      "將離開目前棋盤，從新棋局開始演算法演繹。個人進度與最高分會保留。",
+      "從新棋局開始，保留個人進度與最高分。",
     ],
     "zh-HK": [
       "AI 演繹",
@@ -1370,7 +1406,7 @@ for (const [language, values] of Object.entries({
       "AI 演繹結束 · 不計入個人紀錄",
       "演算法最高分",
       "開始演算法演繹",
-      "將離開目前棋盤，從新棋局開始演算法演繹。個人進度與最高分會保留。",
+      "從新棋局開始，保留個人進度與最高分。",
     ],
     ja: [
       "AI デモ",
@@ -1378,7 +1414,7 @@ for (const [language, values] of Object.entries({
       "AI デモ終了 · 個人記録には含まれません",
       "アルゴリズム最高得点",
       "アルゴリズムデモを開始",
-      "現在の盤面を離れ、新しいゲームでデモを開始します。進行状況と自己ベストは保持されます。",
+      "新しい盤面でデモを開始します。進行状況と自己ベストは保存されます。",
     ],
     ko: [
       "AI 시연",
@@ -1386,7 +1422,7 @@ for (const [language, values] of Object.entries({
       "AI 시연 종료 · 개인 기록에 포함되지 않아요",
       "알고리즘 최고 점수",
       "알고리즘 시연 시작",
-      "현재 보드를 나가 새 게임으로 알고리즘 시연을 시작해요. 개인 진행 상황과 최고 점수는 유지돼요.",
+      "새 게임에서 시연을 시작해요. 진행 상황과 최고 점수는 유지돼요.",
     ],
   };
   for (const [locale, values] of Object.entries(messages)) {
@@ -4759,15 +4795,12 @@ for (const [language, values] of Object.entries({
 
 (() => {
   const messages = {
-    "zh-CN": ["退出演绎", "退出算法演绎并恢复演绎前的棋盘？"],
-    "zh-TW": ["退出演繹", "退出演算法演繹並恢復演繹前的棋盤？"],
-    "zh-HK": ["退出演繹", "退出演算法演繹並恢復演繹前的棋盤？"],
-    en: [
-      "Stop demonstration",
-      "Stop the demonstration and restore your previous board?",
-    ],
-    ja: ["デモを終了", "デモを終了して開始前の盤面に戻りますか？"],
-    ko: ["시연 종료", "시연을 종료하고 시작 전 보드로 돌아갈까요?"],
+    "zh-CN": ["退出演绎", "将恢复演绎前的棋盘。"],
+    "zh-TW": ["退出演繹", "會恢復演繹前的棋盤。"],
+    "zh-HK": ["退出演繹", "會恢復演繹前的棋盤。"],
+    en: ["Stop demo", "Your previous board will be restored."],
+    ja: ["デモを終了", "デモ開始前の盤面に戻ります。"],
+    ko: ["시연 종료", "시연을 시작하기 전 보드로 돌아가요."],
   };
   for (const [locale, values] of Object.entries(messages)) {
     ["aiStop", "aiStopHint"].forEach((key, index) => {

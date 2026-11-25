@@ -207,13 +207,15 @@ async function main() {
       await WorkTimeApp.services.runtimeFolder.write(
         "record.json",
         "original backup",
-        { kind: "automatic" },
+        { kind: "day" },
       );
       const directory = await (
         await WorkTimeApp.services.runtimeFolder.getDirectory("backups")
       ).getDirectoryHandle("automatic");
+      const daily = await directory.getDirectoryHandle("day");
+      await directory.getDirectoryHandle("hour");
       const names = [];
-      for await (const child of directory.values()) names.push(child.name);
+      for await (const child of daily.values()) names.push(child.name);
       if (!names.some((name) => name.startsWith("record-")))
         throw Error("Backup did not use backups/");
     });
@@ -564,16 +566,16 @@ async function main() {
       await backups.removeEntry("automatic", { recursive: true });
       await backups.removeEntry("manual", { recursive: true });
       await runtime.write("lazy.txt", "manual", { kind: "manual" });
-      await backups.removeEntry("automatic");
+      await backups.removeEntry("automatic", { recursive: true });
       await backups.getFileHandle("automatic", { create: true });
       try {
-        await runtime.write("blocked.txt", "blocked", { kind: "automatic" });
+        await runtime.write("blocked.txt", "blocked", { kind: "day" });
         throw Error("File collision should block backup");
       } catch (error) {
         if (error.folderCode !== "conflict") throw error;
       }
       await backups.removeEntry("automatic");
-      await runtime.write("retry.txt", "retry", { kind: "automatic" });
+      await runtime.write("retry.txt", "retry", { kind: "day" });
       if (
         (await (await backups.getFileHandle("old-backup.txt")).getFile())
           .size !== 13

@@ -51,15 +51,16 @@ WorkTimeApp.services.vocabularyIdle = (() => {
   let layoutDragging = false;
   let queue,
     queueIndex = 0,
+    queueNeedsRefresh = false,
     signature = "",
     unsubscribe,
     unsubscribeFolder,
     unsubscribeSpeech,
     unsubscribeCache,
     folderRevision;
+  const finishedAudio = new Set();
   let state = "waiting",
     preparation = "",
-    completed = 0,
     total = 0,
     retryAt = 0;
   let errorDetail = "";
@@ -90,11 +91,16 @@ WorkTimeApp.services.vocabularyIdle = (() => {
   function release() {
     WorkTimeApp.services.vocabularySpeech?.release();
   }
-  function invalidate(releaseModel = true) {
-    epoch++;
+  function clearQueue() {
     queue = null;
     queueIndex = 0;
-    completed = total = 0;
+    queueNeedsRefresh = false;
+    finishedAudio.clear();
+    total = 0;
+  }
+  function invalidate(releaseModel = true) {
+    epoch++;
+    clearQueue();
     retryAt = 0;
     errorDetail = "";
     if (releaseModel) release();
@@ -198,38 +204,46 @@ WorkTimeApp.services.vocabularyIdle = (() => {
       interactionAllowed() &&
       (verification || (settings.enabled && !settings.paused));
     if (!canMaintain()) return;
-    preparation = "checkingFolder";
-    notify("running");
     const folder = WorkTimeApp.services.runtimeFolder;
-    await folder?.initialize();
-    if (!folder || folder.state.status !== "available" || folder.state.busy) {
-      release();
-      notify("folder");
-      return;
+    let cache = WorkTimeApp.services.vocabularyAudioCache;
+    if (
+      !queue ||
+      folder?.state.status !== "available" ||
+      folder.state.busy ||
+      !cache?.state.available ||
+      !cache.state.bytesExact
+    ) {
+      preparation = "checkingFolder";
+      notify("running");
+      await folder?.initialize();
+      if (!canMaintain()) return;
+      if (folder?.state.status !== "available" || folder.state.busy) {
+        release();
+        notify("folder");
+        return;
+      }
+      preparation = "loadingAssets";
+      notify();
+      await load();
+      if (!canMaintain()) return;
+      cache = WorkTimeApp.services.vocabularyAudioCache;
+      preparation = "indexingCache";
+      const info = await cache.info({ canRun: canMaintain });
+      if (stopped || token !== epoch) return;
+      if (!info.available) {
+        release();
+        notify("folder");
+        return;
+      }
+      if (!info.bytesExact) {
+        release();
+        notify("indexing");
+        return;
+      }
+      verification = false;
     }
-    preparation = "loadingAssets";
-    notify();
-    await load();
-    if (!canMaintain()) return;
-    const cache = WorkTimeApp.services.vocabularyAudioCache;
-    preparation = "indexingCache";
-    const info = await cache.info({ canRun: canMaintain });
-    if (!info.available) {
-      release();
-      notify("folder");
-      return;
-    }
-    if (!info.bytesExact) {
-      release();
-      notify("indexing");
-      return;
-    }
-    verification = false;
-    if (!allowed(token)) {
-      notify(settings.enabled ? "paused" : "disabled");
-      return;
-    }
-    if (!queue) {
+    if (!allowed(token)) return;
+    if (!queue || queueNeedsRefresh) {
       preparation = "buildingQueue";
       notify();
       const data = WorkTimeApp.services.vocabularyStorage.read();
@@ -256,7 +270,8 @@ WorkTimeApp.services.vocabularyIdle = (() => {
           const identity = cache.key(entry, accent);
           if (seen.has(identity)) continue;
           seen.add(identity);
-          queue.push({ entry, accent });
+          if (!finishedAudio.has(identity))
+            queue.push({ entry, accent, identity });
         }
       };
       const appendExamples = (list, accent) => {
@@ -272,13 +287,15 @@ WorkTimeApp.services.vocabularyIdle = (() => {
       append(entries, other);
       appendExamples(entries, selected);
       appendExamples(entries, other);
-      completed = 0;
       queueIndex = 0;
-      total = queue.length;
+      queueNeedsRefresh = false;
+      total = seen.size;
     }
     if (!allowed(token)) return;
     const speech = WorkTimeApp.services.vocabularySpeech;
-    const batch = queue.slice(queueIndex, queueIndex + speech.poolSize);
+    const batch = queue
+      .slice(queueIndex, queueIndex + speech.poolSize)
+      .filter((item) => !finishedAudio.has(item.identity));
     if (!batch.length) {
       release();
       notify("complete");
@@ -318,13 +335,11 @@ WorkTimeApp.services.vocabularyIdle = (() => {
       cold: after.coldCount !== before.coldCount,
       lag,
     });
-    // Advance only past a contiguous successful prefix. Later successes remain
-    // cached and are cheap to revisit if an earlier task was deferred or failed.
-    for (const result of results) {
-      if (result.status !== "fulfilled" || !result.value) break;
-      queueIndex++;
-      completed++;
-    }
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled" && result.value)
+        finishedAudio.add(batch[index].identity);
+    });
+    while (finishedAudio.has(queue[queueIndex]?.identity)) queueIndex++;
     const failure = results.find((result) => result.status === "rejected");
     if (failure) throw failure.reason;
     if (queueIndex >= queue.length) {
@@ -500,8 +515,10 @@ WorkTimeApp.services.vocabularyIdle = (() => {
     const next = dataSignature(WorkTimeApp.services.vocabularyStorage.read());
     if (next !== signature) {
       signature = next;
-      invalidate();
-      schedule();
+      if (queue && queueIndex >= queue.length) return;
+      // Study activity changes the order, while the audio in flight stays valid.
+      queueNeedsRefresh = true;
+      if (!running) schedule(0);
     }
   }
   const events = [
@@ -616,9 +633,11 @@ WorkTimeApp.services.vocabularyIdle = (() => {
       if (running && preparation) audioPhase = preparation;
       if (speech?.busy || ["loading", "generating"].includes(speech?.status))
         audioPhase = speech.phase === "idle" ? speech.status : speech.phase;
+      const generatingKind = speech?.generatingKind || "";
       return {
         status: state,
-        audioPhase,
+        audioPhase: generatingKind ? "generating" : audioPhase,
+        generatingKind,
         errorDetail,
         poolSize:
           speech?.poolSize ??
@@ -635,7 +654,7 @@ WorkTimeApp.services.vocabularyIdle = (() => {
           ["loading", "generating"].includes(
             WorkTimeApp.services.vocabularySpeech?.status,
           ),
-        completed,
+        completed: finishedAudio.size,
         total,
         verifyingCache: verification,
         ...(WorkTimeApp.services.vocabularyAudioCache?.progress(
@@ -669,6 +688,7 @@ WorkTimeApp.services.vocabularyIdle = (() => {
       });
       signature = dataSignature(WorkTimeApp.services.vocabularyStorage.read());
       unsubscribe = WorkTimeApp.services.vocabularyStorage.subscribe(changed);
+      folderRevision = WorkTimeApp.services.runtimeFolder?.state.revision;
       unsubscribeFolder = WorkTimeApp.services.runtimeFolder?.subscribe(() => {
         const folder = WorkTimeApp.services.runtimeFolder.state;
         if (
@@ -694,6 +714,7 @@ WorkTimeApp.services.vocabularyIdle = (() => {
     dispose() {
       stopped = true;
       epoch++;
+      clearQueue();
       clearTimeout(timer);
       interactionObserver?.disconnect();
       pointers.clear();

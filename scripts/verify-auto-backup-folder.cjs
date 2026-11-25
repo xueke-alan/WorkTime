@@ -89,6 +89,7 @@ async function main() {
       };
     });
     const page = await context.newPage();
+    await page.clock.setFixedTime(new Date("2026-10-28T12:30:00+08:00"));
     const errors = [],
       downloads = [];
     page.on("pageerror", (error) => errors.push(error.message));
@@ -109,7 +110,10 @@ async function main() {
       );
     const due = () =>
       page.evaluate(() =>
-        WorkTimeApp.services.preferences.page.saveAutoBackupDate("2020-01-01"),
+        WorkTimeApp.services.preferences.page.saveBackupAt(
+          WorkTimeApp.services.preferences.page.state.lastBackupAt,
+          { lastAutoBackupDate: "2020-01-01" },
+        ),
       );
     const status = (value) =>
       page.waitForFunction(
@@ -129,7 +133,7 @@ async function main() {
           for await (const [name, file] of directory.entries()) {
             if (file.kind === "directory")
               await collect(file, prefix + name + "/");
-            else if (name.endsWith(".txt"))
+            else if (name.endsWith(".json"))
               result.push({
                 name: prefix + name,
                 text: await (await file.getFile()).text(),
@@ -154,27 +158,7 @@ async function main() {
     await page.locator("[data-onboarding-next]").click();
     await clickSettingsControl(page, "#pageSettingsOpen");
     await page.locator("#autoBackupFolderChoose").waitFor({ state: "visible" });
-    const layout = await page.evaluate(() => {
-      const frequency = document
-        .querySelector("#autoBackupTrigger")
-        .getBoundingClientRect();
-      const folder = document
-        .querySelector(".auto-backup-folder-control")
-        .getBoundingClientRect();
-      return {
-        topDifference: Math.abs(frequency.top - folder.top),
-        widthDifference: Math.abs(folder.width - frequency.width),
-        folderFirst: folder.right < frequency.left,
-      };
-    });
-    assert.ok(
-      layout.topDifference < 1 && layout.folderFirst,
-      "folder and frequency must share a row with the folder first",
-    );
-    assert.ok(
-      layout.widthDifference < 1,
-      "folder and frequency must have equal widths",
-    );
+    assert.equal(await page.locator("#autoBackupTrigger").count(), 0);
     assert.equal(downloads.length, 0, "folder archive must not download");
     assert.equal(
       await page.locator("#autoBackupFolderLabel").innerText(),
@@ -213,7 +197,8 @@ async function main() {
     });
     let archived = await files();
     assert.equal(archived.length, 1);
-    assert.ok(archived[0].text.length > 100);
+    assert.match(archived[0].name, /^automatic\/day\/.*\.json$/);
+    assert.equal(JSON.parse(archived[0].text).format, "worktime-full-backup");
     await page.evaluate(
       (text) =>
         WorkTimeApp.services.backup.decode(text, (value) => {
@@ -307,7 +292,7 @@ async function main() {
     await page.locator("#autoBackupFolderRetry").click();
     await saved();
     assert.ok(
-      (await files()).every((file) => file.name.startsWith("automatic/")),
+      (await files()).every((file) => file.name.startsWith("automatic/day/")),
     );
     await page.evaluate(() =>
       document.getElementById("backupBeforeRestore").click(),

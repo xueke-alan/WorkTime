@@ -508,6 +508,10 @@ const WorkTimeServiceApplication = (() => {
             ),
           });
         let restored = A.migrate(candidate);
+        restored.preferences.lastAutoBackupDate =
+          state.preferences.lastAutoBackupDate ?? null;
+        restored.preferences.lastAutoBackupHour =
+          state.preferences.lastAutoBackupHour ?? null;
         const typing = WorkTimeApp.services.typingStorage;
         const vocabulary = WorkTimeApp.services.vocabularyStorage;
         if (vocabulary && !vocabulary.find(restored) && vocabulary.find(state))

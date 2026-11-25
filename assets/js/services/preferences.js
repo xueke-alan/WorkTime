@@ -153,21 +153,8 @@ WorkTimeApp.services.preferences = (() => {
         return dirty;
       },
       saveTheme,
-      saveAutoBackupDays(days) {
-        if (![0, 1, 3, 7].includes(days))
-          throw Error("Invalid automatic backup interval");
-        return savePreference({
-          autoBackupDays: days,
-          ...(!state.autoBackupDays || !days
-            ? { lastAutoBackupDate: null }
-            : {}),
-        });
-      },
-      saveAutoBackupDate(date) {
-        return savePreference({ lastAutoBackupDate: date });
-      },
-      saveBackupAt(date) {
-        return savePreference({ lastBackupAt: date });
+      saveBackupAt(date, automatic) {
+        return savePreference({ lastBackupAt: date, ...automatic });
       },
       saveMotionMode(motionMode) {
         if (!["system", "full", "reduce"].includes(motionMode))

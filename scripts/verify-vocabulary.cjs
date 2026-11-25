@@ -692,7 +692,7 @@ async function browser() {
       await page
         .locator('[data-grade="2"] small, [data-grade="1"] small')
         .allTextContents(),
-      ["隔约 4 词", "隔约 2 词"],
+      ["今日", "今日"],
     );
     assert.equal(await page.locator(".vocabulary-detail-section").count(), 2);
     const exampleCount = await page.evaluate(() => {
@@ -1151,7 +1151,7 @@ async function browser() {
     );
     assert.deepEqual(
       await page.locator(".vocabulary-page > h3").allTextContents(),
-      ["今日学习"],
+      [],
     );
     assert.equal(await page.locator(".vocabulary-stats > div").count(), 4);
     if (process.argv.includes("--screenshot"))

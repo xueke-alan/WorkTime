@@ -67,7 +67,6 @@ body .site-hint {
 }
 .site-hint[hidden] { display: none; }
 body .site-hint.site-audio-hint:not([hidden]) {
-  width: 144px;
   height: 68px;
   display: grid;
   grid-template-rows: repeat(3, 18px);
@@ -92,7 +91,9 @@ body .site-audio-hint > span:first-child > span {
   text-align: center;
 }
 .settings-select-row,
-.auto-backup-settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) 25%; column-gap: 0.857143rem; row-gap: 0.428571rem; }
+.auto-backup-settings { display: grid; column-gap: 0.857143rem; row-gap: 0.428571rem; }
+.settings-select-row { grid-template-columns: repeat(2, minmax(0, 1fr)) 25%; }
+.auto-backup-settings { grid-template-columns: minmax(0, 1fr) 25%; }
 body .editor .settings-select-row > .field { display: grid; grid-row: span 3; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
 body .editor .settings-select-row > .field > label { min-width: 0; white-space: normal; overflow-wrap: anywhere; align-self: end; }
 body #pageSettingsPane .language-trigger .button-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -104,12 +105,7 @@ body #pageSettingsPane .language-trigger .button-label { overflow: hidden; text-
 }
 .language-settings select { position: absolute; width: 1px; opacity: 0; pointer-events: none; }
 .auto-backup-settings { min-width: 0; position: relative; }
-body .editor .auto-backup-settings > .field { display: contents; }
-.auto-backup-settings > .language-settings > label { grid-column: 2; grid-row: 1; }
-body .auto-backup-settings :is(.field, .auto-backup-folder) > label { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
-.auto-backup-settings .language-trigger { grid-column: 2; grid-row: 2; }
-.auto-backup-settings .help { grid-column: 1 / -1; grid-row: 3; margin: 0; padding-inline-start: 8px; white-space: normal; overflow-wrap: anywhere; }
-.auto-backup-settings .theme-save-notice { grid-column: 1 / -1; grid-row: 4; margin: 0; }
+body .auto-backup-settings .auto-backup-folder > label { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
 body #pageSettingsPane .language-trigger {
   width: 100%;
   min-width: 0;
@@ -245,7 +241,6 @@ html:not([lang="zh-CN"]) body #dayPreview .preview-period > span { min-width: 0;
   }
 }
 
-/* Frequency and directory keep a 2:3 ratio with the install action moved away. */
 body .editor .auto-backup-settings > .auto-backup-folder { display: contents; }
 body .auto-backup-settings > .auto-backup-folder > label { grid-column: 1; grid-row: 1; }
 .auto-backup-folder-control { grid-column: 1; grid-row: 2; height: var(--control-height); min-height: 0; align-self: start; display: flex; align-items: stretch; min-width: 0; overflow: hidden; border: 1px solid var(--control-border); border-radius: var(--control-radius); background: var(--theme-surface-paper, var(--paper)); box-shadow: var(--control-shadow); }
@@ -262,24 +257,20 @@ body #pageSettingsPane #autoBackupFolderReset:is(:hover, :focus-visible) { color
 .auto-backup-folder > .row .ui-button { white-space: normal; height: auto; min-height: 36px; max-width: 100%; }
 .auto-backup-folder [hidden] { display: none !important; }
 
-/* Install follows the animation preference and fills a quarter of the row. */
-body #pageSettingsPane #appInstallLabel { grid-column: 3; grid-row: 1; align-self: end; min-width: 0; margin: 0; padding-inline-start: 8px; text-align: start; overflow-wrap: anywhere; }
-body #pageSettingsPane #appInstallButton { grid-column: 3; grid-row: 2; align-self: start; justify-self: stretch; width: 100%; min-width: 0; max-width: none; padding-inline: 0; }
+/* Install fills a quarter of the runtime folder row. */
+body #pageSettingsPane #appInstallLabel { grid-column: 2; grid-row: 1; align-self: end; min-width: 0; margin: 0; padding-inline-start: 8px; text-align: start; overflow-wrap: anywhere; }
+body #pageSettingsPane #appInstallButton { grid-column: 2; grid-row: 2; align-self: start; justify-self: stretch; width: 100%; min-width: 0; max-width: none; padding-inline: 0; }
 body #pageSettingsPane #appInstallButton > .ui-icon { width: var(--icon-size-small); height: var(--icon-size-small); }
 
-/* Frequency choices stay on one line beside the runtime folder. */
-body #pageSettingsPane #autoBackupOptions > button > .button-label { white-space: nowrap; overflow-wrap: normal; }
-
 /* One surface style and interaction state for this shared settings row. */
-body #pageSettingsPane :is(#autoBackupTrigger, .auto-backup-folder-control, #appInstallButton) {
+body #pageSettingsPane :is(.auto-backup-folder-control, #appInstallButton) {
   box-sizing: border-box;
   border: 1px solid var(--control-border);
   border-radius: var(--control-radius);
   background: var(--theme-surface-paper, var(--paper));
   box-shadow: var(--control-shadow);
 }
-body #pageSettingsPane :is(#autoBackupTrigger, #appInstallButton):is(:hover, :focus-visible):not(:disabled),
-body #pageSettingsPane #autoBackupTrigger[aria-expanded="true"],
+body #pageSettingsPane #appInstallButton:is(:hover, :focus-visible):not(:disabled),
 body #pageSettingsPane .auto-backup-folder-control:has(> #autoBackupFolderChoose:is(:hover, :focus-visible):not(:disabled)) {
   border-color: var(--accent);
   background: var(--control-hover);

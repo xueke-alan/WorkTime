@@ -146,6 +146,39 @@ async function verifyCalendarAverage(page) {
     );
     return value && !value.classList.contains("below-target");
   });
+  const additionalDates = ["2026-10-09", "2026-10-12", "2026-10-13"];
+  for (const date of ["2026-10-08", ...additionalDates]) {
+    await page.locator(`.day[data-date="${date}"]`).click();
+    await page.locator("#dayStart").fill("08:00");
+    await page.locator("#dayEnd").fill("19:00");
+    await page.locator("#dayEnd").press("Tab");
+  }
+  const lastDay = page.locator('.day[data-date="2026-10-13"]');
+  for (const [end, overtime, average, below] of [
+    ["18:58", "0.97 h", "0.99 h", true],
+    ["18:59", "0.98 h", "1.00 h", false],
+  ]) {
+    await page.locator("#dayEnd").fill(end);
+    await page.locator("#dayEnd").press("Tab");
+    await page.waitForFunction(
+      (expected) =>
+        document.querySelector('.day[data-date="2026-10-13"] .day-overtime')
+          ?.textContent === expected,
+      overtime,
+    );
+    assert.equal(
+      await lastDay.locator(".day-average-value").textContent(),
+      average,
+    );
+    assert.equal(
+      await lastDay.locator(".day-average-value.below-target").count(),
+      below ? 1 : 0,
+    );
+  }
+  for (const date of additionalDates) {
+    await page.locator(`.day[data-date="${date}"]`).click();
+    await page.locator("#clearManual").click();
+  }
   await day.click();
   await page.locator("#clearManual").click();
   await page.waitForFunction(
@@ -535,6 +568,12 @@ async function verify() {
         "History must not block the default first screen",
       );
       await page.locator("#date-tab-history").click();
+      await page.waitForSelector(
+        '#date-context-festivals[aria-selected="true"]',
+      );
+      await page.waitForSelector(".festival-section");
+      assert.equal(historyRequests.length, 0);
+      await page.locator("#date-context-history").click();
       await page.waitForSelector(".history-event");
       assert.equal(historyRequests.length, 1);
       await page.evaluate(() => WorkTimeApp.ui.dateInfo.setDate("2026-01-01"));

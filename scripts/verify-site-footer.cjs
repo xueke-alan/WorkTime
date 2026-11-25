@@ -77,11 +77,13 @@ const site = path.resolve(
       window.Worker = class {
         terminate() {}
         postMessage(data) {
-          if (data.type === "init")
-            window.finishFooterInitialization = () =>
+          if (data.type === "init") {
+            const ready = () =>
               this.onmessage({ data: { id: data.id, type: "ready" } });
-          else
-            window.finishFooterInference = () =>
+            if (window.finishFooterInitialization) ready();
+            else window.finishFooterInitialization = ready;
+          } else {
+            window.finishFooterInference[data.text] = () =>
               this.onmessage({
                 data: {
                   id: data.id,
@@ -89,8 +91,10 @@ const site = path.resolve(
                   message: "fixture failure",
                 },
               });
+          }
         }
       };
+      window.finishFooterInference = {};
       window.footerInference = services.vocabularySpeech
         .synthesize({ word: "footer-inference-fixture" }, "us")
         .catch((error) => error.message);
@@ -111,25 +115,45 @@ const site = path.resolve(
     await page.locator("#siteHint").waitFor({ state: "visible" });
     assert.match(
       await page.locator("#siteHint").innerText(),
-      /^正在初始化语音模型\nWorker: 4\n\? \/ \d+$/,
+      /^正在初始化语音模型\n合成器：4\n\? \/ \d+$/,
     );
     const loadingBounds = await page.locator("#siteHint").boundingBox();
-    assert(Math.abs(loadingBounds.width - 144) < 0.5);
+    assert(loadingBounds.width < 170);
     assert(Math.abs(loadingBounds.height - 68) < 0.5);
     await page.evaluate(() => window.finishFooterInitialization());
     await page.waitForFunction(() =>
       document
         .querySelector(".calendar-footer .site-audio-activity")
-        .dataset.dateMarkerHint.startsWith("footer-inference-fixture\n"),
+        .dataset.dateMarkerHint.startsWith("正在合成单词发音\n"),
     );
     await page.locator("#siteHint").waitFor({ state: "visible" });
     assert.match(
       await page.locator("#siteHint").innerText(),
-      /^footer-inference-fixture\nWorker: 4\n\? \/ \d+$/,
+      /^正在合成单词发音\n合成器：4\n\? \/ \d+$/,
     );
     const generatingBounds = await page.locator("#siteHint").boundingBox();
-    assert(Math.abs(generatingBounds.width - loadingBounds.width) < 0.5);
+    assert(generatingBounds.width < 170);
     assert(Math.abs(generatingBounds.height - loadingBounds.height) < 0.5);
+    await page.evaluate(() => {
+      window.footerExample = WorkTimeApp.services.vocabularySpeech
+        .synthesize(
+          { word: "This is the footer example.", kind: "example" },
+          "us",
+        )
+        .catch((error) => error.message);
+    });
+    await page
+      .locator("#siteHint")
+      .getByText("正在合成单词和例句发音", { exact: true })
+      .waitFor();
+    await page.evaluate(() =>
+      window.finishFooterInference["footer-inference-fixture"](),
+    );
+    await page
+      .locator("#siteHint")
+      .getByText("正在合成例句发音", { exact: true })
+      .waitFor();
+    assert((await page.locator("#siteHint").boundingBox()).width < 170);
     const observed = await page.evaluate(() => window.footerObservedPhases);
     for (const phase of [
       "checkingFiles",
@@ -140,8 +164,8 @@ const site = path.resolve(
     ])
       assert(observed.includes(phase), "Speech lifecycle reports " + phase);
     await page.evaluate(async () => {
-      window.finishFooterInference();
-      await window.footerInference;
+      window.finishFooterInference["This is the footer example."]();
+      await Promise.all([window.footerInference, window.footerExample]);
       window.restoreFooterInference();
     });
     await page.keyboard.press("Escape");
@@ -173,7 +197,7 @@ const site = path.resolve(
     assert(await center.isVisible());
     assert.match(
       await center.getAttribute("data-date-marker-hint"),
-      /^[^\n]+\nWorker: 4\n\? \/ \d+$/,
+      /^[^\n]+\n合成器：4\n\? \/ \d+$/,
     );
     await page.evaluate(() => {
       const idle = WorkTimeApp.services.vocabularyIdle;
@@ -193,6 +217,7 @@ const site = path.resolve(
           generatedTotal: window.footerCompleted,
           audioTotal: 100,
           currentWord: window.footerWord,
+          generatingKind: "word",
           audioPhase:
             window.footerPhaseOverride ||
             (window.footerWord ? "generating" : "checkingFiles"),
@@ -209,7 +234,7 @@ const site = path.resolve(
     await page.locator("#siteHint").waitFor({ state: "visible" });
     assert.equal(
       await page.locator("#siteHint").innerText(),
-      "apple\nWorker: 4\n12 / 100",
+      "正在合成单词发音\n合成器：4\n12 / 100",
     );
     await page.evaluate(() => {
       window.footerCompleted = 13;
@@ -219,17 +244,18 @@ const site = path.resolve(
     await page.waitForFunction(
       () =>
         document.getElementById("siteHint").innerText ===
-        "banana\nWorker: 4\n13 / 100",
+        "正在合成单词发音\n合成器：4\n13 / 100",
     );
     assert.equal(
       await center.getAttribute("aria-label"),
-      "banana\nWorker: 4\n13 / 100",
+      "正在合成单词发音\n合成器：4\n13 / 100",
     );
     // Model transfers replace an already-open synthesis hint and keep it live.
     await page.evaluate(() => {
       window.footerModels = WorkTimeApp.services.vocabularyModels;
       window.footerModelState = { phase: "downloading", loaded: 0, total: 100 };
       WorkTimeApp.services.vocabularyModels = {
+        ...window.footerModels,
         get state() {
           return window.footerModelState;
         },
@@ -283,12 +309,12 @@ const site = path.resolve(
     await page.waitForFunction(
       () =>
         document.getElementById("siteHint").innerText ===
-        "banana\nWorker: 4\n13 / 100",
+        "正在合成单词发音\n合成器：4\n13 / 100",
     );
     await page.evaluate(async () => {
       window.footerDetailChanges = [];
       window.footerProgressChanges = [];
-      window.footerLastDetail = window.footerWord;
+      window.footerLastDetail = "正在合成单词发音";
       const activity = document.querySelector(
         ".calendar-footer .site-audio-activity",
       );
@@ -326,8 +352,8 @@ const site = path.resolve(
     });
     assert.deepEqual(
       await page.evaluate(() => window.footerDetailChanges),
-      ["orange"],
-      "Brief intermediate phases never replace the word",
+      [],
+      "Brief intermediate phases preserve the synthesis label",
     );
     assert.deepEqual(
       await page.evaluate(() => window.footerProgressChanges),
@@ -341,7 +367,7 @@ const site = path.resolve(
     await page.waitForFunction(
       () =>
         document.getElementById("siteHint").innerText ===
-        "正在检查文件缓存\nWorker: 4\n13 / 100",
+        "正在检查文件缓存\n合成器：4\n13 / 100",
     );
     await page.evaluate(() => {
       window.footerPhaseOverride = "ready";
@@ -350,7 +376,7 @@ const site = path.resolve(
     await page.waitForFunction(
       () =>
         document.getElementById("siteHint").innerText ===
-        "语音模型已就绪\nWorker: 4\n13 / 100",
+        "语音模型已就绪\n合成器：4\n13 / 100",
     );
     await page.evaluate(() => {
       window.footerIndexStatus = "rebuilding";
@@ -361,7 +387,7 @@ const site = path.resolve(
     await page.waitForFunction(() =>
       document
         .getElementById("siteHint")
-        .innerText.endsWith("\nWorker: 4\n? / 100"),
+        .innerText.endsWith("\n合成器：4\n? / 100"),
     );
     await page.evaluate(() => {
       window.footerIndexStatus = "ready";
@@ -374,7 +400,7 @@ const site = path.resolve(
     await page.waitForFunction(() =>
       document
         .getElementById("siteHint")
-        .innerText.endsWith("\nWorker: 2\n0 / 100"),
+        .innerText.endsWith("\n合成器：2\n0 / 100"),
     );
     await page.evaluate(() => {
       window.footerPhaseOverride = "";
@@ -385,7 +411,7 @@ const site = path.resolve(
       });
     });
     const preparingBounds = await page.locator("#siteHint").boundingBox();
-    assert(Math.abs(preparingBounds.width - loadingBounds.width) < 0.5);
+    assert(preparingBounds.width < 170);
     assert(Math.abs(preparingBounds.height - loadingBounds.height) < 0.5);
     await page.emulateMedia({ reducedMotion: "no-preference" });
     assert(
@@ -430,50 +456,16 @@ const site = path.resolve(
         "a very long vocabulary phrase that exceeds the tooltip width";
       WorkTimeApp.services.vocabularyIdle.configure({ paused: true });
     });
-    await page.waitForFunction(() =>
-      document
-        .getElementById("siteHint")
-        .children[0].textContent.includes("a very long"),
-    );
-    assert.equal(
-      await page
-        .locator("#siteHint > span")
-        .nth(0)
-        .evaluate((node) => node.getAnimations().length > 0),
-      true,
-      "Word changes animate without resizing the tooltip",
-    );
-    const longBounds = await page.locator("#siteHint").boundingBox();
-    assert(Math.abs(longBounds.width - loadingBounds.width) < 0.5);
-    assert(Math.abs(longBounds.height - loadingBounds.height) < 0.5);
-    assert.equal(
+    assert(
       await page
         .locator("#siteHint > span:first-child > span")
-        .evaluate((node) => {
-          const animation = node.getAnimations()[0];
-          return (
-            node.scrollWidth > node.parentElement.clientWidth &&
-            animation?.effect.getTiming().iterations === Infinity
-          );
-        }),
-      true,
-      "Overflowing phrases scroll repeatedly within the fixed word row",
-    );
-    await page.evaluate(() => {
-      window.footerWord = "short";
-      WorkTimeApp.services.vocabularyIdle.configure({ paused: true });
-    });
-    await page.waitForFunction(
-      () =>
-        document.querySelector("#siteHint > span:first-child > span")
-          .textContent === "short",
-    );
-    assert.equal(
-      await page
-        .locator("#siteHint > span:first-child > span")
-        .evaluate((node) => node.getAnimations().length),
-      0,
-      "Short words reset scrolling",
+        .evaluate(
+          (node) =>
+            node.textContent === "正在合成单词发音" &&
+            node.scrollWidth <= node.parentElement.clientWidth &&
+            node.getAnimations().length === 0,
+        ),
+      "The synthesis label stays visible on one line without scrolling",
     );
     await page.emulateMedia({ reducedMotion: "reduce" });
     assert.equal(
@@ -534,7 +526,10 @@ const site = path.resolve(
       assert.equal(await center.isVisible(), false, phase + " stays hidden");
     }
     await page.locator("#siteHint").waitFor({ state: "hidden" });
-    for (const phase of ["savingFiles", "savingBrowser"]) {
+    for (const [phase, label] of [
+      ["savingFiles", "正在保存发音文件"],
+      ["savingBrowser", "正在保存到浏览器缓存"],
+    ]) {
       await page.evaluate((value) => {
         window.footerPhaseOverride = value;
         window.footerWord = "apple";
@@ -542,8 +537,8 @@ const site = path.resolve(
       }, phase);
       assert.equal(
         await center.getAttribute("aria-label"),
-        "apple\nWorker: 4\n13 / 100",
-        "Saving keeps the word without a status prefix",
+        `${label}\n合成器：4\n13 / 100`,
+        "Saving shows the actual save operation",
       );
     }
     await page.evaluate(() => {

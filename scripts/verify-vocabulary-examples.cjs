@@ -33,7 +33,12 @@ async function main() {
         bank.books = ["daily"];
         entries.splice(0, entries.length, bank);
         globalThis.__exampleAudio = [];
-        WorkTimeApp.services.vocabularySpeech.play = async (entry) => {
+        const speech = WorkTimeApp.services.vocabularySpeech;
+        const originalPlay = speech.play;
+        globalThis.__restoreExamplePlay = () => {
+          speech.play = originalPlay;
+        };
+        speech.play = async (entry) => {
           globalThis.__exampleAudio.push(entry.word);
           return true;
         };
@@ -145,6 +150,61 @@ async function main() {
         await page.evaluate(() => globalThis.__exampleAudio),
         expected.map((example) => example.en),
       );
+      await page.evaluate((cachedText) => {
+        globalThis.__restoreExamplePlay();
+        const { vocabularySpeech, vocabularyAudioCache } = WorkTimeApp.services;
+        const audio = new Blob([], { type: "audio/wav" });
+        const synthesis = (globalThis.__synthesis = {});
+        vocabularyAudioCache.read = async (entry) =>
+          entry.word === cachedText ? audio : null;
+        vocabularySpeech.synthesize = (entry) =>
+          new Promise((resolve, reject) => {
+            synthesis.text = entry.word;
+            synthesis.finish = () => resolve(audio);
+            synthesis.fail = () => reject(Error("Speech fixture failure"));
+          });
+        window.Audio = class {
+          addEventListener() {}
+          pause() {}
+          async play() {
+            synthesis.played = (synthesis.played || 0) + 1;
+          }
+        };
+      }, expected[1].en);
+      const examplePlay = page.locator(".vocabulary-example-play");
+      const wordPlay = page.locator(".vocabulary-pronunciation-play");
+      const ring =
+        'svg.site-audio-spinner:has(use[href="#ms-progress-activity"])';
+      const finish = (outcome) =>
+        page.evaluate((action) => globalThis.__synthesis[action](), outcome);
+      await examplePlay.first().click();
+      await examplePlay.first().locator(ring).waitFor();
+      assert.equal(await examplePlay.first().getAttribute("aria-busy"), "true");
+      assert.equal(
+        await examplePlay
+          .first()
+          .locator(ring)
+          .evaluate((icon) => getComputedStyle(icon).animationIterationCount),
+        "infinite",
+      );
+      await examplePlay.nth(1).click();
+      await page.waitForFunction(() => globalThis.__synthesis.played === 1);
+      assert.equal(
+        await page.locator("#vocabularyPanel").locator(ring).count(),
+        0,
+      );
+      await finish("finish");
+      await wordPlay.click();
+      await wordPlay.locator(ring).waitFor();
+      await finish("finish");
+      await page.waitForFunction(() => globalThis.__synthesis.played === 2);
+      assert.equal(await wordPlay.getAttribute("aria-busy"), null);
+      assert.equal(await wordPlay.locator("svg path").count(), 1);
+      await examplePlay.first().click();
+      await examplePlay.first().locator(ring).waitFor();
+      await finish("fail");
+      await examplePlay.first().locator("svg path").waitFor();
+      assert.equal(await examplePlay.first().getAttribute("aria-busy"), null);
       assert(
         await page
           .locator(".vocabulary-example")

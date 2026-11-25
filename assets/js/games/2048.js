@@ -111,8 +111,8 @@ WorkTimeApp.games.register({
     undo.classList.add("game-icon-button");
     restart.classList.add("game-icon-button");
     const confirmation = node("div", "puzzle-confirm", root);
-    const confirmTitle = node("h3", "", confirmation);
-    const confirmText = node("p", "", confirmation);
+    const confirmText = document.createElement("p");
+    confirmText.id = "puzzle-confirm-description";
     const confirmActions = node("div", "puzzle-actions", confirmation);
     const cancel = button(
       confirmActions,
@@ -125,7 +125,7 @@ WorkTimeApp.games.register({
       },
       "close",
     );
-    const cancelLabel = node("span", "button-label", cancel);
+    node("span", "button-label", cancel);
     const confirm = button(
       confirmActions,
       "confirm",
@@ -159,18 +159,19 @@ WorkTimeApp.games.register({
       },
       "restart-alt",
     );
-    const confirmLabel = node("span", "button-label", confirm);
+    node("span", "button-label", confirm);
     const paintRestartCover = WorkTimeApp.games.createRestartCover({
       cover: confirmation,
       cancel: cancel,
       accept: confirm,
       signal,
+      description: confirmText,
       labels: () => ({
         title: t(
           confirmationAction === "aiStop"
-            ? "aiStopHint"
+            ? "aiStop"
             : confirmationAction === "ai"
-              ? "aiConfirmHint"
+              ? "aiStart"
               : "confirmTitle",
         ),
         cancel: t("cancel"),
@@ -288,23 +289,17 @@ WorkTimeApp.games.register({
       WorkTimeApp.games.setIcon(restart, "restart-alt");
       restart.title = t("restart");
       restart.setAttribute("aria-label", t("restart"));
-      cancelLabel.textContent = t("cancel");
-      confirmLabel.textContent = t(
-        confirmationAction === "ai" ? "aiStart" : "confirm",
-      );
-      confirmTitle.textContent = t(
-        confirmationAction === "ai" ? "ai" : "confirmTitle",
-      );
-      confirmText.textContent = t(
-        confirmationAction === "ai" ? "aiConfirmHint" : "confirmHint",
-      );
+      const aiConfirmation = confirming && confirmationAction !== "restart";
+      confirmation.classList.toggle("puzzle-ai-confirm", aiConfirmation);
+      confirmText.hidden = !aiConfirmation;
+      if (aiConfirmation) {
+        confirmText.textContent = t(
+          confirmationAction === "ai" ? "aiConfirmHint" : "aiStopHint",
+        );
+        confirmation.setAttribute("aria-describedby", confirmText.id);
+      } else confirmation.removeAttribute("aria-describedby");
       confirmation.hidden = !confirming;
       paintRestartCover(confirming);
-      if (confirming && confirmationAction === "ai") {
-        confirmLabel.textContent = t("aiStart");
-        confirm.setAttribute("aria-label", t("aiStart"));
-        confirmation.setAttribute("aria-label", t("aiStart"));
-      }
       undo.disabled = demonstrating || !previous || confirming;
       restart.disabled = confirming;
       board.setAttribute("aria-label", t("board"));

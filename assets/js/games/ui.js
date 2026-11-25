@@ -820,6 +820,7 @@ WorkTimeApp.games.createRestartCover = function ({
   accept,
   signal,
   labels,
+  description = null,
 }) {
   const content = document.createElement("div");
   content.className = "game-restart-content";
@@ -829,7 +830,9 @@ WorkTimeApp.games.createRestartCover = function ({
   heading.classList.add(labels ? "game-restart-message" : "game-restart-icon");
   const actions = document.createElement("div");
   actions.className = "game-restart-actions";
-  content.append(heading, actions);
+  content.append(heading);
+  if (description) content.append(description);
+  content.append(actions);
   cover.append(content);
   const buttons = [cancel, accept];
   const places = buttons.map(() => document.createComment("restart action"));

@@ -223,8 +223,10 @@ WorkTimeApp.ui.createSiteFooter = function (host, expanded = false) {
       state.progressExact !== false;
     const label =
       detail +
-      "\nWorker: " +
-      state.poolSize +
+      "\n" +
+      WorkTimeApp.i18n.t("footer.audioSynthesizers", {
+        count: state.poolSize,
+      }) +
       "\n" +
       WorkTimeApp.i18n.t("footer.audioProgress", {
         completed: progressKnown ? state.generatedTotal : "?",
@@ -300,11 +302,11 @@ WorkTimeApp.ui.createSiteFooter = function (host, expanded = false) {
         state.audioPhase,
       ),
     );
-    const detail = ["generating", "savingFiles", "savingBrowser"].includes(
-      state.audioPhase,
-    )
-      ? state.currentWord || displayedDetail || "…"
-      : WorkTimeApp.i18n.t("footer.audioPhase_" + state.audioPhase);
+    const phase =
+      state.audioPhase === "generating" && state.generatingKind
+        ? "generating_" + state.generatingKind
+        : state.audioPhase;
+    const detail = WorkTimeApp.i18n.t("footer.audioPhase_" + phase);
     const transient = [
       "checkingFolder",
       "loadingAssets",
